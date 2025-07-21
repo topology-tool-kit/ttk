@@ -100,6 +100,19 @@ namespace ttk {
     inline void setMaxFrameDist(int filtre){
         maxFrameDist_ = filtre;
     }
+
+    inline void setSpatialScale(double filtre){
+        spatialScale_ = filtre;
+    }
+
+    inline void setInterFrame(double filtre){
+        interFrame_ = filtre;
+    }
+    
+    inline void setConvertDur(bool filtre){
+        convertDur_ = filtre;
+    }
+
 // 1) Structure pour stocker une fusion i->j
     struct FuseRecord {
       int i, j;           // trajectoire i fusionnée vers trajectoire j
@@ -160,6 +173,9 @@ namespace ttk {
     double cosCol_;
     double maxRadus_;
     int maxFrameDist_;
+    double spatialScale_;
+    double interFrame_;
+    bool convertDur_;
 
   }; // TrajectoryStatistics class
 
@@ -610,17 +626,23 @@ int ttk::TrajectoryStatistics::execute(
     #ifdef TTK_ENABLE_OPENMP
     #pragma omp parallel for num_threads(this->threadNumber_)
     #endif
+    
     for(int i = 0; i < numMerge; ++i) {
-        durations[i] = finalTraj[i][5] - finalTraj[i][4];
-    }
+        if (convertDur_)
+            durations[i] = (finalTraj[i][5] - finalTraj[i][4])*interFrame_;
+        else 
+            durations[i] = finalTraj[i][5] - finalTraj[i][4];
+    } 
+   
 
+    double conversion = spatialScale_*(1/interFrame_);
     #ifdef TTK_ENABLE_OPENMP
     #pragma omp parallel for num_threads(this->threadNumber_)
     #endif
     for(int i = 0; i < numMerge; ++i) {
         int dt = durations[i]; 
-        VX[i] = (finalTraj[i][0] + finalTraj[i][2])/dt; // vx = (ax + bx) / (tf - t0)
-        VY[i] = (finalTraj[i][0] + finalTraj[i][2])/dt;
+        VX[i] = finalTraj[i][0]*conversion; // vx = ax 
+        VY[i] = finalTraj[i][1]*conversion; // vy = ay
     }
 
     // ####################### SURFACE ##########################

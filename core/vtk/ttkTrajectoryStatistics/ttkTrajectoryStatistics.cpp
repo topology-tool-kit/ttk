@@ -255,6 +255,9 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   this->setCosCol(cosCol);
   this->setMaxRadus(maxRadus);
   this->setMaxFrameDist(maxFrameDist);
+  this->setSpatialScale(1/(spatialScale*1000));
+  this->setInterFrame(interFrame*std::pow(10.0,-6.0));
+  this->setConvertDur(convertDur);
 
   this->printMsg("Scalars recup");
 

@@ -108,7 +108,41 @@
         </Documentation>
       </IntVectorProperty>
 
+     <DoubleVectorProperty
+        name="spatialScale"
+        command="SetspatialScale"
+        label="Spatial Scale"
+        number_of_elements="1"
+        default_values="1.0">
+        <Documentation>
+            Spatial Scale (1mm = ? pixel)
+        </Documentation>
+      </DoubleVectorProperty>
 
+    <DoubleVectorProperty
+        name="interFrame"
+        command="SetinterFrame"
+        label="InterFrame"
+        number_of_elements="1"
+        default_values="1.0">
+        <Documentation>
+           Inter Frame in μs 
+        </Documentation>
+      </DoubleVectorProperty>
+
+
+    <IntVectorProperty
+        name="convertDur"
+        command="SetconvertDur"
+        label="Convert durations into sec ?"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+           Durations is shown in frames or seconds ? 
+        </Documentation>
+      </IntVectorProperty>
       <!-- DEBUG WIDGETS -->
       ${DEBUG_WIDGETS}
 

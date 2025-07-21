@@ -81,6 +81,9 @@ private:
   double maxRadus{40.0};
   double cosCol{0.96};
   int maxFrameDist{20};
+  double spatialScale{1.0};
+  double interFrame{1.0};
+  bool convertDur{false};
 
 public:
   /**
@@ -113,6 +116,14 @@ public:
   vtkSetMacro(maxFrameDist, int);
   vtkGetMacro(maxFrameDist, int);
 
+  vtkSetMacro(spatialScale, double);
+  vtkGetMacro(spatialScale, double);
+
+  vtkSetMacro(interFrame, double);
+  vtkGetMacro(interFrame, double);
+
+  vtkSetMacro(convertDur, bool);
+  vtkGetMacro(convertDur, bool);
 
 protected:
 
