@@ -5818,7 +5818,6 @@ void ttk::DiscreteMorseSandwichMPI::getSaddleSaddlePairs(
     = std::min(saddle2Number + 1, static_cast<ttk::SimplexId>(10));
   ttk::SimplexId taskNum
     = static_cast<ttk::SimplexId>(saddle2Number / taskSize) + 1;
-  ttk::SimplexId count{0};
 #pragma omp parallel num_threads(threadNumber_) shared(                      \
   onBoundaryThread, s1Locks, s2Locks, s2GlobalBoundaries, s2LocalBoundaries, \
   localEdgeToSaddle1_, saddles2, edgeTrianglePartner)
@@ -5842,8 +5841,6 @@ void ttk::DiscreteMorseSandwichMPI::getSaddleSaddlePairs(
       }
       // Start communication phase
       if(ttk::MPIsize_ > 1) {
-        if(ttk::MPIrank_ == 0)
-          printMsg("Start communication phase");
         saddles2[currentLastBlock_].resize(blockSize_);
         s2Locks[currentLastBlock_].resize(blockSize_, 0);
         s2GlobalBoundaries[currentLastBlock_].resize(blockSize_);
@@ -5857,7 +5854,6 @@ void ttk::DiscreteMorseSandwichMPI::getSaddleSaddlePairs(
         ttk::SimplexId tempTask;
         ttk::SimplexId messageCnt;
         while(totalFinishedPropagationCounter < globalSaddle2Counter_) {
-          count++;
           bool flag = true;
           while(flag) {
 #pragma omp atomic read
@@ -6025,8 +6021,6 @@ void ttk::DiscreteMorseSandwichMPI::getSaddleSaddlePairs(
       }
     }
   }
-  if(ttk::MPIrank_ == 0)
-    printMsg("Rounds of communication performed " + std::to_string(count));
 #ifdef TTK_ENABLE_MPI_TIME
   elapsedTime = ttk::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
   if(ttk::MPIrank_ == 0) {
