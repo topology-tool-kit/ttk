@@ -247,9 +247,11 @@
          <EnumerationDomain name="enum">
           <Entry value="0" text="FTM (IEEE TPSD 2019)"/>
           <Entry value="1" text="Progressive Approach (IEEE TVCG 2020)"/>
-          <Entry value="2" text="Discrete Morse Sandwich (IEEE TVCG 2023)"/>
+          <Entry value="2" text="Discrete Morse Sandwich (IEEE TVCG 2023)"/>          
           <Entry value="3" text="Approximation Approach (IEEE LDAV 2021)"/>
           <Entry value="4" text="Persistent Simplex (Zomorodian 2010)"/>
+          <Entry value="5" text="Distributed Discrete Morse Sandwich"/>
+
         </EnumerationDomain>
         <Documentation>
             Backend for the computation of the persistence diagram.
@@ -349,6 +351,26 @@
         </Documentation>
       </DoubleVectorProperty>
 
+      <IntVectorProperty name="UseTasks"
+        label="Use tasks to compute D0 and D2 pairs"
+        command="SetUseTasks"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+          <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="BackEnd"
+                                   value="5" />
+        </Hints>        
+        <Documentation>
+        This option will allow for the computation of D0 and D2 in separated independent 
+        pairs. This will speed up the computation in cases where there are enough work to be
+        done (i.e. an overall computation time bigger than 5 seconds).
+        </Documentation>
+      </IntVectorProperty>   
+
       <IntVectorProperty
           name="Ignore Boundary"
           command="SetIgnoreBoundary"
@@ -356,15 +378,25 @@
           default_values="0" panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
+        <PropertyWidgetDecorator type="CompositeDecorator">
+        <Expression type="or">
+        <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
                                    property="BackEnd"
-                                   value="2" />
+                                   value="2" >
+                           </PropertyWidgetDecorator>
+        <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="BackEnd"
+                                   value="5" >
+                           </PropertyWidgetDecorator>
+        </Expression>    
+        </PropertyWidgetDecorator>                            
         </Hints>
         <Documentation>
           Ignore the boundary component.
         </Documentation>
-      </IntVectorProperty>
+      </IntVectorProperty> 
 
       <IntVectorProperty
           name="DMSDimensions"
@@ -476,6 +508,37 @@
                          default_values="0"
                          panel_visibility="default">
         <BooleanDomain name="bool"/>
+        <Hints>
+        <PropertyWidgetDecorator type="CompositeDecorator">
+        <Expression type="or">
+        <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="BackEnd"
+                                   value="0" >
+                           </PropertyWidgetDecorator>
+        <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="BackEnd"
+                                   value="1" >
+                           </PropertyWidgetDecorator>
+        <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="BackEnd"
+                                   value="2" >
+                           </PropertyWidgetDecorator>                                                      
+        <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="BackEnd"
+                                   value="3" >
+                           </PropertyWidgetDecorator>
+        <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="BackEnd"
+                                   value="4" >
+                           </PropertyWidgetDecorator>                           
+        </Expression>    
+        </PropertyWidgetDecorator>  
+        </Hints>        
         <Documentation>
           Embed the persistence pairs in the domain.
         </Documentation>
@@ -490,10 +553,20 @@
           panel_visibility="advanced" >
         <BooleanDomain name="bool"/>
         <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+          <Expression type="or">
           <PropertyWidgetDecorator type="GenericDecorator"
-                                   mode="visibility"
-                                   property="BackEnd"
-                                   value="2" />
+                                    mode="visibility"
+                                    property="BackEnd"
+                                    value="2" >
+                            </PropertyWidgetDecorator>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                    mode="visibility"
+                                    property="BackEnd"
+                                    value="5" >
+                            </PropertyWidgetDecorator>
+          </Expression>    
+          </PropertyWidgetDecorator>  
         </Hints>
         <Documentation>
           To clear the DiscreteGradient cache after computation (releases memory).

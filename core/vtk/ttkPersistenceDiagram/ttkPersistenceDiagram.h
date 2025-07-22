@@ -197,6 +197,9 @@ public:
   vtkGetMacro(StoppingResolutionLevel, int);
   vtkSetMacro(StoppingResolutionLevel, int);
 
+  vtkSetMacro(UseTasks, bool);
+  vtkGetMacro(UseTasks, bool);
+
   vtkGetMacro(IsResumable, bool);
   vtkSetMacro(IsResumable, bool);
 

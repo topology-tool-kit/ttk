@@ -11,4 +11,6 @@ ttk_add_base_library(persistenceDiagram
     progressiveTopology
     approximateTopology
     discreteMorseSandwich
+    discreteMorseSandwichMPI
+    arrayPreconditioning
     )

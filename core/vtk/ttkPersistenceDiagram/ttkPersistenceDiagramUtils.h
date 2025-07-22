@@ -2,6 +2,7 @@
 #include <PersistenceDiagramUtils.h>
 
 // VTK Module
+#include <MPIUtils.h>
 #include <ttkPersistenceDiagramModule.h>
 
 class vtkUnstructuredGrid;
@@ -44,7 +45,15 @@ TTKPERSISTENCEDIAGRAM_EXPORT int DiagramToVTU(vtkUnstructuredGrid *vtu,
                                               const ttk::Debug &dbg,
                                               const int dim,
                                               const bool embedInDomain);
-
+#if defined(TTK_ENABLE_MPI) && defined(TTK_ENABLE_OPENMP)
+TTKPERSISTENCEDIAGRAM_EXPORT int
+  DiagramToDistributedVTU(vtkUnstructuredGrid *vtu,
+                          const ttk::DiagramType &diagram,
+                          vtkDataArray *const inputScalars,
+                          const ttk::Debug &dbg,
+                          const int dim,
+                          const bool embedInDomain);
+#endif
 /**
  * @brief Generate the spatial embedding of a given Persistence Diagram
  *

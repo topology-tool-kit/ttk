@@ -344,9 +344,10 @@ namespace ttk {
 
         ttk::SimplexId verticesToSortSize = verticesToSort.size();
         // Compute the order of the first element of the current process
-        ttk::SimplexId orderOffset
-          = std::accumulate(vertexDistribution.begin(),
-                            vertexDistribution.begin() + ttk::MPIrank_, 0);
+        ttk::SimplexId orderOffset{0};
+        for(int i = 0; i < ttk::MPIrank_; i++) {
+          orderOffset += vertexDistribution[i];
+        }
         // nbChunk, rest and nbChunkTotal are used to compute the
         // post-processing bit by bit.
         ttk::SimplexId nbChunk = std::floor(verticesToSortSize / ChunkSize);
