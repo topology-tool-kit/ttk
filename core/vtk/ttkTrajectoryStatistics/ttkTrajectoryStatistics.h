@@ -92,6 +92,7 @@ private:
   int maxX{-1};
   int maxY{-1};
   int minY{-1};
+  int minX{-1};
 
 public:
   /**
@@ -151,6 +152,8 @@ public:
   vtkGetMacro(maxY, int);
   vtkSetMacro(minY, int);
   vtkGetMacro(minY, int);
+  vtkSetMacro(minX, int);
+  vtkGetMacro(minX, int);
 
 
   vtkSetMacro(threshCratereAngle, double);

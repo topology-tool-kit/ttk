@@ -142,7 +142,9 @@ namespace ttk {
     inline void setMinY(int filtre){
         minY_ = filtre;
     }
-
+    inline void setMinX(int filtre){
+        minX_ = filtre;
+    }
 // 1) Structure pour stocker une fusion i->j
     struct FuseRecord {
       int i, j;           // trajectoire i fusionnée vers trajectoire j
@@ -216,7 +218,7 @@ namespace ttk {
     int maxX_;
     int maxY_;
     int minY_;
-
+    int minX_;
   }; // TrajectoryStatistics class
 
 } // namespace ttk
@@ -616,12 +618,22 @@ int ttk::TrajectoryStatistics::correctTrajectory(
         
         double mag = std::sqrt(lineCoef[0]*lineCoef[0] + lineCoef[1]*lineCoef[1] + 1); 
         if ( (0.0 > lineCoef[0]/mag && lineCoef[0]/mag >= filtreX_) && (-filtreY_<lineCoef[1]/mag && lineCoef[1]/mag <= filtreY_) && std::abs(lineCoef[0]*spatialScale_*(1/interFrame_))>minVx_){
-            if (maxX_ != -1 && lineCoef[2] > maxX_) continue;
-            if (maxY_ != -1 && lineCoef[3] > maxY_) continue;
-            if (minY_ != -1 && lineCoef[3] < minY_) continue;
-            merge.push_back(lineCoef);
+            if ((maxX_ != -1 && lineCoef[2] > maxX_) || (maxY_ != -1 && lineCoef[3] > maxY_) || (minY_ != -1 && lineCoef[3] < minY_ ) || (minX_ != -1 && lineCoef[2] < minX_))            
+                for (int i=0; i<finalTraj.size(); i++){
+                    newTraj[finalTraj[i].i][4] = -1;
+                    newTraj[finalTraj[i].j][4] = -1;
+                    trajLost++;
+                }
+            else {
+
+                merge.push_back(lineCoef);
+            }
         } else {
             trajLost++;
+            for (int i=0; i<finalTraj.size(); i++){
+                newTraj[finalTraj[i].i][4] = -1;
+                newTraj[finalTraj[i].j][4] = -1;
+            }
         }
     }
     this->printMsg("N TRAJ FUS " + std::to_string(merge.size()));
@@ -650,16 +662,17 @@ int ttk::TrajectoryStatistics::correctTrajectory(
             double traj_norm = std::sqrt(vx_traj*vx_traj + vy_traj*vy_traj);
             double crat_norm = std::sqrt(vx_crat*vx_crat + vy_crat*vy_crat);
             double angle = std::abs(dot/(traj_norm*crat_norm));
-            if (maxX_ != -1 && lineCoef[2] > maxX_) continue;
-            if (maxY_ != -1 && lineCoef[3] > maxY_) continue;
-            if (minY_ != -1 && lineCoef[3] < minY_) continue;
+            if (maxX_ != -1 && lineCoef[2] > maxX_) {trajLost ++; continue;}
+            if (maxY_ != -1 && lineCoef[3] > maxY_) {trajLost ++; continue;}
+            if (minY_ != -1 && lineCoef[3] < minY_) {trajLost ++; continue;}
+            if (minX_ != -1 && lineCoef[2] < minX_) {trajLost ++; continue;}
+
             if (angle>=threshCratereAngle_){
                 newTraj[i][4] = merge.size();
                 merge.push_back(lineCoef);
             }
 
         } else {
-            if (i ==696) this->printMsg("suppr ici");
             trajLost++;
         }
       }

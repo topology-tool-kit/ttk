@@ -226,6 +226,17 @@
         <Documentation>
         </Documentation>
       </IntVectorProperty>
+
+      <IntVectorProperty
+        name="minX"
+        command="SetminX"
+        label="Min X"
+        number_of_elements="1"
+        default_values="-1">
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
       <!-- DEBUG WIDGETS -->
       ${DEBUG_WIDGETS}
 

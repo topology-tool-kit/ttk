@@ -262,6 +262,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   this->setMaxX(maxX);
   this->setMaxY(maxY);
   this->setMinY(minY);
+  this->setMinX(minX);
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(inputDataSet);
   if(!triangulation)
