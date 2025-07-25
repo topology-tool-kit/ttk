@@ -47,6 +47,7 @@ namespace ttk {
     int preconditionTriangulation(
       ttk::AbstractTriangulation *triangulation) const {
       triangulation->preconditionVertexNeighbors();
+      triangulation->preconditionVertexStars();
       return triangulation->preconditionVertexNeighbors();
     }
 
@@ -101,6 +102,10 @@ namespace ttk {
         maxFrameDist_ = filtre;
     }
 
+    inline void setMinFrameDist(int filtre){
+        minFrameDist_ = filtre;
+    }
+
     inline void setSpatialScale(double filtre){
         spatialScale_ = filtre;
     }
@@ -111,6 +116,31 @@ namespace ttk {
     
     inline void setConvertDur(bool filtre){
         convertDur_ = filtre;
+    }
+
+    inline void setMinVx(bool filtre){
+        minVx_ = filtre;
+    }
+
+    inline void setCoordCratere(int filtre[2]){
+        coordCratere_[0] = filtre[0];
+        coordCratere_[1] = filtre[1];
+    }
+
+    inline void setThreshCratereAngle(double filtre){
+        threshCratereAngle_ = filtre;
+    }
+
+    inline void setMaxX(int filtre){
+        maxX_ = filtre;
+    }
+
+    inline void setMaxY(int filtre){
+        maxY_ = filtre;
+    }
+
+    inline void setMinY(int filtre){
+        minY_ = filtre;
     }
 
 // 1) Structure pour stocker une fusion i->j
@@ -145,6 +175,9 @@ namespace ttk {
                 const ttk::AbstractTriangulation    *triangulation
     );
 
+    int computeSurfaceCellCount(const std::vector<ttk::SimplexId> &surfVertices,
+                            const ttk::AbstractTriangulation *triangulation);
+
     #ifdef TTK_ENABLE_EIGEN
     int linearRegression(
         const std::vector<int> &T,   // times t_i
@@ -176,6 +209,13 @@ namespace ttk {
     double spatialScale_;
     double interFrame_;
     bool convertDur_;
+    double minVx_;
+    int minFrameDist_;
+    int coordCratere_[2];
+    double threshCratereAngle_;
+    int maxX_;
+    int maxY_;
+    int minY_;
 
   }; // TrajectoryStatistics class
 
@@ -212,6 +252,26 @@ int ttk::TrajectoryStatistics::linearRegression(
 }
 #endif
 
+int ttk::TrajectoryStatistics::computeSurfaceCellCount(
+                            const std::vector<ttk::SimplexId> &surfVertices,
+                            const ttk::AbstractTriangulation *triangulation) {
+  // Ensemble pour stocker les identifiants uniques de cellules
+  std::unordered_set<ttk::SimplexId> cellIds;
+  // Parcours de chaque sommet de la surface
+  for(const ttk::SimplexId &v : surfVertices) {
+    // Récupérer les cellules (étoiles) autour du sommet v
+    const ttk::SimplexId starCount = triangulation->getVertexStarNumber(v);
+    for(ttk::SimplexId k = 0; k < starCount; ++k) {
+      ttk::SimplexId ttkCellId;
+      triangulation->getVertexStar(v, k, ttkCellId);
+      // Convertir en cellule VTK d'origine (quad), si applicable
+      int vtkCellId;
+      triangulation->getCellVTKID(ttkCellId, vtkCellId);
+      cellIds.insert(vtkCellId);
+    }
+  }
+  return static_cast<int>(cellIds.size());
+}
 
 
 
@@ -391,7 +451,7 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     }
     #endif
     
-    this->printMsg("initially i have : " + std::to_string(numTraj) + " unique traj");
+    this->printMsg("N TRAJ TFF = " + std::to_string(numTraj));
 
     std::vector<double> meanDx(numTraj);
     std::vector<double> meanDy(numTraj);
@@ -406,8 +466,6 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     fuseRecords.reserve(numTraj);
 
     std::vector<char> usedAsStart(numTraj, false), usedAsEnd(numTraj, false);
-    
-    this->printMsg("cosCol_ = " + std::to_string(cosCol_) + " maxRadus_ = " + std::to_string(maxRadus_));
 
     const double similarityThreshold = cosCol_;
     const double maxLinkDist2        = maxRadus_; // distance² maxi tolérée
@@ -428,8 +486,7 @@ int ttk::TrajectoryStatistics::correctTrajectory(
 
         const int startFrame = trajTime[j].front();
         // contrainte temporelle
-        if(startFrame <= endFrame || startFrame - endFrame > maxFrameDist_) continue;
-
+        if(startFrame - endFrame <= minFrameDist_  || startFrame - endFrame >= maxFrameDist_) continue;
         // similarité de direction
         double dot = meanDx[i]*meanDx[j]
                    + meanDy[i]*meanDy[j]
@@ -454,6 +511,7 @@ int ttk::TrajectoryStatistics::correctTrajectory(
 
         // on garde si c'est mieux
         if (dist2 < bestDist2){
+
             bestDot   = dot;
             bestDist2 = dist2;
             bestJ     = static_cast<int>(j);
@@ -472,7 +530,7 @@ int ttk::TrajectoryStatistics::correctTrajectory(
       }
     }
 
-    this->printMsg("j'ai reperé : " + std::to_string(fuseRecords.size()) + "fusion possible");
+    this->printMsg("N BOUT FUS = " + std::to_string(fuseRecords.size()));
 
     merge.clear();
     merge.reserve(numTraj);
@@ -485,6 +543,7 @@ int ttk::TrajectoryStatistics::correctTrajectory(
         std::vector<FuseRecord> finalTraj{r1};
         r1.finalContrib = finalId;
         newTraj[r1.i][4] = finalId;
+        if (r1.j == 696) this->printMsg("being here");
         newTraj[r1.j][4] = finalId;
         used[idx1] = true;
 
@@ -556,32 +615,57 @@ int ttk::TrajectoryStatistics::correctTrajectory(
         lineCoef.push_back(trajTime[r.j].back());
         
         double mag = std::sqrt(lineCoef[0]*lineCoef[0] + lineCoef[1]*lineCoef[1] + 1); 
-        if ( (0.0 > lineCoef[0]/mag && lineCoef[0]/mag >= filtreX_) && (-filtreY_<lineCoef[1]/mag && lineCoef[1]/mag <= filtreY_)){
+        if ( (0.0 > lineCoef[0]/mag && lineCoef[0]/mag >= filtreX_) && (-filtreY_<lineCoef[1]/mag && lineCoef[1]/mag <= filtreY_) && std::abs(lineCoef[0]*spatialScale_*(1/interFrame_))>minVx_){
+            if (maxX_ != -1 && lineCoef[2] > maxX_) continue;
+            if (maxY_ != -1 && lineCoef[3] > maxY_) continue;
+            if (minY_ != -1 && lineCoef[3] < minY_) continue;
             merge.push_back(lineCoef);
         } else {
             trajLost++;
         }
     }
-    this->printMsg("merge size avant traj non fus = " + std::to_string(merge.size()));
+    this->printMsg("N TRAJ FUS " + std::to_string(merge.size()));
     this->printMsg("première condition a coupé : " +std::to_string(trajLost)); 
+    
     for(int i = 0; i < numTraj; ++i) {
       if(!usedAsStart[i] && !usedAsEnd[i] && !trajTime[i].empty()) {
         //newTraj[i] == { ax, ay, bx, by } pour la trajectoire i
-        if ( (0.0 > meanDx[i] && meanDx[i] >= filtreX_) && (-filtreY_<meanDy[i] && meanDy[i]<= filtreY_)){
-            
+        if ( (0.0 > meanDx[i] && meanDx[i] >= filtreX_) && (-filtreY_<meanDy[i] && meanDy[i]<= filtreY_) && std::abs(newTraj[i][0]*spatialScale_*(1/interFrame_))>minVx_){
             std::vector<double> lineCoef;
             lineCoef = newTraj[i];
             lineCoef[4] = trajTime[i].front();
             lineCoef.push_back(trajTime[i].back());
-            newTraj[i][4] = merge.size();
-            merge.push_back(lineCoef);
+            // produit scalaire entre traj et droite [cratère,pt de fin]
+
+            double x_start = lineCoef[0]*lineCoef[4]+lineCoef[2];
+            double y_start = lineCoef[1]*lineCoef[4]+lineCoef[3];
+            double x_end = lineCoef[0]*lineCoef[5]+lineCoef[2];
+            double y_end = lineCoef[1]*lineCoef[5]+lineCoef[3];
+            double vx_traj = x_start - x_end;
+            double vy_traj = y_start - y_end;
+            double vx_crat = coordCratere_[0] - x_end;
+            double vy_crat = coordCratere_[1] - y_end;
+            double dot = vx_traj * vx_crat
+                       + vy_traj * vy_crat;
+            double traj_norm = std::sqrt(vx_traj*vx_traj + vy_traj*vy_traj);
+            double crat_norm = std::sqrt(vx_crat*vx_crat + vy_crat*vy_crat);
+            double angle = std::abs(dot/(traj_norm*crat_norm));
+            if (maxX_ != -1 && lineCoef[2] > maxX_) continue;
+            if (maxY_ != -1 && lineCoef[3] > maxY_) continue;
+            if (minY_ != -1 && lineCoef[3] < minY_) continue;
+            if (angle>=threshCratereAngle_){
+                newTraj[i][4] = merge.size();
+                merge.push_back(lineCoef);
+            }
 
         } else {
+            if (i ==696) this->printMsg("suppr ici");
             trajLost++;
         }
       }
     }
-    this->printMsg("Au final j'ai : " + std::to_string(merge.size()) + " traj mais j'ai ai perdu : " + std::to_string(trajLost));
+    this->printMsg("N TRAJ TS = " + std::to_string(merge.size()));
+    this->printMsg("N TRAJ SUPPR =" + std::to_string(trajLost));
     this->printMsg("merge done");
 
     return 1;
@@ -684,23 +768,36 @@ int ttk::TrajectoryStatistics::execute(
                 surfVertex.clear();
                 findSurface(vid, surfVertex, frameScalars, visited, local_min, errSurf, maxVal, gradientNorms[frame], triangulation);
                 if(surfVertex.size() > 100) {
-                    surfVertex.clear();
                     if(frame == frameSurf) {
                         excludedLocal[i] = vid;
                     }
+                    surfVertex.clear();
                 }
 
                 if(frame == frameSurf) {
                     allVertexDebris[i] = surfVertex;
                 }
-                trajSurfaces[j] = static_cast<int>(surfVertex.size());
+                trajSurfaces[j] = computeSurfaceCellCount(surfVertex, triangulation);
             }
 
             auto [minIt, maxIt] = std::minmax_element(trajSurfaces.begin(), trajSurfaces.end());
             surfMin[i] = *minIt;
             surfMax[i] = *maxIt;
-            long sum = std::accumulate(trajSurfaces.begin(), trajSurfaces.end(), 0l);
-            surfMoy[i] = sum / static_cast<double>(trajSurfaces.size());
+            long sum = 0;
+            int count = 0;
+            for(long v : trajSurfaces) {
+              if(v != 0) {
+                sum   += v;
+                ++count;
+              }
+            }
+
+            double mean = (count > 0) ? static_cast<double>(sum) / count : 0.0;
+
+            if (mean == 0){
+                surfMoy[i] = 0.25;
+            } else
+                surfMoy[i] = mean ;
       }
     } 
 

@@ -84,6 +84,14 @@ private:
   double spatialScale{1.0};
   double interFrame{1.0};
   bool convertDur{false};
+  double minVx{0.0};
+  int minFrameDist{0};
+  double extendTraj{false};
+  int coordCratere[2]{0,0};
+  double threshCratereAngle{0.0};
+  int maxX{-1};
+  int maxY{-1};
+  int minY{-1};
 
 public:
   /**
@@ -125,6 +133,28 @@ public:
   vtkSetMacro(convertDur, bool);
   vtkGetMacro(convertDur, bool);
 
+  vtkSetMacro(minVx, double);
+  vtkGetMacro(minVx, double);
+
+  vtkSetMacro(minFrameDist, double);
+  vtkGetMacro(minFrameDist, double);
+
+  vtkSetMacro(extendTraj, bool);
+  vtkGetMacro(extendTraj, bool);
+
+  vtkSetVector2Macro(coordCratere, int);
+  vtkGetVector2Macro(coordCratere, int);
+
+  vtkSetMacro(maxX, int);
+  vtkGetMacro(maxX, int);
+  vtkSetMacro(maxY, int);
+  vtkGetMacro(maxY, int);
+  vtkSetMacro(minY, int);
+  vtkGetMacro(minY, int);
+
+
+  vtkSetMacro(threshCratereAngle, double);
+  vtkGetMacro(threshCratereAngle, double);
 protected:
 
   ttkTrajectoryStatistics();

@@ -104,11 +104,20 @@
         number_of_elements="1"
         default_values="20">
         <Documentation>
-            On which frame to show the surface vertex
         </Documentation>
       </IntVectorProperty>
 
-     <DoubleVectorProperty
+    <IntVectorProperty
+        name="minFrameDist"
+        command="SetminFrameDist"
+        label="Min Frame Dist Fusion"
+        number_of_elements="1"
+        default_values="0">
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+    <DoubleVectorProperty
         name="spatialScale"
         command="SetspatialScale"
         label="Spatial Scale"
@@ -141,6 +150,80 @@
         <BooleanDomain name="bool"/>
         <Documentation>
            Durations is shown in frames or seconds ? 
+        </Documentation>
+      </IntVectorProperty>
+
+
+    <IntVectorProperty
+        name="extendTraj"
+        command="SetextendTraj"
+        label="Extend Traj ?"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+    <DoubleVectorProperty
+        name="minVx"
+        command="SetminVx"
+        label="Min VX"
+        number_of_elements="1"
+        default_values="0.0">
+        <Documentation>
+           Minimum VX 
+        </Documentation>
+      </DoubleVectorProperty>
+
+    <IntVectorProperty
+        name="coordCratere"
+        command="SetcoordCratere"
+        label="coord cratere"
+        number_of_elements="2"
+        default_values="0 0">
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+    <DoubleVectorProperty
+        name="threshCratereAngle"
+        command="SetthreshCratereAngle"
+        label="Angle(rad) between traj and cratere with endTraj"
+        number_of_elements="1"
+        default_values="0.0">
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+        name="maxX"
+        command="SetmaxX"
+        label="Max X"
+        number_of_elements="1"
+        default_values="-1">
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="maxY"
+        command="SetmaxY"
+        label="Max Y"
+        number_of_elements="1"
+        default_values="-1">
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="minY"
+        command="SetminY"
+        label="Min Y"
+        number_of_elements="1"
+        default_values="-1">
+        <Documentation>
         </Documentation>
       </IntVectorProperty>
       <!-- DEBUG WIDGETS -->
