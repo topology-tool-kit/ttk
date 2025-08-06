@@ -46,6 +46,10 @@ paraview_plugin_build(
     "${CMAKE_INSTALL_BINDIR}/plugins"
   LIBRARY_DESTINATION
     "${CMAKE_INSTALL_BINDIR}/plugins"
+  PLUGINS_FILE_NAME
+    "ttk.plugins.xml"
+  DELAYED_LOAD
+    TopologyToolKit
   )
 
 install(
