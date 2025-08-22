@@ -130,7 +130,7 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
       if(ttk::MPIrank_ == 0) {
         printMsg("Array preconditioning performed using "
                  + std::to_string(ttk::MPIsize_)
-                 + " MPI processes lasted :" + std::to_string(elapsedTime));
+                 + " MPI processes lasted: " + std::to_string(elapsedTime));
       }
 #endif
       this->printMsg("Preconditioned selected scalar arrays", 1.0,
@@ -173,7 +173,7 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
   if(ttk::MPIrank_ == 0) {
     printMsg("Array preconditioning performed using "
              + std::to_string(ttk::MPIsize_)
-             + " MPI processes lasted :" + std::to_string(elapsedTime));
+             + " MPI processes lasted: " + std::to_string(elapsedTime));
   }
 #endif
   this->printMsg("Preconditioned selected scalar arrays", 1.0,

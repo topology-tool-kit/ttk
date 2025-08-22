@@ -1917,7 +1917,7 @@ namespace ttk {
       if(ttk::MPIrank_ == 0) {
         printMsg("Memory cleanup performed using "
                  + std::to_string(ttk::MPIsize_)
-                 + " MPI processes lasted :" + std::to_string(elapsedTime));
+                 + " MPI processes lasted: " + std::to_string(elapsedTime));
       }
 #endif
     }
@@ -5810,7 +5810,7 @@ void ttk::DiscreteMorseSandwichMPI::getSaddleSaddlePairs(
   if(ttk::MPIrank_ == 0) {
     printMsg("Total preprocessing performed using "
              + std::to_string(ttk::MPIsize_)
-             + " MPI processes lasted :" + std::to_string(elapsedTime));
+             + " MPI processes lasted: " + std::to_string(elapsedTime));
   }
   ttk::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
 #endif
@@ -6025,7 +6025,7 @@ void ttk::DiscreteMorseSandwichMPI::getSaddleSaddlePairs(
   elapsedTime = ttk::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
   if(ttk::MPIrank_ == 0) {
     printMsg("EBS computation performed using " + std::to_string(ttk::MPIsize_)
-             + " MPI processes lasted :" + std::to_string(elapsedTime));
+             + " MPI processes lasted: " + std::to_string(elapsedTime));
   }
   ttk::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
 #endif
@@ -6048,7 +6048,7 @@ void ttk::DiscreteMorseSandwichMPI::getSaddleSaddlePairs(
   elapsedTime = ttk::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
   if(ttk::MPIrank_ == 0) {
     printMsg("Pairs extraction performed using " + std::to_string(ttk::MPIsize_)
-             + " MPI processes lasted :" + std::to_string(elapsedTime));
+             + " MPI processes lasted: " + std::to_string(elapsedTime));
   }
   ttk::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
 #endif
@@ -6109,7 +6109,7 @@ void ttk::DiscreteMorseSandwichMPI::getSaddleSaddlePairs(
   if(ttk::MPIrank_ == 0) {
     printMsg("D1 memory clean up performed using "
              + std::to_string(ttk::MPIsize_)
-             + " MPI processes lasted :" + std::to_string(elapsedTime));
+             + " MPI processes lasted: " + std::to_string(elapsedTime));
   }
 #endif
   auto nSadSadPairs = pairs.size() - nSadExtrPairs;
@@ -6298,7 +6298,7 @@ int ttk::DiscreteMorseSandwichMPI::computePersistencePairs(
   if(ttk::MPIrank_ == 0) {
     printMsg("Extract critical cells performed using "
              + std::to_string(ttk::MPIsize_)
-             + " MPI processes lasted :" + std::to_string(elapsedTime));
+             + " MPI processes lasted: " + std::to_string(elapsedTime));
   }
 #endif
 #ifdef TTK_ENABLE_MPI_TIME
@@ -6359,7 +6359,7 @@ int ttk::DiscreteMorseSandwichMPI::computePersistencePairs(
   if(ttk::MPIrank_ == 0) {
     printMsg("Computation of D0 and D2 pairs performed using "
              + std::to_string(ttk::MPIsize_)
-             + " MPI processes lasted :" + std::to_string(elapsedTime));
+             + " MPI processes lasted: " + std::to_string(elapsedTime));
   }
   ttk::startMPITimer(t_int, ttk::MPIrank_, ttk::MPIsize_);
 #endif
@@ -6384,7 +6384,7 @@ int ttk::DiscreteMorseSandwichMPI::computePersistencePairs(
   if(ttk::MPIrank_ == 0) {
     printMsg("Computation of D1 pairs performed using "
              + std::to_string(ttk::MPIsize_)
-             + " MPI processes lasted :" + std::to_string(elapsedTime));
+             + " MPI processes lasted: " + std::to_string(elapsedTime));
   }
 #endif
   // TODO: implement following
@@ -6449,7 +6449,7 @@ int ttk::DiscreteMorseSandwichMPI::computePersistencePairs(
   if(ttk::MPIrank_ == 0) {
     printMsg("Computation of persistence pairs performed using "
              + std::to_string(ttk::MPIsize_)
-             + " MPI processes lasted :" + std::to_string(elapsedTime));
+             + " MPI processes lasted: " + std::to_string(elapsedTime));
   }
 #endif
 
