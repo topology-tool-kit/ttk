@@ -413,7 +413,7 @@ namespace ttk {
     }
 
   protected:
-    bool GlobalOrder{false};
+    bool GlobalOrder{true};
     // This value has been chosen for systems of 128 Gb of memory per computing
     // node. For systems with much smaller memory, it may be inadequate and
     // require a smaller value.
