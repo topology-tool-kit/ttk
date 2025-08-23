@@ -365,9 +365,7 @@
                                    value="5" />
         </Hints>        
         <Documentation>
-        This option will allow for the computation of D0 and D2 in separated independent 
-        pairs. This will speed up the computation in cases where there are enough work to be
-        done (i.e. an overall computation time bigger than 5 seconds).
+        This option will allow for the computation of D0 and D2 in separated independent tasks. This will speed up the computation in cases where there are enough work to be done (i.e. an overall computation time bigger than 5 seconds).
         </Documentation>
       </IntVectorProperty>   
 
