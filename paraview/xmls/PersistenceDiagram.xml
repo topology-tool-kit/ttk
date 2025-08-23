@@ -586,6 +586,7 @@
         <Property name="ScalarFieldNew" />
         <Property name="ForceInputOffsetScalarField"/>
         <Property name="InputOffsetScalarFieldNameNew"/>
+        <Property name="UseTasks" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
