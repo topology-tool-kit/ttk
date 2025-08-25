@@ -106,11 +106,6 @@ triangulation.
 
 #ifdef TTK_ENABLE_MPI
       template <typename triangulationType>
-      int getSimplexRank(const triangulationType &triangulation,
-                         const ttk::SimplexId &lid,
-                         const int dim) const;
-
-      template <typename triangulationType>
       int getSimplexRankWithGradientType(const triangulationType &triangulation,
                                          const ttk::SimplexId &lid,
                                          const int gradientType);

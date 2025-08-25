@@ -2949,11 +2949,15 @@ namespace ttk {
           return this->getVertexRank(lsid);
         case 1:
           return this->getEdgeRank(lsid);
-        case 2:
-          return this->getTriangleRank(lsid);
-        default:
+        case 2: {
+          if(getDimensionality() == 3)
+            return this->getTriangleRank(lsid);
+          return this->getCellRank(lsid);
+        }
+        case 3:
           return this->getCellRank(lsid);
       }
+      return -1;
     }
 
     virtual inline const std::vector<int> &getNeighborRanks() const {

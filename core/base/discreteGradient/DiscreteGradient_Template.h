@@ -107,31 +107,6 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
   return 0;
 }
 
-#ifdef TTK_ENABLE_MPI
-template <typename triangulationType>
-int DiscreteGradient::getSimplexRank(const triangulationType &triangulation,
-                                     const ttk::SimplexId &lid,
-                                     const int dim) const {
-  if(!isRunningWithMPI()) {
-    return ttk::MPIrank_;
-  }
-  switch(dim) {
-    case 0:
-      return triangulation.getVertexRank(lid);
-    case 1:
-      return triangulation.getEdgeRank(lid);
-    case 2: {
-      if(dimensionality_ == 3)
-        return triangulation.getTriangleRank(lid);
-      return triangulation.getCellRank(lid);
-    }
-    case 3:
-      return triangulation.getCellRank(lid);
-  }
-  return -1;
-}
-#endif
-
 template <typename triangulationType>
 int DiscreteGradient::setCriticalPoints(
   const std::array<std::vector<SimplexId>, 4> &criticalCellsByDim,
@@ -234,7 +209,7 @@ int DiscreteGradient::getCriticalPoints(
       if(this->isCellCritical(i, j)) {
         // Only non-ghost critical simplices are taken into consideration
 #ifdef TTK_ENABLE_MPI
-        if(getSimplexRank(triangulation, j, i) == ttk::MPIrank_)
+        if(triangulation.getSimplexRank(j, i) == ttk::MPIrank_)
 #endif
           critCellsPerThread[tid].emplace_back(j);
       }
