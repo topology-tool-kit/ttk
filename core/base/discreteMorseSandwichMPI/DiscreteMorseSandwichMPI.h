@@ -3354,11 +3354,11 @@ void ttk::DiscreteMorseSandwichMPI::computeMaxSaddlePairs(
     }
     return true;
   };
-  // TRI des arcs
+  // Sorting arcs
   std::vector<ttk::SimplexId> saddleIds(saddles.size());
   std::iota(saddleIds.begin(), saddleIds.end(), 0);
   TTK_PSORT(localThreadNumber, saddleIds.begin(), saddleIds.end(), cmpSadMax);
-  // Mise en place des lid des arcs
+  // Setting up lid for arcs
   extremaToPairedSaddle.resize(globalToLocalExtrema.size(), -1);
   saddleToPairedExtrema.resize(saddles.size(), -1);
 
