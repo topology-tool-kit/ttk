@@ -33,11 +33,11 @@ namespace ttk {
   public:
     DiscreteMorseSandwichMPI();
 
-    int setThreadNumber(const int threadNumber){
+    int setThreadNumber(const int threadNumber) {
       threadNumber_ = threadNumber;
       // needs at least 2 threads (communication thread)
-      if(threadNumber_ < 2){
-        if(!ttk::MPIrank_){
+      if(threadNumber_ < 2) {
+        if(!ttk::MPIrank_) {
           printWrn("The distributed persistence computation");
           printWrn("needs at least 2 threads.");
           printWrn("(dedicated communication thread)");
