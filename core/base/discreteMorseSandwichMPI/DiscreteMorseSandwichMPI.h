@@ -1974,6 +1974,7 @@ namespace ttk {
     mutable ttk::SimplexId firstBlockSize_{0};
     mutable ttk::SimplexId currentLastElement_{0};
     mutable ttk::SimplexId currentLastBlock_{1};
+    const ttk::SimplexId overflow_{10000000};
     bool ComputeMinSad{true};
     bool ComputeSadSad{true};
     bool ComputeSadMax{true};
@@ -3538,10 +3539,10 @@ ttk::SimplexId ttk::DiscreteMorseSandwichMPI::getRep(
   if(currentNode.rep_.extremaId_ == -1) {
     return currentNode.lid_;
   }
-  int count{0};
+  ttk::SimplexId count{0};
   auto rep = extremas[extr.rep_.extremaId_];
   saddleEdge<sizeSad> s;
-  while(rep != currentNode && count < 1000) {
+  while(rep != currentNode && count < overflow_) {
     count++;
     if(currentNode.rep_.extremaId_ == -1) {
       break;
@@ -3552,7 +3553,7 @@ ttk::SimplexId ttk::DiscreteMorseSandwichMPI::getRep(
         break;
       }
     }
-    if(count >= 1000) {
+    if(count >= overflow_) {
       printMsg("Overflow reached for " + std::to_string(extr.gid_) + " ("
                + std::to_string(extr.rank_) + ") and " + std::to_string(sv.gid_)
                + " (" + std::to_string(sv.rank_) + ")");
@@ -5079,9 +5080,9 @@ void ttk::DiscreteMorseSandwichMPI::packageLocalBoundaryUpdate(
         }
       }
       break;
-    case 3:
-      printErr("NOT SUPPOSED TO BE HERE");
-      // kill(getpid(), SIGINT);
+    default:
+      printErr("In packageLocalBoundaryUpdate: this case is not supposed to be reached.
+        Something has gone wrong in the execution.");
   }
 };
 
@@ -5402,7 +5403,7 @@ SimplexId ttk::DiscreteMorseSandwichMPI::eliminateBoundariesSandwich(
       }
     }
   }
-  printMsg("HERE with " + std::to_string(s2.gid_));
+
   // cleanup before exiting
   clearOnBoundary();
 #pragma omp atomic write seq_cst
@@ -6403,8 +6404,15 @@ int ttk::DiscreteMorseSandwichMPI::computePersistencePairs(
              + " MPI processes lasted: " + std::to_string(elapsedTime));
   }
 #endif
-  // TODO: implement following
-  /*if(std::is_same<triangulationType, ttk::ExplicitTriangulation>::value) {
+  /* TODO: implement the following for an execution with explicit triangulation.
+   The following snippet of code is inherited from the DMS algorithm
+   It has not been modified for distributed-memory execution.
+   The following modifications should be performed:
+   - Checking globally if a saddle has been paired instead of locally
+   - Computing the statistics globally though reduce operations
+  Other unforseen modifications may also be required.
+
+  if(std::is_same<triangulationType, ttk::ExplicitTriangulation>::value) {
     // create infinite pairs from non-paired 1-saddles, 2-saddles and maxima
     size_t nHandles{}, nCavities{}, nNonPairedMax{};
     if((dim == 2 && !ignoreBoundary && this->ComputeMinSad
