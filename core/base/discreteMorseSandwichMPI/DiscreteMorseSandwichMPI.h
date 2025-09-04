@@ -5081,8 +5081,10 @@ void ttk::DiscreteMorseSandwichMPI::packageLocalBoundaryUpdate(
       }
       break;
     default:
-      printErr("In packageLocalBoundaryUpdate: this case is not supposed to be reached.
-        Something has gone wrong in the execution.");
+      printErr("In packageLocalBoundaryUpdate:");
+      printErr("This case is not supposed to be reached.");
+      printErr("Something has gone wrong in the execution.");
+      break;
   }
 };
 
