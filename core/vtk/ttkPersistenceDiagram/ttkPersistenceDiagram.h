@@ -73,7 +73,7 @@
 ///
 /// 6) Distributed Discrete Morse Sandwich \n
 /// \b Related \b publication \n
-/// "Distributed Discrete Morse Sandwich: Efficient Computation of Persistence 
+/// "Distributed Discrete Morse Sandwich: Efficient Computation of Persistence
 /// Diagrams for Massive Scalar Data" \n
 /// Eve Le Guillou, Pierre Fortin, Julien Tierny \n
 /// https://arxiv.org/abs/2505.21266, 2025.
