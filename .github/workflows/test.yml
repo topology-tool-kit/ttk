@@ -398,6 +398,7 @@ jobs:
         rm python/nestedTrackingFromOverlap.py
         # tmp removal of mpi example
         rm python/mpiExample.py
+        rm python/distributedPersistenceDiagram.py
         # remove examples which fill up the memory
         rm python/topologicalOptimization_darkSky.py
         # remove sklearn examples -- buggy on MacOS since sklearn-1.7
