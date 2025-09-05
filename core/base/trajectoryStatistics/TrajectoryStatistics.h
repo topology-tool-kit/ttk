@@ -22,6 +22,16 @@
 #include <Triangulation.h>
 #ifdef TTK_ENABLE_EIGEN
 #include <Eigen/Dense>
+#include <Eigen/Sparse>
+#include <Eigen/Cholesky>
+#include <Eigen/IterativeLinearSolvers>
+
+#include <vector>
+#include <algorithm>
+#include <cmath>
+#include <limits>
+
+
 #endif
 
 
@@ -130,6 +140,10 @@ namespace ttk {
     inline void setThreshCratereAngle(double filtre){
         threshCratereAngle_ = filtre;
     }
+    
+    inline void setSurfaceMethod(int m){
+        surfaceMethod_ = m;
+    }
 
     inline void setMaxX(int filtre){
         maxX_ = filtre;
@@ -165,7 +179,7 @@ namespace ttk {
    protected: 
 
     template <class dataType>
-    int findSurface(
+    int bfsSegmentation(
                 ttk::SimplexId                         vertexId,
                 std::vector<ttk::SimplexId>            &surfVertex,
                 const dataType                         *frameScalars,
@@ -196,10 +210,58 @@ namespace ttk {
       std::vector<double> &meanDx,
       std::vector<double> &meanDy,
       std::vector<double> &meanDz
-    ); 
+    );
+
+    #ifdef TTK_ENABLE_EIGEN
+    template<class dataType>
+    int randomWalkerSegment(
+      const std::vector<ttk::SimplexId> &seed,        // ids des sommets "marqués"
+      const std::vector<int> &seedLabel,              // label de chaque graine (0..K-1)
+      const ttk::AbstractTriangulation *triangulation,      // maillage TTK (déjà initialisé)
+      const dataType *intensities,                    // intensité par sommet
+      const double beta,                               // paramètre des poids
+      std::vector<int> &segmentation                   // [OUT] étiquette par sommet
+    );
+    #endif
+    
+    template<class dataType, class triangulationType>
+    void collectNearMaxInSquare(
+                           const triangulationType *tri,
+                           const dataType *scalars,
+                           const ttk::SimplexId centerId,
+                           int square_size,
+                           std::vector<ttk::SimplexId> &outIds
+                           );
+
+    template <class dataType, class triangulationType>
+    int computeSurfacesBFS(
+                std::vector<std::vector<int>>    &trajTime,
+                std::vector<std::vector<int>>    &trajVertexId,
+                std::vector<double>              &surfMin,
+                std::vector<double>              &surfMax,
+                std::vector<double>              &surfMoy,
+                std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
+                std::vector<ttk::SimplexId>      &excludedCriticalPoints,
+                int                                frameSurf,
+                double                             errSurf,
+                std::vector<std::vector<double>>  gradientNorms,
+                const triangulationType          *triangulation);
 
 
+    template <class dataType, class triangulationType>
+    int computeSurfacesRW(
+                std::vector<std::vector<int>>    &trajTime,
+                std::vector<std::vector<int>>    &trajVertexId,
+                std::vector<double>              &surfMin,
+                std::vector<double>              &surfMax,
+                std::vector<double>              &surfMoy,
+                std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
+                int                                frameSurf,
+                double                             errSurf,
+                std::vector<std::vector<double>>  gradientNorms,
+                const triangulationType          *triangulation);
 
+ 
 
     std::vector<void *> inputData_{};
 
@@ -219,6 +281,7 @@ namespace ttk {
     int maxY_;
     int minY_;
     int minX_;
+    int surfaceMethod_;
   }; // TrajectoryStatistics class
 
 } // namespace ttk
@@ -254,19 +317,83 @@ int ttk::TrajectoryStatistics::linearRegression(
 }
 #endif
 
+template<class dataType, class triangulationType>
+void ttk::TrajectoryStatistics::collectNearMaxInSquare(
+                           const triangulationType *tri,
+                           const dataType *scalars,
+                           const ttk::SimplexId centerId,
+                           int square_size,
+                           std::vector<ttk::SimplexId> &outIds
+) {
+  if(tri == nullptr || scalars == nullptr || square_size < 1)
+    return;
+
+  const auto nVerts = tri->getNumberOfVertices();
+  if(nVerts <= 0 || centerId < 0 || centerId >= nVerts)
+    return;
+
+
+  // Coordonnées (arrondies) du centre
+  float cxF=0.f, cyF=0.f, czF=0.f;
+  tri->getVertexPoint(centerId, cxF, cyF, czF);
+  const long long cx = llround(static_cast<double>(cxF));
+  const long long cy = llround(static_cast<double>(cyF));
+
+  const long long half = square_size / 2;
+
+  // 1) Chercher le maximum dans le carré
+  ttk::SimplexId maxId = -1;
+  double maxVal = -std::numeric_limits<double>::infinity();
+
+  for(ttk::SimplexId v = 0; v < nVerts; ++v) {
+    float xF=0.f, yF=0.f, zF=0.f;
+    tri->getVertexPoint(v, xF, yF, zF);
+    const long long ix = llround(static_cast<double>(xF));
+    const long long iy = llround(static_cast<double>(yF));
+
+    if(std::llabs(ix - cx) > half || std::llabs(iy - cy) > half)
+      continue;
+
+    const double s = scalars[static_cast<size_t>(v)];
+    if(s > maxVal) {
+      maxVal = s;
+      maxId = v;
+    }
+  }
+
+  if(maxId < 0)
+    return; // rien dans la fenêtre
+
+  // 2) Pousser tous les sommets avec valeur dans [0.9*xmax, xmax]
+  const double threshold = maxVal * 0.95;
+
+  for(ttk::SimplexId v = 0; v < nVerts; ++v) {
+    float xF=0.f, yF=0.f, zF=0.f;
+    tri->getVertexPoint(v, xF, yF, zF);
+    const long long ix = llround(static_cast<double>(xF));
+    const long long iy = llround(static_cast<double>(yF));
+
+    if(std::llabs(ix - cx) > half || std::llabs(iy - cy) > half)
+      continue;
+
+    const double s = scalars[static_cast<size_t>(v)];
+    if(s >= threshold) {
+      outIds.push_back(v); // inclut le maxId lui-même
+    }
+  }
+}
+
 int ttk::TrajectoryStatistics::computeSurfaceCellCount(
                             const std::vector<ttk::SimplexId> &surfVertices,
                             const ttk::AbstractTriangulation *triangulation) {
-  // Ensemble pour stocker les identifiants uniques de cellules
   std::unordered_set<ttk::SimplexId> cellIds;
-  // Parcours de chaque sommet de la surface
   for(const ttk::SimplexId &v : surfVertices) {
     // Récupérer les cellules (étoiles) autour du sommet v
     const ttk::SimplexId starCount = triangulation->getVertexStarNumber(v);
     for(ttk::SimplexId k = 0; k < starCount; ++k) {
       ttk::SimplexId ttkCellId;
       triangulation->getVertexStar(v, k, ttkCellId);
-      // Convertir en cellule VTK d'origine (quad), si applicable
+      // Convertir en cellule VTK d'origine si applicable
       int vtkCellId;
       triangulation->getCellVTKID(ttkCellId, vtkCellId);
       cellIds.insert(vtkCellId);
@@ -275,135 +402,6 @@ int ttk::TrajectoryStatistics::computeSurfaceCellCount(
   return static_cast<int>(cellIds.size());
 }
 
-
-
-template<class dataType>
-int ttk::TrajectoryStatistics::findSurface(
-  ttk::SimplexId                         startId,
-  std::vector<ttk::SimplexId>            &surfVertex,
-  const dataType                         *frameScalars,
-  std::vector<char>                      &visited,
-  const double                           local_min,
-  double                                 errSurf,
-  double                                 maxVal,
-  std::vector<double>                    &gradientNorm,
-  const ttk::AbstractTriangulation       *triangulation
-) {
-  surfVertex.clear();
-
-  // Calcul du seuil scalaire (cœur de la tâche)
-  double coeff = (-1.0 * errSurf) / maxVal;
-  const double scalarThreshold = local_min + (coeff * local_min + errSurf);
-
-  // Coefficient pour tolérance sur sigma du gradient
-  const double kSigma = 1.5;
-  // Petite marge pour comparer des doubles
-  const double eps = 1e-6;
-
-  std::vector<ttk::SimplexId> stack;
-  stack.reserve(128);
-  stack.push_back(startId);
-
-  // Marqueurs de visite et appartenance à la surface
-  const size_t nPts = gradientNorm.size();
-  std::vector<char> inSurf(nPts, 0);
-
-  bool anyAdded = false;
-
-  while(!stack.empty()) {
-    const ttk::SimplexId vId = stack.back();
-    stack.pop_back();
-
-    if(visited[vId]) continue;
-    visited[vId] = 1;
-
-    // 1) Acceptation forcée pour le centre
-    if(vId == startId) {
-      surfVertex.push_back(vId);
-      inSurf[vId] = 1;
-      anyAdded = true;
-      const int nNbrs0 = triangulation->getVertexNeighborNumber(vId);
-      for(int j = 0; j < nNbrs0; ++j) {
-        ttk::SimplexId nbr0{-1};
-        triangulation->getVertexNeighbor(vId, j, nbr0);
-        if(!visited[nbr0]) stack.push_back(nbr0);
-      }
-      continue;
-    }
-
-    // 2) Condition sur la valeur scalaire
-    const double val = static_cast<double>(frameScalars[vId]);
-    if(val >= local_min && val <= scalarThreshold) {
-      surfVertex.push_back(vId);
-      inSurf[vId] = 1;
-      anyAdded = true;
-      const int nNbrs = triangulation->getVertexNeighborNumber(vId);
-      for(int j = 0; j < nNbrs; ++j) {
-        ttk::SimplexId nbr{-1};
-        triangulation->getVertexNeighbor(vId, j, nbr);
-        if(!visited[nbr]) stack.push_back(nbr);
-      }
-      continue;
-    }
-
-    // 3) Condition sur le gradient, avec calcul sur voisins déjà acceptés
-    const int nNbrs = triangulation->getVertexNeighborNumber(vId);
-    double sumGrad = 0.0;
-    std::vector<ttk::SimplexId> acceptedNbrs;
-    acceptedNbrs.reserve(nNbrs);
-
-    for(int j = 0; j < nNbrs; ++j) {
-      ttk::SimplexId nbr{-1};
-      triangulation->getVertexNeighbor(vId, j, nbr);
-      if(inSurf[nbr]) {
-        sumGrad += gradientNorm[nbr];
-        acceptedNbrs.push_back(nbr);
-      }
-    }
-
-    const size_t count = acceptedNbrs.size();
-    if(count < 1) {
-      this->printErr("IMPOSSIBLE");
-      // Pas de voisin déjà accepté : on ne propage pas -> normalement
-      // impossible
-      continue;
-    }
-
-    const double meanGrad = sumGrad / static_cast<double>(count);
-    double var = 0.0;
-    for(const auto &nbr : acceptedNbrs) {
-      double diff = gradientNorm[nbr] - meanGrad;
-      var += diff * diff;
-    }
-    const double sigmaGrad = std::sqrt(var / static_cast<double>(count));
-    const double currGrad = gradientNorm[vId];
-    const double delta = std::abs(currGrad - meanGrad);
-
-    bool gradAccepted = false;
-    if(sigmaGrad > eps) {
-      // tolérance normale
-      if(delta <= kSigma * sigmaGrad) gradAccepted = true;
-    } else {
-      // sigmaGrad ≈ 0 : voisins très homogènes
-      // on n'accepte le point que s'il est très proche
-      if(delta <= eps) gradAccepted = true;
-    }
-
-    if(gradAccepted) {
-      surfVertex.push_back(vId);
-      inSurf[vId] = 1;
-      anyAdded = true;
-      for(int j = 0; j < nNbrs; ++j) {
-        ttk::SimplexId nbr{-1};
-        triangulation->getVertexNeighbor(vId, j, nbr);
-        if(!visited[nbr]) stack.push_back(nbr);
-      }
-    }
-    // Sinon on rejette ce sommet (pas de propagation)
-  }
-
-  return anyAdded ? 1 : 0;
-}
 
 
 int ttk::TrajectoryStatistics::computeMeanUnitDirectionLinear(
@@ -462,9 +460,6 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     computeMeanUnitDirectionLinear(newTraj, meanDx, meanDy, meanDz);
 
     
-
-    // === Étape A : collecte des merges directs ===
-    
     fuseRecords.reserve(numTraj);
 
     std::vector<char> usedAsStart(numTraj, false), usedAsEnd(numTraj, false);
@@ -475,7 +470,6 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     for(int i = 0; i < numTraj; ++i) {
       if(usedAsStart[i] || trajTime[i].empty()) continue;
 
-      // géométrie et temps de fin de i
       const int endFrame = trajTime[i].back();
 
       double bestDot   = similarityThreshold;
@@ -615,7 +609,9 @@ int ttk::TrajectoryStatistics::correctTrajectory(
         linearRegression(T, X, Y, lineCoef);
         lineCoef[4] = trajTime[finalTraj[0].i].front();
         lineCoef.push_back(trajTime[r.j].back());
-        
+       
+        // ignoble a factoriser  
+
         double mag = std::sqrt(lineCoef[0]*lineCoef[0] + lineCoef[1]*lineCoef[1] + 1); 
         if ( (0.0 > lineCoef[0]/mag && lineCoef[0]/mag >= filtreX_) && (-filtreY_<lineCoef[1]/mag && lineCoef[1]/mag <= filtreY_) && std::abs(lineCoef[0]*spatialScale_*(1/interFrame_))>minVx_){
             if ((maxX_ != -1 && lineCoef[2] > maxX_) || (maxY_ != -1 && lineCoef[3] > maxY_) || (minY_ != -1 && lineCoef[3] < minY_ ) || (minX_ != -1 && lineCoef[2] < minX_))            
@@ -708,16 +704,6 @@ int ttk::TrajectoryStatistics::execute(
                 const triangulationType *triangulation) {
 
     
-
-
-
-    const int numTraj = static_cast<int>(trajTime.size());
-    int nTraj = numTraj;
-    const ttk::SimplexId numVertices = triangulation->getNumberOfVertices();
-    const size_t numFrames = inputData_.size();
-    const int  nPts = triangulation->getNumberOfVertices();
-
-    
     const int numMerge = finalTraj.size();
 
     #ifdef TTK_ENABLE_OPENMP
@@ -743,8 +729,47 @@ int ttk::TrajectoryStatistics::execute(
     }
 
     // ####################### SURFACE ##########################
+    if(surfaceMethod_ == 0) {
+      computeSurfacesBFS<dataType, triangulationType>(
+        trajTime, trajVertexId,
+        surfMin, surfMax, surfMoy,
+        allVertexDebris, excludedCriticalPoints,
+        frameSurf, errSurf, gradientNorms, triangulation);
+    } else {
+      computeSurfacesRW<dataType, triangulationType>(
+        trajTime, trajVertexId,
+        surfMin, surfMax, surfMoy,
+        allVertexDebris, 
+        frameSurf, errSurf, gradientNorms, triangulation);
+    }
+this->printMsg("End base");
+    return 1;
+}
 
+
+
+template <class dataType, class triangulationType>
+int ttk::TrajectoryStatistics::computeSurfacesBFS(
+                std::vector<std::vector<int>>    &trajTime,
+                std::vector<std::vector<int>>    &trajVertexId,
+                std::vector<double>              &surfMin,
+                std::vector<double>              &surfMax,
+                std::vector<double>              &surfMoy,
+                std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
+                std::vector<ttk::SimplexId>      &excludedCriticalPoints,
+                int                                frameSurf,
+                double                             errSurf,
+                std::vector<std::vector<double>>  gradientNorms,
+                const triangulationType          *triangulation) {
+// SURFACE (BFS)
+
+    const size_t numFrames = inputData_.size();
     double maxVal = std::numeric_limits<double>::lowest();
+    const int  nPts = triangulation->getNumberOfVertices();
+    const int numTraj = static_cast<int>(trajTime.size());
+    const ttk::SimplexId numVertices = triangulation->getNumberOfVertices();
+
+
     #ifdef TTK_ENABLE_OPENMP
     #pragma omp parallel for num_threads(this->threadNumber_) reduction(max: maxVal)
     #endif
@@ -757,12 +782,12 @@ int ttk::TrajectoryStatistics::execute(
     }
 
     std::vector<ttk::SimplexId> excludedLocal(numTraj, -1);
-
+    this->printMsg("entering");
     #ifdef TTK_ENABLE_OPENMP
     #pragma omp parallel num_threads(this->threadNumber_)
     {
       std::vector<char> visited(numVertices);
-      std::vector<ttk::SimplexId> surfVertex;
+      std::vector<int> surfVertex;
       #pragma omp for schedule(dynamic)
       for(int i = 0; i < numTraj; ++i) {
     #else
@@ -779,7 +804,7 @@ int ttk::TrajectoryStatistics::execute(
 
                 std::fill(visited.begin(), visited.end(), 0);
                 surfVertex.clear();
-                findSurface(vid, surfVertex, frameScalars, visited, local_min, errSurf, maxVal, gradientNorms[frame], triangulation);
+                bfsSegmentation(vid, surfVertex, frameScalars, visited, local_min, errSurf, maxVal, gradientNorms[frame], triangulation);
                 if(surfVertex.size() > 100) {
                     if(frame == frameSurf) {
                         excludedLocal[i] = vid;
@@ -811,9 +836,11 @@ int ttk::TrajectoryStatistics::execute(
                 surfMoy[i] = 0.25;
             } else
                 surfMoy[i] = mean ;
+            
       }
     } 
-
+   
+    this->printMsg("allVertexDebris size = " + std::to_string(allVertexDebris.size()));
     excludedCriticalPoints.clear();
     excludedCriticalPoints.reserve(numTraj);
     for(int i = 0; i < numTraj; ++i) {
@@ -824,10 +851,469 @@ int ttk::TrajectoryStatistics::execute(
     
 
 
-
-    this->printMsg("End base");
-    return 1;
+    return 0;
 }
 
 
+template<class dataType>
+int ttk::TrajectoryStatistics::bfsSegmentation(
+  ttk::SimplexId                         startId,
+  std::vector<ttk::SimplexId>            &surfVertex,
+  const dataType                         *frameScalars,
+  std::vector<char>                      &visited,
+  const double                           local_min,
+  double                                 errSurf,
+  double                                 maxVal,
+  std::vector<double>                    &gradientNorm,
+  const ttk::AbstractTriangulation       *triangulation
+) {
+  surfVertex.clear();
+
+  // Calcul du seuil scalaire
+  double coeff = (-1.0 * errSurf) / maxVal;
+  const double scalarThreshold = local_min + (coeff * local_min + errSurf);
+
+  // Coefficient pour tolérance sur sigma du gradient
+  const double kSigma = 1.5;
+  const double eps = 1e-6;
+
+  std::vector<ttk::SimplexId> stack;
+  stack.reserve(128);
+  stack.push_back(startId);
+
+  // Marqueurs de visite et appartenance à la surface
+  const size_t nPts = gradientNorm.size();
+  std::vector<char> inSurf(nPts, 0);
+
+  bool anyAdded = false;
+
+  while(!stack.empty()) {
+    const ttk::SimplexId vId = stack.back();
+    stack.pop_back();
+
+    if(visited[vId]) continue;
+    visited[vId] = 1;
+
+    // 1) Acceptation forcée pour le centre
+    if(vId == startId) {
+      surfVertex.push_back(vId);
+      inSurf[vId] = 1;
+      anyAdded = true;
+      const int nNbrs0 = triangulation->getVertexNeighborNumber(vId);
+      for(int j = 0; j < nNbrs0; ++j) {
+        ttk::SimplexId nbr0{-1};
+        triangulation->getVertexNeighbor(vId, j, nbr0);
+        if(!visited[nbr0]) stack.push_back(nbr0);
+      }
+      continue;
+    }
+
+    // 2) Condition sur la valeur scalaire
+    const double val = static_cast<double>(frameScalars[vId]);
+    if(val >= local_min && val <= scalarThreshold) {
+      surfVertex.push_back(vId);
+      inSurf[vId] = 1;
+      anyAdded = true;
+      const int nNbrs = triangulation->getVertexNeighborNumber(vId);
+      for(int j = 0; j < nNbrs; ++j) {
+        ttk::SimplexId nbr{-1};
+        triangulation->getVertexNeighbor(vId, j, nbr);
+        if(!visited[nbr]) stack.push_back(nbr);
+      }
+      continue;
+    }
+
+    // 3) Condition sur le gradient, avec calcul sur voisins déjà acceptés
+    const int nNbrs = triangulation->getVertexNeighborNumber(vId);
+    double sumGrad = 0.0;
+    std::vector<ttk::SimplexId> acceptedNbrs;
+    acceptedNbrs.reserve(nNbrs);
+
+    for(int j = 0; j < nNbrs; ++j) {
+      ttk::SimplexId nbr{-1};
+      triangulation->getVertexNeighbor(vId, j, nbr);
+      if(inSurf[nbr]) {
+        sumGrad += gradientNorm[nbr];
+        acceptedNbrs.push_back(nbr);
+      }
+    }
+
+    const size_t count = acceptedNbrs.size();
+    if(count < 1) {
+      // Pas de voisin déjà accepté : on ne propage pas -> normalement
+      continue;
+    }
+
+    const double meanGrad = sumGrad / static_cast<double>(count);
+    double var = 0.0;
+    for(const auto &nbr : acceptedNbrs) {
+      double diff = gradientNorm[nbr] - meanGrad;
+      var += diff * diff;
+    }
+    const double sigmaGrad = std::sqrt(var / static_cast<double>(count));
+    const double currGrad = gradientNorm[vId];
+    const double delta = std::abs(currGrad - meanGrad);
+
+    bool gradAccepted = false;
+    if(sigmaGrad > eps) {
+      // tolérance normale
+      if(delta <= kSigma * sigmaGrad) gradAccepted = true;
+    } else {
+      // sigmaGrad ≈ 0 : voisins très homogènes
+      // on n'accepte le point que s'il est très proche
+      if(delta <= eps) gradAccepted = true;
+    }
+
+    if(gradAccepted) {
+      surfVertex.push_back(vId);
+      inSurf[vId] = 1;
+      anyAdded = true;
+      for(int j = 0; j < nNbrs; ++j) {
+        ttk::SimplexId nbr{-1};
+        triangulation->getVertexNeighbor(vId, j, nbr);
+        if(!visited[nbr]) stack.push_back(nbr);
+      }
+    }
+  }
+
+  return anyAdded ? 1 : 0;
+}
+
+
+template <class dataType, class triangulationType>
+int ttk::TrajectoryStatistics::computeSurfacesRW(
+                std::vector<std::vector<int>>    &trajTime,
+                std::vector<std::vector<int>>    &trajVertexId,
+                std::vector<double>              &surfMin,
+                std::vector<double>              &surfMax,
+                std::vector<double>              &surfMoy,
+                std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
+                int                                frameSurf,
+                double                             errSurf,
+                std::vector<std::vector<double>>  gradientNorms,
+                const triangulationType          *triangulation) {
+   
+   
+   const auto *frameScalars = static_cast<dataType *>(inputData_[frameSurf]);
+   const int numTraj = static_cast<int>(trajTime.size());
+   
+   
+   // 1) Collecte des seeds background 
+    for(int i = 0; i < numTraj; i++) {
+      for(size_t j = 0; j < trajVertexId[i].size(); j++) {
+        if(trajTime[i][j] == frameSurf) {
+          const ttk::SimplexId vid = trajVertexId[i][j];
+          collectNearMaxInSquare(triangulation, frameScalars, vid, 30, allVertexDebris[i]);
+        }
+      }
+    }
+
+    // 2) Construire les seeds + labels (0 = background, i+1 = foreground de la trajectoire i)
+    #ifdef TTK_ENABLE_EIGEN
+    {
+      std::vector<ttk::SimplexId> seed;  seed.reserve(1024);
+      std::vector<int>            seedLabel; seedLabel.reserve(1024);
+
+      const auto nVerts = triangulation->getNumberOfVertices();
+      std::vector<char> isSeed(nVerts, 0); // pour dédupliquer
+
+      // 2.a) BACKGROUND seeds 
+      for(int i = 0; i < numTraj; i++) {
+        for(const auto v : allVertexDebris[i]) {
+          if(v >= 0 && v < nVerts && !isSeed[v]) {
+            seed.push_back(v);
+            seedLabel.push_back(0);
+            isSeed[v] = 1;
+          }
+        }
+      }
+
+      // 2.b) FOREGROUND seeds = un seed par trajectoire à frameSurf (label = i+1)
+      for(int i = 0; i < numTraj; i++) {
+        for(size_t j = 0; j < trajVertexId[i].size(); j++) {
+          if(trajTime[i][j] == frameSurf) {
+            const auto v = static_cast<ttk::SimplexId>(trajVertexId[i][j]);
+            if(v >= 0 && v < nVerts && !isSeed[v]) {
+              seed.push_back(v);
+              seedLabel.push_back(i + 1); 
+              isSeed[v] = 1;
+            }
+          }
+        }
+      }
+
+      // 3) Random Walker
+      std::vector<int> segmentation; // sortie: label par sommet
+      this->printMsg("RandomWalker: seeds=" + std::to_string(seed.size())
+                     + ", beta(errSurf)=" + std::to_string(errSurf));
+
+      //errSurf = beta
+      const int rwStatus = randomWalkerSegment(
+          seed, seedLabel, triangulation, frameScalars, static_cast<double>(errSurf), segmentation);
+
+      if(rwStatus != 0) {
+        this->printMsg("randomWalkerSegment failed with code " + std::to_string(rwStatus));
+      } else {
+        for(int i = 0; i < numTraj; i++) {
+          allVertexDebris[i].clear();
+        }
+        for(ttk::SimplexId v = 0; v < static_cast<ttk::SimplexId>(segmentation.size()); v++) {
+          const int lab = segmentation[v];
+          if(lab > 0) { 
+            const int trajIdx = lab - 1;
+            if(trajIdx >= 0 && trajIdx < numTraj) {
+              allVertexDebris[trajIdx].push_back(v);
+            }
+          }
+        }
+      }
+    }
+    #endif
+
+    
+    return 0;
+}
+
+
+#ifdef TTK_ENABLE_EIGEN
+template<class dataType>
+int ttk::TrajectoryStatistics::randomWalkerSegment(
+  const std::vector<ttk::SimplexId> &seed,        // ids des sommets "marqués"
+  const std::vector<int> &seedLabel,              // label de chaque graine (0..K-1)
+  const ttk::AbstractTriangulation *triangulation,      // maillage TTK (déjà initialisé)
+  const dataType *intensities,                    // intensité par sommet
+  const double beta,                              // paramètre des poids
+  std::vector<int> &segmentation                  // [OUT] étiquette par sommet
+) {
+
+  this->printMsg("RandomWalker: début de la fonction");
+
+  if(!triangulation) {
+    this->printMsg("ERROR : randomWalkerSegment: null triangulation.");
+    return -1;
+  }
+  if(seed.size() != seedLabel.size()) {
+    this->printMsg("ERROR : randomWalkerSegment: seed and seedLabel size mismatch.");
+    return -2;
+  }
+
+  const auto nVerts = triangulation->getNumberOfVertices();
+  if(nVerts <= 0) {
+    this->printMsg("ERROR : randomWalkerSegment: empty triangulation.");
+    return -3;
+  }
+
+  // --- 0) Préparation ---
+  this->printMsg("RandomWalker: préparation des structures de données");
+  segmentation.assign(nVerts, -1);
+
+  std::vector<int> vertexLabel(nVerts, -1);
+  int K = 0;
+  for(size_t k = 0; k < seed.size(); ++k) {
+    const auto v = seed[k];
+    if(v < 0 || v >= nVerts) {
+      this->printMsg("ERROR : randomWalkerSegment: seed vertex out of range.");
+      return -4;
+    }
+    vertexLabel[v] = seedLabel[k];
+    K = std::max(K, seedLabel[k] + 1);
+  }
+  if(K <= 0) {
+    this->printMsg("ERROR : randomWalkerSegment: no labels found in seeds.");
+    return -5;
+  }
+
+  std::vector<ttk::SimplexId> uIndex(nVerts, -1);
+  std::vector<ttk::SimplexId> uVerts;
+  uVerts.reserve(nVerts);
+  for(ttk::SimplexId v = 0; v < nVerts; ++v) {
+    if(vertexLabel[v] < 0) {
+      uIndex[v] = static_cast<ttk::SimplexId>(uVerts.size());
+      uVerts.push_back(v);
+    }
+  }
+  const ttk::SimplexId nU = static_cast<ttk::SimplexId>(uVerts.size());
+  if(nU == 0) {
+    for(ttk::SimplexId v = 0; v < nVerts; ++v)
+      segmentation[v] = vertexLabel[v];
+    this->printMsg("RandomWalker: aucun nœud inconnu (tout est graine)");
+    return 0;
+  }
+
+  // --- 1) Assemblage ---
+  this->printMsg("RandomWalker: assemblage du Laplacien restreint et des RHS");
+
+  using T = double;
+  using Triplet = Eigen::Triplet<T>;
+  std::vector<Eigen::VectorXd> rhs(K, Eigen::VectorXd::Zero(nU));
+  std::vector<Triplet> L_triplets;
+
+#ifdef TTK_ENABLE_OPENMP
+  int nThreads = 1;
+  #include <omp.h>
+  nThreads = omp_get_max_threads();
+  std::vector<std::vector<Triplet>> L_triplets_tls(static_cast<size_t>(nThreads));
+
+  #pragma omp parallel for schedule(static)
+  for(ttk::SimplexId ui = 0; ui < nU; ++ui) {
+    const auto vi = uVerts[ui];
+    T diag = 0.0;
+    const int tid =
+    #ifdef _OPENMP
+      omp_get_thread_num();
+    #else
+      0;
+    #endif
+    auto &localTriplets = L_triplets_tls[static_cast<size_t>(tid)];
+
+    const auto nNeigh = triangulation->getVertexNeighborNumber(vi);
+    for(int ln = 0; ln < nNeigh; ++ln) {
+      ttk::SimplexId vj{};
+      triangulation->getVertexNeighbor(vi, ln, vj);
+
+      const T gi = static_cast<T>(intensities[vi]);
+      const T gj = static_cast<T>(intensities[vj]);
+      const T diff = gi - gj;
+      const T wij = std::exp(-beta * diff * diff);
+
+      diag += wij;
+      const auto uj = uIndex[vj];
+      if(uj >= 0) {
+        localTriplets.emplace_back(ui, uj, -wij);
+      } else {
+        const int lab = vertexLabel[vj];
+        if(lab >= 0) {
+          rhs[lab](ui) += wij;
+        }
+      }
+    }
+    localTriplets.emplace_back(ui, ui, diag);
+  }
+
+  for(auto &vec : L_triplets_tls) {
+    L_triplets.insert(L_triplets.end(),
+                      std::make_move_iterator(vec.begin()),
+                      std::make_move_iterator(vec.end()));
+  }
+#else
+  for(ttk::SimplexId ui = 0; ui < nU; ++ui) {
+    const auto vi = uVerts[ui];
+    T diag = 0.0;
+    const auto nNeigh = triangulation->getVertexNeighborNumber(vi);
+    for(int ln = 0; ln < nNeigh; ++ln) {
+      ttk::SimplexId vj{};
+      triangulation->getVertexNeighbor(vi, ln, vj);
+
+      const T gi = static_cast<T>(intensities[vi]);
+      const T gj = static_cast<T>(intensities[vj]);
+      const T diff = gi - gj;
+      const T wij = std::exp(-beta * diff * diff);
+
+      diag += wij;
+      const auto uj = uIndex[vj];
+      if(uj >= 0) {
+        L_triplets.emplace_back(ui, uj, -wij);
+      } else {
+        const int lab = vertexLabel[vj];
+        if(lab >= 0) {
+          rhs[lab](ui) += wij;
+        }
+      }
+    }
+    L_triplets.emplace_back(ui, ui, diag);
+  }
+#endif
+
+  Eigen::SparseMatrix<T> L_U(nU, nU);
+  L_U.setFromTriplets(L_triplets.begin(), L_triplets.end());
+  L_U.makeCompressed();
+
+  // --- 2) Factorisation ---
+  this->printMsg("RandomWalker: factorisation du Laplacien");
+
+  Eigen::SimplicialLLT<Eigen::SparseMatrix<T>> llt;
+  llt.compute(L_U);
+  const bool useDirect = (llt.info() == Eigen::Success);
+
+  Eigen::ConjugateGradient<Eigen::SparseMatrix<T>, Eigen::Lower | Eigen::Upper,
+                           Eigen::DiagonalPreconditioner<T>>
+    cg;
+  if(!useDirect) {
+    cg.setMaxIterations(std::max<ttk::SimplexId>(2000, 5 * nU));
+    cg.setTolerance(1e-10);
+    cg.compute(L_U);
+    if(cg.info() != Eigen::Success) {
+      this->printMsg("ERROR : randomWalkerSegment: solver setup failed.");
+      return -6;
+    }
+  }
+
+  // --- 3) Résolution ---
+  this->printMsg("RandomWalker: résolution des systèmes linéaires");
+
+  std::vector<Eigen::VectorXd> X(K, Eigen::VectorXd::Zero(nU));
+  for(int s = 0; s < K; ++s) {
+    if(useDirect) {
+      X[s] = llt.solve(rhs[s]);
+      if(llt.info() != Eigen::Success) {
+        this->printMsg("ERROR : randomWalkerSegment: LLT solve failed for label "
+                       + std::to_string(s));
+        return -7;
+      }
+    } else {
+      X[s] = cg.solve(rhs[s]);
+      if(cg.info() != Eigen::Success) {
+        this->printMsg("ERROR : randomWalkerSegment: CG solve failed for label "
+                       + std::to_string(s));
+        return -8;
+      }
+    }
+  }
+
+  // --- 4) Attribution ---
+  this->printMsg("RandomWalker: attribution des labels");
+
+#ifdef TTK_ENABLE_OPENMP
+  #pragma omp parallel for schedule(static)
+  for(long long k = 0; k < static_cast<long long>(seed.size()); ++k) {
+    const auto v = seed[static_cast<size_t>(k)];
+    segmentation[v] = vertexLabel[v];
+  }
+
+  #pragma omp parallel for schedule(static)
+  for(ttk::SimplexId ui = 0; ui < nU; ++ui) {
+    int bestLab = 0;
+    T bestVal = X[0](ui);
+    for(int s = 1; s < K; ++s) {
+      const T val = X[s](ui);
+      if(val > bestVal) {
+        bestVal = val;
+        bestLab = s;
+      }
+    }
+    segmentation[uVerts[ui]] = bestLab;
+  }
+#else
+  for(const auto v : seed) {
+    segmentation[v] = vertexLabel[v];
+  }
+  for(ttk::SimplexId ui = 0; ui < nU; ++ui) {
+    int bestLab = 0;
+    T bestVal = X[0](ui);
+    for(int s = 1; s < K; ++s) {
+      const T val = X[s](ui);
+      if(val > bestVal) {
+        bestVal = val;
+        bestLab = s;
+      }
+    }
+    segmentation[uVerts[ui]] = bestLab;
+  }
+#endif
+
+  this->printMsg("RandomWalker: terminé avec succès");
+  return 0;
+}
+
+#endif
 

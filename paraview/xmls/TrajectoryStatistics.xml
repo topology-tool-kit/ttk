@@ -45,13 +45,36 @@
       <DoubleVectorProperty
         name="errSurf"
         command="SeterrSurf"
-        label="Erreur BFS Surface"
+        label="Erreur BFS Surface / Beta random Walker"
         number_of_elements="1"
         default_values="0.0">
         <Documentation>
            Seuil méthode addition surface  
         </Documentation>
       </DoubleVectorProperty>
+
+      <IntVectorProperty
+        name="surfaceMethod"
+        label="Surface Method"
+        command="SetsurfaceMethod"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="BFS algorithm"/>
+          <Entry value="1" text="Random Walker"/>
+        </EnumerationDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Backend"
+                                   value="2" />
+        </Hints>
+        <Documentation>
+          Surface method
+        </Documentation>
+      </IntVectorProperty>     
+
 
       <DoubleVectorProperty
         name="filtreX"
@@ -245,7 +268,7 @@
       <OutputPort name="Surface VTI" index="2" id="port2"/>
       <OutputPort name="New Traj" index="3" id="port3"/>
       <OutputPort name="Merge" index="4" id="port4"/>
-
+      <OutputPort name="Inital" index="5" id="port5"/>
 
       <!-- MENU CATEGORY -->
       <Hints>

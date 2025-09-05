@@ -1,3 +1,4 @@
+
 #include <ttkTrajectoryStatistics.h>
 
 #include <vtkInformation.h>
@@ -29,7 +30,7 @@ vtkStandardNewMacro(ttkTrajectoryStatistics);
 ttkTrajectoryStatistics::ttkTrajectoryStatistics() {
   this->setDebugMsgPrefix("TrajectoryStatistics");
   this->SetNumberOfInputPorts(2);
-  this->SetNumberOfOutputPorts(5);
+  this->SetNumberOfOutputPorts(6);
 }
 
 
@@ -76,7 +77,13 @@ int ttkTrajectoryStatistics::FillOutputPortInformation(int port, vtkInformation 
     return 1;
   }
 
-  return 0;
+  
+    if (port == 5) {
+      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+      return 1;
+    }
+
+return 0;
 }
 
 
@@ -133,7 +140,9 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
 
   const size_t numTraj = groupTraj.size();
 
-  std::vector<std::vector<int>>    trajTime(numTraj); // TimeStep
+  std::vector<std::vector<int>>    trajTime(numTraj);
+  std::vector<std::vector<vtkIdType>> cellsPerTraj(numTraj);  // input cellIds grouped in trajIndex order
+ // TimeStep
   std::vector<std::vector<double>> trajX(numTraj), trajY(numTraj), instantPersistance(numTraj); 
   std::vector<std::vector<int>>    trajVertexId(numTraj);  // VertexGlobalId
 
@@ -142,6 +151,8 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   for (const auto &trajEntry : groupTraj){
     
     const std::vector<vtkIdType> &cellIds = trajEntry.second;
+    cellsPerTraj[trajIndex] = cellIds;
+
     std::vector<vtkIdType> pointsIds; 
     pointsIds.reserve(cellIds.size()*2);
 
@@ -263,6 +274,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   this->setMaxY(maxY);
   this->setMinY(minY);
   this->setMinX(minX);
+  this->setSurfaceMethod(surfaceMethod);
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(inputDataSet);
   if(!triangulation)
@@ -359,6 +371,12 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   vtkUnstructuredGrid *outputMerge = vtkUnstructuredGrid::GetData(outputVector, 4);
   if(!outputMerge) {
     this->printErr("Null output gridMerge.");
+    return 0;
+    }
+
+  vtkUnstructuredGrid *outputSegmentsLabeled = vtkUnstructuredGrid::GetData(outputVector, 5);
+  if(!outputSegmentsLabeled) {
+    this->printErr("Null output segments-labeled grid.");
     return 0;
   }
 
@@ -476,7 +494,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
       std::vector<ttk::SimplexId> &trajSurface = allVertexDebris[i];
       //if (allVertexDebris[i].size() != 0)
         //this->printMsg("surface trouvé -> " + std::to_string(allVertexDebris[i].size()) + " traj Id = " + std::to_string(newTraj[i][4]));
-      int finalId = -1;
+      int finalId = i;
       if (newTraj[i][4] != -1)
         finalId = newTraj[i][4]; 
       auto [minIt, maxIt] = std::minmax_element(instantPersistance[i].begin(), instantPersistance[i].end());
@@ -509,7 +527,40 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   outputDataSet->GetPointData()->AddArray(surfaceTrajId);
   
     
-  vtkSmartPointer<vtkPoints> linearPoints = vtkSmartPointer<vtkPoints>::New();
+  
+// --- New Output (Port 5): copy of the input grid with per-segment final trajectory id ---
+{
+  // Copy the original input grid topology and point coordinates
+  vtkSmartPointer<vtkUnstructuredGrid> segCopy = vtkSmartPointer<vtkUnstructuredGrid>::Take(inputGrid->NewInstance());
+  segCopy->ShallowCopy(inputGrid);
+
+  // Create cell-data array "linearFinalId" with one tuple per input cell
+  vtkIdType inNumCells = inputGrid->GetNumberOfCells();
+  vtkSmartPointer<vtkIntArray> cellLinearFinalId = vtkSmartPointer<vtkIntArray>::New();
+  cellLinearFinalId->SetName("linearFinalId");
+  cellLinearFinalId->SetNumberOfTuples(inNumCells);
+  cellLinearFinalId->FillComponent(0, -1);
+
+  // Fill using the exact trajIndex order used to compute newTraj
+  for(size_t i = 0; i < cellsPerTraj.size(); ++i) {
+    int finalId = -1;
+    if(i < newTraj.size() && newTraj[i].size() > 4) {
+      finalId = static_cast<int>(newTraj[i][4]);
+    }
+    const auto &cells = cellsPerTraj[i];
+    for(const auto cId : cells) {
+      if(cId >= 0 && cId < inNumCells) {
+        cellLinearFinalId->SetValue(cId, finalId);
+      }
+    }
+  }
+
+  outputSegmentsLabeled->ShallowCopy(segCopy);
+  outputSegmentsLabeled->GetCellData()->AddArray(cellLinearFinalId);
+}
+// --- End new output ---
+
+vtkSmartPointer<vtkPoints> linearPoints = vtkSmartPointer<vtkPoints>::New();
   vtkSmartPointer<vtkCellArray> linearLines  = vtkSmartPointer<vtkCellArray>::New();
   linearPoints->SetNumberOfPoints(2*newTraj.size());
 
@@ -593,6 +644,9 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   newMergeIdArray->SetName("MergeId");
   newMergeIdArray->SetNumberOfTuples(numMerge);
 
+  vtkSmartPointer<vtkIntArray> durArray = vtkSmartPointer<vtkIntArray>::New();
+  durArray->SetName("Duration");
+  durArray->SetNumberOfTuples(numMerge);
   //finaltraj
   mergePoints->SetNumberOfPoints(2*finalTraj.size());
   for (int i=0; i<finalTraj.size(); i++){
@@ -618,13 +672,14 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     line->GetPointIds()->SetId(1, 2*i + 1);
     mergeLines->InsertNextCell(line);
     newMergeIdArray->SetValue(i , i);
+    durArray->SetValue(i, endFrame-startFrame);
 
   }
 
   outputMerge->SetPoints(mergePoints);
   outputMerge->SetCells(VTK_LINE, mergeLines);
   outputMerge->GetCellData()->AddArray(newMergeIdArray);
-
+  outputMerge->GetCellData()->AddArray(durArray);
 
   this->printMsg("Fin TrajectoryStatistic");
 

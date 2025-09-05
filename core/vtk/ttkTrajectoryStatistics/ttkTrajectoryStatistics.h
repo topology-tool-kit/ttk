@@ -93,6 +93,7 @@ private:
   int maxY{-1};
   int minY{-1};
   int minX{-1};
+  int surfaceMethod{0};
 
 public:
   /**
@@ -158,6 +159,9 @@ public:
 
   vtkSetMacro(threshCratereAngle, double);
   vtkGetMacro(threshCratereAngle, double);
+
+  vtkSetMacro(surfaceMethod, int);
+  vtkGetMacro(surfaceMethod, int);
 protected:
 
   ttkTrajectoryStatistics();
