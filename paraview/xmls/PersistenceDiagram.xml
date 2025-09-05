@@ -80,13 +80,20 @@
         See ttkPersistenceDiagramApproximation for more outputs, such as the approximated scalar field and visual cues
         about the diagram approximation.
 
-
         5) Persistent Simplex
 
         This is a textbook (and very slow) algorithm, described in
         "Algorithm and Theory of Computation Handbook (Second Edition)
         - Special Topics and Techniques" by Atallah and Blanton on
         page 97.
+
+
+        6) Distributed Discrete Morse Sandwich
+
+        Related publication:
+        'Distributed Discrete Morse Sandwich: Efficient Computation of Persistence Diagrams for Massive Scalar Data'
+        Eve Le Guillou, Pierre Fortin, Julien Tierny
+        https://arxiv.org/abs/2505.21266, 2025.
 
 
         See also ContourForests, PersistenceCurve, ScalarFieldCriticalPoints,
@@ -105,6 +112,8 @@
         - https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/
 
         - https://topology-tool-kit.github.io/examples/ctBones/
+
+        - https://topology-tool-kit.github.io/examples/distributedPersistenceDiagram/
 
         - https://topology-tool-kit.github.io/examples/dragon/
 
