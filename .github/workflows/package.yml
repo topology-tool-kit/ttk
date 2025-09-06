@@ -164,7 +164,7 @@ jobs:
         rm python/nestedTrackingFromOverlap.py
         # remove examples which fill up the memory
         rm python/topologicalOptimization_darkSky.py
-        python3 -u python/run.py
+        pvpython -u python/run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
       continue-on-error: true

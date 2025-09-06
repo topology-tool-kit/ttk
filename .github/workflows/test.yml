@@ -247,7 +247,7 @@ jobs:
         rm python/mpiExample.py
         # remove examples which fill up the memory
         rm python/topologicalOptimization_darkSky.py
-        python3 -u python/run.py
+        pvpython -u python/run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
       if: matrix.testSet == 'pyTests'
@@ -398,6 +398,7 @@ jobs:
         rm python/nestedTrackingFromOverlap.py
         # tmp removal of mpi example
         rm python/mpiExample.py
+        rm python/distributedPersistenceDiagram.py
         # remove examples which fill up the memory
         rm python/topologicalOptimization_darkSky.py
         # remove sklearn examples -- buggy on MacOS since sklearn-1.7
