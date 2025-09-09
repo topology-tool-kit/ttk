@@ -6094,6 +6094,7 @@ void ttk::DiscreteMorseSandwichMPI::getSaddleSaddlePairs(
         this->sendBoundaryBuffer_[1][i].clear();
       }
     }
+#pragma omp taskwait
 #pragma omp task
     sendComputeBuffer_ = {};
 #pragma omp task
