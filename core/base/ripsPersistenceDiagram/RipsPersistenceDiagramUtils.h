@@ -32,7 +32,7 @@ namespace ttk::rpd {
   using Generator = std::pair<EdgeSet, std::pair<value_t, value_t>>;
 
   struct FiltratedEdge {
-    std::pair<id_t, id_t> e;
+    Edge e;
     value_t d;
   };
   inline FiltratedEdge max(const FiltratedEdge &a, const FiltratedEdge &b) {
@@ -43,7 +43,7 @@ namespace ttk::rpd {
   }
 
   struct FiltratedQuadEdge {
-    std::pair<id_t, id_t> e;
+    Edge e;
     int f1;
     int f2;
     value_t d;

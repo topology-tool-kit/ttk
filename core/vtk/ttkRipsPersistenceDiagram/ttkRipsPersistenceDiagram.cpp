@@ -1,5 +1,4 @@
 #include <ttkRipsPersistenceDiagram.h>
-#include <ttkUtils.h>
 
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>

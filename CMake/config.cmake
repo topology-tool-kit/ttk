@@ -116,7 +116,7 @@ mark_as_advanced(TTK_IMPLICIT_PRECONDITIONS_THRESHOLD)
 option(TTK_ENABLE_DOUBLE_TEMPLATING "Use double templating for bivariate data" OFF)
 mark_as_advanced(TTK_ENABLE_DOUBLE_TEMPLATING)
 
-option(TTK_REDUCE_TEMPLATE_INSTANTIATIONS "Use a reduced list of template instatiations to fasten build times" OFF)
+option(TTK_REDUCE_TEMPLATE_INSTANTIATIONS "Use a reduced list of template instantiations to fasten build times" OFF)
 mark_as_advanced(TTK_REDUCE_TEMPLATE_INSTANTIATIONS)
 
 option(TTK_TIME_TARGETS "Print targets build time" OFF)
