@@ -42,11 +42,9 @@ namespace ttk {
      *
      * @param[in] points Input point cloud or input distance matrix
      * @param[out] ph Persistence diagram
-     * @param[out] generators Persistent generators, if required
      */
     int execute(const rpd::PointCloud &points,
-                rpd::MultidimensionalDiagram &ph,
-                std::vector<rpd::Generator> &generators) const;
+                rpd::MultidimensionalDiagram &ph) const;
 
   protected:
     /** BackEnd */
@@ -59,10 +57,6 @@ namespace ttk {
     int FieldOfCoefficients{2};
     /** is input a distance matrix */
     bool InputIsDistanceMatrix{false};
-    /** Delaunay-Rips */
-    bool DelaunayRips{false};
-    /** output generators */
-    bool OutputGenerators{false};
 
   }; // RipsPersistenceDiagram class
 

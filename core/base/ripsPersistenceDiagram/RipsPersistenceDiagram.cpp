@@ -17,8 +17,7 @@ ttk::RipsPersistenceDiagram::RipsPersistenceDiagram() {
 
 int ttk::RipsPersistenceDiagram::execute(
   const rpd::PointCloud &points,
-  rpd::MultidimensionalDiagram &ph,
-  std::vector<rpd::Generator> &generators) const {
+  rpd::MultidimensionalDiagram &ph) const {
 
   bool forceRipser = false;
 
@@ -27,19 +26,13 @@ int ttk::RipsPersistenceDiagram::execute(
     if(points[0].size() == 2) {
       rpd::FastRipsPersistenceDiagram2 FRPD(points);
       FRPD.setDebugLevel(debugLevel_);
-      if(DelaunayRips)
-        FRPD.computeDelaunayRips0And1Persistence(ph);
-      else
-        FRPD.computeRips0And1Persistence(ph, false, false);
-      if(OutputGenerators)
-        FRPD.exportRips1Generators(generators);
+      FRPD.computeRips0And1Persistence(ph, false, false);
     } else {
       printWrn("Geometric method only implemented for dim 2.");
       printWrn("Ripser will be used instead.");
       forceRipser = true;
     }
 #else
-    TTK_FORCE_USE(generators);
     printWrn("TTK was not compiled with CGAL.");
     printWrn("Ripser will be used instead.");
     forceRipser = true;

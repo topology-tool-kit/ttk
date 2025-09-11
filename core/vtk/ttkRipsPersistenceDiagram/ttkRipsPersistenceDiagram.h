@@ -33,15 +33,6 @@
 #include <ttkAlgorithm.h>
 
 /**
- * @brief Converts a vector of vector point cloud to the vtkPoints format
- *
- * @param[out] vtkPoints Output vtkPoints
- * @param[in] pointsData input point cloud
- */
-TTKRIPSPERSISTENCEDIAGRAM_EXPORT void MakeVtkPoints(vtkPoints *vtkPoints,
-                          const std::vector<std::vector<double>> &pointsData);
-
-/**
  * @brief Converts a Rips Persistence Diagram in the
  * ttk::rpd::MultidimensionalDiagram format to the VTK Unstructured Grid format.
  *
@@ -54,21 +45,6 @@ TTKRIPSPERSISTENCEDIAGRAM_EXPORT void
   DiagramToVTU(vtkUnstructuredGrid *vtu,
                const ttk::rpd::MultidimensionalDiagram &diagram,
                double SimplexMaximumDiameter);
-
-/**
- * @brief Converts a vector of 1-dimensional persistent generators in the
- * ttk::rpd::Generator format to the VTK Unstructured Grid format.
- *
- * @param[out] vtu Output VTK Unstructured Grid
- * @param[in] inputPoints vtkPoints used to embed the generators
- * @param[in] generators Vector of ttk::rpd::Generator to be converted
- * @param[in] parametrize Whether to parametrize the generators
- */
-TTKRIPSPERSISTENCEDIAGRAM_EXPORT void
-  GeneratorsToVTU(vtkUnstructuredGrid *vtu,
-                  vtkPoints *inputPoints,
-                  const std::vector<ttk::rpd::Generator> &generators,
-                  bool parametrize = true);
 
 class TTKRIPSPERSISTENCEDIAGRAM_EXPORT ttkRipsPersistenceDiagram
   : public ttkAlgorithm, // we inherit from the generic ttkAlgorithm class
@@ -122,12 +98,6 @@ public:
 
   vtkSetMacro(InputIsDistanceMatrix, bool);
   vtkGetMacro(InputIsDistanceMatrix, bool);
-
-  vtkSetMacro(DelaunayRips, bool);
-  vtkGetMacro(DelaunayRips, bool);
-
-  vtkSetMacro(OutputGenerators, bool);
-  vtkGetMacro(OutputGenerators, bool);
 
 protected:
   ttkRipsPersistenceDiagram();

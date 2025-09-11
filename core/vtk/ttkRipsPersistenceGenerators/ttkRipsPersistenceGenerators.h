@@ -26,9 +26,27 @@
 // VTK Module
 #include <ttkRipsPersistenceGeneratorsModule.h>
 
+// VTK Includes
+#include <vtkUnstructuredGrid.h>
+
 // TTK Base Includes
 #include <RipsPersistenceGenerators.h>
 #include <ttkAlgorithm.h>
+
+/**
+ * @brief Converts a vector of 1-dimensional persistent generators in the
+ * ttk::rpd::Generator format to the VTK Unstructured Grid format.
+ *
+ * @param[out] vtu Output VTK Unstructured Grid
+ * @param[in] inputPoints vtkPoints used to embed the generators
+ * @param[in] generators Vector of ttk::rpd::Generator to be converted
+ * @param[in] parametrize Whether to parametrize the generators
+ */
+TTKRIPSPERSISTENCEGENERATORS_EXPORT void
+  GeneratorsToVTU(vtkUnstructuredGrid *vtu,
+                  vtkPoints *inputPoints,
+                  const std::vector<ttk::rpd::Generator> &generators,
+                  bool parametrize = true);
 
 class TTKRIPSPERSISTENCEGENERATORS_EXPORT ttkRipsPersistenceGenerators
   : public ttkAlgorithm // we inherit from the generic ttkAlgorithm class

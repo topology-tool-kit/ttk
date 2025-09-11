@@ -1,5 +1,6 @@
 #include <ttkDelaunayRipsPersistenceDiagram.h>
 #include <ttkRipsPersistenceDiagram.h>
+#include <ttkRipsPersistenceGenerators.h>
 
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
@@ -10,6 +11,21 @@
 #include <regex>
 
 vtkStandardNewMacro(ttkDelaunayRipsPersistenceDiagram);
+
+static void MakeVtkPoints(vtkPoints *vtkPoints,
+                          const std::vector<std::vector<double>> &pointsData) {
+
+  const int dimension = pointsData[0].size();
+  vtkPoints->SetNumberOfPoints(pointsData.size());
+
+  for(unsigned i = 0; i < pointsData.size(); ++i) {
+    if(dimension >= 3)
+      vtkPoints->SetPoint(
+        i, pointsData[i][0], pointsData[i][1], pointsData[i][2]);
+    else
+      vtkPoints->SetPoint(i, pointsData[i][0], pointsData[i][1], 0.);
+  }
+}
 
 ttkDelaunayRipsPersistenceDiagram::ttkDelaunayRipsPersistenceDiagram() {
   this->SetNumberOfInputPorts(1);
