@@ -2,6 +2,8 @@
 
 #include "geoPHUtils.h"
 
+#ifdef TTK_ENABLE_CGAL
+
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Delaunay_triangulation_3.h>
 #include <CGAL/Triangulation_vertex_base_with_info_3.h>
@@ -294,7 +296,7 @@ namespace gph {
     void connectivity() {
       //edges to facets adjacency
       msa_edges.reserve(1.15 * N_c); //this is an estimation of the number of edges in Delaunay
-      for (int i = 0; i<msa.size(); ++i) {
+      for (unsigned i = 0; i<msa.size(); ++i) {
         const FiltratedQuadFacet f = msa[i];
         const double d1 = squaredDistance(f.f[0], f.f[1]);
         const double d2 = squaredDistance(f.f[0], f.f[2]);
@@ -363,7 +365,7 @@ namespace gph {
     void compute1PH(MultidimensionalDiagram &ph) {
       const unsigned N_msa = msa.size();
       std::vector<int> polys;
-      for (int x=0; x<N_msa; ++x) {
+      for (unsigned x=0; x<N_msa; ++x) {
         if (UF_msa.isRoot(x) && maxDelaunay1[x].d<inf)
           polys.push_back(x);
       }
@@ -378,14 +380,14 @@ namespace gph {
             return critical1[e1_id].d < critical1[e2_id].d;
           });
       std::vector<int> criticalOrder(critical1.size());
-      for (int i=0; i<criticalIndices.size(); ++i)
+      for (unsigned i=0; i<criticalIndices.size(); ++i)
         criticalOrder[criticalIndices[i]] = i;
 
       std::vector<std::vector<int>> poly_to_crit(N_msa);
       poly_to_crit.resize(N_msa);
       for (const int poly : polys)
         poly_to_crit[poly].reserve(3);
-      for (int i=0; i<critical1.size(); ++i) {
+      for (unsigned i=0; i<critical1.size(); ++i) {
         const FiltratedEdge &e = critical1[i];
         for (const int poly : msa_edges[e.e].first) {
           if (maxDelaunay1[UF_msa.find(poly)].d<inf) {
@@ -430,7 +432,7 @@ namespace gph {
     void compute1PH(MultidimensionalDiagram &ph, std::vector<Generator1> &generators1) {
       const unsigned N_msa = msa.size();
       std::vector<int> polys;
-      for (int x=0; x<N_msa; ++x) {
+      for (unsigned x=0; x<N_msa; ++x) {
         if (UF_msa.isRoot(x) && maxDelaunay1[x].d<inf)
           polys.push_back(x);
       }
@@ -445,14 +447,14 @@ namespace gph {
             return critical1[e1_id].d < critical1[e2_id].d;
           });
       std::vector<int> criticalOrder(critical1.size());
-      for (int i=0; i<criticalIndices.size(); ++i)
+      for (unsigned i=0; i<criticalIndices.size(); ++i)
         criticalOrder[criticalIndices[i]] = i;
 
       std::vector<std::vector<int>> poly_to_crit(N_msa);
       poly_to_crit.resize(N_msa);
       for (const int poly : polys)
         poly_to_crit[poly].reserve(3);
-      for (int i=0; i<critical1.size(); ++i) {
+      for (unsigned i=0; i<critical1.size(); ++i) {
         const FiltratedEdge &e = critical1[i];
         for (const int poly : msa_edges[e.e].first) {
           if (maxDelaunay1[UF_msa.find(poly)].d<inf) {
@@ -533,6 +535,17 @@ namespace gph {
     drpd.computeDelaunayRipsPersistence(diagram);
   }
 
+  inline void runDelaunayRipsPersistenceDiagram3(ttk::rpd::PointCloud const& points, MultidimensionalDiagram &diagram, std::vector<Generator1> &generators1) {
+    PointCloud<3> p(points.size());
+    for (unsigned i = 0; i < points.size(); ++i)
+      p[i] = {points[i][0], points[i][1], points[i][2]};
+    DRPersistence3 drpd(p);
+    std::vector<Generator2> generators2; //dummy variable
+    drpd.computeDelaunayRipsPersistence(diagram, generators1, generators2);
+  }
+
 }
 
 #undef GPH_SORT
+
+#endif

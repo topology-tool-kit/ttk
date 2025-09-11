@@ -59,7 +59,7 @@ int ttkDelaunayRipsPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(re
     }
   }
 
-  if(input->GetNumberOfRows() <= 0 || ScalarFields.size() <= 0) {
+  if(input->GetNumberOfRows() <= 0 || ScalarFields.size() <= 1) {
     this->printErr("Input matrix has invalid dimensions (rows: "
                    + std::to_string(input->GetNumberOfRows())
                    + ", columns: " + std::to_string(ScalarFields.size()) + ")");
@@ -73,7 +73,6 @@ int ttkDelaunayRipsPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(re
 
   const int numberOfPoints = input->GetNumberOfRows();
   const int dimension = ScalarFields.size();
-  const bool doGenerators = OutputGenerators && (dimension == 2 || dimension == 3);
 
   PointCloud points(numberOfPoints);
   for(int i = 0; i < numberOfPoints; ++i) {
@@ -92,10 +91,10 @@ int ttkDelaunayRipsPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(re
   if(this->execute(points, diagram, generators) != 0)
     return 0;
 
-  if(doGenerators) { // todo
-    /*vtkNew<vtkPoints> vtkPoints{};
+  if(OutputGenerators && (dimension == 2 || dimension == 3)) {
+    vtkNew<vtkPoints> vtkPoints{};
     MakeVtkPoints(vtkPoints, points);
-    GeneratorsToVTU(outputPersistenceDiagram, vtkPoints, generators, true);*/
+    GeneratorsToVTU(outputPersistenceDiagram, vtkPoints, generators, true);
   } else
     DiagramToVTU(outputPersistenceDiagram, diagram, inf);
 

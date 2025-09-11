@@ -10,8 +10,8 @@
 
 vtkStandardNewMacro(ttkRipsPersistenceDiagram);
 
-static void MakeVtkPoints(vtkPoints *vtkPoints,
-                          const std::vector<std::vector<double>> &pointsData) {
+void MakeVtkPoints(vtkPoints *vtkPoints,
+                   const std::vector<std::vector<double>> &pointsData) {
 
   const int dimension = pointsData[0].size();
   vtkPoints->SetNumberOfPoints(pointsData.size());

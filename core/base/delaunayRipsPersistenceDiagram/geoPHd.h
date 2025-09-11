@@ -2,6 +2,8 @@
 
 #include "geoPHUtils.h"
 
+#ifdef TTK_ENABLE_CGAL
+
 #include <CGAL/Epick_d.h>
 #include <CGAL/Delaunay_triangulation.h>
 #include <CGAL/Triangulation_vertex.h>
@@ -107,7 +109,6 @@ namespace gph {
         linkLengths[i] = squaredDistance(s[i], linkId);
 
       for (unsigned i = 0; i<D+1; ++i) {
-        DSimplex<D> neighbor = s;
         double d = 0.;
         double a = 0.;
         int k=0;
@@ -312,10 +313,10 @@ namespace gph {
 
     ConnectivityHashMap<D-1> msa_connectivity;
     msa_connectivity.reserve(MSA.size());
-    for (int i = 0; i<MSA.size(); ++i) {
+    for (unsigned i = 0; i<MSA.size(); ++i) {
       DSimplex<D-1> face;
-      for (int k=0; k<D+1; ++k) {
-        for (int j=0; j<D; j++)
+      for (unsigned k=0; k<D+1; ++k) {
+        for (unsigned j=0; j<D; ++j)
           face[j] = MSA[i].s[j + (j>=k)];
         msa_connectivity[face].reserve(4); //todo adjust guess
         msa_connectivity[face].emplace_back(i, MSA[i].s[k]);
@@ -368,7 +369,7 @@ namespace gph {
     /* Graph critical -- polytope */
 
     std::vector<id_t> polytopes;
-    for (int x=0; x<MSA.size(); ++x) {
+    for (unsigned x=0; x<MSA.size(); ++x) {
       if (UF_msa.isRoot(x) && maxDelaunay[x].d < inf)
         polytopes.emplace_back(x);
     }
@@ -383,15 +384,15 @@ namespace gph {
           return critical[x1].d < critical[x2].d;
         });
     std::vector<int> criticalOrder(critical.size());
-    for (int i=0; i<criticalIndices.size(); ++i)
+    for (unsigned i=0; i<criticalIndices.size(); ++i)
       criticalOrder[criticalIndices[i]] = i;
 
     std::vector<std::vector<int>> poly_to_crit(MSA.size());
     for (const int poly : polytopes)
       poly_to_crit[poly].reserve(D+1); //todo adjust guess
-    for (int i=0; i<critical.size(); ++i) {
+    for (unsigned i=0; i<critical.size(); ++i) {
       const FiltratedDSimplex<D-1> c = critical[i];
-      for (const auto [poly,_] : msa_connectivity[c.s]) {
+      for (const auto& [poly,_] : msa_connectivity[c.s]) {
         if (maxDelaunay[UF_msa.find(poly)].d < inf) {
           auto &neighbors = poly_to_crit[UF_msa.find(poly)];
           auto it = std::find(neighbors.begin(), neighbors.end(), criticalOrder[i]);
@@ -433,7 +434,7 @@ namespace gph {
     }
 
     /* Next MSA */
-    for (int i=0; i<critical.size(); ++i) {
+    for (unsigned i=0; i<critical.size(); ++i) {
       if (partner[i] == -1) // unassigned -> go in next MSA
         nextMSA.emplace_back(critical[criticalIndices[i]]);
     }
@@ -465,3 +466,5 @@ namespace gph {
   }
 
 }
+
+#endif

@@ -25,7 +25,10 @@ int ttk::DelaunayRipsPersistenceDiagram::execute(
         FRPD.exportRips1Generators(generators);
     }
     else if (dim == 3) {
-      gph::runDelaunayRipsPersistenceDiagram3(points, ph);
+      if (!OutputGenerators)
+        gph::runDelaunayRipsPersistenceDiagram3(points, ph);
+      else
+        gph::runDelaunayRipsPersistenceDiagram3(points, ph, generators);
       ph[0].emplace_back(FiltratedSimplex{{-1}, 0.}, FiltratedSimplex{{-1}, inf}); // infinite pair
     }
     else {
@@ -39,13 +42,10 @@ int ttk::DelaunayRipsPersistenceDiagram::execute(
       }
     }
   }
-
-  for (auto &diag : ph) {
-    for (auto &[b,d] : diag)
-      std::cout << b.second << " " << d.second << std::endl;
-    std::cout << "----------" << std::endl;
-  }
 #else
+  TTK_FORCE_USE(points);
+  TTK_FORCE_USE(ph);
+  TTK_FORCE_USE(generators);
   printErr("TTK was not compiled with CGAL:");
   printErr("this filter is not available.");
 #endif

@@ -33,6 +33,15 @@
 #include <ttkAlgorithm.h>
 
 /**
+ * @brief Converts a vector of vector point cloud to the vtkPoints format
+ *
+ * @param[out] vtkPoints Output vtkPoints
+ * @param[in] pointsData input point cloud
+ */
+TTKRIPSPERSISTENCEDIAGRAM_EXPORT void MakeVtkPoints(vtkPoints *vtkPoints,
+                          const std::vector<std::vector<double>> &pointsData);
+
+/**
  * @brief Converts a Rips Persistence Diagram in the
  * ttk::rpd::MultidimensionalDiagram format to the VTK Unstructured Grid format.
  *
