@@ -104,7 +104,7 @@ int ttkScalarFieldCriticalPoints::RequestData(
   double elapsedTime = ttk::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
   if(ttk::MPIrank_ == 0) {
     printMsg("Computation performed using " + std::to_string(ttk::MPIsize_)
-             + " MPI processes lasted :" + std::to_string(elapsedTime));
+             + " MPI processes lasted: " + std::to_string(elapsedTime));
   }
 #endif
 

@@ -46,7 +46,7 @@ if (TTK_ENABLE_MPI)
   option(TTK_ENABLE_MPI_TIME "Enable time measuring for MPI computation" FALSE)
   mark_as_advanced(TTK_ENABLE_MPI_TIME)
   option(TTK_ENABLE_MPI_RANK_ID_INT "Enable rank ids of type int (default char) for distributed sort" FALSE)
-  mark_as_advanced(TTK_ENABLE_MPI_RANK_ID_TIME)
+  mark_as_advanced(TTK_ENABLE_MPI_RANK_ID_INT)
 
 endif()
 

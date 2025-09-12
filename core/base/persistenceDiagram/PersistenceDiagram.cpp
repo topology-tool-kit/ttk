@@ -7,6 +7,9 @@ using namespace ftm;
 
 PersistenceDiagram::PersistenceDiagram() {
   setDebugMsgPrefix("PersistenceDiagram");
+#ifdef TTK_ENABLE_MPI
+  hasMPISupport_ = true;
+#endif
 }
 
 CriticalType PersistenceDiagram::getNodeType(FTMTree_MT *tree,
