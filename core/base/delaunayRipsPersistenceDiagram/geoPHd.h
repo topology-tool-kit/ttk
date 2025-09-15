@@ -9,7 +9,7 @@
 #include <CGAL/Triangulation_vertex.h>
 #include <CGAL/Triangulation_full_cell.h>
 
-namespace gph {
+namespace ttk::gph {
 
   template <unsigned D>
   using DSimplex = std::array<id_t, D+1>;

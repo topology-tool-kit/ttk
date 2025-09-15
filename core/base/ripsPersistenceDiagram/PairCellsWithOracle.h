@@ -29,7 +29,7 @@ namespace ttk::rpd {
 
     void run();
 
-    void getGenerators(std::vector<Generator> &generators) const;
+    void getGenerators(std::vector<Generator1> &generators) const;
 
     void getCascades(std::vector<Cascade> &cascades, EdgeSets3 &critical) const;
     void getCascades(EdgeSets4 &critical) const;

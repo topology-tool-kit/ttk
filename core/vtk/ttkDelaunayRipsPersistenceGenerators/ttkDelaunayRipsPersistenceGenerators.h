@@ -1,15 +1,17 @@
 /// \ingroup vtk
-/// \class ttkDelaunayRipsPersistenceDiagram
+/// \class ttkDelaunayRipsPersistenceGenerators
 /// \author Mattéo Clémot <matteo.clemot@univ-lyon1.fr>
 /// \date September 2025.
 ///
-/// \brief TTK VTK-filter that wraps the ttk::DelaunayRipsPersistenceDiagram
+/// \brief TTK VTK-filter that wraps the ttk::DelaunayRipsPersistenceGenerators
 /// module.
 ///
-/// VTK wrapping code for the ttk::DelaunayRipsPersistenceDiagram package.
+/// VTK wrapping code for the ttk::DelaunayRipsPersistenceGenerators package.
 ///
 /// \param Input Input table (vtkTable)
 /// \param Output PersistenceDiagram (vtkUnstructuredGrid)
+/// \param Output 1-dimensional generators (vtkUnstructuredGrid)
+/// \param Output 2-dimensional generators (vtkUnstructuredGrid)
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutputDataObject()).
@@ -17,13 +19,13 @@
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
-/// \sa ttk::DelaunayRipsPersistenceDiagram
+/// \sa ttk::DelaunayRipsPersistenceGenerators
 /// \sa ttkAlgorithm
 
 #pragma once
 
 // VTK Module
-#include <ttkDelaunayRipsPersistenceDiagramModule.h>
+#include <ttkDelaunayRipsPersistenceGeneratorsModule.h>
 
 // VTK Includes
 #include <ttkMacros.h>
@@ -33,7 +35,11 @@
 #include <DelaunayRipsPersistenceDiagram.h>
 #include <ttkAlgorithm.h>
 
-class TTKDELAUNAYRIPSPERSISTENCEDIAGRAM_EXPORT ttkDelaunayRipsPersistenceDiagram
+void GeneratorsToVTU(vtkUnstructuredGrid *vtu,
+                     vtkPoints *inputPoints,
+                     const std::vector<Generator2> &generators);
+
+class TTKDELAUNAYRIPSPERSISTENCEGENERATORS_EXPORT ttkDelaunayRipsPersistenceGenerators
   : public ttkAlgorithm, // we inherit from the generic ttkAlgorithm class
     protected ttk::DelaunayRipsPersistenceDiagram { // and we inherit from the base
                                             // class
@@ -44,8 +50,8 @@ private:
   std::vector<std::string> ScalarFields{};
 
 public:
-  static ttkDelaunayRipsPersistenceDiagram *New();
-  vtkTypeMacro(ttkDelaunayRipsPersistenceDiagram, ttkAlgorithm);
+  static ttkDelaunayRipsPersistenceGenerators *New();
+  vtkTypeMacro(ttkDelaunayRipsPersistenceGenerators, ttkAlgorithm);
 
   void SetScalarFields(const std::string &s) {
     ScalarFields.push_back(s);
@@ -67,8 +73,8 @@ public:
   vtkGetMacro(RegexpString, std::string);
 
 protected:
-  ttkDelaunayRipsPersistenceDiagram();
-  ~ttkDelaunayRipsPersistenceDiagram() override = default;
+  ttkDelaunayRipsPersistenceGenerators();
+  ~ttkDelaunayRipsPersistenceGenerators() override = default;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
 

@@ -39,13 +39,13 @@
  *
  * @param[out] vtu Output VTK Unstructured Grid
  * @param[in] inputPoints vtkPoints used to embed the generators
- * @param[in] generators Vector of ttk::rpd::Generator to be converted
+ * @param[in] generators1 Vector of ttk::rpd::Generator1 to be converted
  * @param[in] parametrize Whether to parametrize the generators
  */
 TTKRIPSPERSISTENCEGENERATORS_EXPORT void
   GeneratorsToVTU(vtkUnstructuredGrid *vtu,
                   vtkPoints *inputPoints,
-                  const std::vector<ttk::rpd::Generator> &generators,
+                  const std::vector<ttk::rpd::Generator1> &generators1,
                   bool parametrize = true);
 
 class TTKRIPSPERSISTENCEGENERATORS_EXPORT ttkRipsPersistenceGenerators

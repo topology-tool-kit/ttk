@@ -595,10 +595,10 @@ void FastRipsPersistenceDiagram2::pComputePolygonRipsDeath(
 }
 
 void FastRipsPersistenceDiagram2::exportRips1Generators(
-  std::vector<Generator> &generators) {
+  std::vector<Generator1> &generators) {
   const unsigned N_polys = deathPoly_.size();
 
-  std::vector<Generator> generators_(N_polys);
+  std::vector<Generator1> generators_(N_polys);
   for(unsigned i = 0; i < deathPoly_.size(); ++i)
     generators_[i].second = {birthPoly_[i], deathPoly_[i].d};
   for(const FiltratedQuadEdge &e : (N_polys == nFaces_) ? urquhart_ : rng_) {
@@ -611,7 +611,7 @@ void FastRipsPersistenceDiagram2::exportRips1Generators(
   }
 
   generators.resize(0);
-  for(Generator const &g : generators_) {
+  for(Generator1 const &g : generators_) {
     if(!g.first.empty())
       generators.push_back(g);
   }

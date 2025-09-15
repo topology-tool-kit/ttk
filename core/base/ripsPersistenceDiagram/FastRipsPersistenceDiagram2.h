@@ -61,7 +61,7 @@ namespace ttk::rpd {
                                      bool parallelSort = false,
                                      bool parallelMML = false);
 
-    void exportRips1Generators(std::vector<Generator> &generators);
+    void exportRips1Generators(std::vector<Generator1> &generators);
 
   private:
     Timer tm_{};

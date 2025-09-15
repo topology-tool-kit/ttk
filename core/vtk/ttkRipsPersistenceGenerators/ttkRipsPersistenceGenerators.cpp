@@ -13,7 +13,7 @@ vtkStandardNewMacro(ttkRipsPersistenceGenerators);
 using EdgeParametrization
   = std::unordered_map<ttk::rpd::Edge, double, boost::hash<ttk::rpd::Edge>>;
 static void ParametrizeGenerator(EdgeParametrization &parametrization,
-                                 const ttk::rpd::Generator &generator) {
+                                 const ttk::rpd::Generator1 &generator) {
 
   const int n = generator.first.size();
   int id_a = generator.first[0].first;
@@ -39,40 +39,45 @@ static void ParametrizeGenerator(EdgeParametrization &parametrization,
 
 void GeneratorsToVTU(vtkUnstructuredGrid *vtu,
                      vtkPoints *inputPoints,
-                     const std::vector<ttk::rpd::Generator> &generators,
+                     const std::vector<ttk::rpd::Generator1> &generators1,
                      bool parametrize) {
 
   const auto cd = vtu->GetCellData();
 
   int n_edges = 0;
-  for(auto const &g : generators)
+  for(auto const &g : generators1)
     n_edges += g.first.size();
 
   // cell data arrays
-  vtkNew<vtkIntArray> edgesId{};
-  edgesId->SetName("EdgeIdentifier");
-  edgesId->SetNumberOfTuples(n_edges);
-  cd->AddArray(edgesId);
+  vtkNew<vtkIntArray> simplexId{};
+  simplexId->SetName("simplexIdentifier");
+  simplexId->SetNumberOfTuples(n_edges);
+  cd->AddArray(simplexId);
 
-  vtkNew<vtkIntArray> polygonId{};
-  polygonId->SetName("ClassIdentifier");
-  polygonId->SetNumberOfTuples(n_edges);
-  cd->AddArray(polygonId);
+  vtkNew<vtkIntArray> classId{};
+  classId->SetName("ClassIdentifier");
+  classId->SetNumberOfTuples(n_edges);
+  cd->AddArray(classId);
 
-  vtkNew<vtkDoubleArray> polygonBirth{};
-  polygonBirth->SetName("ClassBirth");
-  polygonBirth->SetNumberOfTuples(n_edges);
-  cd->AddArray(polygonBirth);
+  vtkNew<vtkDoubleArray> classBirth{};
+  classBirth->SetName("ClassBirth");
+  classBirth->SetNumberOfTuples(n_edges);
+  cd->AddArray(classBirth);
 
-  vtkNew<vtkDoubleArray> polygonDeath{};
-  polygonDeath->SetName("ClassDeath");
-  polygonDeath->SetNumberOfTuples(n_edges);
-  cd->AddArray(polygonDeath);
+  vtkNew<vtkDoubleArray> classDeath{};
+  classDeath->SetName("ClassDeath");
+  classDeath->SetNumberOfTuples(n_edges);
+  cd->AddArray(classDeath);
 
-  vtkNew<vtkDoubleArray> polygonPersistence{};
-  polygonPersistence->SetName("ClassPersistence");
-  polygonPersistence->SetNumberOfTuples(n_edges);
-  cd->AddArray(polygonPersistence);
+  vtkNew<vtkDoubleArray> classPersistence{};
+  classPersistence->SetName("ClassPersistence");
+  classPersistence->SetNumberOfTuples(n_edges);
+  cd->AddArray(classPersistence);
+
+  vtkNew<vtkIntArray> classDimension{};
+  classDimension->SetName("ClassDimension");
+  classDimension->SetNumberOfTuples(n_edges);
+  cd->AddArray(classDimension);
 
   vtkNew<vtkDoubleArray> generatorParametrization{};
   generatorParametrization->SetName("GeneratorParametrization");
@@ -87,20 +92,23 @@ void GeneratorsToVTU(vtkUnstructuredGrid *vtu,
   connectivity->SetNumberOfTuples(2 * n_edges);
 
   unsigned i = 0;
-  for(unsigned j = 0; j < generators.size(); ++j) {
-    const ttk::rpd::Generator &g = generators[j];
+  for(unsigned j = 0; j < generators1.size(); ++j) {
+    const ttk::rpd::Generator1 &g = generators1[j];
     EdgeParametrization parametrization;
     if(parametrize)
       ParametrizeGenerator(parametrization, g);
     for(auto const &e : g.first) {
       const unsigned i0 = 2 * i, i1 = 2 * i + 1;
-      edgesId->SetTuple1(i, i);
-      polygonId->SetTuple1(i, j);
-      polygonBirth->SetTuple1(i, g.second.first);
-      polygonDeath->SetTuple1(i, g.second.second);
-      polygonPersistence->SetTuple1(i, g.second.second - g.second.first);
+      simplexId->SetTuple1(i, i);
+      classId->SetTuple1(i, j);
+      classBirth->SetTuple1(i, g.second.first);
+      classDeath->SetTuple1(i, g.second.second);
+      classPersistence->SetTuple1(i, g.second.second - g.second.first);
+      classDimension->SetTuple1(i, 1);
       if(parametrize)
         generatorParametrization->SetTuple1(i, parametrization[e]);
+      else
+        generatorParametrization->SetTuple1(i, 0.);
 
       connectivity->SetTuple1(i0, e.first);
       connectivity->SetTuple1(i1, e.second);
@@ -231,7 +239,7 @@ int ttkRipsPersistenceGenerators::RequestData(
   }
 
   std::vector<ttk::rpd::Diagram> diagram(0);
-  std::vector<ttk::rpd::Generator> generators(0);
+  std::vector<ttk::rpd::Generator1> generators(0);
   this->execute(points, diagram, generators);
 
   GeneratorsToVTU(

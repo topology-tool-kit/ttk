@@ -21,7 +21,7 @@
 #include <RipsPersistenceDiagramUtils.h>
 using namespace ttk::rpd;
 
-namespace gph {
+namespace ttk::gph {
   using id_t = int;
 
   template <unsigned DIM>
@@ -51,8 +51,5 @@ namespace gph {
     double d;
     double a;
   };
-
-  using Generator1 = std::pair<std::vector<Edge>,  std::pair<value_t,value_t>>;
-  using Generator2 = std::pair<std::vector<Facet>, std::pair<value_t,value_t>>;
 
 }

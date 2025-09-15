@@ -1,21 +1,8 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
-        <SourceProxy name="ttkDelaunayRipsPersistenceDiagram" class="ttkDelaunayRipsPersistenceDiagram" label="TTK DelaunayRipsPersistenceDiagram">
-            <Documentation long_help="DelaunayRipsPersistenceDiagram Long" short_help="DelaunayRipsPersistenceDiagram Short">
-                TTK plugin for the computation of the persistence diagram of Delaunay-Rips complexes.
-
-                This plugin computes the persistence diagram of the Delaunay-Rips complex
-                of the input point cloud. The X-coordinate of each pair
-                corresponds to its birth, while its smallest and highest Y-coordinates
-                correspond to its birth and death respectively.
-
-                In practice, the diagram is represented by a vtkUnstructuredGrid. Each
-                vertex of this mesh represent a critical point of the input data. It is
-                associated with point data (vertexId, critical type). Each vertical edge
-                of this mesh represent a persistence pair. It is associated with cell data
-                (persistence of the pair, critical index of the extremum of the pair).
-                The diagonal of the diagram can be filtered out by considering its
-                PairIdentifier value (set at -1).
+        <SourceProxy name="ttkDelaunayRipsPersistenceGenerators" class="ttkDelaunayRipsPersistenceGenerators" label="TTK DelaunayRipsPersistenceGenerators">
+            <Documentation long_help="DelaunayRipsPersistenceGenerators Long" short_help="DelaunayRipsPersistenceGenerators Short">
+                TTK plugin for the computation of the persistence generators of Delaunay-Rips complexes.
             </Documentation>
 
             <!-- INPUT DATA OBJECTS -->
@@ -98,6 +85,10 @@
 
             <!-- DEBUG -->
             ${DEBUG_WIDGETS}
+
+            <OutputPort name="Persistence Diagram" index="0" id="port0" />
+            <OutputPort name="Generators (dim 1)" index="1" id="port1" />
+            <OutputPort name="Generators (dim 2)" index="2" id="port2" />
 
             <!-- MENU CATEGORY -->
             <Hints>

@@ -292,7 +292,7 @@ void PairCells::getDiagram(MultidimensionalDiagram &diagrams) const {
 }
 
 void PairCells::getDiagramAndGenerators(
-  MultidimensionalDiagram &diagrams, std::vector<Generator> &generators) const {
+  MultidimensionalDiagram &diagrams, std::vector<Generator1> &generators) const {
   diagrams.resize(2);
   for(const id_t &e : edgesIndices_) {
     if(edgesPartner_[e] == -2)

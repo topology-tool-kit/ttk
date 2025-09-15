@@ -19,7 +19,7 @@
 #define GPH_SORT(begin, end, comp) std::sort(begin, end, comp)
 #endif
 
-namespace gph {
+namespace ttk::gph {
 
   class DRPersistence3 {
     using K = CGAL::Exact_predicates_inexact_constructions_kernel;
@@ -527,7 +527,7 @@ namespace gph {
 
   };
 
-  inline void runDelaunayRipsPersistenceDiagram3(ttk::rpd::PointCloud const& points, MultidimensionalDiagram &diagram) {
+  inline void runDelaunayRipsPersistenceDiagram3(rpd::PointCloud const& points, MultidimensionalDiagram &diagram) {
     PointCloud<3> p(points.size());
     for (unsigned i = 0; i < points.size(); ++i)
       p[i] = {points[i][0], points[i][1], points[i][2]};
@@ -535,12 +535,11 @@ namespace gph {
     drpd.computeDelaunayRipsPersistence(diagram);
   }
 
-  inline void runDelaunayRipsPersistenceDiagram3(ttk::rpd::PointCloud const& points, MultidimensionalDiagram &diagram, std::vector<Generator1> &generators1) {
+  inline void runDelaunayRipsPersistenceDiagram3(rpd::PointCloud const& points, MultidimensionalDiagram &diagram, std::vector<Generator1> &generators1, std::vector<Generator2> &generators2) {
     PointCloud<3> p(points.size());
     for (unsigned i = 0; i < points.size(); ++i)
       p[i] = {points[i][0], points[i][1], points[i][2]};
     DRPersistence3 drpd(p);
-    std::vector<Generator2> generators2; //dummy variable
     drpd.computeDelaunayRipsPersistence(diagram, generators1, generators2);
   }
 

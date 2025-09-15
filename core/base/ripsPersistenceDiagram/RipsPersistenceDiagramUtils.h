@@ -29,7 +29,9 @@ namespace ttk::rpd {
   enum CRIT { DEATH0, BIRTH1, DEATH1, CASC1 };
   using Cascade = EdgeSet;
 
-  using Generator = std::pair<EdgeSet, std::pair<value_t, value_t>>;
+  using Facet = std::array<id_t, 3>;
+  using Generator1 = std::pair<std::vector<Edge>,  std::pair<value_t,value_t>>;
+  using Generator2 = std::pair<std::vector<Facet>, std::pair<value_t,value_t>>;
 
   struct FiltratedEdge {
     Edge e;

@@ -1,6 +1,5 @@
 #include <ttkDelaunayRipsPersistenceDiagram.h>
 #include <ttkRipsPersistenceDiagram.h>
-#include <ttkRipsPersistenceGenerators.h>
 
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
@@ -11,21 +10,6 @@
 #include <regex>
 
 vtkStandardNewMacro(ttkDelaunayRipsPersistenceDiagram);
-
-static void MakeVtkPoints(vtkPoints *vtkPoints,
-                          const std::vector<std::vector<double>> &pointsData) {
-
-  const int dimension = pointsData[0].size();
-  vtkPoints->SetNumberOfPoints(pointsData.size());
-
-  for(unsigned i = 0; i < pointsData.size(); ++i) {
-    if(dimension >= 3)
-      vtkPoints->SetPoint(
-        i, pointsData[i][0], pointsData[i][1], pointsData[i][2]);
-    else
-      vtkPoints->SetPoint(i, pointsData[i][0], pointsData[i][1], 0.);
-  }
-}
 
 ttkDelaunayRipsPersistenceDiagram::ttkDelaunayRipsPersistenceDiagram() {
   this->SetNumberOfInputPorts(1);
@@ -102,17 +86,10 @@ int ttkDelaunayRipsPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(re
                  0.0, tm.getElapsedTime(), 1);
 
   MultidimensionalDiagram diagram;
-  std::vector<Generator> generators;
-
-  if(this->execute(points, diagram, generators) != 0)
+  if(this->execute(points, diagram) != 0)
     return 0;
 
-  if(OutputGenerators && (dimension == 2 || dimension == 3)) {
-    vtkNew<vtkPoints> vtkPoints{};
-    MakeVtkPoints(vtkPoints, points);
-    GeneratorsToVTU(outputPersistenceDiagram, vtkPoints, generators, true);
-  } else
-    DiagramToVTU(outputPersistenceDiagram, diagram, inf);
+  DiagramToVTU(outputPersistenceDiagram, diagram, inf);
 
   this->printMsg("Complete", 1.0, tm.getElapsedTime(), 1);
 
