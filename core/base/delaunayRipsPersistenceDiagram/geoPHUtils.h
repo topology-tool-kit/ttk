@@ -1,24 +1,20 @@
 #pragma once
 
-#include <array>
-#include <limits>
-#include <vector>
+#include <RipsPersistenceDiagramUtils.h>
 
 #include <boost/version.hpp>
 #if ((BOOST_VERSION / 100) % 1000) >= 81
 #include <boost/unordered/unordered_flat_map.hpp>
+#define GPH_HASHMAP boost::unordered_flat_map
+#elif ((BOOST_VERSION / 100) % 1000) >= 36
+#include <boost/unordered/unordered_map.hpp>
+#define GPH_HASHMAP boost::unordered_map
 #else
 #include <unordered_map>
+#include <boost/container_hash/hash.hpp>
+#define GPH_HASHMAP std::unordered_map
 #endif
 
-#if defined ENABLE_TBB and defined PARALLEL_SORT
-#include <execution>
-#define SORT(begin, end, comp) std::sort(std::execution::par_unseq, begin, end, comp)
-#else
-#define SORT(begin, end, comp) std::sort(begin, end, comp)
-#endif
-
-#include <RipsPersistenceDiagramUtils.h>
 using namespace ttk::rpd;
 
 namespace ttk::gph {

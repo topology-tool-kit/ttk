@@ -15,11 +15,7 @@ namespace ttk::gph {
   using DSimplex = std::array<id_t, D+1>;
 
   template <unsigned D>
-#if ((BOOST_VERSION / 100) % 1000) >= 81
-  using ConnectivityHashMap = boost::unordered_flat_map<DSimplex<D>, std::vector<std::pair<int,int>>>;
-#else
-  using ConnectivityHashMap = std::unordered_map<DSimplex<D>, std::vector<std::pair<int,int>>, boost::hash<DSimplex<D>>>;
-#endif
+  using ConnectivityHashMap = GPH_HASHMAP<DSimplex<D>, std::vector<std::pair<int,int>>, boost::hash<DSimplex<D>>>;
 
   template <unsigned D>
   struct FiltratedDSimplex {

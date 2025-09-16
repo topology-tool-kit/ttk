@@ -55,7 +55,7 @@ int ttk::DelaunayRipsPersistenceDiagram::execute(
 #ifdef TTK_ENABLE_CGAL
   const int dim = points[0].size();
   if (dim > 3) {
-    printErr("Input dimension too large: " + std::to_string(dim) + "> 3");
+    printErr("Input dimension too large: " + std::to_string(dim) + ">3");
     return 1;
   }
   else {

@@ -25,7 +25,7 @@ namespace ttk::gph {
     using K = CGAL::Exact_predicates_inexact_constructions_kernel;
     using Vb = CGAL::Triangulation_vertex_base_with_info_3<int, K>;
     using Fb = CGAL::Triangulation_cell_base_with_info_3<int, K>;
-#ifdef PARALLEL_CGAL
+#if defined(PARALLEL_CGAL) and defined(CGAL_LINKED_WITH_TBB)
     using Tds = CGAL::Triangulation_data_structure_3<Vb, Fb, CGAL::Parallel_tag>;
 #else
     using Tds = CGAL::Triangulation_data_structure_3<Vb, Fb>;
@@ -34,11 +34,7 @@ namespace ttk::gph {
     using Point = Delaunay::Point_3;
 
     using AdjacencyList = std::vector<int>;
-#if ((BOOST_VERSION / 100) % 1000) >= 81
-    using ConnectivityHashMap = boost::unordered_flat_map<Edge, std::pair<AdjacencyList, bool>>;
-#else
-    using ConnectivityHashMap = std::unordered_map<Edge, std::pair<AdjacencyList, bool>, boost::hash<Edge>>;
-#endif
+    using ConnectivityHashMap = GPH_HASHMAP<Edge, std::pair<AdjacencyList, bool>, boost::hash<Edge>>;
 
   public:
     explicit DRPersistence3(const PointCloud<3> &points) : N_p(points.size()), p(points) {}
@@ -113,7 +109,7 @@ namespace ttk::gph {
      */
     void computeDelaunay() {
       std::vector<std::pair<Point,unsigned>> points (N_p);
-#ifndef PARALLEL_CGAL
+#if !defined(PARALLEL_CGAL) or !defined(CGAL_LINKED_WITH_TBB)
       for (unsigned i=0; i<N_p; ++i)
         points[i] = std::make_pair(Point(p[i][0], p[i][1], p[i][2]), i);
       del = Delaunay(points.begin(), points.end());
