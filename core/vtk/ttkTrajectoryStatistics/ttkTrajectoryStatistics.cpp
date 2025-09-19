@@ -258,6 +258,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     inputFields[i] = ttkUtils::GetVoidPointer(inputScalarFields[i]);
   }
   this->setInputScalars(inputFields);
+  this->setInstantPersistence(instantPersistance);
   this->setFiltreX(filtreX);
   this->setFiltreY(filtreY);
   this->setCosCol(cosCol);
@@ -497,16 +498,8 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
       int finalId = i;
       if (newTraj[i][4] != -1)
         finalId = newTraj[i][4]; 
-      auto [minIt, maxIt] = std::minmax_element(instantPersistance[i].begin(), instantPersistance[i].end());
-      double persisMean
-          = std::accumulate(
-              instantPersistance[i].begin(),
-              instantPersistance[i].end(),
-              0.0
-            )
-          / instantPersistance[i].size();
-      //if (allVertexDebris[i].size() != 0)
-       // this->printMsg("persis = min -> " + std::to_string(*minIt) + " max -> " + std::to_string(*maxIt) + " mean -> " + std::to_string(persisMean));
+      else
+        finalId = -1;
       for(const auto vertexId : trajSurface) {
         if(vertexId >= 0 && vertexId < numPoints){
             surfaceTrajId->SetValue(vertexId, finalId);

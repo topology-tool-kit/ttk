@@ -91,7 +91,11 @@ namespace ttk {
     inline void setInputScalars(std::vector<void *> &is) {
       inputData_ = is;
     }
-    
+
+    inline void setInstantPersistence(const std::vector<std::vector<double>> &P) {
+      instantPers_ = P;
+    }
+        
     inline void setFiltreX(double filtre) {
       filtreX_ = filtre;
     }
@@ -261,9 +265,20 @@ namespace ttk {
                 std::vector<std::vector<double>>  gradientNorms,
                 const triangulationType          *triangulation);
 
- 
+    template <class dataType, class triangulationType>
+    int computeSurfacesPersistence(
+      std::vector<std::vector<int>>    &trajTime,
+      std::vector<std::vector<int>>    &trajVertexId,
+      std::vector<double>              &surfMin,
+      std::vector<double>              &surfMax,
+      std::vector<double>              &surfMoy,
+      std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
+      int                                frameSurf,
+      const triangulationType          *triangulation);
+     
 
     std::vector<void *> inputData_{};
+    std::vector<std::vector<double>> instantPers_;
 
     double filtreX_;
     double filtreY_;
@@ -735,14 +750,22 @@ int ttk::TrajectoryStatistics::execute(
         surfMin, surfMax, surfMoy,
         allVertexDebris, excludedCriticalPoints,
         frameSurf, errSurf, gradientNorms, triangulation);
-    } else {
+    } if (surfaceMethod_ == 1) {
       computeSurfacesRW<dataType, triangulationType>(
         trajTime, trajVertexId,
         surfMin, surfMax, surfMoy,
         allVertexDebris, 
         frameSurf, errSurf, gradientNorms, triangulation);
+    } else if(surfaceMethod_ == 2) {
+      computeSurfacesPersistence<dataType, triangulationType>(
+        trajTime, trajVertexId,
+        surfMin, surfMax, surfMoy,
+        allVertexDebris,
+        frameSurf, triangulation);
     }
-this->printMsg("End base");
+
+
+    this->printMsg("End base");
     return 1;
 }
 
@@ -1080,10 +1103,10 @@ template<class dataType>
 int ttk::TrajectoryStatistics::randomWalkerSegment(
   const std::vector<ttk::SimplexId> &seed,        // ids des sommets "marqués"
   const std::vector<int> &seedLabel,              // label de chaque graine (0..K-1)
-  const ttk::AbstractTriangulation *triangulation,      // maillage TTK (déjà initialisé)
+  const ttk::AbstractTriangulation *triangulation, 
   const dataType *intensities,                    // intensité par sommet
   const double beta,                              // paramètre des poids
-  std::vector<int> &segmentation                  // [OUT] étiquette par sommet
+  std::vector<int> &segmentation                  // [OUT] label par sommet
 ) {
 
   this->printMsg("RandomWalker: début de la fonction");
@@ -1150,7 +1173,6 @@ int ttk::TrajectoryStatistics::randomWalkerSegment(
 
 #ifdef TTK_ENABLE_OPENMP
   int nThreads = 1;
-  #include <omp.h>
   nThreads = omp_get_max_threads();
   std::vector<std::vector<Triplet>> L_triplets_tls(static_cast<size_t>(nThreads));
 
@@ -1316,4 +1338,172 @@ int ttk::TrajectoryStatistics::randomWalkerSegment(
 }
 
 #endif
+
+template <class dataType, class triangulationType>
+int ttk::TrajectoryStatistics::computeSurfacesPersistence(
+  std::vector<std::vector<int>>                 &trajTime,
+  std::vector<std::vector<int>>                 &trajVertexId,
+  std::vector<double>                           &surfMin,
+  std::vector<double>                           &surfMax,
+  std::vector<double>                           &surfMoy,
+  std::vector<std::vector<ttk::SimplexId>>      &allVertexDebris,
+  int                                            frameSurf,
+  const triangulationType                       *triangulation) {
+
+  this->printMsg("Surface (Persistence/minima, multi-source) — frame "
+                 + std::to_string(frameSurf));
+
+  if(frameSurf < 0 || frameSurf >= static_cast<int>(inputData_.size())) {
+    this->printMsg("computeSurfacesPersistence: invalid frameSurf");
+    return -1;
+  }
+  if(!triangulation) {
+    this->printMsg("computeSurfacesPersistence: null triangulation");
+    return -2;
+  }
+  if(instantPers_.empty()) {
+    this->printMsg("computeSurfacesPersistence: instantPers_ is empty");
+    return -3;
+  }
+
+  const auto *frameScalars
+    = static_cast<const dataType *>(inputData_[frameSurf]);
+  const ttk::SimplexId nVerts
+    = static_cast<ttk::SimplexId>(triangulation->getNumberOfVertices());
+
+  struct Seed {
+    int traj;               // index de trajectoire
+    ttk::SimplexId v;       // sommet graine
+    dataType fcrit;         // valeur au critique
+    double pers;            // persistance instantanée (>= 0)
+  };
+  std::vector<Seed> seeds;
+  seeds.reserve(trajTime.size());
+
+  const int numTraj = static_cast<int>(trajTime.size());
+  for(int i = 0; i < numTraj; ++i) {
+    if(static_cast<size_t>(i) < allVertexDebris.size())
+      allVertexDebris[i].clear();
+
+    const auto &T = trajTime[i];
+    const auto &V = trajVertexId[i];
+    const auto &P = (i < static_cast<int>(instantPers_.size()))
+                      ? instantPers_[i] : std::vector<double>{};
+
+    for(size_t k = 0; k < T.size(); ++k) {
+      if(T[k] == frameSurf) {
+        const auto v = static_cast<ttk::SimplexId>(V[k]);
+        if(v >= 0 && v < nVerts) {
+          const dataType fcrit = frameScalars[v];
+          double pers = (k < P.size() ? P[k] : 0.0);
+          if(pers < 0.0) pers = 0.0;
+          seeds.push_back({i, v, fcrit, pers});
+        }
+        break;
+      }
+    }
+  }
+
+  const size_t S = seeds.size();
+  if(S == 0) {
+    for(int i = 0; i < numTraj; ++i) {
+      surfMin[i] = surfMax[i] = surfMoy[i] = 0.0;
+    }
+    this->printMsg("Surface (Persistence/minima) — no seeds at this frame");
+    return 0;
+  }
+
+  //priorité / ties 
+  std::vector<int> seedOrder(S);
+  std::iota(seedOrder.begin(), seedOrder.end(), 0);
+  std::stable_sort(seedOrder.begin(), seedOrder.end(),
+                   [&](int a, int b){
+                     if(seeds[a].fcrit != seeds[b].fcrit)
+                       return seeds[a].fcrit < seeds[b].fcrit; // minima → plus bas d'abord
+                     return seeds[a].traj < seeds[b].traj;
+                   });
+  std::vector<int> seedPrio(S, 0); // plus petit = plus prioritaire
+  for(size_t rank = 0; rank < S; ++rank)
+    seedPrio[seedOrder[rank]] = static_cast<int>(rank);
+
+  //Selle associé à chaque seed
+  std::vector<dataType> upper(S);
+  for(size_t s = 0; s < S; ++s)
+    upper[s] = static_cast<dataType>(seeds[s].fcrit + seeds[s].pers);
+
+  struct QItem {
+    dataType f;             // valeur du sommet candidat
+    ttk::SimplexId v;       // sommet
+    int s;                  // index du seed associé
+    int prio;               // priorité du seed associé (plus petit gagne)
+    bool operator<(QItem const &o) const {
+      if(f != o.f) return f > o.f;          
+      if(prio != o.prio) return prio > o.prio;
+      return v > o.v;                       
+    }
+  };
+
+  std::priority_queue<QItem> pq;
+  std::vector<int> label(nVerts, -1);
+
+  auto pushNeighbor = [&](ttk::SimplexId vj, int sIdx) {
+    if(vj < 0 || vj >= nVerts) return;
+    if(label[vj] != -1) return;
+    const dataType fv = frameScalars[vj];
+    if(fv <= upper[sIdx]) {
+      pq.push(QItem{fv, vj, sIdx, seedPrio[sIdx]});
+    }
+  };
+
+  for(size_t s = 0; s < S; ++s) {
+    const auto v0 = seeds[s].v;
+    if(v0 < 0 || v0 >= nVerts) continue;
+
+    if(label[v0] == -1) 
+      label[v0] = seeds[s].traj; // minimum surface = juste la seed
+
+    const int nnei = triangulation->getVertexNeighborNumber(v0);
+    for(int ln = 0; ln < nnei; ++ln) {
+      ttk::SimplexId vj{-1};
+      triangulation->getVertexNeighbor(v0, ln, vj);
+      pushNeighbor(vj, static_cast<int>(s));
+    }
+  }
+
+  while(!pq.empty()) {
+    const auto it = pq.top(); pq.pop();
+    const auto v  = it.v;
+    const int s   = it.s;
+
+    if(label[v] != -1) continue;          // déjà pris par un autre + prioritaire
+    if(frameScalars[v] > upper[s]) continue;  // hors bande de la graine s (normalement pas possible)
+
+    label[v] = seeds[s].traj;
+
+    // propage aux voisins
+    const int nnei = triangulation->getVertexNeighborNumber(v);
+    for(int ln = 0; ln < nnei; ++ln) {
+      ttk::SimplexId vj{-1};
+      triangulation->getVertexNeighbor(v, ln, vj);
+      pushNeighbor(vj, s);
+    }
+  }
+
+  for(ttk::SimplexId v = 0; v < nVerts; ++v) {
+    const int lab = label[v];
+    if(lab >= 0 && lab < numTraj) {
+      allVertexDebris[lab].push_back(v);
+    }
+  }
+
+  for(int i = 0; i < numTraj; ++i) {
+    const double surf = static_cast<double>(
+      computeSurfaceCellCount(allVertexDebris[i], triangulation)
+    );
+    surfMin[i] = surfMax[i] = surfMoy[i] = surf;
+  }
+
+  this->printMsg("Surface (Persistence/minima, multi-source) — OK");
+  return 0;
+}
 
