@@ -162,6 +162,10 @@ namespace ttk {
                   arguments_[j].doubleValueList_->size() + 1);
                 s >> arguments_[j].doubleValueList_->back();
                 arguments_[j].isSet_ = true;
+              } else if(arguments_[j].boolValue_) {
+                std::stringstream s(argv[i + 1]);
+                s >> *(arguments_[j].boolValue_);
+                arguments_[j].isSet_ = true;
               }
             }
           } else {
@@ -257,6 +261,12 @@ namespace ttk {
               s += " ";
             }
           }
+        } else if(arguments_[i].boolValue_) {
+          if(!arguments_[i].isSet_) {
+            s += "(not set)";
+          } else {
+            s += std::to_string(*(arguments_[i].boolValue_));
+          }
         }
 
         printMsg(s, debug::Priority::INFO, debug::LineMode::NEW, o);
@@ -310,6 +320,23 @@ namespace ttk {
       return 0;
     }
 
+    inline int setArgument(const std::string &key,
+                           bool *value,
+                           const std::string &description = "",
+                           const bool &optional = false) {
+
+      if(!value)
+        return -1;
+
+      arguments_.resize(arguments_.size() + 1);
+      arguments_.back().isOptional_ = optional;
+      arguments_.back().key_ = key;
+      arguments_.back().description_ = description;
+      arguments_.back().boolValue_ = value;
+      arguments_.back().isAnOption_ = false;
+
+      return 0;
+    }
     int setArgument(const std::string &key,
                     double *value,
                     const std::string &description = "",
