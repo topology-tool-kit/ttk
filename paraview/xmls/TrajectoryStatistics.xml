@@ -264,12 +264,11 @@
       <!-- DEBUG WIDGETS -->
       ${DEBUG_WIDGETS}
 
-      <OutputPort name="Traj Table" index="0" id="port1"/>
-      <OutputPort name="Traj VTU" index="1" id="port1"/>
-      <OutputPort name="Surface VTI" index="2" id="port2"/>
-      <OutputPort name="New Traj" index="3" id="port3"/>
-      <OutputPort name="Merge" index="4" id="port4"/>
-      <OutputPort name="Inital" index="5" id="port5"/>
+      <OutputPort name="Statistics" index="0" id="port1"/>
+      <OutputPort name="Trajectories" index="1" id="port1"/>
+      <OutputPort name="Surfaces" index="2" id="port2"/>
+      <OutputPort name="Chains" index="3" id="port3"/>
+      <!-- <OutputPort name="Inital" index="5" id="port5"/> -->
 
       <!-- MENU CATEGORY -->
       <Hints>
