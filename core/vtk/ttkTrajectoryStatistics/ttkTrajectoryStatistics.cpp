@@ -226,18 +226,16 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
 
   this->setInputScalars(inputFields);
   this->setInstantPersistence(instantPersistance);
-  this->setFiltreX(filtreX);
   this->setFiltreY(filtreY);
   this->setCosCol(cosCol);
   this->setMaxRadius(maxRadus);
-  this->setMinFrameDist(minFrameDist);
   this->setMaxFrameDist(maxFrameDist);
   this->setSpatialScale(1/(spatialScale*1000));
   this->setInterFrame(interFrame*std::pow(10.0,-6.0));
   this->setConvertDur(convertDur);
   this->setMinVx(minVx);
-  this->setCoordCratere(coordCratere);
-  this->setCraterAngle(threshCratereAngle);
+//  this->setCoordCratere(coordCratere);
+//  this->setCraterAngle(threshCratereAngle);
   this->setMaxX(maxX);
   this->setMaxY(maxY);
   this->setMinY(minY);

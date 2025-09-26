@@ -76,7 +76,6 @@ class TTKTRAJECTORYSTATISTICS_EXPORT ttkTrajectoryStatistics
 private:
   int frameSurface{0}; 
   double errSurf{0.0};
-  double filtreX{1.0};
   double filtreY{1.0};
   double maxRadus{40.0};
   double cosCol{0.96};
@@ -85,10 +84,10 @@ private:
   double interFrame{1.0};
   bool convertDur{false};
   double minVx{0.0};
-  int minFrameDist{0};
   double extendTraj{false};
-  int coordCratere[2]{0,0};
-  double threshCratereAngle{0.0};
+  int enableDirectionalFiltering{0}; 
+//  int coordCratere[2]{0,0};
+//  double threshCratereAngle{0.0};
   int maxX{-1};
   int maxY{-1};
   int minY{-1};
@@ -110,9 +109,6 @@ public:
 
   vtkSetMacro(errSurf, double);
   vtkGetMacro(errSurf, double);
-
-  vtkSetMacro(filtreX, double);
-  vtkGetMacro(filtreX, double);
 
   vtkSetMacro(filtreY, double);
   vtkGetMacro(filtreY, double);
@@ -138,14 +134,14 @@ public:
   vtkSetMacro(minVx, double);
   vtkGetMacro(minVx, double);
 
-  vtkSetMacro(minFrameDist, double);
-  vtkGetMacro(minFrameDist, double);
-
   vtkSetMacro(extendTraj, bool);
   vtkGetMacro(extendTraj, bool);
 
-  vtkSetVector2Macro(coordCratere, int);
-  vtkGetVector2Macro(coordCratere, int);
+  vtkSetMacro(enableDirectionalFiltering, int);
+  vtkGetMacro(enableDirectionalFiltering, int);
+
+//  vtkSetVector2Macro(coordCratere, int);
+//  vtkGetVector2Macro(coordCratere, int);
 
   vtkSetMacro(maxX, int);
   vtkGetMacro(maxX, int);
@@ -157,8 +153,8 @@ public:
   vtkGetMacro(minX, int);
 
 
-  vtkSetMacro(threshCratereAngle, double);
-  vtkGetMacro(threshCratereAngle, double);
+//  vtkSetMacro(threshCratereAngle, double);
+//  vtkGetMacro(threshCratereAngle, double);
 
   vtkSetMacro(surfaceMethod, int);
   vtkGetMacro(surfaceMethod, int);

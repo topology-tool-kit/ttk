@@ -1,280 +1,219 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
-    <SourceProxy name="ttkTrajectoryStatistics" class="ttkTrajectoryStatistics" label="TTK TrajectoryStatistics">
-      <Documentation long_help="Trajectory Stat" short_help="Trajectory statistics after Tracking From Field"/>
-
-      <!-- INPUT DATA OBJECT -->
+    <SourceProxy name="ttkTrajectoryStatistics" class="ttkTrajectoryStatistics" label="TTK Trajectory Statistics">
+      <Documentation short_help="Post-process tracked trajectories and surfaces"
+                     long_help="Compute per-trajectory stats, extract surfaces, and fuse compatible trajectory segments into longer chains."/>
+    
+      <!-- INPUTS -->
       <InputProperty name="InputGrid" command="SetInputConnection" port_index="0">
-        <ProxyGroupDomain name="groups">
-          <Group name="sources"/>
-          <Group name="filters"/>
-        </ProxyGroupDomain>
-        <DataTypeDomain name="input_type">
-          <DataType value="vtkUnstructuredGrid"/>
-        </DataTypeDomain>
-        <Documentation>Output From TrackingFromField.</Documentation>
+        <ProxyGroupDomain name="groups"><Group name="sources"/><Group name="filters"/></ProxyGroupDomain>
+        <DataTypeDomain name="input_type"><DataType value="vtkUnstructuredGrid"/></DataTypeDomain>
+        <Documentation>Output grid produced by TrackingFromField (trajectory segments as cells).</Documentation>
       </InputProperty>
-
+    
       <InputProperty name="InputSet" command="SetInputConnection" port_index="1">
-        <ProxyGroupDomain name="groups">
-          <Group name="sources"/>
-          <Group name="filters"/>
-        </ProxyGroupDomain>
-        <DataTypeDomain name="input_type">
-          <DataType value="vtkDataSet"/>
-        </DataTypeDomain>
-        <Documentation>Initial Data</Documentation>
+        <ProxyGroupDomain name="groups"><Group name="sources"/><Group name="filters"/></ProxyGroupDomain>
+        <DataTypeDomain name="input_type"><DataType value="vtkDataSet"/></DataTypeDomain>
+        <Documentation>Original dataset providing point scalars (one per frame) used by surface extraction.</Documentation>
       </InputProperty>
+    
+      <!-- PARAMETERS -->
+ 
 
-      <!-- OUTPUT PARAMETER WIDGETS -->
-
-
-
-      <IntVectorProperty
-        name="frameSurface"
-        command="SetframeSurface"
-        label="Frame Surface"
-        number_of_elements="1"
-        default_values="0">
-        <Documentation>
-            On which frame to show the surface vertex
-        </Documentation>
+      <!-- Fusion / chaining -->
+      <DoubleVectorProperty name="cosCol" command="SetcosCol" label="Chaining: Min cosine similarity"
+                            number_of_elements="1" default_values="0.96">
+        <Documentation>Minimum cosine similarity between average directions to allow linking two trajectories.</Documentation>
+      </DoubleVectorProperty>
+    
+      <DoubleVectorProperty name="maxRadus" command="SetmaxRadus" label="Chaining: Max 3D distance²"
+                            number_of_elements="1" default_values="40.0">
+        <Documentation>Maximum squared distance (x,y,t) at the linking frame between the predicted end and the start point.</Documentation>
+      </DoubleVectorProperty>
+    
+      <IntVectorProperty name="maxFrameDist" command="SetmaxFrameDist" label="Chaining: frame gap"
+                         number_of_elements="1" default_values="20">
+        <Documentation>Upper and Lower bound on the frame difference between end(i) and start(j) for a valid link.</Documentation>
       </IntVectorProperty>
 
-      <DoubleVectorProperty
-        name="errSurf"
-        command="SeterrSurf"
-        label="Erreur BFS Surface / Beta random Walker"
-        number_of_elements="1"
-        default_values="0.0">
-        <Documentation>
-           Seuil méthode addition surface  
-        </Documentation>
-      </DoubleVectorProperty>
+  
 
-      <IntVectorProperty
-        name="surfaceMethod"
-        label="Surface Method"
-        command="SetsurfaceMethod"
-        number_of_elements="1"
-        default_values="0"
-        panel_visibility="advanced">
+
+      <!-- Surface extraction -->
+      <IntVectorProperty name="frameSurface" command="SetframeSurface" label="Surface: Frame index"
+                         number_of_elements="1" default_values="0">
+        <Documentation>Frame index on which to display the surface vertices.</Documentation>
+      </IntVectorProperty>
+    
+      <DoubleVectorProperty name="errSurf" command="SeterrSurf"
+                            label="Surface: Threshold / β"
+                            number_of_elements="1" default_values="0.0">
+        <Documentation>Surface parameter: threshold for BFS or β for Random Walker (controls region growth strength).</Documentation>
+      </DoubleVectorProperty>
+    
+      <IntVectorProperty name="surfaceMethod" command="SetsurfaceMethod" label="Surface: Method"
+                         number_of_elements="1" default_values="0" panel_visibility="advanced">
         <EnumerationDomain name="enum">
-          <Entry value="0" text="BFS algorithm"/>
-          <Entry value="1" text="Random Walker"/>
-          <Entry value="2" text="Persistance Method"/>
+          <Entry value="0" text="BFS (region grow)"/>
+          <Entry value="1" text="Random Walker (multilabel)"/>
+          <Entry value="2" text="Persistence-based"/>
         </EnumerationDomain>
+        <Documentation>Choose how surfaces are extracted on the selected frame.</Documentation>
+      </IntVectorProperty>
+    
+
+
+
+      <!-- Units -->
+      <DoubleVectorProperty name="spatialScale" command="SetspatialScale" label="Units: Spatial scale (px→mm)"
+                            number_of_elements="1" default_values="1.0">
+        <Documentation>Spatial conversion factor (millimeters per pixel). Used for velocity thresholds.</Documentation>
+      </DoubleVectorProperty>
+    
+      <DoubleVectorProperty name="interFrame" command="SetinterFrame" label="Units: Inter-frame time (μs)"
+                            number_of_elements="1" default_values="1.0">
+        <Documentation>Time between two consecutive frames, in microseconds. Used for velocity computation.</Documentation>
+      </DoubleVectorProperty>
+    
+      <IntVectorProperty name="convertDur" command="SetconvertDur" label="Units: Durations in seconds"
+                         number_of_elements="1" default_values="0" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>When enabled, durations are reported in seconds (otherwise in frames).</Documentation>
+      </IntVectorProperty>
+
+
+
+
+      <!-- Directional filtering -->
+      <IntVectorProperty name="enableDirectionalFiltering"
+                         command="SetenableDirectionalFiltering"
+                         label="Directional filtering ?"
+                         number_of_elements="1" default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>Enable to show and activate directional filtering parameters.</Documentation>
+      </IntVectorProperty>
+      
+      <DoubleVectorProperty name="minVx" command="SetminVx" label="Filter: Min |Vx| (mm/s)"
+                            number_of_elements="1" default_values="0.0">
+        <Documentation>Minimum absolute X velocity required to accept a trajectory (after unit conversion).</Documentation>
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
-                                   property="Backend"
-                                   value="2" />
+                                   property="enableDirectionalFiltering"
+                                   value="1"/>
         </Hints>
-        <Documentation>
-          Surface method
-        </Documentation>
-      </IntVectorProperty>     
-
-
-      <DoubleVectorProperty
-        name="filtreX"
-        command="SetfiltreX"
-        label="filtre traj vecteur 1 0 0"
-        number_of_elements="1"
-        default_values="1.0">
-        <Documentation>
-           Seuil méthode addition surface  
-        </Documentation>
       </DoubleVectorProperty>
 
-      <DoubleVectorProperty
-        name="filtreY"
-        command="SetfiltreY"
-        label="filtre traj vecteur 0 1 0"
-        number_of_elements="1"
-        default_values="1.0">
-        <Documentation>
-           Seuil méthode addition surface  
-        </Documentation>
+      <DoubleVectorProperty name="filtreY" command="SetfiltreY"
+                            label="Direction: Y cosine max"
+                            number_of_elements="1" default_values="1.0">
+        <Documentation> Interval ([-value; value]) on the normalized Y direction (cosine) for trajectory acceptance.</Documentation>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="enableDirectionalFiltering"
+                                   value="1"/>
+        </Hints>
       </DoubleVectorProperty>
+     
 
-       <DoubleVectorProperty
-        name="cosCol"
-        command="SetcosCol"
-        label="Coefficient colinéarité fusion"
-        number_of_elements="1"
-        default_values="0.96">
-        <Documentation>
-           Coefficient mininum de colinéarité pour la fusion  
-        </Documentation>
-      </DoubleVectorProperty>
 
-       <DoubleVectorProperty
-        name="maxRadus"
-        command="SetmaxRadus"
-        label="Rayon max ptTh fusion"
-        number_of_elements="1"
-        default_values="40.0">
-        <Documentation>
-           Seuil méthode addition surface  
-        </Documentation>
-      </DoubleVectorProperty>
+      <!-- Initial Position -->
 
-      <IntVectorProperty
-        name="maxFrameDist"
-        command="SetmaxFrameDist"
-        label="Max Frame Dist Fusion"
-        number_of_elements="1"
-        default_values="20">
-        <Documentation>
-        </Documentation>
+      <IntVectorProperty name="maxX" command="SetmaxX" label="Initial position: Max X"
+                         number_of_elements="1" default_values="-1">
+        <Documentation>Upper bound on the X coordinate of the trajectory at its first frame.
+        Use -1 to disable the filter.</Documentation>
       </IntVectorProperty>
 
-    <IntVectorProperty
-        name="minFrameDist"
-        command="SetminFrameDist"
-        label="Min Frame Dist Fusion"
-        number_of_elements="1"
-        default_values="0">
-        <Documentation>
-        </Documentation>
+      <IntVectorProperty name="maxY" command="SetmaxY" label="Initial position: Max Y"
+                         number_of_elements="1" default_values="-1">
+        <Documentation>Upper bound on the Y coordinate of the trajectory at its first frame.
+        Use -1 to disable the filter.</Documentation>
       </IntVectorProperty>
 
-    <DoubleVectorProperty
-        name="spatialScale"
-        command="SetspatialScale"
-        label="Spatial Scale"
-        number_of_elements="1"
-        default_values="1.0">
-        <Documentation>
-            Spatial Scale (1mm = ? pixel)
-        </Documentation>
+      <IntVectorProperty name="minY" command="SetminY" label="Initial position: Min Y"
+                         number_of_elements="1" default_values="-1">
+        <Documentation>Lower bound on the Y coordinate of the trajectory at its first frame.
+        Use -1 to disable the filter.</Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="minX" command="SetminX" label="Initial position: Min X"
+                         number_of_elements="1" default_values="-1">
+        <Documentation>Lower bound on the X coordinate of the trajectory at its first frame.
+        Use -1 to disable the filter.</Documentation>
+      </IntVectorProperty>
+   
+
+
+<!--      <DoubleVectorProperty name="threshCratereAngle" command="SetthreshCratereAngle"
+                            label="Crater: Min cosine (|cosθ|)"
+                            number_of_elements="1" default_values="0.0">
+        <Documentation>Minimum absolute cosine between trajectory direction and vector towards crater center.</Documentation>
       </DoubleVectorProperty>
-
-    <DoubleVectorProperty
-        name="interFrame"
-        command="SetinterFrame"
-        label="InterFrame"
-        number_of_elements="1"
-        default_values="1.0">
-        <Documentation>
-           Inter Frame in μs 
-        </Documentation>
-      </DoubleVectorProperty>
-
-
-    <IntVectorProperty
-        name="convertDur"
-        command="SetconvertDur"
-        label="Convert durations into sec ?"
-        number_of_elements="1"
-        default_values="0"
-        panel_visibility="advanced">
+-->
+      
+      <IntVectorProperty name="extendTraj" command="SetextendTraj" label="Extend merged chains to t=0"
+                         number_of_elements="1" default_values="0" panel_visibility="advanced">
         <BooleanDomain name="bool"/>
-        <Documentation>
-           Durations is shown in frames or seconds ? 
-        </Documentation>
+        <Documentation>When enabled, merged trajectories are drawn starting from frame 0 instead of their first frame.</Documentation>
       </IntVectorProperty>
-
-
-    <IntVectorProperty
-        name="extendTraj"
-        command="SetextendTraj"
-        label="Extend Traj ?"
-        number_of_elements="1"
-        default_values="0"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-        </Documentation>
-      </IntVectorProperty>
-
-    <DoubleVectorProperty
-        name="minVx"
-        command="SetminVx"
-        label="Min VX"
-        number_of_elements="1"
-        default_values="0.0">
-        <Documentation>
-           Minimum VX 
-        </Documentation>
-      </DoubleVectorProperty>
-
-    <IntVectorProperty
-        name="coordCratere"
-        command="SetcoordCratere"
-        label="coord cratere"
-        number_of_elements="2"
-        default_values="0 0">
-        <Documentation>
-        </Documentation>
-      </IntVectorProperty>
-
-    <DoubleVectorProperty
-        name="threshCratereAngle"
-        command="SetthreshCratereAngle"
-        label="Angle(rad) between traj and cratere with endTraj"
-        number_of_elements="1"
-        default_values="0.0">
-        <Documentation>
-        </Documentation>
-      </DoubleVectorProperty>
-
-      <IntVectorProperty
-        name="maxX"
-        command="SetmaxX"
-        label="Max X"
-        number_of_elements="1"
-        default_values="-1">
-        <Documentation>
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-        name="maxY"
-        command="SetmaxY"
-        label="Max Y"
-        number_of_elements="1"
-        default_values="-1">
-        <Documentation>
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-        name="minY"
-        command="SetminY"
-        label="Min Y"
-        number_of_elements="1"
-        default_values="-1">
-        <Documentation>
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-        name="minX"
-        command="SetminX"
-        label="Min X"
-        number_of_elements="1"
-        default_values="-1">
-        <Documentation>
-        </Documentation>
-      </IntVectorProperty>
-
+    
       <!-- DEBUG WIDGETS -->
       ${DEBUG_WIDGETS}
+      
+     <PropertyGroup panel_widget="Line" label="Fusion / chaining">
+       <Property name="cosCol"/>
+       <Property name="maxRadus"/>
+       <Property name="maxFrameDist"/>
+     </PropertyGroup>  
 
-      <OutputPort name="Statistics" index="0" id="port1"/>
+     <PropertyGroup panel_widget="Line" label="Surface extraction">
+       <Property name="frameSurface"/>
+       <Property name="surfaceMethod"/>
+       <Property name="errSurf"/>
+     </PropertyGroup>
+
+     <PropertyGroup panel_widget="Line" label="Units">
+       <Property name="spatialScale"/>
+       <Property name="interFrame"/>
+       <Property name="convertDur"/>
+
+     </PropertyGroup>
+
+     <PropertyGroup panel_widget="Line" label="Directional filtering">
+       <Property name="enableDirectionalFiltering"/>
+       <Property name="filtreY"/>
+       <Property name="minVx"/>
+     </PropertyGroup>
+
+     <PropertyGroup panel_widget="Line" label="Initial position">
+       <Property name="minX"/>
+       <Property name="maxX"/>
+       <Property name="minY"/>
+       <Property name="maxY"/>
+     </PropertyGroup>
+
+<!--     <PropertyGroup panel_widget="Line" label="Crater targeting">
+       <Property name="coordCratere"/>
+       <Property name="threshCratereAngle"/>
+     </PropertyGroup>
+-->    
+
+    
+      <!-- OUTPUTS (inchangés) -->
+      <OutputPort name="Statistics"   index="0" id="port0"/>
       <OutputPort name="Trajectories" index="1" id="port1"/>
-      <OutputPort name="Surfaces" index="2" id="port2"/>
-      <OutputPort name="Chains" index="3" id="port3"/>
-      <!-- <OutputPort name="Inital" index="5" id="port5"/> -->
-
-      <!-- MENU CATEGORY -->
+      <OutputPort name="Surfaces"     index="2" id="port2"/>
+      <OutputPort name="Chains"       index="3" id="port3"/>
+    
       <Hints>
         <ShowInMenu category="TTK - Misc"/>
       </Hints>
     </SourceProxy>
-  </ProxyGroup>
+ 
+ 
+ </ProxyGroup>
 </ServerManagerConfiguration>
 

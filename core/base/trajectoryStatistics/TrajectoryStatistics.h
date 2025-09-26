@@ -51,18 +51,16 @@ namespace ttk {
 
     inline void setInputScalars(std::vector<void *> &is) { inputData_ = is; }
     inline void setInstantPersistence(const std::vector<std::vector<double>> &P) { instantPers_ = P; }
-    inline void setFiltreX(double v) { filtreX_ = v; }
     inline void setFiltreY(double v) { filtreY_ = v; }
     inline void setCosCol(double v) { cosCol_ = v; }
     inline void setMaxRadius(double v) { maxRadus_ = v; }
-    inline void setMaxFrameDist(int v) { maxFrameDist_ = v; }
+    inline void setMaxFrameDist(int v) { maxFrameDist_ = v; minFrameDist_ = -v;}
     inline void setSpatialScale(double v) { spatialScale_ = v; }
     inline void setInterFrame(double v) { interFrame_ = v; }
     inline void setConvertDur(bool v) { convertDur_ = v; }
     inline void setMinVx(double v) { minVx_ = v; }
-    inline void setMinFrameDist(int v) { minFrameDist_ = v; }
-    inline void setCoordCratere(int v[2]) { coordCratere_[0] = v[0]; coordCratere_[1] = v[1]; }
-    inline void setCraterAngle(double v) { threshCratereAngle_ = v; }
+//    inline void setCoordCratere(int v[2]) { coordCratere_[0] = v[0]; coordCratere_[1] = v[1]; }
+//    inline void setCraterAngle(double v) { threshCratereAngle_ = v; }
     inline void setMaxX(int v){ maxX_ = v; }
     inline void setMaxY(int v){ maxY_ = v; }
     inline void setMinY(int v){ minY_ = v; }
@@ -211,7 +209,6 @@ namespace ttk {
     std::vector<void *> inputData_{};
     std::vector<std::vector<double>> instantPers_;
 
-    double filtreX_;
     double filtreY_;
     double cosCol_;
     double maxRadus_;
@@ -221,8 +218,8 @@ namespace ttk {
     bool convertDur_;
     double minVx_;
     int minFrameDist_;
-    int coordCratere_[2];
-    double threshCratereAngle_;
+//    int coordCratere_[2];
+//    double threshCratereAngle_;
     int maxX_;
     int maxY_;
     int minY_;
@@ -446,11 +443,11 @@ int ttk::TrajectoryStatistics::correctTrajectory(
   };
 
   auto passDirSpeed = [&](const std::vector<double> &c) -> bool {
+    if (minVx_ == 0.0 && filtreY_ == 1.0) return true;
     const double mag = std::sqrt(c[0] * c[0] + c[1] * c[1] + 1.0);
-    const double nx = c[0] / mag;
     const double ny = c[1] / mag;
     const double vx_abs = std::abs(c[0] * spatialScale_ * (1.0 / interFrame_));
-    return (0.0 > nx && nx >= filtreX_) && (-filtreY_ < ny && ny <= filtreY_) && (vx_abs > minVx_);
+    return (-filtreY_ < ny && ny <= filtreY_) && (vx_abs > minVx_);
   };
 
   auto buildSamplesForChain = [&](const std::vector<FuseRecord> &finalTraj,
@@ -489,7 +486,7 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     return lineCoef;
   };
 
-  auto angleTowardCraterOk = [&](const std::vector<double> &c) -> bool {
+/*  auto angleTowardCraterOk = [&](const std::vector<double> &c) -> bool {
     // angle = |cos(theta)|
     const double x_start = projX(c, static_cast<int>(c[4]));
     const double y_start = projY(c, static_cast<int>(c[4]));
@@ -505,6 +502,7 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     const double angle = std::abs(dot / (traj_norm * crat_norm));
     return (angle >= threshCratereAngle_);
   };
+*/
 
 #ifdef TTK_ENABLE_EIGEN
   for(int i = 0; i < numTraj; ++i) {
@@ -629,8 +627,7 @@ int ttk::TrajectoryStatistics::correctTrajectory(
   for(int i = 0; i < numTraj; ++i) {
     if(usedAsStart[i] || usedAsEnd[i] || trajTime[i].empty()) continue;
 
-    if( (0.0 > meanDx[i] && meanDx[i] >= filtreX_)
-        && (-filtreY_ < meanDy[i] && meanDy[i] <= filtreY_)
+    if(  (-filtreY_ < meanDy[i] && meanDy[i] <= filtreY_)
         && std::abs(newTraj[i][0] * spatialScale_ * (1.0 / interFrame_)) > minVx_) {
 
       std::vector<double> lineCoef = newTraj[i];
@@ -641,10 +638,10 @@ int ttk::TrajectoryStatistics::correctTrajectory(
         continue;
       }
 
-      if(angleTowardCraterOk(lineCoef)) {
-        newTraj[i][4] = static_cast<double>(merge.size());
-        merge.push_back(lineCoef);
-      }
+//      if(angleTowardCraterOk(lineCoef)) {
+      newTraj[i][4] = static_cast<double>(merge.size());
+      merge.push_back(lineCoef);
+//      }
     }
   }
 
