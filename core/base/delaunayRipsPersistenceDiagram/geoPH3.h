@@ -239,6 +239,9 @@ namespace ttk::gph {
             elementary_generators[UF.find(f.c2)].push_back(f.f);
         }
       }
+      std::vector<std::vector<int>> cascade (N_c, {0});
+      for (unsigned i=0; i<N_c; i++)
+        cascade[i][0] = i;
 
       for (FiltratedQuadFacet const& f : hyperUrquhart) { //sorted by decreasing order
         const int v1 = UF.find(f.c1);
@@ -255,35 +258,39 @@ namespace ttk::gph {
             if (f.d < death1.d) {
               ph[2].emplace_back(FiltratedSimplex{{f.f[0], f.f[1], f.f[2]}, f.d},
                                  FiltratedSimplex{{death1.f[0], death1.f[1], death1.f[2]}, death1.d});
-              generators2.push_back({elementary_generators[latest1], {f.d, death1.d}});
+              GPH_HASHMAP<Facet,unsigned> generator;
+              for (auto const& c : cascade[latest1]) {
+                for (Facet const& f_ : elementary_generators[c])
+                  generator[f_]++;
+              }
+              std::vector<Facet> generator_facets;
+              for (auto const& [f_,v] : generator) {
+                if (v % 2 == 1)
+                  generator_facets.push_back(f_);
+              }
+              generators2.push_back({generator_facets, {f.d, death1.d}});
             }
             latest[UF.find(v1)] = latest2;
-            GPH_HASHSET generator (elementary_generators[latest2].begin(), elementary_generators[latest2].end(), elementary_generators[latest2].size());
-            for (Facet const& f_ : elementary_generators[latest1]) {
-              auto it = generator.find(f_);
-              if (it == generator.end())
-                generator.insert(f_);
-              else
-                generator.erase(it);
-            }
-            elementary_generators[latest2].assign(generator.begin(), generator.end());
+            cascade[latest2].insert(cascade[latest2].end(), cascade[latest1].begin(), cascade[latest1].end());
           }
           else if (death2.d < death1.d) {
             if (f.d < death2.d) {
               ph[2].emplace_back(FiltratedSimplex{{f.f[0], f.f[1], f.f[2]}, f.d},
                                  FiltratedSimplex{{death2.f[0], death2.f[1], death2.f[2]}, death2.d});
-              generators2.push_back({elementary_generators[latest2], {f.d, death2.d}});
+              GPH_HASHMAP<Facet,unsigned> generator;
+              for (auto const& c : cascade[latest2]) {
+                for (Facet const& f_ : elementary_generators[c])
+                  generator[f_]++;
+              }
+              std::vector<Facet> generator_facets;
+              for (auto const& [f_,v] : generator) {
+                if (v % 2 == 1)
+                  generator_facets.push_back(f_);
+              }
+              generators2.push_back({generator_facets, {f.d, death2.d}});
             }
             latest[UF.find(v1)] = latest1;
-            GPH_HASHSET generator (elementary_generators[latest1].begin(), elementary_generators[latest1].end(), elementary_generators[latest1].size());
-            for (Facet const& f_ : elementary_generators[latest2]) {
-              auto it = generator.find(f_);
-              if (it == generator.end())
-                generator.insert(f_);
-              else
-                generator.erase(it);
-            }
-            elementary_generators[latest1].assign(generator.begin(), generator.end());
+            cascade[latest1].insert(cascade[latest1].end(), cascade[latest2].begin(), cascade[latest2].end());
           }
         }
         else // this is a facet from the minimal spanning acycle
