@@ -15,35 +15,39 @@ int ttk::DelaunayRipsPersistenceDiagram::execute(
     printErr("Input dimension too large: " + std::to_string(dim) + ">" + std::to_string(TTK_DELAUNAY_MAXIMUM_DIMENSION));
     return 1;
   }
+  else if (dim == 2) {
+    FastRipsPersistenceDiagram2 FRPD(points);
+    FRPD.setDebugLevel(debugLevel_);
+    FRPD.computeDelaunayRips0And1Persistence(ph);
+  }
+  else if (dim == 3) {
+#ifndef CGAL_LINKED_WITH_TBB
+    if (getThreadNumber() > 1) {
+      printWrn("TTK was not compiled with TBB:");
+      printWrn("sequential Delaunay triangulation only");
+    }
+#endif
+    gph::runDelaunayRipsPersistenceDiagram3(points, ph, getThreadNumber());
+    ph[0].emplace_back(FiltratedSimplex{{-1}, 0.}, FiltratedSimplex{{-1}, inf}); // infinite pair
+  }
   else {
-    if (dim == 2) {
-      FastRipsPersistenceDiagram2 FRPD(points);
-      FRPD.setDebugLevel(debugLevel_);
-      FRPD.computeDelaunayRips0And1Persistence(ph);
-    }
-    else if (dim == 3) {
-      gph::runDelaunayRipsPersistenceDiagram3(points, ph);
-      ph[0].emplace_back(FiltratedSimplex{{-1}, 0.}, FiltratedSimplex{{-1}, inf}); // infinite pair
-    }
-    else {
-      gph::tryDimensions(points, ph);
-      ph[0].emplace_back(FiltratedSimplex{{-1}, 0.}, FiltratedSimplex{{-1}, inf}); // infinite pair
-      for (auto &diag : ph) {
-        for (auto &[b,d] : diag) {
-          b.first = {-1};
-          d.first = {-1};
-        }
+    gph::tryDimensions(points, ph);
+    ph[0].emplace_back(FiltratedSimplex{{-1}, 0.}, FiltratedSimplex{{-1}, inf}); // infinite pair
+    for (auto &diag : ph) {
+      for (auto &[b,d] : diag) {
+        b.first = {-1};
+        d.first = {-1};
       }
     }
   }
+  return 0;
 #else
   TTK_FORCE_USE(points);
   TTK_FORCE_USE(ph);
   printErr("TTK was not compiled with CGAL:");
   printErr("this filter is not available.");
+  return 1;
 #endif
-
-  return 0;
 }
 
 int ttk::DelaunayRipsPersistenceDiagram::execute(
@@ -58,18 +62,23 @@ int ttk::DelaunayRipsPersistenceDiagram::execute(
     printErr("Input dimension too large: " + std::to_string(dim) + ">3");
     return 1;
   }
-  else {
-    if (dim == 2) {
-      FastRipsPersistenceDiagram2 FRPD(points);
-      FRPD.setDebugLevel(debugLevel_);
-      FRPD.computeDelaunayRips0And1Persistence(ph);
-      FRPD.exportRips1Generators(generators1);
-    }
-    else if (dim == 3) {
-      gph::runDelaunayRipsPersistenceDiagram3(points, ph, generators1, generators2);
-      ph[0].emplace_back(FiltratedSimplex{{-1}, 0.}, FiltratedSimplex{{-1}, inf}); // infinite pair
-    }
+  else if (dim == 2) {
+    FastRipsPersistenceDiagram2 FRPD(points);
+    FRPD.setDebugLevel(debugLevel_);
+    FRPD.computeDelaunayRips0And1Persistence(ph);
+    FRPD.exportRips1Generators(generators1);
   }
+  else if (dim == 3) {
+#ifndef CGAL_LINKED_WITH_TBB
+    if (getThreadNumber() > 1) {
+      printWrn("TTK was not compiled with TBB:");
+      printWrn("sequential Delaunay triangulation only");
+    }
+#endif
+    gph::runDelaunayRipsPersistenceDiagram3(points, ph, generators1, generators2, getThreadNumber());
+    ph[0].emplace_back(FiltratedSimplex{{-1}, 0.}, FiltratedSimplex{{-1}, inf}); // infinite pair
+  }
+  return 0;
 #else
   TTK_FORCE_USE(points);
   TTK_FORCE_USE(ph);
@@ -77,7 +86,6 @@ int ttk::DelaunayRipsPersistenceDiagram::execute(
   TTK_FORCE_USE(generators2);
   printErr("TTK was not compiled with CGAL:");
   printErr("this filter is not available.");
+  return 1;
 #endif
-
-  return 0;
 }

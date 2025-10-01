@@ -95,5 +95,39 @@
                 <ShowInMenu category="TTK - High Dimension / Point Cloud Data" />
             </Hints>
         </SourceProxy>
+
+        <SourceProxy name="ttkDelaunayRipsPersistenceGeneratorsForVtkPointSet" class="ttkDelaunayRipsPersistenceGenerators" label="TTK DelaunayRipsPersistenceGenerators">
+            <Documentation long_help="DelaunayRipsPersistenceGenerators Long" short_help="DelaunayRipsPersistenceGenerators Short">
+                TTK plugin for the computation of the persistence generators of Delaunay-Rips complexes.
+            </Documentation>
+
+            <!-- INPUT DATA OBJECTS -->
+            <InputProperty name="Input" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkPointSet" />
+                </DataTypeDomain>
+                <Documentation>Point cloud to process.</Documentation>
+            </InputProperty>
+
+            <!-- INPUT PARAMETER WIDGETS -->
+
+            <!-- OUTPUT PARAMETER WIDGETS -->
+
+            <!-- DEBUG -->
+            ${DEBUG_WIDGETS}
+
+            <OutputPort name="Persistence Diagram" index="0" id="port0" />
+            <OutputPort name="Generators (dim 1)" index="1" id="port1" />
+            <OutputPort name="Generators (dim 2)" index="2" id="port2" />
+
+            <!-- MENU CATEGORY -->
+            <Hints>
+                <ShowInMenu show="0"/>
+            </Hints>
+        </SourceProxy>
     </ProxyGroup>
 </ServerManagerConfiguration>

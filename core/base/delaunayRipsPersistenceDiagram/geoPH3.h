@@ -9,14 +9,8 @@
 #include <CGAL/Triangulation_vertex_base_with_info_3.h>
 #include <CGAL/Triangulation_cell_base_with_info_3.h>
 
-// #define PARALLEL_CGAL
-// #define PARALLEL_SORT
-
-#if defined ENABLE_TBB and defined PARALLEL_SORT
-#include <execution>
-#define GPH_SORT(begin, end, comp) std::sort(std::execution::par_unseq, begin, end, comp)
-#else
-#define GPH_SORT(begin, end, comp) std::sort(begin, end, comp)
+#ifdef CGAL_LINKED_WITH_TBB
+#include <tbb/global_control.h>
 #endif
 
 namespace ttk::gph {
@@ -25,11 +19,7 @@ namespace ttk::gph {
     using K = CGAL::Exact_predicates_inexact_constructions_kernel;
     using Vb = CGAL::Triangulation_vertex_base_with_info_3<int, K>;
     using Fb = CGAL::Triangulation_cell_base_with_info_3<int, K>;
-#if defined(PARALLEL_CGAL) and defined(CGAL_LINKED_WITH_TBB)
-    using Tds = CGAL::Triangulation_data_structure_3<Vb, Fb, CGAL::Parallel_tag>;
-#else
-    using Tds = CGAL::Triangulation_data_structure_3<Vb, Fb>;
-#endif
+    using Tds = CGAL::Triangulation_data_structure_3<Vb, Fb, CGAL::Parallel_if_available_tag>;
     using Delaunay = CGAL::Delaunay_triangulation_3<K, Tds>;
     using Point = Delaunay::Point_3;
 
@@ -37,7 +27,7 @@ namespace ttk::gph {
     using ConnectivityHashMap = GPH_HASHMAP<Edge, std::pair<AdjacencyList, bool>, boost::hash<Edge>>;
 
   public:
-    explicit DRPersistence3(const PointCloud<3> &points) : N_p(points.size()), p(points) {}
+    explicit DRPersistence3(const PointCloud<3> &points, const int nThreadsSort = 1, const int nThreadsDelaunay = 1) : N_p(points.size()), p(points), nThreadsSort_(nThreadsSort), nThreadsDelaunay_(nThreadsDelaunay) {}
 
     /**
      * Computes the Delaunay-Rips persistence diagram of the point cloud given to the constructor
@@ -81,6 +71,8 @@ namespace ttk::gph {
     unsigned N_c {0};
     const PointCloud<3>& p;
     Delaunay del;
+    const int nThreadsSort_;
+    const int nThreadsDelaunay_;
 
     //1-dimensional
     std::vector<FiltratedEdge> urquhart;
@@ -109,18 +101,26 @@ namespace ttk::gph {
      */
     void computeDelaunay() {
       std::vector<std::pair<Point,unsigned>> points (N_p);
-#if !defined(PARALLEL_CGAL) or !defined(CGAL_LINKED_WITH_TBB)
+#ifndef CGAL_LINKED_WITH_TBB
       for (unsigned i=0; i<N_p; ++i)
         points[i] = std::make_pair(Point(p[i][0], p[i][1], p[i][2]), i);
       del = Delaunay(points.begin(), points.end());
 #else
-      CGAL::Bbox_3 bbox(p[0][0], p[0][1], p[0][2], p[0][0], p[0][1], p[0][2]);
-      for (unsigned i=0; i<N_p; ++i) {
-        points[i] = std::make_pair(Point(p[i][0], p[i][1], p[i][2]), i);
-        bbox += CGAL::Bbox_3(p[i][0], p[i][1], p[i][2], p[i][0], p[i][1], p[i][2]);
+      tbb::global_control (tbb::global_control::max_allowed_parallelism, nThreadsDelaunay_);
+      if (nThreadsDelaunay_ == 1) {
+        for (unsigned i=0; i<N_p; ++i)
+          points[i] = std::make_pair(Point(p[i][0], p[i][1], p[i][2]), i);
+        del = Delaunay(points.begin(), points.end());
       }
-      Delaunay::Lock_data_structure lock_ds(bbox, 100);
-      del = Delaunay(points.begin(), points.end(), &lock_ds);
+      else {
+        CGAL::Bbox_3 bbox(p[0][0], p[0][1], p[0][2], p[0][0], p[0][1], p[0][2]);
+        for (unsigned i=0; i<N_p; ++i) {
+          points[i] = std::make_pair(Point(p[i][0], p[i][1], p[i][2]), i);
+          bbox += CGAL::Bbox_3(p[i][0], p[i][1], p[i][2], p[i][0], p[i][1], p[i][2]);
+        }
+        Delaunay::Lock_data_structure lock_ds(bbox, 100);
+        del = Delaunay(points.begin(), points.end(), &lock_ds);
+      }
 #endif
       int k = 0;
       for(auto const& c : del.all_cell_handles())
@@ -185,7 +185,7 @@ namespace ttk::gph {
         }
       }
 
-      GPH_SORT(hyperUrquhart.begin(), hyperUrquhart.end(), [](const FiltratedQuadFacet &f1, const FiltratedQuadFacet &f2) {
+      TTK_PSORT(nThreadsSort_, hyperUrquhart.begin(), hyperUrquhart.end(), [](const FiltratedQuadFacet &f1, const FiltratedQuadFacet &f2) {
         if (f1.d == f2.d)
           return f1.a > f2.a;
         else
@@ -258,14 +258,15 @@ namespace ttk::gph {
               generators2.push_back({elementary_generators[latest1], {f.d, death1.d}});
             }
             latest[UF.find(v1)] = latest2;
-            std::vector<Facet> &generator = elementary_generators[latest2];
+            GPH_HASHSET generator (elementary_generators[latest2].begin(), elementary_generators[latest2].end(), elementary_generators[latest2].size());
             for (Facet const& f_ : elementary_generators[latest1]) {
-              auto it = std::find(generator.begin(), generator.end(), f_);
+              auto it = generator.find(f_);
               if (it == generator.end())
-                generator.push_back(f_);
+                generator.insert(f_);
               else
                 generator.erase(it);
             }
+            elementary_generators[latest2].assign(generator.begin(), generator.end());
           }
           else if (death2.d < death1.d) {
             if (f.d < death2.d) {
@@ -274,14 +275,15 @@ namespace ttk::gph {
               generators2.push_back({elementary_generators[latest2], {f.d, death2.d}});
             }
             latest[UF.find(v1)] = latest1;
-            std::vector<Facet> &generator = elementary_generators[latest1];
+            GPH_HASHSET generator (elementary_generators[latest1].begin(), elementary_generators[latest1].end(), elementary_generators[latest1].size());
             for (Facet const& f_ : elementary_generators[latest2]) {
-              auto it = std::find(generator.begin(), generator.end(), f_);
+              auto it = generator.find(f_);
               if (it == generator.end())
-                generator.push_back(f_);
+                generator.insert(f_);
               else
                 generator.erase(it);
             }
+            elementary_generators[latest1].assign(generator.begin(), generator.end());
           }
         }
         else // this is a facet from the minimal spanning acycle
@@ -342,7 +344,7 @@ namespace ttk::gph {
           urquhart.push_back({e, sqrt(squaredDistance(e.first, e.second))});
       }
 
-      GPH_SORT(urquhart.begin(), urquhart.end(), [](const FiltratedEdge &a, const FiltratedEdge &b) {
+      TTK_PSORT(nThreadsSort_, urquhart.begin(), urquhart.end(), [](const FiltratedEdge &a, const FiltratedEdge &b) {
         return a.d < b.d;
       });
       UnionFind UF_p(N_p);
@@ -366,15 +368,15 @@ namespace ttk::gph {
           polys.push_back(x);
       }
 
-      GPH_SORT(polys.begin(), polys.end(), [&](const int x1, const int x2) {
+      TTK_PSORT(nThreadsSort_, polys.begin(), polys.end(), [&](const int x1, const int x2) {
         return maxDelaunay1[x1].d < maxDelaunay1[x2].d;
       });
 
       std::vector<int> criticalIndices(critical1.size());
       std::iota(criticalIndices.begin(), criticalIndices.end(), 0);
-      GPH_SORT(criticalIndices.begin(), criticalIndices.end(), [&](const int e1_id, const int e2_id) {
-            return critical1[e1_id].d < critical1[e2_id].d;
-          });
+      TTK_PSORT(nThreadsSort_, criticalIndices.begin(), criticalIndices.end(), [&](const int e1_id, const int e2_id) {
+        return critical1[e1_id].d < critical1[e2_id].d;
+      });
       std::vector<int> criticalOrder(critical1.size());
       for (unsigned i=0; i<criticalIndices.size(); ++i)
         criticalOrder[criticalIndices[i]] = i;
@@ -433,15 +435,15 @@ namespace ttk::gph {
           polys.push_back(x);
       }
 
-      GPH_SORT(polys.begin(), polys.end(), [&](const int x1, const int x2) {
+      TTK_PSORT(nThreadsSort_, polys.begin(), polys.end(), [&](const int x1, const int x2) {
         return maxDelaunay1[x1].d < maxDelaunay1[x2].d;
       });
 
       std::vector<int> criticalIndices(critical1.size());
       std::iota(criticalIndices.begin(), criticalIndices.end(), 0);
-      GPH_SORT(criticalIndices.begin(), criticalIndices.end(), [&](const int e1_id, const int e2_id) {
-            return critical1[e1_id].d < critical1[e2_id].d;
-          });
+      TTK_PSORT(nThreadsSort_, criticalIndices.begin(), criticalIndices.end(), [&](const int e1_id, const int e2_id) {
+        return critical1[e1_id].d < critical1[e2_id].d;
+      });
       std::vector<int> criticalOrder(critical1.size());
       for (unsigned i=0; i<criticalIndices.size(); ++i)
         criticalOrder[criticalIndices[i]] = i;
@@ -523,24 +525,22 @@ namespace ttk::gph {
 
   };
 
-  inline void runDelaunayRipsPersistenceDiagram3(rpd::PointCloud const& points, MultidimensionalDiagram &diagram) {
+  inline void runDelaunayRipsPersistenceDiagram3(rpd::PointCloud const& points, MultidimensionalDiagram &diagram, int threads=1) {
     PointCloud<3> p(points.size());
     for (unsigned i = 0; i < points.size(); ++i)
       p[i] = {points[i][0], points[i][1], points[i][2]};
-    DRPersistence3 drpd(p);
+    DRPersistence3 drpd(p, threads, threads);
     drpd.computeDelaunayRipsPersistence(diagram);
   }
 
-  inline void runDelaunayRipsPersistenceDiagram3(rpd::PointCloud const& points, MultidimensionalDiagram &diagram, std::vector<Generator1> &generators1, std::vector<Generator2> &generators2) {
+  inline void runDelaunayRipsPersistenceDiagram3(rpd::PointCloud const& points, MultidimensionalDiagram &diagram, std::vector<Generator1> &generators1, std::vector<Generator2> &generators2, int threads=1) {
     PointCloud<3> p(points.size());
     for (unsigned i = 0; i < points.size(); ++i)
       p[i] = {points[i][0], points[i][1], points[i][2]};
-    DRPersistence3 drpd(p);
+    DRPersistence3 drpd(p, threads, threads);
     drpd.computeDelaunayRipsPersistence(diagram, generators1, generators2);
   }
 
 }
-
-#undef GPH_SORT
 
 #endif

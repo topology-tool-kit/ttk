@@ -4,6 +4,7 @@
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
 #include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkPointData.h>
 #include <vtkTable.h>
 
@@ -19,7 +20,8 @@ ttkDelaunayRipsPersistenceDiagram::ttkDelaunayRipsPersistenceDiagram() {
 int ttkDelaunayRipsPersistenceDiagram::FillInputPortInformation(int port,
                                                         vtkInformation *info) {
   if(port == 0) {
-    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
+    info->Append(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
+    info->Append(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
     return 1;
   }
   return 0;
@@ -40,50 +42,66 @@ int ttkDelaunayRipsPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(re
 
   ttk::Timer tm{};
 
-  vtkTable *input = vtkTable::GetData(inputVector[0]);
+  vtkInformation* info = inputVector[0]->GetInformationObject(0);
+  vtkDataObject* input = info->Get(vtkDataObject::DATA_OBJECT());
   vtkUnstructuredGrid *outputPersistenceDiagram
     = vtkUnstructuredGrid::GetData(outputVector);
 
   if(!input)
     return 0;
 
-  if(SelectFieldsWithRegexp) {
-    // select all input columns whose name is matching the regexp
-    ScalarFields.clear();
-    const auto n = input->GetNumberOfColumns();
-    for(int i = 0; i < n; ++i) {
-      const auto &name = input->GetColumnName(i);
-      if(std::regex_match(name, std::regex(RegexpString))) {
-        ScalarFields.emplace_back(name);
+  PointCloud points;
+  int numberOfPoints=0;
+  int dimension=0;
+
+  if (vtkTable* table = vtkTable::SafeDownCast(input)) {
+    if(SelectFieldsWithRegexp) {
+      // select all input columns whose name is matching the regexp
+      ScalarFields.clear();
+      const auto n = table->GetNumberOfColumns();
+      for(int i = 0; i < n; ++i) {
+        const auto &name = table->GetColumnName(i);
+        if(std::regex_match(name, std::regex(RegexpString))) {
+          ScalarFields.emplace_back(name);
+        }
       }
+    }
+
+    if(table->GetNumberOfRows() <= 0 || ScalarFields.size() <= 1) {
+      this->printErr("Input matrix has invalid dimensions (rows: "
+                     + std::to_string(table->GetNumberOfRows())
+                     + ", columns: " + std::to_string(ScalarFields.size()) + ")");
+      return 0;
+    }
+
+    std::vector<vtkAbstractArray *> arrays;
+    arrays.reserve(ScalarFields.size());
+    for(const auto &s : ScalarFields)
+      arrays.push_back(table->GetColumnByName(s.data()));
+
+    numberOfPoints = table->GetNumberOfRows();
+    dimension = ScalarFields.size();
+
+    points.resize(numberOfPoints);
+    for(int i = 0; i < numberOfPoints; ++i) {
+      for(int j = 0; j < dimension; ++j)
+        points[i].push_back(arrays[j]->GetVariantValue(i).ToDouble());
     }
   }
 
-  if(input->GetNumberOfRows() <= 0 || ScalarFields.size() <= 1) {
-    this->printErr("Input matrix has invalid dimensions (rows: "
-                   + std::to_string(input->GetNumberOfRows())
-                   + ", columns: " + std::to_string(ScalarFields.size()) + ")");
-    return 0;
+  else if (vtkPointSet* pointset = vtkPointSet::SafeDownCast(input)) {
+    numberOfPoints = pointset->GetNumberOfPoints();
+    dimension = 3;
+    points.resize(numberOfPoints, std::vector<double>(3));
+    for(int i = 0; i < numberOfPoints; ++i)
+      pointset->GetPoint(i, points[i].data());
   }
 
-  std::vector<vtkAbstractArray *> arrays;
-  arrays.reserve(ScalarFields.size());
-  for(const auto &s : ScalarFields)
-    arrays.push_back(input->GetColumnByName(s.data()));
-
-  const int numberOfPoints = input->GetNumberOfRows();
-  const int dimension = ScalarFields.size();
-
-  PointCloud points(numberOfPoints);
-  for(int i = 0; i < numberOfPoints; ++i) {
-    for(int j = 0; j < dimension; ++j)
-      points[i].push_back(arrays[j]->GetVariantValue(i).ToDouble());
-  }
   this->printMsg(
-    "Computing Delaunay-Rips persistence diagram", 1.0, tm.getElapsedTime(), 1);
+    "Computing Delaunay-Rips persistence diagram", 1.0, tm.getElapsedTime(), getThreadNumber());
   this->printMsg("#dimensions: " + std::to_string(dimension)
                    + ", #points: " + std::to_string(numberOfPoints),
-                 0.0, tm.getElapsedTime(), 1);
+                 0.0, tm.getElapsedTime(), getThreadNumber());
 
   MultidimensionalDiagram diagram;
   if(this->execute(points, diagram) != 0)
@@ -91,7 +109,7 @@ int ttkDelaunayRipsPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(re
 
   DiagramToVTU(outputPersistenceDiagram, diagram, inf);
 
-  this->printMsg("Complete", 1.0, tm.getElapsedTime(), 1);
+  this->printMsg("Complete", 1.0, tm.getElapsedTime(), getThreadNumber());
 
   // shallow copy input Field Data
   outputPersistenceDiagram->GetFieldData()->ShallowCopy(input->GetFieldData());
