@@ -15,7 +15,7 @@ namespace ttk::gph {
   using DSimplex = std::array<id_t, D+1>;
 
   template <unsigned D>
-  using ConnectivityHashMap = GPH_HASHMAP<DSimplex<D>, std::vector<std::pair<int,int>>, boost::hash<DSimplex<D>>>;
+  using ConnectivityHashMap = HashMap<DSimplex<D>, std::vector<std::pair<int,int>>>;
 
   template <unsigned D>
   struct FiltratedDSimplex {
@@ -437,7 +437,7 @@ namespace ttk::gph {
   }
 
   template <unsigned DIM>
-  void runDelaunayRipsPersistenceDiagram(ttk::rpd::PointCloud const& points, MultidimensionalDiagram &diagram) {
+  void runDelaunayRipsPersistenceDiagram(rpd::PointCloud const& points, MultidimensionalDiagram &diagram) {
     PointCloud<DIM> p(points.size());
     for (unsigned i = 0; i < points.size(); ++i) {
       for (unsigned d = 0; d < DIM; ++d)
@@ -448,7 +448,7 @@ namespace ttk::gph {
   }
 
   template <unsigned DIM>
-  void tryDimension(ttk::rpd::PointCloud const& points, MultidimensionalDiagram &diagram) {
+  void tryDimension(rpd::PointCloud const& points, MultidimensionalDiagram &diagram) {
     if constexpr (DIM <= TTK_DELAUNAY_MAXIMUM_DIMENSION) {
       if (points[0].size() == DIM)
         runDelaunayRipsPersistenceDiagram<DIM>(points, diagram);
@@ -457,7 +457,7 @@ namespace ttk::gph {
     }
   }
 
-  inline void tryDimensions(ttk::rpd::PointCloud const& points, MultidimensionalDiagram &diagram) {
+  inline void tryDimensions(rpd::PointCloud const& points, MultidimensionalDiagram &diagram) {
     tryDimension<4>(points, diagram);
   }
 

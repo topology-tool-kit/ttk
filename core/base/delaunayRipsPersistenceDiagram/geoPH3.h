@@ -24,7 +24,7 @@ namespace ttk::gph {
     using Point = Delaunay::Point_3;
 
     using AdjacencyList = std::vector<int>;
-    using ConnectivityHashMap = GPH_HASHMAP<Edge, std::pair<AdjacencyList, bool>, boost::hash<Edge>>;
+    using ConnectivityHashMap = HashMap<Edge, std::pair<AdjacencyList, bool>>;
 
   public:
     explicit DRPersistence3(const PointCloud<3> &points, const int nThreadsSort = 1, const int nThreadsDelaunay = 1) : N_p(points.size()), p(points), nThreadsSort_(nThreadsSort), nThreadsDelaunay_(nThreadsDelaunay) {}
@@ -258,7 +258,7 @@ namespace ttk::gph {
             if (f.d < death1.d) {
               ph[2].emplace_back(FiltratedSimplex{{f.f[0], f.f[1], f.f[2]}, f.d},
                                  FiltratedSimplex{{death1.f[0], death1.f[1], death1.f[2]}, death1.d});
-              GPH_HASHMAP<Facet,unsigned> generator;
+              HashMap<Facet, unsigned> generator;
               for (auto const& c : cascade[latest1]) {
                 for (Facet const& f_ : elementary_generators[c])
                   generator[f_]++;
@@ -277,7 +277,7 @@ namespace ttk::gph {
             if (f.d < death2.d) {
               ph[2].emplace_back(FiltratedSimplex{{f.f[0], f.f[1], f.f[2]}, f.d},
                                  FiltratedSimplex{{death2.f[0], death2.f[1], death2.f[2]}, death2.d});
-              GPH_HASHMAP<Facet,unsigned> generator;
+              HashMap<Facet, unsigned> generator;
               for (auto const& c : cascade[latest2]) {
                 for (Facet const& f_ : elementary_generators[c])
                   generator[f_]++;

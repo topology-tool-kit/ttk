@@ -5,14 +5,11 @@
 #include <boost/version.hpp>
 #if ((BOOST_VERSION / 100) % 1000) >= 81
 #include <boost/unordered/unordered_flat_map.hpp>
-#define GPH_HASHMAP boost::unordered_flat_map
 #elif ((BOOST_VERSION / 100) % 1000) >= 36
 #include <boost/unordered/unordered_map.hpp>
-#define GPH_HASHMAP boost::unordered_map
 #else
 #include <unordered_map>
 #include <boost/container_hash/hash.hpp>
-#define GPH_HASHMAP std::unordered_map
 #endif
 
 using namespace ttk::rpd;
@@ -47,5 +44,13 @@ namespace ttk::gph {
     double d;
     double a;
   };
+
+#if ((BOOST_VERSION / 100) % 1000) >= 81
+  template <typename X, typename Y> using HashMap = boost::unordered_flat_map<X, Y>;
+#elif ((BOOST_VERSION / 100) % 1000) >= 36
+  template <typename X, typename Y> using HashMap = boost::unordered_map<X, Y>;
+#else
+  template <typename X, typename Y> using HashMap = std::unordered_map<X, Y, boost::hash<X>>;
+#endif
 
 }
