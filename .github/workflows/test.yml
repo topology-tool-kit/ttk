@@ -305,8 +305,8 @@ jobs:
     - name: Install optional Spectra dependency
       uses: ./.github/actions/install-spectra-unix
 
-#    - name: Install optional ZFP dependency
-#      uses: ./.github/actions/install-zfp-unix
+    - name: Install optional ZFP dependency
+      uses: ./.github/actions/install-zfp-unix
 
     - name: Fetch TTK-ParaView headless macOS binary archive
       run: |
@@ -346,7 +346,6 @@ jobs:
           -DTTK_ENABLE_MPI=TRUE \
           -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE \
           -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE \
-          -DTTK_ENABLE_ZLIB=FALSE \
           -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 \
           -GNinja \
           $GITHUB_WORKSPACE
