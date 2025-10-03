@@ -289,7 +289,8 @@ jobs:
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew install llvm lld ninja open-mpi
+        brew install ninja open-mpi
+#        brew install llvm lld
         # TTK dependencies
         brew install boost cgal eigen graphviz spectra sqlite zlib numpy qhull
 
@@ -318,11 +319,11 @@ jobs:
 
     - name: Set compilers as environment variables
       run: |
-        echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
-        echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
-        echo "CPPFLAGS=$(brew --prefix llvm)/include" >> $GITHUB_ENV
-        echo "CXXFLAGS=$(brew --prefix llvm)/include/c++/v1" >> $GITHUB_ENV
-        echo "LDFLAGS=-L$(brew --prefix llvm)/lib/c++ -L$(brew --prefix llvm)/lib/unwind -lunwind" >> $GITHUB_ENV
+#        echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
+#        echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
+#        echo "CPPFLAGS=$(brew --prefix llvm)/include" >> $GITHUB_ENV
+#        echo "CXXFLAGS=$(brew --prefix llvm)/include/c++/v1" >> $GITHUB_ENV
+#        echo "LDFLAGS=-L$(brew --prefix llvm)/lib/c++ -L$(brew --prefix llvm)/lib/unwind -lunwind" >> $GITHUB_ENV
 
     - name: Create & configure TTK build directory
       run: |
