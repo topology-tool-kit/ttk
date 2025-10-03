@@ -118,8 +118,11 @@ jobs:
           doxygen \
           clang-tidy
 
-    - name: Install optional dependencies
-      uses: ./.github/actions/install-deps-unix
+    - name: Install optional Spectra dependency
+      uses: ./.github/actions/install-spectra-unix
+
+    - name: Install optional ZFP dependency
+      uses: ./.github/actions/install-zfp-unix
 
     - name: Fetch TTK-ParaView headless Debian package
       run: |
@@ -207,8 +210,11 @@ jobs:
           clang-tools \
           libomp-dev
 
-    - name: Install optional dependencies
-      uses: ./.github/actions/install-deps-unix
+    - name: Install optional Spectra dependency
+      uses: ./.github/actions/install-spectra-unix
+
+    - name: Install optional ZFP dependency
+      uses: ./.github/actions/install-zfp-unix
 
     - name: Fetch TTK-ParaView headless Debian package
       run: |
