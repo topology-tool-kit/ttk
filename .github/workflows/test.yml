@@ -320,7 +320,7 @@ jobs:
     - name: Set compilers as environment variables
       run: |
         echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
-        echo "CFLAGS=$(brew --prefix llvm)/include" >> $GITHUB_ENV
+#        echo "CFLAGS=$(brew --prefix llvm)/include" >> $GITHUB_ENV
         echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
         echo "CPPFLAGS=$(brew --prefix llvm)/include" >> $GITHUB_ENV
         echo "CXXFLAGS=$(brew --prefix llvm)/include/" >> $GITHUB_ENV
