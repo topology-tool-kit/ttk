@@ -272,7 +272,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-13, macos-14, macos-15]
+        os: [macos-14, macos-15]
     if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     env:
       DYLD_LIBRARY_PATH: /usr/local/lib
