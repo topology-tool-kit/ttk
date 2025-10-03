@@ -305,6 +305,9 @@ jobs:
     - name: Install optional Spectra dependency
       uses: ./.github/actions/install-spectra-unix
 
+    - name: Install optional ZFP dependency
+      uses: ./.github/actions/install-zfp-unix
+
     - name: Fetch TTK-ParaView headless macOS binary archive
       run: |
           wget -O ttk-paraview-headless.tar.gz \
