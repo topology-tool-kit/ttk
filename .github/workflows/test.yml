@@ -295,7 +295,7 @@ jobs:
         brew install ninja open-mpi
         brew install llvm lld
         # TTK dependencies
-        brew install boost cgal eigen graphviz spectra sqlite zlib numpy qhull
+        brew install boost cgal eigen graphviz spectra sqlite numpy qhull
 
     - name: Install and setup sccache
       uses: f3d-app/sccache-setup-action@v1
@@ -305,8 +305,8 @@ jobs:
     - name: Install optional Spectra dependency
       uses: ./.github/actions/install-spectra-unix
 
-    - name: Install optional ZFP dependency
-      uses: ./.github/actions/install-zfp-unix
+#    - name: Install optional ZFP dependency
+#      uses: ./.github/actions/install-zfp-unix
 
     - name: Fetch TTK-ParaView headless macOS binary archive
       run: |
