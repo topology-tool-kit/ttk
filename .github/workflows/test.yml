@@ -73,8 +73,11 @@ jobs:
       with:
         key: ${{ matrix.os }}-0
 
-    - name: Install optional dependencies
-      uses: ./.github/actions/install-deps-unix
+    - name: Install optional Spectra dependency
+      uses: ./.github/actions/install-spectra-unix
+
+    - name: Install optional ZFP dependency
+      uses: ./.github/actions/install-zfp-unix
 
     # TODO: try to replicate for mac
     - name: Install Torch
@@ -299,8 +302,8 @@ jobs:
       with:
         key: macos-0
 
-    - name: Install optional dependencies
-      uses: ./.github/actions/install-deps-unix
+    - name: Install optional Spectra dependency
+      uses: ./.github/actions/install-spectra-unix
 
     - name: Fetch TTK-ParaView headless macOS binary archive
       run: |
@@ -435,7 +438,7 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge libboost-devel glew eigen spectralib \
+        conda install -c conda-forge libboost-devel glew eigen spectralib zfp  \
           sqlite scikit-learn graphviz ninja python=3.10 zlib qhull \
           llvm-openmp clangxx=18
         # add TTK & ParaView install folders to PATH
