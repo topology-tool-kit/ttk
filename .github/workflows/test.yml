@@ -435,7 +435,7 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge libboost-devel glew eigen spectralib zfp  \
+        conda install -c conda-forge libboost-devel glew eigen spectralib \
           sqlite scikit-learn graphviz ninja python=3.10 zlib qhull \
           llvm-openmp clangxx=18
         # add TTK & ParaView install folders to PATH
