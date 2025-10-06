@@ -91,6 +91,10 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
     if(ttk::isRunningWithMPI()) {
 
       this->preconditionTriangulation(triangulation);
+#ifdef TTK_ENABLE_MPI_TIME
+      ttk::Timer t_mpi;
+      ttk::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+#endif
       // add the order array for every scalar array, except the ghostcells, the
       // rankarray and the global ids
       for(auto scalarArray : scalarArrays) {
@@ -120,6 +124,15 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
             ttkUtils::GetVoidPointer(scalarArray), true);
         }
       }
+#ifdef TTK_ENABLE_MPI_TIME
+      double elapsedTime
+        = ttk::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+      if(ttk::MPIrank_ == 0) {
+        printMsg("Array preconditioning performed using "
+                 + std::to_string(ttk::MPIsize_)
+                 + " MPI processes lasted: " + std::to_string(elapsedTime));
+      }
+#endif
       this->printMsg("Preconditioned selected scalar arrays", 1.0,
                      tm.getElapsedTime(), this->threadNumber_);
       return 1;
@@ -129,7 +142,10 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
     }
   }
 #endif
-
+#ifdef TTK_ENABLE_MPI_TIME
+  ttk::Timer t_mpi;
+  ttk::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+#endif
   for(auto scalarArray : scalarArrays) {
     vtkNew<ttkSimplexIdTypeArray> orderArray{};
     orderArray->SetName(
@@ -152,7 +168,14 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *ttkNotUsed(request),
     this->printMsg("Generated order array for scalar array `"
                    + std::string{scalarArray->GetName()} + "'");
   }
-
+#ifdef TTK_ENABLE_MPI_TIME
+  double elapsedTime = ttk::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+  if(ttk::MPIrank_ == 0) {
+    printMsg("Array preconditioning performed using "
+             + std::to_string(ttk::MPIsize_)
+             + " MPI processes lasted: " + std::to_string(elapsedTime));
+  }
+#endif
   this->printMsg("Preconditioned selected scalar arrays", 1.0,
                  tm.getElapsedTime(), this->threadNumber_);
 
