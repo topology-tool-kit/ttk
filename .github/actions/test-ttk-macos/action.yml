@@ -9,7 +9,13 @@ runs:
       run: |
         cd $GITHUB_WORKSPACE/examples/c++
         mkdir build && cd build
-        cmake ..
+        cmake .. \
+          -DOpenMP_C_FLAGS="-Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include" \
+          -DOpenMP_C_LIB_NAMES="omp" \
+          -DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include" \
+          -DOpenMP_CXX_LIB_NAMES="omp" \
+          -DOpenMP_omp_LIBRARY=/opt/homebrew/opt/libomp/lib/libomp.dylib \
+          -DCMAKE_EXE_LINKER_FLAGS="-L/opt/homebrew/opt/libomp/lib -lomp" 
         cmake --build . --parallel
         ./ttkExample-c++ -i ../../data/inputData.off
 
@@ -18,7 +24,13 @@ runs:
       run: |
         cd $GITHUB_WORKSPACE/examples/vtk-c++
         mkdir build && cd build
-        cmake ..
+        cmake .. \
+          -DOpenMP_C_FLAGS="-Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include" \
+          -DOpenMP_C_LIB_NAMES="omp" \
+          -DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include" \
+          -DOpenMP_CXX_LIB_NAMES="omp" \
+          -DOpenMP_omp_LIBRARY=/opt/homebrew/opt/libomp/lib/libomp.dylib \
+          -DCMAKE_EXE_LINKER_FLAGS="-L/opt/homebrew/opt/libomp/lib -lomp" 
         cmake --build . --parallel
         ./ttkExample-vtk-c++ -i ../../data/inputData.vtu
 
