@@ -73,8 +73,11 @@ jobs:
       with:
         key: ${{ matrix.os }}-0
 
-    - name: Install optional dependencies
-      uses: ./.github/actions/install-deps-unix
+    - name: Install optional Spectra dependency
+      uses: ./.github/actions/install-spectra-unix
+
+    - name: Install optional ZFP dependency
+      uses: ./.github/actions/install-zfp-unix
 
     # TODO: try to replicate for mac
     - name: Install Torch
@@ -272,7 +275,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-13, macos-14, macos-15]
+        os: [macos-14, macos-15]
     if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     env:
       DYLD_LIBRARY_PATH: /usr/local/lib
@@ -289,17 +292,21 @@ jobs:
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew install llvm lld ninja open-mpi
+        brew install ninja open-mpi
+        brew install llvm lld
         # TTK dependencies
-        brew install boost cgal eigen graphviz spectra sqlite zlib numpy qhull
+        brew install boost cgal eigen graphviz spectra sqlite numpy qhull
 
     - name: Install and setup sccache
       uses: f3d-app/sccache-setup-action@v1
       with:
         key: macos-0
 
-    - name: Install optional dependencies
-      uses: ./.github/actions/install-deps-unix
+    - name: Install optional Spectra dependency
+      uses: ./.github/actions/install-spectra-unix
+
+    - name: Install optional ZFP dependency
+      uses: ./.github/actions/install-zfp-unix
 
     - name: Fetch TTK-ParaView headless macOS binary archive
       run: |
@@ -321,6 +328,7 @@ jobs:
         echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
         echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
         echo "CPPFLAGS=$(brew --prefix llvm)/include" >> $GITHUB_ENV
+        echo "CXXFLAGS=$(brew --prefix llvm)/include/ $(xcrun --show-sdk-path)" >> $GITHUB_ENV
         echo "LDFLAGS=-L$(brew --prefix llvm)/lib/c++ -L$(brew --prefix llvm)/lib/unwind -lunwind" >> $GITHUB_ENV
 
     - name: Create & configure TTK build directory
