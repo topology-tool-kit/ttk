@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PV_TAG: v5.13.0-headless
+  PV_TAG: v6.0.1-headless
   PV_REPO: topology-tool-kit/ttk-paraview
 
 
@@ -286,7 +286,7 @@ jobs:
 
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: '3.13'
 
     - name: Install macOS dependencies
       run: |
@@ -318,10 +318,10 @@ jobs:
         tar xzf ttk-paraview-headless.tar.gz
         sudo cp -r ttk-paraview/* /usr/local
         # pvpython does not embed the correct PYTHONPATH
-        echo "PYTHONPATH=/usr/local/lib/python3.12/site-packages:$PYTHONPATH" >> $GITHUB_ENV
+        echo "PYTHONPATH=/usr/local/lib/python3.13/site-packages:$PYTHONPATH" >> $GITHUB_ENV
         pvpython -m pip install --break-system-packages scikit-learn
         # pvpython is expecting a vtkpython executable at this path
-        sudo ln -s /usr/local/bin/pvpython /Library/Frameworks/Python.framework/Versions/3.12/vtkpython
+        sudo ln -s /usr/local/bin/pvpython /Library/Frameworks/Python.framework/Versions/3.13/vtkpython
 
     - name: Set compilers as environment variables
       run: |
