@@ -293,7 +293,6 @@ jobs:
         # ParaView dependencies
         brew install --cask xquartz
         brew install ninja open-mpi libomp
-        #brew install llvm lld
         # TTK dependencies
         brew install boost cgal eigen graphviz spectra sqlite numpy qhull
 
