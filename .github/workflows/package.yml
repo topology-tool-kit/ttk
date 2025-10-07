@@ -590,6 +590,8 @@ jobs:
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
         rm python/nestedTrackingFromOverlap.py
+        # tmp removal of mpi example
+        rm python/mpiExample.py
         # remove examples which fill up the memory
         rm python/topologicalOptimization_darkSky.py
         # remove examples using raster features
