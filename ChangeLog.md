@@ -4,6 +4,7 @@
 - Distributed computation of persistent homology!
 - New backend for TrackingFromFields (critical point based)
 - Fast planar Rips filtration persistence computation
+- CI updates
 
 ### 1.3.0
 - Wasserstein Auto-Encoders of Merge Trees / Pers. Diagrams (IEEE TVCG 2024)
