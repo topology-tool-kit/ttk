@@ -595,6 +595,8 @@ jobs:
         rm python/mpiExample.py
         # remove examples which fill up the memory
         rm python/topologicalOptimization_darkSky.py
+        # remove examples using raster features
+        rm python/geometryApproximation.py
         pvpython.exe -u python\run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
