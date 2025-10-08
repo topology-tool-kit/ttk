@@ -69,21 +69,35 @@ int ttkPersistenceDiagram::dispatch(
                    + std::to_string(status));
     return 0;
   }
-
-  if(CTDiagram.empty()) {
-    this->printErr("Empty diagram!");
-    return 0;
-  }
+#ifdef TTK_ENABLE_MPI
+  if(!ttk::isRunningWithMPI())
+#endif
+    if(CTDiagram.empty()) {
+      this->printErr("Empty diagram!");
+      return 0;
+    }
 
   vtkNew<vtkUnstructuredGrid> const vtu{};
 
   // convert CTDiagram to vtkUnstructuredGrid
+#if defined(TTK_ENABLE_MPI) && defined(TTK_ENABLE_OPENMP)
+  if(!ttk::isRunningWithMPI()) {
+    DiagramToVTU(vtu, CTDiagram, inputScalarsArray, *this,
+                 triangulation->getDimensionality(), this->ShowInsideDomain);
+  } else {
+    DiagramToDistributedVTU(vtu, CTDiagram, inputScalarsArray, *this,
+                            triangulation->getDimensionality(),
+                            this->ShowInsideDomain);
+  }
+#else
   DiagramToVTU(vtu, CTDiagram, inputScalarsArray, *this,
                triangulation->getDimensionality(), this->ShowInsideDomain);
-
+#endif
   outputCTPersistenceDiagram->ShallowCopy(vtu);
 
-  if(this->ClearDGCache && this->BackEnd == BACKEND::DISCRETE_MORSE_SANDWICH) {
+  if(this->ClearDGCache
+     && (this->BackEnd == BACKEND::DISCRETE_MORSE_SANDWICH
+         || this->BackEnd == BACKEND::DISCRETE_MORSE_SANDWICH_MPI)) {
     this->printMsg("Clearing DiscreteGradient cache...");
     ttk::dcg::DiscreteGradient::clearCache(*triangulation);
   }
@@ -118,7 +132,7 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
 #endif
 
   vtkDataArray *offsetField = this->GetOrderArray(
-    input, 0, triangulation, false, 1, ForceInputOffsetScalarField);
+    input, 0, triangulation, true, 1, ForceInputOffsetScalarField);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!offsetField) {

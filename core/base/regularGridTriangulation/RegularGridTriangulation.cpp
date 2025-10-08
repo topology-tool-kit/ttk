@@ -74,6 +74,49 @@ int ttk::RegularGridTriangulation::getVertexRankInternal(
   return -1;
 }
 
+int ttk::RegularGridTriangulation::getEdgeRankInternal(
+  const SimplexId lvid) const {
+
+  ttk::SimplexId minId{-1};
+  int cellMinRank;
+  this->TTK_TRIANGULATION_INTERNAL(getEdgeStar)(lvid, 0, minId);
+  const auto nStar{this->TTK_TRIANGULATION_INTERNAL(getEdgeStarNumber)(lvid)};
+  cellMinRank = this->getCellRankInternal(minId);
+  for(SimplexId i = 1; i < nStar; ++i) {
+    SimplexId sid{-1};
+    this->TTK_TRIANGULATION_INTERNAL(getEdgeStar)(lvid, i, sid);
+    // rule: an edge is owned by the cell in its star with the
+    // lowest rank id
+    int cellRank = this->getCellRankInternal(sid);
+    if(cellRank < cellMinRank) {
+      cellMinRank = cellRank;
+    }
+  }
+  return cellMinRank;
+}
+
+int ttk::RegularGridTriangulation::getTriangleRankInternal(
+  const SimplexId lvid) const {
+
+  ttk::SimplexId minId{-1};
+  int cellMinRank;
+  this->TTK_TRIANGULATION_INTERNAL(getTriangleStar)(lvid, 0, minId);
+  const auto nStar{
+    this->TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(lvid)};
+  cellMinRank = this->getCellRankInternal(minId);
+  for(SimplexId i = 1; i < nStar; ++i) {
+    SimplexId sid{-1};
+    this->TTK_TRIANGULATION_INTERNAL(getTriangleStar)(lvid, i, sid);
+    // rule: a triangle is owned by the cell in its star with the
+    // lowest rank id
+    int cellRank = this->getCellRankInternal(sid);
+    if(cellRank < cellMinRank) {
+      cellMinRank = cellRank;
+    }
+  }
+  return cellMinRank;
+}
+
 ttk::SimplexId ttk::RegularGridTriangulation::getVertexGlobalIdInternal(
   const SimplexId lvid) const {
   if(!ttk::isRunningWithMPI()) {
@@ -195,7 +238,10 @@ ttk::SimplexId ttk::RegularGridTriangulation::getCellLocalIdInternal(
   p[2] -= this->localGridOffset_[2];
 
   const auto &dims{this->getGridDimensions()};
-
+  if(p[0] < 0 || p[1] < 0 || p[2] < 0 || p[0] >= dims[0] - 1
+     || p[1] >= dims[1] - 1 || (p[2] >= dims[2] - 1 && dims[2] != 1)) {
+    return -1;
+  }
   // local coordinates to identifier (inverse of tetrahedronToPosition)
   const auto locCubeId{p[0] + p[1] * (dims[0] - 1)
                        + p[2] * (dims[0] - 1) * (dims[1] - 1)};

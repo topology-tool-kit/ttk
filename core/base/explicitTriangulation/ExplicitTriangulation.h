@@ -707,6 +707,14 @@ namespace ttk {
       return this->vertexRankArray_[lvid];
     }
 
+    inline int getEdgeRankInternal(const SimplexId lvid) const override {
+      return this->edgeRankArray_[lvid];
+    }
+
+    inline int getTriangleRankInternal(const SimplexId lvid) const override {
+      return this->triangleRankArray_[lvid];
+    }
+
     inline std::unordered_map<SimplexId, SimplexId> &getVertexGlobalIdMap() {
       return this->vertexGidToLid_;
     }

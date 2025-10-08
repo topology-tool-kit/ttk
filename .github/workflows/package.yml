@@ -164,7 +164,7 @@ jobs:
         rm python/nestedTrackingFromOverlap.py
         # remove examples which fill up the memory
         rm python/topologicalOptimization_darkSky.py
-        python3 -u python/run.py
+        pvpython -u python/run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
       continue-on-error: true
@@ -181,7 +181,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-13, macos-14, macos-15]
+        os: [macos-14, macos-15]
     env:  
       DYLD_LIBRARY_PATH: /usr/local/lib
 
@@ -197,7 +197,7 @@ jobs:
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew install llvm mesa glew qt@5 ninja 
+        brew install llvm lld mesa glew qt@5 ninja 
         # TTK dependencies
         brew install boost cgal eigen graphviz spectra sqlite zlib numpy qhull 
 
@@ -224,6 +224,8 @@ jobs:
       run: |
         echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
         echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
+        echo "CPPFLAGS=$(brew --prefix llvm)/include" >> $GITHUB_ENV
+        echo "LDFLAGS=-L$(brew --prefix llvm)/lib/c++ -L$(brew --prefix llvm)/lib/unwind -lunwind" >> $GITHUB_ENV
 
     - name: Create & configure TTK build directory
       run: |
@@ -266,7 +268,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-13, macos-14, macos-15]
+        os: [macos-14, macos-15]
     env:
       DYLD_LIBRARY_PATH: /usr/local/lib
     steps:
@@ -281,7 +283,7 @@ jobs:
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew install llvm mesa glew qt@5 ninja 
+        brew install llvm lld mesa glew qt@5 ninja 
         # TTK dependencies
         brew install boost cgal eigen graphviz spectra sqlite zlib numpy qhull 
 
@@ -314,6 +316,9 @@ jobs:
       run: |
         echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
         echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
+        echo "CPPFLAGS=$(brew --prefix llvm)/include" >> $GITHUB_ENV
+        echo "LDFLAGS=-L$(brew --prefix llvm)/lib/c++ -L$(brew --prefix llvm)/lib/unwind -lunwind" >> $GITHUB_ENV
+
         echo "CMAKE_PREFIX_PATH=$(brew --prefix qt@5)/lib/cmake:$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
         # pvpython does not embed the correct PYTHONPATH
         echo "PYTHONPATH=/usr/local/lib/python3.12/site-packages:$PYTHONPATH" >> $GITHUB_ENV
@@ -339,12 +344,8 @@ jobs:
         # remove examples which fill up the memory
         rm python/topologicalOptimization_darkSky.py
         # some cases fail only with version 12
-        if [[ "${{ matrix.os }}" == "macos-13" ]]; then
-          rm python/contourTreeAlignment.py
-          rm python/geometryApproximation.py
-          rm python/harmonicSkeleton.py
-          rm python/topologicalOptimization_torus.py
-        fi
+        # remove sklearn examples -- buggy on MacOS since sklearn-1.7
+        rm python/1manifoldLearning.py python/clusteringKelvinHelmholtzInstabilities.py python/karhunenLoveDigits64Dimensions.py python/mergeTreeClustering.py python/persistentGenerators_householdAnalysis.py python/persistentGenerators_periodicPicture.py
         pvpython -u python/run.py
       env:
         PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
@@ -652,14 +653,6 @@ jobs:
         tag: ${{ github.ref }}
         file: ttk-ubuntu-24.04.deb/ttk.deb
         asset_name: ttk-$tag-ubuntu-24.04.deb
-
-    - name: Upload MacOS 13 binary archives as Release Asset
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        tag: ${{ github.ref }}
-        file: ttk-macos-13.tar.gz/ttk.tar.gz
-        asset_name: ttk-$tag-macos-13.tar.gz
 
     - name: Upload MacOS 14 binary archives as Release Asset
       uses: svenstaro/upload-release-action@v2
