@@ -10,12 +10,16 @@ int ttk::DelaunayRipsPersistenceDiagram::execute(
   MultidimensionalDiagram &ph) const {
 
 #ifdef TTK_ENABLE_CGAL
-  const int dim = points[0].size();
+  const unsigned dim = points[0].size();
   if (dim > TTK_DELAUNAY_MAXIMUM_DIMENSION) {
     printErr("Input dimension too large: " + std::to_string(dim) + ">" + std::to_string(TTK_DELAUNAY_MAXIMUM_DIMENSION));
     return 1;
   }
-  else if (dim == 2) {
+  if (points.size() <= dim) {
+    printErr("Not enough points");
+    return 1;
+  }
+  if (dim == 2) {
     FastRipsPersistenceDiagram2 FRPD(points);
     FRPD.setDebugLevel(debugLevel_);
     FRPD.computeDelaunayRips0And1Persistence(ph);
@@ -57,12 +61,16 @@ int ttk::DelaunayRipsPersistenceDiagram::execute(
   std::vector<Generator2> &generators2) const {
 
 #ifdef TTK_ENABLE_CGAL
-  const int dim = points[0].size();
+  const unsigned dim = points[0].size();
   if (dim > 3) {
     printErr("Input dimension too large: " + std::to_string(dim) + ">3");
     return 1;
   }
-  else if (dim == 2) {
+  if (points.size() <= dim) {
+    printErr("Not enough points");
+    return 1;
+  }
+  if (dim == 2) {
     FastRipsPersistenceDiagram2 FRPD(points);
     FRPD.setDebugLevel(debugLevel_);
     FRPD.computeDelaunayRips0And1Persistence(ph);
