@@ -65,7 +65,7 @@ namespace ttk {
         "MergeTreeDistance"); // inherited from Debug: prefix will be printed at
                               // the beginning of every msg
 #ifdef TTK_ENABLE_OPENMP4
-      omp_set_nested(1);
+      omp_set_max_active_levels(100);
 #endif
     }
     ~MergeTreeDistance() override = default;
