@@ -1,0 +1,1232 @@
+diff '--color=auto' -ur a/Clients/ParaView/CMakeLists.txt b/Clients/ParaView/CMakeLists.txt
+--- a/Clients/ParaView/CMakeLists.txt	2025-10-09 09:10:11.713545694 +0200
++++ b/Clients/ParaView/CMakeLists.txt	2025-10-06 07:17:36.629116142 +0200
+@@ -16,9 +16,9 @@
+ endif ()
+ 
+ if (DEFINED PARAVIEW_VERSION_NICKNAME)
+-  set(paraview_version "${PARAVIEW_VERSION_NICKNAME}")
++  set(paraview_version "[TTK 1.3.0] ${PARAVIEW_VERSION_NICKNAME}")
+ else ()
+-  set(paraview_version "${PARAVIEW_VERSION_FULL}")
++  set(paraview_version "[TTK 1.3.0] ${PARAVIEW_VERSION_FULL}")
+ endif ()
+ set(paraview_title "ParaView ${paraview_version}")
+ if (PARAVIEW_BRANCH)
+@@ -72,7 +72,7 @@
+   EXPORT            "ParaViewClient"
+   APPLICATION_NAME  "ParaView"
+   TITLE             "${paraview_title}"
+-  ORGANIZATION      "ParaView"
++  ORGANIZATION      "TTK"
+   VERSION           "${PARAVIEW_VERSION_MAJOR}.${PARAVIEW_VERSION_MINOR}.${PARAVIEW_VERSION_PATCH}"
+   ${style_args}
+   MAIN_WINDOW_CLASS "ParaViewMainWindow"
+diff '--color=auto' -ur a/CMake/ParaViewOptions.cmake b/CMake/ParaViewOptions.cmake
+--- a/CMake/ParaViewOptions.cmake	2025-10-09 09:10:11.706879028 +0200
++++ b/CMake/ParaViewOptions.cmake	2025-10-06 07:17:36.625782808 +0200
+@@ -131,7 +131,7 @@
+   unset(_has_fortran)
+ endif()
+ 
+-vtk_deprecated_setting(python_default PARAVIEW_USE_PYTHON PARAVIEW_ENABLE_PYTHON OFF)
++vtk_deprecated_setting(python_default PARAVIEW_USE_PYTHON PARAVIEW_ENABLE_PYTHON ON)
+ option(PARAVIEW_USE_PYTHON "Enable/Disable Python scripting support" "${python_default}")
+ 
+ option(PARAVIEW_USE_SERIALIZATION "Enable/Disable Serialization support" OFF)
+diff '--color=auto' -ur a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	2025-10-09 09:10:11.703545694 +0200
++++ b/CMakeLists.txt	2025-10-06 07:17:36.625782808 +0200
+@@ -27,8 +27,8 @@
+ get_property(generator_is_multi_config GLOBAL
+   PROPERTY GENERATOR_IS_MULTI_CONFIG)
+ if (NOT CMAKE_BUILD_TYPE AND NOT generator_is_multi_config)
+-  message(STATUS "Setting build type to 'Debug' as none was specified.")
+-  set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
++  message(STATUS "Setting build type to 'Release' as none was specified.")
++  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+   # Set the possible values of build type for cmake-gui
+   set_property(CACHE CMAKE_BUILD_TYPE
+     PROPERTY
+@@ -1253,3 +1253,47 @@
+ if (PARAVIEW_ENABLE_EXAMPLES)
+   add_subdirectory(Examples)
+ endif ()
++
++#-----------------------------------------------------------------------------
++# Install TTK example data
++install(FILES ${ParaView_SOURCE_DIR}/TTK/Data/Example1.vti
++  DESTINATION share/paraview${paraview_version_suffix}/examples/
++  COMPONENT development)
++
++install(FILES ${ParaView_SOURCE_DIR}/TTK/Data/Example2.vti
++  DESTINATION share/paraview${paraview_version_suffix}/examples/
++  COMPONENT development)
++
++install(FILES ${ParaView_SOURCE_DIR}/TTK/Data/Example3.vti
++  DESTINATION share/paraview${paraview_version_suffix}/examples/
++  COMPONENT development)
++
++#-----------------------------------------------------------------------------
++# Generate a .deb package
++set(CPACK_PACKAGE_NAME "TTK-ParaView")
++set(CPACK_PACKAGE_FILE_NAME "ttk-paraview")
++set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "ParaView built with TTK patches")
++set(CPACK_PACKAGE_CONTACT "Julien Tierny <julien.tierny@sorbonne-universite.fr>")
++set(CPACK_PACKAGE_VENDOR "CNRS, Sorbonne University and contributors")
++set(CPACK_PACKAGE_HOMEPAGE_URL "https://topology-tool-kit.github.io/")
++
++option(TTK_PARAVIEW_HEADLESS_DEPS "Use headless TTK-ParaView dependencies for .deb packages" OFF)
++set(CPACK_DEBIAN_PACKAGE_DEPENDS "python3-dev")
++if(TTK_PARAVIEW_HEADLESS_DEPS)
++  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libopenmpi-dev, libosmesa-dev, ${CPACK_DEBIAN_PACKAGE_DEPENDS}")
++else()
++  set(CPACK_DEBIAN_PACKAGE_DEPENDS
++    "qtbase5-dev, qtchooser, qt5-qmake, qtbase5-dev-tools, qttools5-dev, libqt5x11extras5-dev, qtxmlpatterns5-dev-tools, libqt5svg5-dev, libxt-dev, ${CPACK_DEBIAN_PACKAGE_DEPENDS}"
++  )
++endif()
++
++set(CPACK_PACKAGE_VERSION_MAJOR ${PARAVIEW_VERSION_MAJOR})
++set(CPACK_PACKAGE_VERSION_MINOR ${PARAVIEW_VERSION_MINOR})
++set(CPACK_PACKAGE_VERSION_PATCH ${PARAVIEW_VERSION_PATCH})
++# autogenerate dependency information
++set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
++# package will be installed under %ProgramFiles%\${CPACK_PACKAGE_INSTALL_DIRECTORY} on Windows
++set(CPACK_PACKAGE_INSTALL_DIRECTORY "TTK-ParaView")
++# let the installer uninstall previous installations on Windows
++set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
++include(CPack)
+diff '--color=auto' -ur a/Qt/ApplicationComponents/pqExampleVisualizationsDialog.cxx b/Qt/ApplicationComponents/pqExampleVisualizationsDialog.cxx
+--- a/Qt/ApplicationComponents/pqExampleVisualizationsDialog.cxx	2025-10-09 09:10:11.880212361 +0200
++++ b/Qt/ApplicationComponents/pqExampleVisualizationsDialog.cxx	2025-10-06 07:17:36.929116143 +0200
+@@ -5,16 +5,13 @@
+ 
+ #include "pqActiveObjects.h"
+ #include "pqApplicationCore.h"
+-#include "pqCoreUtilities.h"
+ #include "pqEventDispatcher.h"
+ #include "pqLoadStateReaction.h"
+ #include "vtkPVFileInformation.h"
+ 
+ #include <QFile>
+ #include <QFileInfo>
+-#include <QMainWindow>
+ #include <QMessageBox>
+-#include <QStatusBar>
+ 
+ #include <cassert>
+ 
+@@ -28,23 +25,11 @@
+   this->setWindowFlags(this->windowFlags().setFlag(Qt::WindowContextHelpButtonHint, false));
+ 
+   QObject::connect(
+-    this->ui->CanExampleButton, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
+-  QObject::connect(
+-    this->ui->DiskOutRefExampleButton, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
+-  QObject::connect(
+-    this->ui->HeadSQExampleButton, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
+-  QObject::connect(
+-    this->ui->HotGasAnalysisExampleButton, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
+-  QObject::connect(
+-    this->ui->TosExampleButton, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
+-  QObject::connect(
+-    this->ui->WaveletExampleButton, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
+-  QObject::connect(
+-    this->ui->RectilinearGridTimestepsButton, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
+-  QObject::connect(
+-    this->ui->UnstructuredGridParallelButton, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
+-  QObject::connect(
+-    this->ui->MandelbrotButton, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
++      this->ui->Example1Button, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
++    QObject::connect(
++      this->ui->Example2Button, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
++    QObject::connect(
++      this->ui->Example3Button, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
+ }
+ 
+ //-----------------------------------------------------------------------------
+@@ -62,49 +47,19 @@
+   {
+     const char* stateFile = nullptr;
+     bool needsData = false;
+-    if (button == this->ui->CanExampleButton)
++    if (button == this->ui->Example1Button)
+     {
+-      stateFile = ":/pqApplicationComponents/ExampleVisualizations/CanExample.pvsm";
++      stateFile = ":/pqApplicationComponents/ExampleVisualizations/Example1.pvsm";
+       needsData = true;
+     }
+-    else if (button == this->ui->DiskOutRefExampleButton)
++    else if (button == this->ui->Example2Button)
+     {
+-      stateFile = ":/pqApplicationComponents/ExampleVisualizations/DiskOutRefExample.pvsm";
++      stateFile = ":/pqApplicationComponents/ExampleVisualizations/Example2.pvsm";
+       needsData = true;
+     }
+-    else if (button == this->ui->WaveletExampleButton)
++    else if (button == this->ui->Example3Button)
+     {
+-      stateFile = ":/pqApplicationComponents/ExampleVisualizations/WaveletExample.pvsm";
+-      needsData = false;
+-    }
+-    else if (button == this->ui->HotGasAnalysisExampleButton)
+-    {
+-      stateFile = ":/pqApplicationComponents/ExampleVisualizations/HotGasAnalysisExample.pvsm";
+-      needsData = true;
+-    }
+-    else if (button == this->ui->HeadSQExampleButton)
+-    {
+-      stateFile = ":/pqApplicationComponents/ExampleVisualizations/HeadSQExample.pvsm";
+-      needsData = true;
+-    }
+-    else if (button == this->ui->TosExampleButton)
+-    {
+-      stateFile = ":/pqApplicationComponents/ExampleVisualizations/TosExample.pvsm";
+-      needsData = true;
+-    }
+-    else if (button == this->ui->RectilinearGridTimestepsButton)
+-    {
+-      stateFile = ":/pqApplicationComponents/ExampleVisualizations/RectilinearGrid.pvsm";
+-      needsData = true;
+-    }
+-    else if (button == this->ui->UnstructuredGridParallelButton)
+-    {
+-      stateFile = ":/pqApplicationComponents/ExampleVisualizations/UnstructuredGridParallel.pvsm";
+-      needsData = true;
+-    }
+-    else if (button == this->ui->MandelbrotButton)
+-    {
+-      stateFile = ":/pqApplicationComponents/ExampleVisualizations/Mandelbrot.pvsm";
++      stateFile = ":/pqApplicationComponents/ExampleVisualizations/Example3.pvsm";
+       needsData = false;
+     }
+     else
+@@ -136,11 +91,13 @@
+     QFile qfile(stateFile);
+     if (qfile.open(QIODevice::ReadOnly | QIODevice::Text))
+     {
+-      QMainWindow* mainWindow = qobject_cast<QMainWindow*>(pqCoreUtilities::mainWidget());
+-      if (mainWindow)
+-      {
+-        mainWindow->statusBar()->showMessage(tr("Loading example visualization."), 2000);
+-      }
++      QMessageBox box(this);
++      box.setText(tr("Loading example visualization, please wait ..."));
++      box.setStandardButtons(QMessageBox::NoButton);
++      box.show();
++
++      // without this, the message box doesn't paint properly.
++      pqEventDispatcher::processEventsAndWait(100);
+ 
+       QString xmldata(qfile.readAll());
+       xmldata.replace("$PARAVIEW_EXAMPLES_DATA", dataPath);
+diff '--color=auto' -ur a/Qt/ApplicationComponents/Resources/pqApplicationComponents.qrc b/Qt/ApplicationComponents/Resources/pqApplicationComponents.qrc
+--- a/Qt/ApplicationComponents/Resources/pqApplicationComponents.qrc	2025-10-09 09:10:11.876879028 +0200
++++ b/Qt/ApplicationComponents/Resources/pqApplicationComponents.qrc	2024-09-10 10:41:08.900033687 +0200
+@@ -2,23 +2,11 @@
+ <!-- SPDX-License-Identifier: BSD-3-Clause -->
+ <RCC>
+   <qresource prefix="/pqApplicationComponents">
+-    <file>Thumbnails/Mandelbrot.png</file>
+-    <file>Thumbnails/RectilinearGridTimesteps.png</file>
+-    <file>Thumbnails/UnstructuredGridParallel.png</file>
+-    <file>ExampleVisualizations/Mandelbrot.pvsm</file>
+-    <file>ExampleVisualizations/RectilinearGrid.pvsm</file>
+-    <file>ExampleVisualizations/UnstructuredGridParallel.pvsm</file>
+-    <file>ExampleVisualizations/CanExample.pvsm</file>
+-    <file>ExampleVisualizations/DiskOutRefExample.pvsm</file>
+-    <file>ExampleVisualizations/HeadSQExample.pvsm</file>
+-    <file>ExampleVisualizations/HotGasAnalysisExample.pvsm</file>
+-    <file>ExampleVisualizations/TosExample.pvsm</file>
+-    <file>ExampleVisualizations/WaveletExample.pvsm</file>
+-    <file>Thumbnails/CanExample.png</file>
+-    <file>Thumbnails/DiskOutRefExample.png</file>
+-    <file>Thumbnails/HeadSQExample.png</file>
+-    <file>Thumbnails/HotGasAnalysisExample.png</file>
+-    <file>Thumbnails/TosExample.png</file>
+-    <file>Thumbnails/WaveletExample.png</file>
++    <file>ExampleVisualizations/Example1.pvsm</file>
++    <file>ExampleVisualizations/Example2.pvsm</file>
++    <file>ExampleVisualizations/Example3.pvsm</file>
++    <file>Thumbnails/Example1.png</file>
++    <file>Thumbnails/Example2.png</file>
++    <file>Thumbnails/Example3.png</file>
+   </qresource>
+ </RCC>
+diff '--color=auto' -ur a/Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui b/Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui
+--- a/Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui	2025-10-09 09:10:11.876879028 +0200
++++ b/Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui	2025-10-06 07:17:36.922449477 +0200
+@@ -8,587 +8,167 @@
+    <rect>
+     <x>0</x>
+     <y>0</y>
+-    <width>939</width>
+-    <height>830</height>
++    <width>996</width>
++    <height>420</height>
+    </rect>
+   </property>
+-  <property name="sizePolicy">
+-   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+-    <horstretch>0</horstretch>
+-    <verstretch>0</verstretch>
+-   </sizepolicy>
+-  </property>
+   <property name="windowTitle">
+    <string>ParaView Example Visualizations</string>
+   </property>
+-  <layout class="QVBoxLayout" name="verticalLayout">
+-   <property name="spacing">
+-    <number>0</number>
+-   </property>
+-   <property name="leftMargin">
+-    <number>0</number>
+-   </property>
+-   <property name="topMargin">
+-    <number>0</number>
+-   </property>
+-   <property name="rightMargin">
+-    <number>0</number>
+-   </property>
+-   <property name="bottomMargin">
+-    <number>0</number>
+-   </property>
+-   <item>
+-    <widget class="QScrollArea" name="scrollArea">
+-     <property name="sizePolicy">
+-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+-       <horstretch>0</horstretch>
+-       <verstretch>0</verstretch>
+-      </sizepolicy>
++  <layout class="QGridLayout" name="gridLayout">
++   <item row="1" column="0" colspan="3">
++    <widget class="QLabel" name="label">
++     <property name="text">
++      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Click on one of thumbnails below to load an example visualization&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
++     </property>
++    </widget>
++   </item>
++   <item row="0" column="0" colspan="3">
++    <widget class="QLabel" name="titleLabel">
++     <property name="font">
++      <font>
++       <pointsize>20</pointsize>
++       <italic>false</italic>
++       <strikeout>false</strikeout>
++       <kerning>false</kerning>
++      </font>
++     </property>
++     <property name="text">
++      <string>TTK Example Visualizations</string>
++     </property>
++     <property name="alignment">
++      <set>Qt::AlignCenter</set>
++     </property>
++    </widget>
++   </item>
++   <item row="3" column="0">
++    <widget class="QLabel" name="Example1Description">
++     <property name="text">
++      <string>Scalar data example</string>
++     </property>
++     <property name="alignment">
++      <set>Qt::AlignHCenter|Qt::AlignTop</set>
+      </property>
+-     <property name="horizontalScrollBarPolicy">
+-      <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
++     <property name="wordWrap">
++      <bool>true</bool>
++     </property>
++    </widget>
++   </item>
++   <item row="8" column="0" colspan="3">
++    <widget class="QDialogButtonBox" name="buttonBox">
++     <property name="orientation">
++      <enum>Qt::Horizontal</enum>
++     </property>
++     <property name="standardButtons">
++      <set>QDialogButtonBox::Close</set>
++     </property>
++    </widget>
++   </item>
++   <item row="3" column="1">
++    <widget class="QLabel" name="Example2Description">
++     <property name="text">
++      <string>Bivariate scalar data example</string>
+      </property>
+-     <property name="sizeAdjustPolicy">
+-      <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContentsOnFirstShow</enum>
++     <property name="alignment">
++      <set>Qt::AlignHCenter|Qt::AlignTop</set>
+      </property>
+-     <property name="widgetResizable">
++     <property name="wordWrap">
+       <bool>true</bool>
+      </property>
++    </widget>
++   </item>
++   <item row="3" column="2">
++    <widget class="QLabel" name="Example3Description">
++     <property name="text">
++      <string>Uncertain data example</string>
++     </property>
+      <property name="alignment">
+-      <set>Qt::AlignmentFlag::AlignCenter</set>
++       <set>Qt::AlignHCenter|Qt::AlignTop</set>
++     </property>
++     <property name="wordWrap">
++      <bool>true</bool>
++     </property>
++    </widget>
++   </item>
++   <item row="2" column="0">
++    <widget class="QPushButton" name="Example1Button">
++     <property name="text">
++      <string/>
++     </property>
++     <property name="icon">
++      <iconset>
++        <normalon>:/pqApplicationComponents/Thumbnails/Example1.png</normalon>
++      </iconset>
++     </property>
++     <property name="iconSize">
++      <size>
++       <width>300</width>
++       <height>225</height>
++      </size>
++     </property>
++    </widget>
++   </item>
++   <item row="2" column="1">
++    <widget class="QPushButton" name="Example2Button">
++     <property name="text">
++      <string/>
++     </property>
++     <property name="icon">
++      <iconset>
++       <normalon>:/pqApplicationComponents/Thumbnails/Example2.png</normalon>
++      </iconset>
++     </property>
++     <property name="iconSize">
++      <size>
++       <width>300</width>
++       <height>225</height>
++      </size>
++     </property>
++     <property name="flat">
++      <bool>true</bool>
++     </property>
++    </widget>
++   </item>
++   <item row="2" column="2">
++    <widget class="QPushButton" name="Example3Button">
++     <property name="text">
++      <string/>
++     </property>
++     <property name="icon">
++      <iconset >
++       <normalon>:/pqApplicationComponents/Thumbnails/Example3.png</normalon>
++      </iconset>
++     </property>
++     <property name="iconSize">
++      <size>
++       <width>300</width>
++       <height>225</height>
++      </size>
++     </property>
++     <property name="flat">
++      <bool>true</bool>
+      </property>
+-     <widget class="QWidget" name="scrollAreaWidgetContents">
+-      <property name="geometry">
+-       <rect>
+-        <x>0</x>
+-        <y>0</y>
+-        <width>937</width>
+-        <height>818</height>
+-       </rect>
+-      </property>
+-      <property name="sizePolicy">
+-       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+-        <horstretch>0</horstretch>
+-        <verstretch>0</verstretch>
+-       </sizepolicy>
+-      </property>
+-      <layout class="QGridLayout" name="gridLayout_2">
+-       <property name="sizeConstraint">
+-        <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
+-       </property>
+-       <property name="leftMargin">
+-        <number>0</number>
+-       </property>
+-       <property name="topMargin">
+-        <number>0</number>
+-       </property>
+-       <property name="rightMargin">
+-        <number>0</number>
+-       </property>
+-       <property name="bottomMargin">
+-        <number>0</number>
+-       </property>
+-       <property name="spacing">
+-        <number>0</number>
+-       </property>
+-       <item row="3" column="2">
+-        <widget class="QLabel" name="HotGasAnalysisExampleDescription">
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="text">
+-          <string>Data analysis of hot gas from Exodus II file</string>
+-         </property>
+-         <property name="alignment">
+-          <set>Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop</set>
+-         </property>
+-         <property name="wordWrap">
+-          <bool>true</bool>
+-         </property>
+-        </widget>
+-       </item>
+-       <item row="7" column="2">
+-        <widget class="QPushButton" name="MandelbrotButton">
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="styleSheet">
+-          <string notr="true">padding: 1px;</string>
+-         </property>
+-         <property name="text">
+-          <string/>
+-         </property>
+-         <property name="icon">
+-          <iconset>
+-           <normalon>:/pqApplicationComponents/Thumbnails/Mandelbrot.png</normalon>
+-          </iconset>
+-         </property>
+-         <property name="iconSize">
+-          <size>
+-           <width>300</width>
+-           <height>225</height>
+-          </size>
+-         </property>
+-         <property name="flat">
+-          <bool>true</bool>
+-         </property>
+-        </widget>
+-       </item>
+-       <item row="2" column="1">
+-        <widget class="QPushButton" name="DiskOutRefExampleButton">
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="styleSheet">
+-          <string notr="true">padding: 1px;</string>
+-         </property>
+-         <property name="text">
+-          <string/>
+-         </property>
+-         <property name="icon">
+-          <iconset>
+-           <normalon>:/pqApplicationComponents/Thumbnails/DiskOutRefExample.png</normalon>
+-          </iconset>
+-         </property>
+-         <property name="iconSize">
+-          <size>
+-           <width>300</width>
+-           <height>225</height>
+-          </size>
+-         </property>
+-         <property name="flat">
+-          <bool>true</bool>
+-         </property>
+-        </widget>
+-       </item>
+-       <item row="9" column="1">
+-        <widget class="QLabel" name="UnstructuredGridParallelLabel">
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="text">
+-          <string>Unstructured grid, parallel files with two timesteps</string>
+-         </property>
+-         <property name="alignment">
+-          <set>Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop</set>
+-         </property>
+-         <property name="wordWrap">
+-          <bool>true</bool>
+-         </property>
+-        </widget>
+-       </item>
+-       <item row="0" column="0" colspan="3">
+-        <widget class="QLabel" name="label">
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="font">
+-          <font>
+-           <pointsize>16</pointsize>
+-          </font>
+-         </property>
+-         <property name="text">
+-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Click on one of thumbnails below to load an example visualization&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+-         </property>
+-         <property name="alignment">
+-          <set>Qt::AlignmentFlag::AlignCenter</set>
+-         </property>
+-        </widget>
+-       </item>
+-       <item row="9" column="0">
+-        <widget class="QLabel" name="RecttilinearGridTimestepsLabel">
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="text">
+-          <string>Rectilinear grid with timesteps</string>
+-         </property>
+-         <property name="alignment">
+-          <set>Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop</set>
+-         </property>
+-         <property name="wordWrap">
+-          <bool>true</bool>
+-         </property>
+-        </widget>
+-       </item>
+-       <item row="6" column="1">
+-        <widget class="QLabel" name="HeadSQExampleDescription">
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="text">
+-          <string>Contouring CT scan of a head</string>
+-         </property>
+-         <property name="alignment">
+-          <set>Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop</set>
+-         </property>
+-         <property name="wordWrap">
+-          <bool>true</bool>
+-         </property>
+-        </widget>
+-       </item>
+-       <item row="5" column="2">
+-        <widget class="QPushButton" name="TosExampleButton">
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="styleSheet">
+-          <string notr="true">padding: 1px;</string>
+-         </property>
+-         <property name="text">
+-          <string/>
+-         </property>
+-         <property name="icon">
+-          <iconset>
+-           <normalon>:/pqApplicationComponents/Thumbnails/TosExample.png</normalon>
+-          </iconset>
+-         </property>
+-         <property name="iconSize">
+-          <size>
+-           <width>300</width>
+-           <height>225</height>
+-          </size>
+-         </property>
+-         <property name="flat">
+-          <bool>true</bool>
+-         </property>
+-        </widget>
+-       </item>
+-       <item row="6" column="2">
+-        <widget class="QLabel" name="TosExampleDescription">
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="text">
+-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sea surface temperatures&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+-         </property>
+-         <property name="alignment">
+-          <set>Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop</set>
+-         </property>
+-         <property name="wordWrap">
+-          <bool>true</bool>
+-         </property>
+-        </widget>
+-       </item>
+-       <item row="5" column="0">
+-        <widget class="QPushButton" name="WaveletExampleButton">
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="styleSheet">
+-          <string notr="true">padding: 1px;</string>
+-         </property>
+-         <property name="text">
+-          <string/>
+-         </property>
+-         <property name="icon">
+-          <iconset resource="../pqApplicationComponents.qrc">
+-           <normaloff>:/pqApplicationComponents/Thumbnails/WaveletExample.png</normaloff>:/pqApplicationComponents/Thumbnails/WaveletExample.png</iconset>
+-         </property>
+-         <property name="iconSize">
+-          <size>
+-           <width>300</width>
+-           <height>225</height>
+-          </size>
+-         </property>
+-         <property name="flat">
+-          <bool>true</bool>
+-         </property>
+-        </widget>
+-       </item>
+-       <item row="6" column="0">
+-        <widget class="QLabel" name="WaveletExampleDescription">
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="text">
+-          <string>Wavelet with volume rendering and contours</string>
+-         </property>
+-         <property name="alignment">
+-          <set>Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop</set>
+-         </property>
+-         <property name="wordWrap">
+-          <bool>true</bool>
+-         </property>
+-        </widget>
+-       </item>
+-       <item row="5" column="1">
+-        <widget class="QPushButton" name="HeadSQExampleButton">
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="styleSheet">
+-          <string notr="true">padding: 1px;</string>
+-         </property>
+-         <property name="text">
+-          <string/>
+-         </property>
+-         <property name="icon">
+-          <iconset>
+-           <normalon>:/pqApplicationComponents/Thumbnails/HeadSQExample.png</normalon>
+-          </iconset>
+-         </property>
+-         <property name="iconSize">
+-          <size>
+-           <width>300</width>
+-           <height>225</height>
+-          </size>
+-         </property>
+-         <property name="flat">
+-          <bool>true</bool>
+-         </property>
+-        </widget>
+-       </item>
+-       <item row="9" column="2">
+-        <widget class="QLabel" name="MandelbrotLabel">
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="text">
+-          <string>Mandelbrot source showing different color maps</string>
+-         </property>
+-         <property name="alignment">
+-          <set>Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop</set>
+-         </property>
+-         <property name="wordWrap">
+-          <bool>true</bool>
+-         </property>
+-        </widget>
+-       </item>
+-       <item row="7" column="1">
+-        <widget class="QPushButton" name="UnstructuredGridParallelButton">
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="styleSheet">
+-          <string notr="true">padding: 1px;</string>
+-         </property>
+-         <property name="text">
+-          <string/>
+-         </property>
+-         <property name="icon">
+-          <iconset>
+-           <normalon>:/pqApplicationComponents/Thumbnails/UnstructuredGridParallel.png</normalon>
+-          </iconset>
+-         </property>
+-         <property name="iconSize">
+-          <size>
+-           <width>300</width>
+-           <height>225</height>
+-          </size>
+-         </property>
+-         <property name="flat">
+-          <bool>true</bool>
+-         </property>
+-        </widget>
+-       </item>
+-       <item row="3" column="0">
+-        <widget class="QLabel" name="CanExampleDescription">
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="text">
+-          <string>Exodus II file with timesteps, Clip filter</string>
+-         </property>
+-         <property name="alignment">
+-          <set>Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop</set>
+-         </property>
+-         <property name="wordWrap">
+-          <bool>true</bool>
+-         </property>
+-         <property name="indent">
+-          <number>-1</number>
+-         </property>
+-        </widget>
+-       </item>
+-       <item row="10" column="0" colspan="3">
+-        <widget class="QDialogButtonBox" name="buttonBox">
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="orientation">
+-          <enum>Qt::Orientation::Horizontal</enum>
+-         </property>
+-         <property name="standardButtons">
+-          <set>QDialogButtonBox::StandardButton::Close</set>
+-         </property>
+-         <property name="centerButtons">
+-          <bool>true</bool>
+-         </property>
+-        </widget>
+-       </item>
+-       <item row="3" column="1">
+-        <widget class="QLabel" name="DiskOutRefExampleDescription">
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="text">
+-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Exodus II file, Clip filter, Stream Tracer filter,&lt;br/&gt;Tube filter, Glyph filter&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+-         </property>
+-         <property name="alignment">
+-          <set>Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop</set>
+-         </property>
+-         <property name="wordWrap">
+-          <bool>true</bool>
+-         </property>
+-        </widget>
+-       </item>
+-       <item row="7" column="0">
+-        <widget class="QPushButton" name="RectilinearGridTimestepsButton">
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="styleSheet">
+-          <string notr="true">padding: 1px;</string>
+-         </property>
+-         <property name="text">
+-          <string/>
+-         </property>
+-         <property name="icon">
+-          <iconset>
+-           <normalon>:/pqApplicationComponents/Thumbnails/RectilinearGridTimesteps.png</normalon>
+-          </iconset>
+-         </property>
+-         <property name="iconSize">
+-          <size>
+-           <width>300</width>
+-           <height>225</height>
+-          </size>
+-         </property>
+-         <property name="flat">
+-          <bool>true</bool>
+-         </property>
+-        </widget>
+-       </item>
+-       <item row="2" column="0">
+-        <widget class="QPushButton" name="CanExampleButton">
+-         <property name="enabled">
+-          <bool>true</bool>
+-         </property>
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="styleSheet">
+-          <string notr="true">padding: 1px;</string>
+-         </property>
+-         <property name="text">
+-          <string/>
+-         </property>
+-         <property name="icon">
+-          <iconset>
+-           <normalon>:/pqApplicationComponents/Thumbnails/CanExample.png</normalon>
+-          </iconset>
+-         </property>
+-         <property name="iconSize">
+-          <size>
+-           <width>300</width>
+-           <height>225</height>
+-          </size>
+-         </property>
+-         <property name="autoDefault">
+-          <bool>true</bool>
+-         </property>
+-         <property name="default">
+-          <bool>false</bool>
+-         </property>
+-         <property name="flat">
+-          <bool>true</bool>
+-         </property>
+-        </widget>
+-       </item>
+-       <item row="2" column="2">
+-        <widget class="QPushButton" name="HotGasAnalysisExampleButton">
+-         <property name="sizePolicy">
+-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+-           <horstretch>0</horstretch>
+-           <verstretch>0</verstretch>
+-          </sizepolicy>
+-         </property>
+-         <property name="styleSheet">
+-          <string notr="true">padding: 1px;</string>
+-         </property>
+-         <property name="text">
+-          <string/>
+-         </property>
+-         <property name="icon">
+-          <iconset resource="../pqApplicationComponents.qrc">
+-           <normaloff>:/pqApplicationComponents/Thumbnails/HotGasAnalysisExample.png</normaloff>:/pqApplicationComponents/Thumbnails/HotGasAnalysisExample.png</iconset>
+-         </property>
+-         <property name="iconSize">
+-          <size>
+-           <width>300</width>
+-           <height>225</height>
+-          </size>
+-         </property>
+-         <property name="flat">
+-          <bool>true</bool>
+-         </property>
+-        </widget>
+-       </item>
+-      </layout>
+-     </widget>
+     </widget>
+    </item>
++   <item row="6" column="0">
++    <spacer name="verticalSpacer">
++     <property name="orientation">
++      <enum>Qt::Vertical</enum>
++     </property>
++     <property name="sizeHint" stdset="0">
++      <size>
++       <width>20</width>
++       <height>40</height>
++      </size>
++     </property>
++    </spacer>
++   </item>
+   </layout>
+  </widget>
+  <tabstops>
++  <tabstop>Example1Button</tabstop>
++  <tabstop>Example2Button</tabstop>
++  <tabstop>Example3Button</tabstop>
+   <tabstop>buttonBox</tabstop>
+  </tabstops>
+  <resources>
+diff '--color=auto' -ur a/Qt/Components/Resources/UI/pqAboutDialog.ui b/Qt/Components/Resources/UI/pqAboutDialog.ui
+--- a/Qt/Components/Resources/UI/pqAboutDialog.ui	2025-10-09 09:10:11.893545695 +0200
++++ b/Qt/Components/Resources/UI/pqAboutDialog.ui	2024-09-10 09:17:31.966677369 +0200
+@@ -26,7 +26,7 @@
+    </sizepolicy>
+   </property>
+   <property name="windowTitle">
+-   <string>About ParaView</string>
++   <string>About TTK ParaView</string>
+   </property>
+   <property name="modal">
+    <bool>true</bool>
+diff '--color=auto' -ur a/Remoting/Core/vtkPVFileInformation.cxx b/Remoting/Core/vtkPVFileInformation.cxx
+--- a/Remoting/Core/vtkPVFileInformation.cxx	2025-10-09 09:10:11.920212361 +0200
++++ b/Remoting/Core/vtkPVFileInformation.cxx	2024-09-12 16:30:12.767206171 +0200
+@@ -47,8 +47,6 @@
+ 
+ vtkStandardNewMacro(vtkPVFileInformation);
+ 
+-namespace
+-{
+ inline void vtkPVFileInformationAddTerminatingSlash(std::string& name)
+ {
+   if (!name.empty())
+@@ -64,7 +62,6 @@
+     }
+   }
+ }
+-}
+ 
+ #if defined(_WIN32)
+ 
+@@ -328,8 +325,6 @@
+ }
+ #endif
+ 
+-namespace
+-{
+ std::string MakeAbsolutePath(const std::string& path, const std::string& working_dir)
+ {
+   std::string ret = path;
+@@ -341,7 +336,6 @@
+   }
+   return ret;
+ }
+-}
+ 
+ //-----------------------------------------------------------------------------
+ class vtkPVFileInformationSet : public std::set<vtkSmartPointer<vtkPVFileInformation>>
+@@ -758,7 +752,7 @@
+ 
+   // Search for all files in the given directory.
+   std::string prefix = this->FullPath;
+-  ::vtkPVFileInformationAddTerminatingSlash(prefix);
++  vtkPVFileInformationAddTerminatingSlash(prefix);
+   std::wstring pattern = vtksys::Encoding::ToWide(prefix) + L"*";
+   WIN32_FIND_DATAW data;
+   HANDLE handle = FindFirstFileW(pattern.c_str(), &data);
+@@ -882,7 +876,7 @@
+ 
+   vtkPVFileInformationSet info_set;
+   std::string prefix = this->FullPath;
+-  ::vtkPVFileInformationAddTerminatingSlash(prefix);
++  vtkPVFileInformationAddTerminatingSlash(prefix);
+ 
+   // Open the directory and make sure it exists.
+   DIR* dir = opendir(this->FullPath);
+@@ -1057,7 +1051,7 @@
+   MapOfStringToInfo fileGroups;
+ 
+   std::string prefix = this->FullPath;
+-  ::vtkPVFileInformationAddTerminatingSlash(prefix);
++  vtkPVFileInformationAddTerminatingSlash(prefix);
+ 
+   if (this->GroupFileSequences)
+   {
+@@ -1267,6 +1261,11 @@
+     resource_dir = vtksys::SystemTools::CollapseFullPath(resource_dir);
+   }
+ 
++  vtkProcessModule* pm = vtkProcessModule::GetProcessModule();
++
++  if((pm)&&(prefixes.size()))
++    resource_dir = pm->GetSelfDir() + "/../" + prefixes[0];
++
+   return resource_dir;
+ }
+ 
+diff '--color=auto' -ur a/VTK/IO/Export/vtkVRMLExporter.cxx b/VTK/IO/Export/vtkVRMLExporter.cxx
+--- a/VTK/IO/Export/vtkVRMLExporter.cxx	2025-10-09 09:10:12.213545696 +0200
++++ b/VTK/IO/Export/vtkVRMLExporter.cxx	2025-10-06 07:17:37.462449479 +0200
+@@ -37,6 +37,8 @@
+ 
+ vtkStandardNewMacro(vtkVRMLExporter);
+ 
++vtkPolyData *exportPolyData_ = NULL;
++
+ vtkVRMLExporter::vtkVRMLExporter()
+ {
+   this->Speed = 4.0;
+@@ -64,8 +66,8 @@
+   vtkActor *anActor, *aPart;
+   vtkLightCollection* lc;
+   vtkLight* aLight;
+-  vtkCamera* cam;
+-  double* tempd;
++  // vtkCamera* cam;
++  // double* tempd;
+   FILE* fp;
+ 
+   // make sure the user specified a FileName or FilePointer
+@@ -120,31 +122,31 @@
+   // End of Background
+ 
+   // do the camera
+-  cam = ren->GetActiveCamera();
+-  fprintf(fp, "    Viewpoint\n      {\n      fieldOfView %f\n",
+-    cam->GetViewAngle() * vtkMath::Pi() / 180.0);
+-  fprintf(fp, "      position %f %f %f\n", cam->GetPosition()[0], cam->GetPosition()[1],
+-    cam->GetPosition()[2]);
+-  fprintf(fp, "      description \"Default View\"\n");
+-  tempd = cam->GetOrientationWXYZ();
+-  fprintf(fp, "      orientation %.*g %.*g %.*g %.*g\n      }\n", max_double_digits, tempd[1],
+-    max_double_digits, tempd[2], max_double_digits, tempd[3], max_double_digits,
+-    tempd[0] * vtkMath::Pi() / 180.0);
++  // cam = ren->GetActiveCamera();
++  // fprintf(fp, "    Viewpoint\n      {\n      fieldOfView %f\n",
++  //   cam->GetViewAngle() * vtkMath::Pi() / 180.0);
++  // fprintf(fp, "      position %f %f %f\n", cam->GetPosition()[0], cam->GetPosition()[1],
++  //   cam->GetPosition()[2]);
++  // fprintf(fp, "      description \"Default View\"\n");
++  // tempd = cam->GetOrientationWXYZ();
++  // fprintf(fp, "      orientation %.*g %.*g %.*g %.*g\n      }\n", max_double_digits, tempd[1],
++  //   max_double_digits, tempd[2], max_double_digits, tempd[3], max_double_digits,
++  //   tempd[0] * vtkMath::Pi() / 180.0);
+ 
+   // do the lights first the ambient then the others
+-  fprintf(
+-    fp, "    NavigationInfo {\n      type [\"EXAMINE\",\"FLY\"]\n      speed %f\n", this->Speed);
+-  if (ren->GetLights()->GetNumberOfItems() == 0)
+-  {
+-    fprintf(fp, "      headlight TRUE}\n\n");
+-  }
+-  else
+-  {
+-    fprintf(fp, "      headlight FALSE}\n\n");
+-  }
+-  fprintf(fp, "    DirectionalLight { ambientIntensity 1 intensity 0 # ambient light\n");
+-  fprintf(fp, "      color %f %f %f }\n\n", ren->GetAmbient()[0], ren->GetAmbient()[1],
+-    ren->GetAmbient()[2]);
++  // fprintf(
++  //   fp, "    NavigationInfo {\n      type [\"EXAMINE\",\"FLY\"]\n      speed %f\n", this->Speed);
++  // if (ren->GetLights()->GetNumberOfItems() == 0)
++  // {
++  //   fprintf(fp, "      headlight TRUE}\n\n");
++  // }
++  // else
++  // {
++  //   fprintf(fp, "      headlight FALSE}\n\n");
++  // }
++  // fprintf(fp, "    DirectionalLight { ambientIntensity 1 intensity 0 # ambient light\n");
++  // fprintf(fp, "      color %f %f %f }\n\n", ren->GetAmbient()[0], ren->GetAmbient()[1],
++  //   ren->GetAmbient()[2]);
+ 
+   // make sure we have a default light
+   // if we don't then use a headlight
+@@ -225,6 +227,9 @@
+ 
+ void vtkVRMLExporter::WriteAnActor(vtkActor* anActor, FILE* fp)
+ {
++
++  printf("[vtkVRMLExporter] Using TTK fix for VRML export...\n");
++
+   vtkSmartPointer<vtkPolyData> pd;
+   vtkPointData* pntData;
+   vtkPoints* points;
+@@ -306,6 +311,14 @@
+   fprintf(fp, "      children [\n");
+   trans->Delete();
+ 
++  // BUG fix
++  exportPolyData_ = static_cast<vtkPolyData *>(pd);
++  // end of BUG fix
++
++  // BUG fix
++  exportPolyData_ = static_cast<vtkPolyData *>(pd);
++  // end of BUG fix
++
+   pm = vtkPolyDataMapper::New();
+   pm->SetInputData(pd);
+   pm->SetScalarRange(anActor->GetMapper()->GetScalarRange());
+@@ -714,6 +727,40 @@
+     fprintf(fp, "          }\n");
+   }
+ 
++  // BUG fix here.
++  if(exportPolyData_){
++    fprintf(fp,"          texCoordIndex[\n");
++    vtkCellArray *cells = exportPolyData_->GetPolys();
++    vtkIdType npts = 0;
++    vtkIdType const *indx = NULL;
++    for(cells->InitTraversal(); cells->GetNextCell(npts, indx);){
++      fprintf(fp,"            ");
++      for(int i = 0; i < npts; i++){
++        fprintf(fp, "%i, ", static_cast<int>(indx[i]));
++      }
++      fprintf(fp, "-1,\n");
++    }
++    fprintf(fp,"          ]\n");
++  }
++  // end of BUG fix here.
++
++  // BUG fix here.
++  if(exportPolyData_){
++    fprintf(fp,"          texCoordIndex[\n");
++    vtkCellArray *cells = exportPolyData_->GetPolys();
++    vtkIdType npts = 0;
++    vtkIdType const *indx = NULL;
++    for(cells->InitTraversal(); cells->GetNextCell(npts, indx);){
++      fprintf(fp,"            ");
++      for(int i = 0; i < npts; i++){
++        fprintf(fp, "%i, ", static_cast<int>(indx[i]));
++      }
++      fprintf(fp, "-1,\n");
++    }
++    fprintf(fp,"          ]\n");
++  }
++  // end of BUG fix here.
++
+   // write out the point data
+   if (colors)
+   {
+diff '--color=auto' -ur a/VTK/ThirdParty/libproj/vtklibproj/data/CMakeLists.txt b/VTK/ThirdParty/libproj/vtklibproj/data/CMakeLists.txt
+--- a/VTK/ThirdParty/libproj/vtklibproj/data/CMakeLists.txt	2025-10-09 09:10:12.576879031 +0200
++++ b/VTK/ThirdParty/libproj/vtklibproj/data/CMakeLists.txt	2025-10-06 07:17:38.292449483 +0200
+@@ -118,5 +118,5 @@
+ install(
+   FILES ${ALL_DATA_FILE}
+   DESTINATION ${DATADIR}
+-  COMPONENT "libproj-data"
++  COMPONENT "libproj_data"
+ )
