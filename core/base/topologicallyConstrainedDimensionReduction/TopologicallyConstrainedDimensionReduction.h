@@ -121,6 +121,8 @@ namespace ttk {
     std::shared_ptr<torch::optim::Optimizer> torchOptimizer{nullptr};
     std::shared_ptr<TopologicalLoss> topologicalLossContainer{nullptr};
 
+    void preOptimize(const torch::Tensor &input, const torch::Tensor &target) const;
+
     void optimize(const torch::Tensor &input) const;
     void optimizeSimple(const torch::Tensor &input) const;
 

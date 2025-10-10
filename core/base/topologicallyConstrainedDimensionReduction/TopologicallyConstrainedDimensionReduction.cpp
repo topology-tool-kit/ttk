@@ -104,8 +104,7 @@ int ttk::TCDR::execute(std::vector<std::vector<double>> &outputEmbedding,
         .to(torch::kFloat32)
         .to(device);
 
-  std::vector<std::vector<ripser::value_t>> points(
-    inputSize, std::vector<ripser::value_t>(inputDimension));
+  rpd::PointCloud points(inputSize, std::vector<double>(inputDimension));
   for(int i = 0; i < inputSize; ++i) {
     for(int j = 0; j < inputDimension; ++j)
       points[i][j] = inputMatrix[inputDimension * i + j];
@@ -133,11 +132,12 @@ int ttk::TCDR::execute(std::vector<std::vector<double>> &outputEmbedding,
 }
 
 void ttk::TCDR::optimizeSimple(const torch::Tensor &input) const {
-  TensorIndex indices = Slice();
-  for(int epoch = 0; epoch < Epochs; ++epoch) {
+  int epoch = 0;
+
+  auto closure = [&] {
+    TensorIndex indices = Slice();
     if(BatchSize > 0)
-      indices
-        = torch::randint(input.size(0), {BatchSize}, torch::kInt).to(device);
+      indices = torch::randint(input.size(0), {BatchSize}, torch::kInt).to(device);
 
     // step initialization
     torchOptimizer->zero_grad();
@@ -147,11 +147,15 @@ void ttk::TCDR::optimizeSimple(const torch::Tensor &input) const {
     const torch::Tensor loss
       = torch::mse_loss(prediction, input.index(indices));
     loss.backward();
-    torchOptimizer->step();
 
     // IO
     printLoss(epoch, loss.item<double>());
-  }
+
+    return loss;
+  };
+
+  for(; epoch < Epochs; ++epoch)
+    torchOptimizer->step(closure);
 }
 
 void ttk::TCDR::optimize(const torch::Tensor &input) const {
@@ -168,6 +172,30 @@ void ttk::TCDR::optimize(const torch::Tensor &input) const {
       = RegCoefficient * topologicalLossContainer->computeLoss(latent);
     const torch::Tensor reconstructionLoss = torch::mse_loss(prediction, input);
     const torch::Tensor loss = reconstructionLoss + topologicalLoss;
+    loss.backward();
+
+    // IO
+    printLoss(epoch, loss.item<double>());
+
+    return loss;
+  };
+
+  for(; epoch < Epochs; ++epoch)
+    torchOptimizer->step(closure);
+}
+
+void ttk::TCDR::preOptimize(const torch::Tensor &input, const torch::Tensor &target) const {
+  int epoch = 0;
+
+  auto closure = [&] {
+    // step initialization
+    torchOptimizer->zero_grad();
+    const torch::Tensor latent = model->encode(input);
+    const torch::Tensor prediction = model->decode(latent);
+
+    // loss and optimizer step
+    const torch::Tensor loss = torch::mse_loss(latent, target) +
+                               torch::mse_loss(prediction, input);
     loss.backward();
 
     // IO
