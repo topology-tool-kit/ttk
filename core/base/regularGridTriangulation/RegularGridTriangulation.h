@@ -77,6 +77,9 @@ namespace ttk {
     SimplexId getTriangleLocalIdInternal(const SimplexId gtid) const override;
 
     int getVertexRankInternal(const SimplexId lvid) const override;
+    int getEdgeRankInternal(const SimplexId lvid) const override;
+    int getTriangleRankInternal(const SimplexId lvid) const override;
+
 #endif
   protected:
     std::array<SimplexId, 3> dimensions_; // dimensions

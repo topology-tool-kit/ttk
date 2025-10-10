@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PV_TAG: v5.13.0-headless
+  PV_TAG: v6.0.1-headless
   PV_REPO: topology-tool-kit/ttk-paraview
 
 
@@ -73,8 +73,11 @@ jobs:
       with:
         key: ${{ matrix.os }}-0
 
-    - name: Install optional dependencies
-      uses: ./.github/actions/install-deps-unix
+    - name: Install optional Spectra dependency
+      uses: ./.github/actions/install-spectra-unix
+
+    - name: Install optional ZFP dependency
+      uses: ./.github/actions/install-zfp-unix
 
     # TODO: try to replicate for mac
     - name: Install Torch
@@ -128,7 +131,7 @@ jobs:
       run: sccache --show-stats
 
     - name: Run TTK tests
-      uses: ./.github/actions/test-ttk-unix
+      uses: ./.github/actions/test-ttk-ubuntu
 
     - name: Upload TTK .deb package for fast install in tests
       uses: actions/upload-artifact@v4
@@ -247,7 +250,7 @@ jobs:
         rm python/mpiExample.py
         # remove examples which fill up the memory
         rm python/topologicalOptimization_darkSky.py
-        python3 -u python/run.py
+        pvpython -u python/run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
       if: matrix.testSet == 'pyTests'
@@ -272,7 +275,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-13, macos-14, macos-15]
+        os: [macos-14, macos-15]
     if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     env:
       DYLD_LIBRARY_PATH: /usr/local/lib
@@ -283,23 +286,26 @@ jobs:
 
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: '3.13'
 
     - name: Install macOS dependencies
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew install llvm ninja open-mpi
+        brew install ninja open-mpi libomp
         # TTK dependencies
-        brew install boost cgal eigen graphviz spectra sqlite zlib numpy qhull
+        brew install boost cgal eigen graphviz spectra sqlite numpy qhull
 
     - name: Install and setup sccache
       uses: f3d-app/sccache-setup-action@v1
       with:
         key: macos-0
 
-    - name: Install optional dependencies
-      uses: ./.github/actions/install-deps-unix
+    - name: Install optional Spectra dependency
+      uses: ./.github/actions/install-spectra-unix
+
+    - name: Install optional ZFP dependency
+      uses: ./.github/actions/install-zfp-unix
 
     - name: Fetch TTK-ParaView headless macOS binary archive
       run: |
@@ -311,15 +317,10 @@ jobs:
         tar xzf ttk-paraview-headless.tar.gz
         sudo cp -r ttk-paraview/* /usr/local
         # pvpython does not embed the correct PYTHONPATH
-        echo "PYTHONPATH=/usr/local/lib/python3.12/site-packages:$PYTHONPATH" >> $GITHUB_ENV
+        echo "PYTHONPATH=/usr/local/lib/python3.13/site-packages:$PYTHONPATH" >> $GITHUB_ENV
         pvpython -m pip install --break-system-packages scikit-learn
         # pvpython is expecting a vtkpython executable at this path
-        sudo ln -s /usr/local/bin/pvpython /Library/Frameworks/Python.framework/Versions/3.12/vtkpython
-
-    - name: Set compilers as environment variables
-      run: |
-        echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
-        echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
+        sudo ln -s /usr/local/bin/pvpython /Library/Frameworks/Python.framework/Versions/3.13/vtkpython
 
     - name: Create & configure TTK build directory
       run: |
@@ -329,11 +330,17 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_C_COMPILER_LAUNCHER=sccache \
           -DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
+          -DOpenMP_C_FLAGS="-Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include" \
+          -DOpenMP_C_LIB_NAMES="omp" \
+          -DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include" \
+          -DOpenMP_CXX_LIB_NAMES="omp" \
+          -DOpenMP_omp_LIBRARY=/opt/homebrew/opt/libomp/lib/libomp.dylib \
+          -DCMAKE_EXE_LINKER_FLAGS="-L/opt/homebrew/opt/libomp/lib -lomp" \
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
           -DTTK_ENABLE_KAMIKAZE=TRUE \
-          -DTTK_ENABLE_MPI=TRUE \
+          -DTTK_ENABLE_MPI=FALSE \
           -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE \
           -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE \
           -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 \
@@ -354,7 +361,7 @@ jobs:
       run: sccache --show-stats
 
     - name: Run TTK tests
-      uses: ./.github/actions/test-ttk-unix
+      uses: ./.github/actions/test-ttk-macos
 
     - uses: actions/checkout@v4
       with:
@@ -396,8 +403,11 @@ jobs:
         rm python/nestedTrackingFromOverlap.py
         # tmp removal of mpi example
         rm python/mpiExample.py
+        rm python/distributedPersistenceDiagram.py
         # remove examples which fill up the memory
         rm python/topologicalOptimization_darkSky.py
+        # remove sklearn examples -- buggy on MacOS since sklearn-1.7
+        rm python/1manifoldLearning.py python/clusteringKelvinHelmholtzInstabilities.py python/karhunenLoveDigits64Dimensions.py python/mergeTreeClustering.py python/persistentGenerators_householdAnalysis.py python/persistentGenerators_periodicPicture.py
         pvpython -u python/run.py
       env:
         PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
@@ -584,6 +594,8 @@ jobs:
         rm python/mpiExample.py
         # remove examples which fill up the memory
         rm python/topologicalOptimization_darkSky.py
+        # remove examples using raster features
+        rm python/geometryApproximation.py
         pvpython.exe -u python\run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
