@@ -73,29 +73,29 @@ int ttk::TCDR::execute(std::vector<std::vector<double>> &outputEmbedding,
   }
   if(ModelType == MODEL::AUTOENCODER) {
     if(!InputIsImages)
-      model = std::make_shared<AutoEncoder>(inputDimension, NumberOfComponents,
+      model = std::make_unique<AutoEncoder>(inputDimension, NumberOfComponents,
                                             Architecture, Activation,
                                             BatchNormalization);
     else
-      model = std::make_shared<ConvolutionalAutoEncoder>(
+      model = std::make_unique<ConvolutionalAutoEncoder>(
         sqrt(inputDimension), NumberOfComponents, Architecture,
         BatchNormalization);
   } else if(ModelType == MODEL::AUTODECODER)
-    model = std::make_shared<AutoDecoder>(inputDimension, inputSize,
+    model = std::make_unique<AutoDecoder>(inputDimension, inputSize,
                                           NumberOfComponents, Architecture,
                                           Activation, false);
   else if(ModelType == MODEL::DIRECT)
-    model = std::make_shared<DirectOptimization>(inputSize, NumberOfComponents);
+    model = std::make_unique<DirectOptimization>(inputSize, NumberOfComponents);
   model->to(device);
 
   if(Optimizer == OPTIMIZER::ADAM)
-    torchOptimizer = std::make_shared<torch::optim::Adam>(
+    torchOptimizer = std::make_unique<torch::optim::Adam>(
       model->parameters(), /*lr=*/LearningRate);
   else if(Optimizer == OPTIMIZER::SGD)
-    torchOptimizer = std::make_shared<torch::optim::SGD>(
+    torchOptimizer = std::make_unique<torch::optim::SGD>(
       model->parameters(), /*lr=*/LearningRate);
   else if(Optimizer == OPTIMIZER::LBFGS)
-    torchOptimizer = std::make_shared<torch::optim::LBFGS>(
+    torchOptimizer = std::make_unique<torch::optim::LBFGS>(
       model->parameters(), /*lr=*/LearningRate);
 
   const torch::Tensor input
@@ -110,13 +110,27 @@ int ttk::TCDR::execute(std::vector<std::vector<double>> &outputEmbedding,
       points[i][j] = inputMatrix[inputDimension * i + j];
   }
 
+  if(latentInitialization_.numel()) {
+    preOptimize(input, latentInitialization_);
+
+    if(Optimizer == OPTIMIZER::ADAM)
+      torchOptimizer = std::make_unique<torch::optim::Adam>(
+        model->parameters(), /*lr=*/LearningRate);
+    else if(Optimizer == OPTIMIZER::SGD)
+      torchOptimizer = std::make_unique<torch::optim::SGD>(
+        model->parameters(), /*lr=*/LearningRate);
+    else if(Optimizer == OPTIMIZER::LBFGS)
+      torchOptimizer = std::make_unique<torch::optim::LBFGS>(
+        model->parameters(), /*lr=*/LearningRate);
+  }
+
   if(Method == REGUL::NO_REGUL) {
     printMsg("Starting optimization", 0., tm.getElapsedTime());
     optimizeSimple(input);
   } else {
     printMsg("Computing input persistence", 0., tm.getElapsedTime());
     topologicalLossContainer
-      = std::make_shared<TopologicalLoss>(input, points, Method);
+      = std::make_unique<TopologicalLoss>(input, points, Method);
     printMsg("Starting optimization", 0., tm.getElapsedTime());
     optimize(input);
   }
@@ -131,13 +145,26 @@ int ttk::TCDR::execute(std::vector<std::vector<double>> &outputEmbedding,
   return 0;
 }
 
+void ttk::TCDR::setLatentInitialization(
+  std::vector<std::vector<double>> const &latentInitialization) {
+  std::vector<torch::Tensor> tensors;
+  for(auto const &column : latentInitialization)
+    tensors.push_back(torch::from_blob(const_cast<double *>(column.data()),
+                                       {static_cast<int>(column.size())},
+                                       torch::kFloat64)
+                        .to(torch::kFloat32)
+                        .to(device));
+  latentInitialization_ = torch::stack(tensors).transpose(0, 1);
+}
+
 void ttk::TCDR::optimizeSimple(const torch::Tensor &input) const {
   int epoch = 0;
 
   auto closure = [&] {
     TensorIndex indices = Slice();
     if(BatchSize > 0)
-      indices = torch::randint(input.size(0), {BatchSize}, torch::kInt).to(device);
+      indices
+        = torch::randint(input.size(0), {BatchSize}, torch::kInt).to(device);
 
     // step initialization
     torchOptimizer->zero_grad();
@@ -184,7 +211,8 @@ void ttk::TCDR::optimize(const torch::Tensor &input) const {
     torchOptimizer->step(closure);
 }
 
-void ttk::TCDR::preOptimize(const torch::Tensor &input, const torch::Tensor &target) const {
+void ttk::TCDR::preOptimize(const torch::Tensor &input,
+                            const torch::Tensor &target) const {
   int epoch = 0;
 
   auto closure = [&] {
@@ -194,8 +222,8 @@ void ttk::TCDR::preOptimize(const torch::Tensor &input, const torch::Tensor &tar
     const torch::Tensor prediction = model->decode(latent);
 
     // loss and optimizer step
-    const torch::Tensor loss = torch::mse_loss(latent, target) +
-                               torch::mse_loss(prediction, input);
+    const torch::Tensor loss
+      = torch::mse_loss(latent, target) + torch::mse_loss(prediction, input);
     loss.backward();
 
     // IO

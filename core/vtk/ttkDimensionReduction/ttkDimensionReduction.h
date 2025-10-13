@@ -288,6 +288,12 @@ public:
   vtkSetMacro(IsInputImages, bool);
   vtkGetMacro(IsInputImages, bool);
 
+  vtkSetMacro(ae_PreOptimize, bool);
+  vtkGetMacro(ae_PreOptimize, bool);
+
+  ttkSetEnumMacro(ae_PreOptimizeMethod, METHOD);
+  vtkGetEnumMacro(ae_PreOptimizeMethod, METHOD);
+
   // testing
   vtkSetMacro(ModulePath, const std::string &);
   vtkGetMacro(ModulePath, std::string);

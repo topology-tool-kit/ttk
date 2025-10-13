@@ -342,6 +342,8 @@ namespace ttk {
     int ae_BatchSize{0};
     bool ae_BatchNormalization{true};
     double ae_RegCoefficient{1e-2};
+    bool ae_PreOptimize{false};
+    METHOD ae_PreOptimizeMethod{METHOD::PCA};
 
     // testing
     std::string ModulePath{"default"};
