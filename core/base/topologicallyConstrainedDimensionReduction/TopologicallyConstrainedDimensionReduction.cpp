@@ -40,6 +40,44 @@ ttk::TCDR::TCDR(bool useCUDA,
   }
 }
 
+int ttk::TCDR::initializeModel(int inputSize, int inputDimension) {
+  if((!InputIsImages && !AutoEncoder::isStringValid(Architecture))
+     || (InputIsImages
+         && !ConvolutionalAutoEncoder::isStringValid(Architecture))) {
+    printErr("Invalid string for layers description.");
+    return 1;
+  }
+  if(ModelType == MODEL::AUTOENCODER) {
+    if(!InputIsImages)
+      model = std::make_unique<AutoEncoder>(inputDimension, NumberOfComponents,
+                                            Architecture, Activation,
+                                            BatchNormalization);
+    else
+      model = std::make_unique<ConvolutionalAutoEncoder>(
+        sqrt(inputDimension), NumberOfComponents, Architecture,
+        BatchNormalization);
+  } else if(ModelType == MODEL::AUTODECODER)
+    model = std::make_unique<AutoDecoder>(inputDimension, inputSize,
+                                          NumberOfComponents, Architecture,
+                                          Activation, false);
+  else if(ModelType == MODEL::DIRECT)
+    model = std::make_unique<DirectOptimization>(inputSize, NumberOfComponents);
+  model->to(device);
+  return 0;
+}
+
+void ttk::TCDR::initializeOptimizer() {
+  if(Optimizer == OPTIMIZER::ADAM)
+    torchOptimizer = std::make_unique<torch::optim::Adam>(
+      model->parameters(), /*lr=*/LearningRate);
+  else if(Optimizer == OPTIMIZER::SGD)
+    torchOptimizer = std::make_unique<torch::optim::SGD>(
+      model->parameters(), /*lr=*/LearningRate);
+  else if(Optimizer == OPTIMIZER::LBFGS)
+    torchOptimizer = std::make_unique<torch::optim::LBFGS>(
+      model->parameters(), /*lr=*/LearningRate);
+}
+
 int ttk::TCDR::execute(std::vector<std::vector<double>> &outputEmbedding,
                        const std::vector<double> &inputMatrix,
                        size_t n) {
@@ -65,38 +103,9 @@ int ttk::TCDR::execute(std::vector<std::vector<double>> &outputEmbedding,
   printWrn("TTK not compiled with CGAL enabled: this backend could be slow.");
 #endif
 
-  if((!InputIsImages && !AutoEncoder::isStringValid(Architecture))
-     || (InputIsImages
-         && !ConvolutionalAutoEncoder::isStringValid(Architecture))) {
-    printErr("Invalid string for layers description.");
-    return -1;
-  }
-  if(ModelType == MODEL::AUTOENCODER) {
-    if(!InputIsImages)
-      model = std::make_unique<AutoEncoder>(inputDimension, NumberOfComponents,
-                                            Architecture, Activation,
-                                            BatchNormalization);
-    else
-      model = std::make_unique<ConvolutionalAutoEncoder>(
-        sqrt(inputDimension), NumberOfComponents, Architecture,
-        BatchNormalization);
-  } else if(ModelType == MODEL::AUTODECODER)
-    model = std::make_unique<AutoDecoder>(inputDimension, inputSize,
-                                          NumberOfComponents, Architecture,
-                                          Activation, false);
-  else if(ModelType == MODEL::DIRECT)
-    model = std::make_unique<DirectOptimization>(inputSize, NumberOfComponents);
-  model->to(device);
-
-  if(Optimizer == OPTIMIZER::ADAM)
-    torchOptimizer = std::make_unique<torch::optim::Adam>(
-      model->parameters(), /*lr=*/LearningRate);
-  else if(Optimizer == OPTIMIZER::SGD)
-    torchOptimizer = std::make_unique<torch::optim::SGD>(
-      model->parameters(), /*lr=*/LearningRate);
-  else if(Optimizer == OPTIMIZER::LBFGS)
-    torchOptimizer = std::make_unique<torch::optim::LBFGS>(
-      model->parameters(), /*lr=*/LearningRate);
+  if(initializeModel(inputSize, inputDimension))
+    return 1;
+  initializeOptimizer();
 
   const torch::Tensor input
     = torch::from_blob(const_cast<double *>(inputMatrix.data()),
@@ -112,16 +121,7 @@ int ttk::TCDR::execute(std::vector<std::vector<double>> &outputEmbedding,
 
   if(latentInitialization_.numel()) {
     preOptimize(input, latentInitialization_);
-
-    if(Optimizer == OPTIMIZER::ADAM)
-      torchOptimizer = std::make_unique<torch::optim::Adam>(
-        model->parameters(), /*lr=*/LearningRate);
-    else if(Optimizer == OPTIMIZER::SGD)
-      torchOptimizer = std::make_unique<torch::optim::SGD>(
-        model->parameters(), /*lr=*/LearningRate);
-    else if(Optimizer == OPTIMIZER::LBFGS)
-      torchOptimizer = std::make_unique<torch::optim::LBFGS>(
-        model->parameters(), /*lr=*/LearningRate);
+    initializeOptimizer();
   }
 
   if(Method == REGUL::NO_REGUL) {

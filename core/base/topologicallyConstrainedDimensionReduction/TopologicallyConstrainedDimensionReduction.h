@@ -125,6 +125,9 @@ namespace ttk {
     std::unique_ptr<TopologicalLoss> topologicalLossContainer{nullptr};
     torch::Tensor latentInitialization_{};
 
+    int initializeModel(int inputSize, int inputDimension);
+    void initializeOptimizer();
+
     void preOptimize(const torch::Tensor &input,
                      const torch::Tensor &target) const;
 
