@@ -1008,7 +1008,7 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
       </IntVectorProperty>
 
       <IntVectorProperty name="ae_PreOptimizeMethod"
-        label="Method"
+        label="PreMethod"
         command="Setae_PreOptimizeMethod"
         number_of_elements="1"
         default_values="5"
