@@ -7,6 +7,15 @@ on:
 env:
   PV_TAG: v6.0.1-headless
   PV_REPO: topology-tool-kit/ttk-paraview
+  PV_DIR: C:\Program Files\TTK-ParaView
+  TTK_DIR: C:\Program Files (x86)\ttk
+  CONDA_ROOT: C:\Miniconda
+  CC: clang-cl.exe
+  CXX: clang-cl.exe
+  CMAKE_GENERATOR: Ninja
+  CMAKE_BUILD_TYPE: Release
+  CMAKE_CC_COMPILER_LAUNCHER: sccache
+  CMAKE_CXX_COMPILER_LAUNCHER: sccache
 
 
 jobs:
@@ -19,10 +28,6 @@ jobs:
     strategy:
       matrix:
         os: [windows-2022]
-    env:
-      PV_DIR: C:\Program Files\TTK-ParaView
-      TTK_DIR: C:\Program Files (x86)\ttk
-      CONDA_ROOT: C:\Miniconda
 
     steps:
     - uses: actions/checkout@v4
@@ -64,18 +69,14 @@ jobs:
       shell: cmd
       run: |
         set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library\lib\cmake;%CONDA_ROOT%\Library\share\eigen3\cmake;%CONDA_ROOT%\Library\share\Qull\cmake;%CONDA_ROOT%\Library\cmake;%ProgramFiles%\TTK-ParaView\lib\cmake;
-        set CC=clang-cl.exe
-        set CXX=clang-cl.exe
         call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         mkdir build
         cd build
         cmake ^
-          -DCMAKE_BUILD_TYPE=Release ^
+          -DCMAKE_COMPILE_WARNING_AS_ERROR=ON ^
           -DCMAKE_POLICY_DEFAULT_CMP0092=NEW ^
           -DCMAKE_POLICY_DEFAULT_CMP0074=NEW ^
           -DBUILD_SHARED_LIBS:BOOL=TRUE ^
-          -DCMAKE_C_COMPILER_LAUNCHER=sccache ^
-          -DCMAKE_CXX_COMPILER_LAUNCHER=sccache ^
           -DPython3_ROOT_DIR="%CONDA_ROOT%" ^
           -DGraphviz_INCLUDE_DIR="%CONDA_ROOT%\Library\include\graphviz" ^
           -DGraphviz_CDT_LIBRARY="%CONDA_ROOT%\Library\lib\cdt.lib" ^
@@ -92,10 +93,7 @@ jobs:
           -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE ^
           -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE ^
           -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 ^
-          -GNinja ^
           ..
-      env:
-        CXXFLAGS: -Werror
 
     - name: Fix clang-cl OpenMP flags in build.ninja
       shell: bash
@@ -116,28 +114,24 @@ jobs:
     - name: Test C++ example
       shell: cmd
       run: |
-        set CC=clang-cl.exe
-        set CXX=clang-cl.exe
         call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
         cd %GITHUB_WORKSPACE%\examples\c++
         mkdir build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..
+        cmake ..
         cmake --build . --config Release --parallel
         ttkExample-c++.exe -i ..\..\data\inputData.off
 
     - name: Test VTK-C++ example
       shell: cmd
       run: |
-        set CC=clang-cl.exe
-        set CXX=clang-cl.exe
         call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         mkdir build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..
+        cmake ..
         cmake --build . --config Release --parallel
         ttkExample-vtk-c++.exe -i ..\..\data\inputData.vtu
 

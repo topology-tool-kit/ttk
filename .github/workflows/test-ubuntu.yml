@@ -7,6 +7,10 @@ on:
 env:
   PV_TAG: v6.0.1-headless
   PV_REPO: topology-tool-kit/ttk-paraview
+  CMAKE_GENERATOR: Ninja
+  CMAKE_BUILD_TYPE: Release
+  CMAKE_CC_COMPILER_LAUNCHER: sccache
+  CMAKE_CXX_COMPILER_LAUNCHER: sccache
 
 
 jobs:
@@ -80,9 +84,7 @@ jobs:
         mkdir build
         cd build
         cmake \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_C_COMPILER_LAUNCHER=sccache \
-          -DCMAKE_CXX_COMPILER_LAUNCHER=sccache \
+          -DCMAKE_COMPILE_WARNING_AS_ERROR=ON \
           -DCMAKE_INSTALL_PREFIX=/usr \
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
@@ -92,10 +94,7 @@ jobs:
           -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE \
           -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE \
           -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 \
-          -GNinja \
           $GITHUB_WORKSPACE
-      env:
-        CXXFLAGS: -Werror
 
     - uses: ammaraskar/gcc-problem-matcher@master
     - name: Build, install TTK & package it
