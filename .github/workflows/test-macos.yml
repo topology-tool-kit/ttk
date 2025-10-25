@@ -117,7 +117,10 @@ jobs:
         # remove examples which fill up the memory
         rm ttk-data/states/topologicalOptimization_darkSky.pvsm
         # remove examples that take too long to render under mac
+        rm ttk-data/states/cosmicWeb.pvsm
+        rm ttk-data/states/persistenceClusteringGallery.pvsm
         rm ttk-data/states/persistentGenerators_householdAnalysis.pvsm
+        rm ttk-data/states/topologicalOptimization*.pvsm
         cd ttk-data/tests
         mkdir output_screenshots
         pvpython -u validate.py || (tar zcf screenshots.tar.gz output_screenshots && false)

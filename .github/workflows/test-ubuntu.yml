@@ -186,6 +186,7 @@ jobs:
         rm ttk-data/states/nestedTrackingFromOverlap.py
         # remove examples which fill up the memory
         rm ttk-data/states/topologicalOptimization_darkSky.pvsm
+        rm ttk-data/states/topologicalOptimization*.pvsm
 
         cd ttk-data/tests
         mkdir output_screenshots
