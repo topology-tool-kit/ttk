@@ -11,6 +11,8 @@ env:
   CMAKE_BUILD_TYPE: Release
   CMAKE_CC_COMPILER_LAUNCHER: sccache
   CMAKE_CXX_COMPILER_LAUNCHER: sccache
+  SCCACHE_GHA_ENABLED: "true"
+  SCCACHE_IDLE_TIMEOUT: 0
 
 
 jobs:
@@ -33,7 +35,6 @@ jobs:
         sudo apt update
         # TTK dependencies
         sudo apt install -y \
-          cargo \
           libboost-system-dev \
           libcgal-dev \
           libeigen3-dev \
@@ -48,13 +49,9 @@ jobs:
           zlib1g-dev \
           libqhull-dev \
           dpkg-dev
-        cargo install sccache --version 0.4.2 --locked
-        echo "PATH=/root/.cargo/bin:$PATH" >> $GITHUB_ENV
 
-    - name: Install and setup sccache
-      uses: f3d-app/sccache-setup-action@v1
-      with:
-        key: ${{ matrix.os }}-0
+    - name: Run sccache-cache
+      uses: mozilla-actions/sccache-action@v0.0.9
 
     - name: Install optional Spectra dependency
       uses: ./.github/actions/install-spectra-unix
@@ -103,10 +100,6 @@ jobs:
         cmake --build . --parallel
         cpack -G DEB
         sudo cmake --build . --target install
-
-    - name: Show sccache results
-      shell: bash
-      run: sccache --show-stats
 
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-ubuntu

@@ -16,6 +16,8 @@ env:
   CMAKE_BUILD_TYPE: Release
   CMAKE_CC_COMPILER_LAUNCHER: sccache
   CMAKE_CXX_COMPILER_LAUNCHER: sccache
+  SCCACHE_GHA_ENABLED: "true"
+  SCCACHE_IDLE_TIMEOUT: 0
 
 
 jobs:
@@ -46,10 +48,8 @@ jobs:
         echo "$TTK_DIR/bin" >> $GITHUB_PATH
         conda info --all
 
-    - name: Install and setup sccache
-      uses: f3d-app/sccache-setup-action@v1
-      with:
-        key: ${{ matrix.os }}-0
+    - name: Run sccache-cache
+      uses: mozilla-actions/sccache-action@v0.0.9
 
     - name: Remove hosted Python
       shell: bash
@@ -106,10 +106,6 @@ jobs:
         cd build
         call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         cmake --build . --config Release --parallel --target install
-
-    - name: Show sccache results
-      shell: bash
-      run: sccache --show-stats
 
     - name: Test C++ example
       shell: cmd
