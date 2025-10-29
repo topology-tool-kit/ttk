@@ -30,3 +30,5 @@ jobs:
     uses: ./.github/workflows/test-macos.yml
   call-test-windows:
     uses: ./.github/workflows/test-windows.yml
+  call-check-code:
+    uses: ./.github/workflows/check.yml
