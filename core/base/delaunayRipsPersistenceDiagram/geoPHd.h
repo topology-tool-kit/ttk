@@ -1,6 +1,6 @@
 #pragma once
 
-#include "geoPHUtils.h"
+#include <geoPHUtils.h>
 
 #ifdef TTK_ENABLE_CGAL
 
@@ -11,8 +11,13 @@
 
 namespace ttk::gph {
 
+  constexpr static unsigned DYN_DIM = 0;
+
   template <unsigned D>
-  using DSimplex = std::array<id_t, D+1>;
+  using DSimplex = std::conditional_t<D==DYN_DIM, std::vector<id_t>, std::array<id_t, D+1>>;
+
+  template <unsigned D>
+  using ValueArray = std::conditional_t<D==DYN_DIM, std::vector<value_t>, std::array<value_t, D>>;
 
   template <unsigned D>
   using ConnectivityHashMap = HashMap<DSimplex<D>, std::vector<std::pair<int,int>>>;
@@ -30,7 +35,7 @@ namespace ttk::gph {
   }
 
   template <unsigned D>
-  FiltratedDSimplex<D> max(FiltratedDSimplex<D> s1, FiltratedDSimplex<D> s2) {
+  const FiltratedDSimplex<D>& max(FiltratedDSimplex<D> const& s1, FiltratedDSimplex<D> const& s2) {
     return s1 < s2 ? s2 : s1;
   }
 
@@ -39,7 +44,7 @@ namespace ttk::gph {
 
   template <unsigned DIM>
   class DRPersistenceD {
-    using DimTag = CGAL::Dimension_tag<DIM>;
+    using DimTag = std::conditional_t<DIM==DYN_DIM, CGAL::Dynamic_dimension_tag, CGAL::Dimension_tag<DIM>>;
     using K = CGAL::Epick_d<DimTag>;
     using Vb = CGAL::Triangulation_vertex<K, id_t>;
     using FCb = CGAL::Triangulation_full_cell<K, id_t>;
@@ -50,8 +55,16 @@ namespace ttk::gph {
     using VertexHandle = typename Delaunay::Vertex_handle;
     using CellHandle = typename Delaunay::Full_cell_handle;
 
+    static constexpr unsigned minus1 (const unsigned D) {
+      return D == DYN_DIM ? DYN_DIM : D-1;
+    }
+
+    static constexpr unsigned plus1 (const unsigned D) {
+      return D == DYN_DIM ? DYN_DIM : D+1;
+    }
+
     struct FiltratedQuadFacet {
-      DSimplex<DIM-1> s;
+      DSimplex<minus1(DIM)> s;
       double d;
       double a;
       int c1;
@@ -70,15 +83,15 @@ namespace ttk::gph {
 
     [[nodiscard]] double squaredDistance(const unsigned i1, const unsigned i2) const {
       return std::inner_product(points_[i1].begin(),points_[i1].end(), points_[i2].begin(), 0.,
-      std::plus(), [](double u, double v) { return (u - v) * (u - v); });
+      std::plus(), [](const double u, const double v) { return (u - v) * (u - v); });
     }
 
     template <unsigned D>
     std::pair<double,double> squaredPerturbedDiameter (DSimplex<D> const& s) const {
       double diam = 0.;
       double a = 0.;
-      for (unsigned p1 = 0; p1 < D+1; ++p1) {
-        for (unsigned p2 = p1+1; p2 < D+1; ++p2) {
+      for (unsigned p1 = 0; p1 < s.size(); ++p1) {
+        for (unsigned p2 = p1+1; p2 < s.size(); ++p2) {
           const double dist = squaredDistance(s[p1], s[p2]);
           diam = std::max(diam, dist);
           a += dist;
@@ -88,28 +101,32 @@ namespace ttk::gph {
     }
 
     template <unsigned D>
-    std::array<double, D*(D+1)/2> getLengths (DSimplex<D> const& s) const {
-      std::array<double, D*(D+1)/2> lengths;
+    void getLengths (DSimplex<D> const& s, ValueArray<D*(D+1)/2> &lengths) const {
+      if constexpr(D == DYN_DIM)
+        lengths.resize((s.size()-1)*s.size()/2);
+      else
+        lengths.fill(0.); //to mute an uninitialization warning
       int i = 0;
-      for (unsigned p1 = 0; p1 < D+1; ++p1) {
-        for (unsigned p2 = p1+1; p2 < D+1; ++p2)
+      for (unsigned p1 = 0; p1 < s.size(); ++p1) {
+        for (unsigned p2 = p1+1; p2 < s.size(); ++p2)
           lengths[i++] = squaredDistance(s[p1], s[p2]);
       }
-      return lengths;
     }
 
     template <unsigned D>
-    bool checkLinkUrquhart(DSimplex<D> const& s, std::array<double, D*(D+1)/2> const& lengths, std::pair<double,double> diam, id_t linkId) {
-      std::array<double, D+1> linkLengths;
-      for (unsigned i = 0; i < D+1; ++i)
+    bool checkLinkUrquhart(DSimplex<D> const& s, ValueArray<D*(D+1)/2> const& lengths, std::pair<double,double> diam, id_t linkId) const {
+      ValueArray<plus1(D)> linkLengths;
+      if constexpr(D == DYN_DIM)
+        linkLengths.resize(s.size());
+      for (unsigned i = 0; i < s.size(); ++i)
         linkLengths[i] = squaredDistance(s[i], linkId);
 
-      for (unsigned i = 0; i<D+1; ++i) {
+      for (unsigned i = 0; i<s.size(); ++i) {
         double d = 0.;
         double a = 0.;
         int k=0;
-        for (unsigned p1 = 0; p1 < D+1; ++p1) {
-          for (unsigned p2 = p1+1; p2 < D+1; ++p2) {
+        for (unsigned p1 = 0; p1 < s.size(); ++p1) {
+          for (unsigned p2 = p1+1; p2 < s.size(); ++p2) {
             double dist;
             if (p1 == i)
               dist = linkLengths[p2];
@@ -131,21 +148,25 @@ namespace ttk::gph {
     }
 
     void computeDelaunay();
+
     void computeDPH(Diagram &ph,
-                    DSimplicialComplex<DIM-1> &MSA);
+                    DSimplicialComplex<minus1(DIM)> &MSA);
 
     template <unsigned D>
     void computeNextPH(Diagram &ph,
                        DSimplicialComplex<D> const& MSA,
-                       DSimplicialComplex<D-1> &nextMSA);
+                       DSimplicialComplex<minus1(D)> &nextMSA) const;
 
     template <unsigned D>
     void recurse(MultidimensionalDiagram &ph,
-                 DSimplicialComplex<D> const& MSA);
+                 DSimplicialComplex<D> const& MSA) const;
   };
 
   template <unsigned DIM>
   DRPersistenceD<DIM>::DRPersistenceD(PointCloud<DIM> &points) : N_p(points.size()), del_(DIM), points_(points) {}
+
+  template <>
+  inline DRPersistenceD<DYN_DIM>::DRPersistenceD(PointCloud<DYN_DIM> &points) : N_p(points.size()), del_(points[0].size()), points_(points) {}
 
   template <unsigned DIM>
   void DRPersistenceD<DIM>::run(MultidimensionalDiagram &ph) {
@@ -159,10 +180,31 @@ namespace ttk::gph {
     recurse(ph, MSA1);
   }
 
+  template <>
+  inline void DRPersistenceD<DYN_DIM>::run(MultidimensionalDiagram &ph) {
+    const unsigned DIM = points_[0].size();
+    ph = MultidimensionalDiagram(DIM);
+
+    computeDelaunay();
+
+    DSimplicialComplex<DYN_DIM> MSA;
+    computeDPH(ph[DIM-1], MSA);
+
+    unsigned D = DIM-1;
+    while (D > 1) {
+      DSimplicialComplex<DYN_DIM> nextMSA;
+      computeNextPH<DYN_DIM>(ph[D-1], MSA, nextMSA);
+      MSA = std::move(nextMSA);
+      D--;
+    }
+    for (FiltratedDSimplex<DYN_DIM> const& e : MSA)
+      ph[0].emplace_back(FiltratedSimplex{{}, 0.},
+                         FiltratedSimplex{e.s, sqrt(e.d)});
+  }
+
   template <unsigned DIM>
   template <unsigned D>
-  void DRPersistenceD<DIM>::recurse(MultidimensionalDiagram &ph,
-                                                DSimplicialComplex<D> const& MSA) {
+  void DRPersistenceD<DIM>::recurse(MultidimensionalDiagram &ph, DSimplicialComplex<D> const& MSA) const {
     if constexpr (D >= 2) {
       DSimplicialComplex<D-1> nextMSA;
       computeNextPH(ph[D-1], MSA, nextMSA);
@@ -171,7 +213,7 @@ namespace ttk::gph {
     else if constexpr (D == 1) { //this is the 0-dimensional homology
       for (FiltratedDSimplex<1> const& e : MSA)
         ph[0].emplace_back(FiltratedSimplex{{}, 0.},
-                           FiltratedSimplex{{}, sqrt(e.d)});
+                           FiltratedSimplex{{e.s[0], e.s[1]}, sqrt(e.d)});
     }
   }
 
@@ -194,9 +236,8 @@ namespace ttk::gph {
   }
 
   template<unsigned DIM>
-  void DRPersistenceD<DIM>::computeDPH(Diagram &ph,
-                                                   DSimplicialComplex<DIM-1> &MSA) {
-    DSimplicialComplex<DIM-1> maxDelaunay (N_c);
+  void DRPersistenceD<DIM>::computeDPH(Diagram &ph, DSimplicialComplex<minus1(DIM)> &MSA) {
+    DSimplicialComplex<minus1(DIM)> maxDelaunay (N_c);
     UnionFind UF(N_c);
     std::vector<FiltratedQuadFacet> hyperUrquhart;
 
@@ -214,21 +255,23 @@ namespace ttk::gph {
         const auto linkPoint1 = c->vertex(f.index_of_covertex());
         const auto linkPoint2 = c_mirror->vertex(c->mirror_index(f.index_of_covertex()));
 
-        DSimplex<DIM-1> facet;
-        for (unsigned i = 0; i<DIM; ++i)
-          facet[i] = c->vertex((f.index_of_covertex() + i + 1) % (DIM+1))->data();
+        DSimplex<minus1(DIM)> facet;
+        if constexpr (DIM==DYN_DIM)
+          facet.resize(del_.current_dimension());
+        for (unsigned i = 0; i<facet.size(); ++i)
+          facet[i] = c->vertex((f.index_of_covertex() + i + 1) % (facet.size()+1))->data();
         std::sort(facet.begin(), facet.end());
-        const auto diam = squaredPerturbedDiameter<DIM-1>(facet);
+        const auto diam = squaredPerturbedDiameter<minus1(DIM)>(facet);
 
         bool is_urquhart = true;
         for (auto linkPoint : {linkPoint1, linkPoint2}) {
           if (!del_.is_infinite(linkPoint)) {
             const id_t k = linkPoint->data();
             bool largest = true;
-            for (unsigned i = 0; i<DIM; ++i) {
-              DSimplex<DIM-1> neighbor = facet;
+            for (unsigned i = 0; i<facet.size(); ++i) {
+              DSimplex<minus1(DIM)> neighbor = facet;
               neighbor[i] = k;
-              if (squaredPerturbedDiameter<DIM-1>(neighbor) > diam) {
+              if (squaredPerturbedDiameter<minus1(DIM)>(neighbor) > diam) {
                 largest = false;
                 break;
               }
@@ -245,7 +288,7 @@ namespace ttk::gph {
         else {
           const int poly1 = UF.find(c->data());
           const int poly2 = UF.find(c_mirror->data());
-          maxDelaunay[UF.mergeRet(poly1, poly2)] = max(FiltratedDSimplex<DIM-1>{facet, diam.first, diam.second},
+          maxDelaunay[UF.mergeRet(poly1, poly2)] = max(FiltratedDSimplex<minus1(DIM)>{facet, diam.first, diam.second},
                                                            max(maxDelaunay[poly1], maxDelaunay[poly2]));
         }
 
@@ -262,8 +305,7 @@ namespace ttk::gph {
               [](const FiltratedQuadFacet &f1, const FiltratedQuadFacet &f2) {
       if (f1.d == f2.d)
         return f1.a > f2.a;
-      else
-        return f1.d > f2.d;
+      return f1.d > f2.d;
     });
 
     /* reverse-delete algorithm to determine MSA */
@@ -278,19 +320,19 @@ namespace ttk::gph {
 
         const int latest1 = latest[v1];
         const int latest2 = latest[v2];
-        const FiltratedDSimplex<DIM-1>& death1 = maxDelaunay[latest1];
-        const FiltratedDSimplex<DIM-1>& death2 = maxDelaunay[latest2];
+        const FiltratedDSimplex<minus1(DIM)>& death1 = maxDelaunay[latest1];
+        const FiltratedDSimplex<minus1(DIM)>& death2 = maxDelaunay[latest2];
 
         if (death1.d < death2.d) {
           if (f.d < death1.d)
-            ph.emplace_back(FiltratedSimplex{{}, sqrt(f.d)},
-                            FiltratedSimplex{{}, sqrt(death1.d)});
+            ph.emplace_back(FiltratedSimplex{Simplex(f.s.begin(), f.s.end()), sqrt(f.d)},
+                            FiltratedSimplex{Simplex(death1.s.begin(), death1.s.end()), sqrt(death1.d)});
           latest[UF.find(v1)] = latest2;
         }
         else if (death2.d < death1.d) {
           if (f.d < death2.d)
-            ph.emplace_back(FiltratedSimplex{{}, sqrt(f.d)},
-                            FiltratedSimplex{{}, sqrt(death2.d)});
+            ph.emplace_back(FiltratedSimplex{Simplex(f.s.begin(), f.s.end()), sqrt(f.d)},
+                            FiltratedSimplex{Simplex(death2.s.begin(), death2.s.end()), sqrt(death2.d)});
           latest[UF.find(v1)] = latest1;
         }
       }
@@ -303,16 +345,18 @@ namespace ttk::gph {
   template <unsigned DIM>
   template <unsigned D>
   void DRPersistenceD<DIM>::computeNextPH(Diagram &ph,
-                                                      DSimplicialComplex<D> const& MSA,
-                                                      DSimplicialComplex<D-1> &nextMSA) {
+                                          DSimplicialComplex<D> const& MSA,
+                                          DSimplicialComplex<minus1(D)> &nextMSA) const {
     /* Connectivity */
 
-    ConnectivityHashMap<D-1> msa_connectivity;
+    ConnectivityHashMap<minus1(D)> msa_connectivity;
     msa_connectivity.reserve(MSA.size());
     for (unsigned i = 0; i<MSA.size(); ++i) {
-      DSimplex<D-1> face;
-      for (unsigned k=0; k<D+1; ++k) {
-        for (unsigned j=0; j<D; ++j)
+      DSimplex<minus1(D)> face;
+      if constexpr (D == DYN_DIM)
+        face.resize(MSA[0].s.size()-1);
+      for (unsigned k=0; k<MSA[0].s.size(); ++k) {
+        for (unsigned j=0; j<MSA[0].s.size()-1; ++j)
           face[j] = MSA[i].s[j + (j>=k)];
         msa_connectivity[face].reserve(4); //todo adjust guess
         msa_connectivity[face].emplace_back(i, MSA[i].s[k]);
@@ -321,20 +365,24 @@ namespace ttk::gph {
 
     /* Urquhart-ness and Urquhart-polytopes */
 
-    std::vector<FiltratedDSimplex<D-1>> critical;
+    std::vector<FiltratedDSimplex<minus1(D)>> critical;
     UnionFind UF_msa (MSA.size());
-    std::vector<FiltratedDSimplex<D-1>> maxDelaunay (MSA.size());
+    std::vector<FiltratedDSimplex<minus1(D)>> maxDelaunay (MSA.size());
+
     for (auto const& [s, neighbors] : msa_connectivity) {
 
       // first determine whether s is Urquhart
       bool is_urquhart = true;
-      const auto lengths = getLengths<D-1>(s);
+      ValueArray<D*minus1(D)/2> lengths;
+      getLengths<minus1(D)>(s, lengths);
       std::pair<double,double> diam;
-      for (double const& l : lengths)
-        diam = {std::max(diam.first, l), diam.second + l};
+      for (double const& l : lengths) {
+        diam.first = std::max(diam.first, l);
+        diam.second += l;
+      }
 
       for (auto [coface_id, linkPoint_id] : neighbors) {
-        if (checkLinkUrquhart<D-1>(s, lengths, diam, linkPoint_id)) {
+        if (checkLinkUrquhart<minus1(D)>(s, lengths, diam, linkPoint_id)) {
           is_urquhart = false;
           break;
         }
@@ -349,14 +397,14 @@ namespace ttk::gph {
         else if (neighbors.size() == 2) {
           const int poly1 = UF_msa.find(neighbors[0].first);
           const int poly2 = UF_msa.find(neighbors[1].first);
-          maxDelaunay[UF_msa.mergeRet(poly1, poly2)] = max(FiltratedDSimplex<D-1>{s, diam.first, diam.second},
-                                                                max(maxDelaunay[poly1], maxDelaunay[poly2]));
+          maxDelaunay[UF_msa.mergeRet(poly1, poly2)] = max(FiltratedDSimplex<minus1(D)>{s, diam.first, diam.second},
+                                                               max(maxDelaunay[poly1], maxDelaunay[poly2]));
         }
         else {
           critical.push_back({s, diam.first, diam.second});
           for (auto const& f_id : neighbors) {
             const int poly = UF_msa.find(f_id.first);
-            maxDelaunay[poly] = max(FiltratedDSimplex<D-1>{s, diam.first, diam.second}, maxDelaunay[poly]);
+            maxDelaunay[poly] = max(FiltratedDSimplex<minus1(D)>{s, diam.first, diam.second}, maxDelaunay[poly]);
           }
         }
       }
@@ -387,8 +435,7 @@ namespace ttk::gph {
     for (const int poly : polytopes)
       poly_to_crit[poly].reserve(D+1); //todo adjust guess
     for (unsigned i=0; i<critical.size(); ++i) {
-      const FiltratedDSimplex<D-1> c = critical[i];
-      for (const auto& [poly,_] : msa_connectivity[c.s]) {
+      for (const auto& [poly,_] : msa_connectivity[critical[i].s]) {
         if (maxDelaunay[UF_msa.find(poly)].d < inf) {
           auto &neighbors = poly_to_crit[UF_msa.find(poly)];
           auto it = std::find(neighbors.begin(), neighbors.end(), criticalOrder[i]);
@@ -404,16 +451,16 @@ namespace ttk::gph {
 
     std::vector<int> partner(critical.size(), -1);
     for (const int poly : polytopes) {
-      std::set boundary(poly_to_crit[poly].begin(), poly_to_crit[poly].end());
+      HashSet<int> boundary(poly_to_crit[poly].begin(), poly_to_crit[poly].end(), poly_to_crit[poly].size());
       while (true) {
-        const int youngest_id = *boundary.rbegin();
+        const int youngest_id = *std::max_element(boundary.begin(), boundary.end());
         if (partner[youngest_id] == -1) {
           partner[youngest_id] = poly;
-          const FiltratedDSimplex<D-1> &c = critical[criticalIndices[youngest_id]];
-          const FiltratedDSimplex<D-1> &death = maxDelaunay[poly];
+          const FiltratedDSimplex<minus1(D)> &c = critical[criticalIndices[youngest_id]];
+          const FiltratedDSimplex<minus1(D)> &death = maxDelaunay[poly];
           if (c.d < death.d)
-            ph.emplace_back(FiltratedSimplex{{}, sqrt(c.d)},
-                            FiltratedSimplex{{}, sqrt(death.d)});
+            ph.emplace_back(FiltratedSimplex{Simplex(c.s.begin(), c.s.end()), sqrt(c.d)},
+                            FiltratedSimplex{Simplex(death.s.begin(), death.s.end()), sqrt(death.d)});
           break;
         }
         else {
@@ -447,6 +494,13 @@ namespace ttk::gph {
     drpd.run(diagram);
   }
 
+  template <>
+  inline void runDelaunayRipsPersistenceDiagram<DYN_DIM>(rpd::PointCloud const& points, MultidimensionalDiagram &diagram) {
+    PointCloud<DYN_DIM> p = points;
+    DRPersistenceD<DYN_DIM> drpd(p);
+    drpd.run(diagram);
+  }
+
   template <unsigned DIM>
   void tryDimension(rpd::PointCloud const& points, MultidimensionalDiagram &diagram) {
     if constexpr (DIM <= TTK_DELAUNAY_MAXIMUM_DIMENSION) {
@@ -455,6 +509,8 @@ namespace ttk::gph {
       else
         tryDimension<DIM+1>(points, diagram);
     }
+    else
+      runDelaunayRipsPersistenceDiagram<DYN_DIM>(points, diagram);
   }
 
   inline void tryDimensions(rpd::PointCloud const& points, MultidimensionalDiagram &diagram) {

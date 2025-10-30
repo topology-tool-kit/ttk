@@ -11,10 +11,6 @@ int ttk::DelaunayRipsPersistenceDiagram::execute(
 
 #ifdef TTK_ENABLE_CGAL
   const unsigned dim = points[0].size();
-  if (dim > TTK_DELAUNAY_MAXIMUM_DIMENSION) {
-    printErr("Input dimension too large: " + std::to_string(dim) + ">" + std::to_string(TTK_DELAUNAY_MAXIMUM_DIMENSION));
-    return 1;
-  }
   if (points.size() <= dim) {
     printErr("Not enough points");
     return 1;
@@ -35,6 +31,8 @@ int ttk::DelaunayRipsPersistenceDiagram::execute(
     ph[0].emplace_back(FiltratedSimplex{{-1}, 0.}, FiltratedSimplex{{-1}, inf}); // infinite pair
   }
   else {
+    if (dim > TTK_DELAUNAY_MAXIMUM_DIMENSION)
+      printWrn("High dimension: " + std::to_string(dim) + ">" + std::to_string(TTK_DELAUNAY_MAXIMUM_DIMENSION));
     gph::tryDimensions(points, ph);
     ph[0].emplace_back(FiltratedSimplex{{-1}, 0.}, FiltratedSimplex{{-1}, inf}); // infinite pair
     for (auto &diag : ph) {

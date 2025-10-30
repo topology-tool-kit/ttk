@@ -1,6 +1,6 @@
 #pragma once
 
-#include "geoPHUtils.h"
+#include <geoPHUtils.h>
 
 #ifdef TTK_ENABLE_CGAL
 
@@ -188,8 +188,7 @@ namespace ttk::gph {
       TTK_PSORT(nThreadsSort_, hyperUrquhart.begin(), hyperUrquhart.end(), [](const FiltratedQuadFacet &f1, const FiltratedQuadFacet &f2) {
         if (f1.d == f2.d)
           return f1.a > f2.a;
-        else
-          return f1.d > f2.d;
+        return f1.d > f2.d;
       });
     }
 
@@ -356,7 +355,6 @@ namespace ttk::gph {
       });
       UnionFind UF_p(N_p);
       ph[0].reserve(N_p-1);
-      critical1.reserve(urquhart.size()-N_p+1);
       for (FiltratedEdge const& e : urquhart) {
         if(UF_p.find(e.e.first) != UF_p.find(e.e.second)) { //we know e is a EMST edge
           UF_p.merge(e.e.first, e.e.second);
@@ -408,9 +406,9 @@ namespace ttk::gph {
 
       std::vector<int> partner_edge(critical1.size(), -1);
       for (const int poly : polys) {
-        std::set boundary(poly_to_crit[poly].begin(), poly_to_crit[poly].end());
+        HashSet<int> boundary(poly_to_crit[poly].begin(), poly_to_crit[poly].end(), poly_to_crit[poly].size());
         while (true) {
-          const int youngest_id = *boundary.rbegin();
+          const int youngest_id = *std::max_element(boundary.begin(), boundary.end());
           if (partner_edge[youngest_id] == -1) {
             partner_edge[youngest_id] = poly;
             const FiltratedEdge& e = critical1[criticalIndices[youngest_id]];
@@ -494,10 +492,10 @@ namespace ttk::gph {
 
       std::vector<int> partner_edge(critical1.size(), -1);
       for (const int poly : polys) {
-        std::set boundary(poly_to_crit[poly].begin(), poly_to_crit[poly].end());
+        HashSet<int> boundary(poly_to_crit[poly].begin(), poly_to_crit[poly].end(), poly_to_crit[poly].size());
         std::vector<Edge>& generator = elementary_generators[poly];
         while (true) {
-          const int youngest_id = *boundary.rbegin();
+          const int youngest_id = *std::max_element(boundary.begin(), boundary.end());
           if (partner_edge[youngest_id] == -1) {
             partner_edge[youngest_id] = poly;
             const FiltratedEdge& e = critical1[criticalIndices[youngest_id]];
