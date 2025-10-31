@@ -42,7 +42,7 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_OPENMP
       ParallelGuard const pg{params_.threadNumber};
-      omp_set_nested(1);
+      omp_set_max_active_levels(100);
 #ifdef TTK_ENABLE_OMP_PRIORITY
       if(omp_get_max_task_priority() < PriorityLevel::Max) {
         this->printWrn("OpenMP max priority is lower than 5");

@@ -66,7 +66,7 @@ namespace ttk {
       // msg
       this->setDebugMsgPrefix("MergeTreePrincipalGeodesics");
 #ifdef TTK_ENABLE_OPENMP
-      omp_set_nested(1);
+      omp_set_max_active_levels(100);
 #endif
     }
 
