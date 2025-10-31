@@ -9,7 +9,7 @@
 /// This module defines the %DelaunayRipsPersistenceDiagram class that takes a
 /// point cloud and computes the persistence diagram of its Delaunay-Rips
 /// filtration. It can also compute 1-dimensional and 2-dimensional persistence
-/// generators for point clouds in R2 or R3.
+/// generators for point clouds in R2 and R3.
 ///
 /// \sa ttkDelaunayRipsPersistenceDiagram.cpp %for a usage example.
 
@@ -36,7 +36,7 @@ namespace ttk {
     DelaunayRipsPersistenceDiagram();
 
     /**
-    * @brief Main entry point (no generators)
+    * @brief Main entry point (without generators)
     *
     * @param[in] points Input point cloud
     * @param[out] ph Persistence diagram
@@ -45,12 +45,12 @@ namespace ttk {
                 MultidimensionalDiagram &ph) const;
 
     /**
-    * @brief Main entry point
+    * @brief Main entry point (with generators)
     *
     * @param[in] points Input point cloud
     * @param[out] ph Persistence diagram
-    * @param[out] generators1 1-dimensional persistent generators, if required
-    * @param[out] generators2 2-dimensional persistent generators, if required
+    * @param[out] generators1 1-dimensional persistent generators
+    * @param[out] generators2 2-dimensional persistent generators
     */
     int execute(const PointCloud &points,
                 MultidimensionalDiagram &ph,

@@ -40,8 +40,7 @@ namespace ttk::rpd {
   inline FiltratedEdge max(const FiltratedEdge &a, const FiltratedEdge &b) {
     if(a.d > b.d)
       return a;
-    else
-      return b;
+    return b;
   }
 
   struct FiltratedQuadEdge {
@@ -71,7 +70,8 @@ namespace ttk::rpd {
 
   class UnionFind {
   private:
-    std::vector<int> parent_, rank_;
+    std::vector<int> parent_;
+    std::vector<unsigned char> rank_;
 
   public:
     explicit UnionFind(unsigned n);

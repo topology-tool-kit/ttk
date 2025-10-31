@@ -33,7 +33,7 @@ namespace ttk::gph {
     double d;
   };
 
-  inline FiltratedFacet max(FiltratedFacet a, FiltratedFacet b) {
+  inline FiltratedFacet max(FiltratedFacet const& a, FiltratedFacet const& b) {
     if (a.d > b.d)
       return a;
     return b;
