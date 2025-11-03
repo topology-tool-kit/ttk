@@ -35,7 +35,7 @@ namespace ttk::gph {
   }
 
   template <unsigned D>
-  const FiltratedDSimplex<D>& max(FiltratedDSimplex<D> const& s1, FiltratedDSimplex<D> const& s2) {
+  FiltratedDSimplex<D> max(FiltratedDSimplex<D> const& s1, FiltratedDSimplex<D> const& s2) {
     return s1 < s2 ? s2 : s1;
   }
 
