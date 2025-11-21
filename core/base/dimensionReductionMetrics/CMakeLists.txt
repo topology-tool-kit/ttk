@@ -1,0 +1,9 @@
+ttk_add_base_library(dimensionReductionMetrics
+  SOURCES
+    DimensionReductionMetrics.cpp
+  HEADERS
+    DimensionReductionMetrics.h
+  DEPENDS
+    persistenceDiagramWarmRestartAuction
+    ripsPersistenceDiagram
+)

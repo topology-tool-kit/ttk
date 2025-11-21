@@ -2,6 +2,7 @@
 function(ttk_print_summary)
     message(STATUS "ttk options -----------------------------------------------------------------")
     message(STATUS "TTK_ENABLE_64BIT_IDS: ${TTK_ENABLE_64BIT_IDS}")
+    message(STATUS "TTK_ENABLE_CGAL: ${TTK_ENABLE_CGAL}")
     message(STATUS "TTK_ENABLE_CPU_OPTIMIZATION: ${TTK_ENABLE_CPU_OPTIMIZATION}")
     message(STATUS "TTK_ENABLE_DOUBLE_TEMPLATING: ${TTK_ENABLE_DOUBLE_TEMPLATING}")
     message(STATUS "TTK_ENABLE_EIGEN: ${TTK_ENABLE_EIGEN}")

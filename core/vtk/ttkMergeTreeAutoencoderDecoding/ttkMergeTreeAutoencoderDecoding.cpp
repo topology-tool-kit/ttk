@@ -141,6 +141,10 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
   else
     printMsg("Computation without normalized Wasserstein.");
 
+  auto diagramPairTypesArray = fd->GetArray("DiagramPairTypes");
+  if(diagramPairTypesArray)
+    DiagramPairTypes = diagramPairTypesArray->GetTuple1(0);
+
   // -----------------
   // Origins
   // -----------------
@@ -156,13 +160,13 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
   std::vector<vtkDataSet *> originsTreeSegmentations,
     originsPrimeTreeSegmentations;
 
-  bool useSadMaxPairs = (mixtureCoefficient_ == 0);
+  bool useSecondPairsType = (mixtureCoefficient_ == 0);
   isPersistenceDiagram_ = ttk::ftm::constructTrees<float>(
     origins, originsTrees, originsTreeNodes, originsTreeArcs,
-    originsTreeSegmentations, useSadMaxPairs);
-  ttk::ftm::constructTrees<float>(originsPrime, originsPrimeTrees,
-                                  originsTreeNodes, originsTreeArcs,
-                                  originsTreeSegmentations, useSadMaxPairs);
+    originsTreeSegmentations, useSecondPairsType, DiagramPairTypes);
+  ttk::ftm::constructTrees<float>(
+    originsPrime, originsPrimeTrees, originsTreeNodes, originsTreeArcs,
+    originsTreeSegmentations, useSecondPairsType, DiagramPairTypes);
   // If merge trees are provided in input and normalization is not asked
   convertToDiagram_
     = (not isPersistenceDiagram_ and not normalizedWasserstein_);

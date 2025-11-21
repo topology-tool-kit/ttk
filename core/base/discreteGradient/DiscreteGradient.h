@@ -279,6 +279,12 @@ triangulation.
                         const std::vector<bool> *updateMask = nullptr,
                         const unsigned int &seed = 0);
 
+#ifdef TTK_ENABLE_MPI
+      template <typename triangulationType>
+      int getSimplexRankWithGradientType(const triangulationType &triangulation,
+                                         const ttk::SimplexId &lid,
+                                         const int gradientType);
+#endif
       /**
        * Set the input scalar function.
        *
