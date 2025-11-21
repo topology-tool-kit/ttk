@@ -39,6 +39,16 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
                                     const std::vector<bool> *updateMask,
                                     const unsigned int &seed) {
 
+  return buildGradient<double, triangulationType>(
+    triangulation, bypassCache, updateMask, seed);
+}
+
+template <typename dataType, typename triangulationType>
+int DiscreteGradient::buildGradient(const triangulationType &triangulation,
+                                    bool bypassCache,
+                                    const std::vector<bool> *updateMask,
+                                    const unsigned int &seed) {
+
   auto &cacheHandler = *triangulation.getGradientCacheHandler();
   const auto findGradient
     = [this, &cacheHandler]() -> AbstractTriangulation::gradientType * {
@@ -78,7 +88,7 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
       this->printMsg("Update cached discrete gradient", 1.0,
                      tm.getElapsedTime(), this->threadNumber_);
     } else if(this->BackEnd == BACKEND::STOCHASTIC_BACKEND) {
-      this->processLowerStarsStochastic(
+      this->processLowerStarsStochastic<dataType, triangulationType>(
         this->inputOffsets_, triangulation, seed);
       this->printMsg("Build stochastic discrete gradient", 1.0,
                      tm.getElapsedTime(), this->threadNumber_);
@@ -1071,7 +1081,7 @@ int DiscreteGradient::processLowerStarsWithMask(
   return 0;
 }
 
-template <typename triangulationType>
+template <typename dataType, typename triangulationType>
 int DiscreteGradient::processLowerStarsStochastic(
   const SimplexId *const offsets,
   const triangulationType &triangulation,
@@ -1202,11 +1212,15 @@ int DiscreteGradient::processLowerStarsStochastic(
         std::vector<SimplexId>
           stencilIds; // in order +dx, -dx, +dy, -dy, +dz, -dz
         std::vector<float> stencilLengths = edgeLengths;
+
         buildStencil(x, xCoords, triangulation, stencilIds, stencilLengths);
 
-        double grad[3];
-        const double *scalars
-          = static_cast<double const *>(this->inputScalarField_.first);
+        using gradType
+          = std::conditional_t<std::is_same_v<dataType, double>, double, float>;
+
+        const dataType *scalars
+          = static_cast<dataType const *>(this->inputScalarField_.first);
+        gradType grad[3];
         grad[0] = (scalars[stencilIds[0]] - scalars[stencilIds[1]])
                   / stencilLengths[0];
         grad[1] = (scalars[stencilIds[2]] - scalars[stencilIds[3]])

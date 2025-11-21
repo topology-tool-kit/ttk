@@ -475,7 +475,7 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   this->discreteGradient_.setInputScalarField(scalars, scalarsMTime);
   this->discreteGradient_.setInputOffsets(offsets);
   this->discreteGradient_.setBackend(this->DiscreteGradientBackend);
-  this->discreteGradient_.buildGradient(
+  this->discreteGradient_.buildGradient<dataType, triangulationType>(
     triangulation, this->ReturnSaddleConnectors, nullptr, seed);
   if(this->ReturnSaddleConnectors) {
     auto persistenceThreshold{this->SaddleConnectorsPersistenceThreshold};

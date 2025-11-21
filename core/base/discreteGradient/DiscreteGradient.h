@@ -267,6 +267,12 @@ namespace ttk {
        * Compute the initial gradient field of the input scalar function on the
 triangulation.
        */
+      template <typename dataType, typename triangulationType>
+      int buildGradient(const triangulationType &triangulation,
+                        bool bypassCache = false,
+                        const std::vector<bool> *updateMask = nullptr,
+                        const unsigned int &seed = 0);
+
       template <typename triangulationType>
       int buildGradient(const triangulationType &triangulation,
                         bool bypassCache = false,
@@ -650,7 +656,7 @@ in the gradient.
                                     const std::vector<bool> *updateMask
                                     = nullptr);
 
-      template <typename triangulationType>
+      template <typename dataType, typename triangulationType>
       int processLowerStarsStochastic(const SimplexId *const offsets,
                                       const triangulationType &triangulation,
                                       const unsigned int &seed = 0);
