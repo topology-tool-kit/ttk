@@ -1015,7 +1015,7 @@ void ttk::MergeTreeAutoencoder::computeAlphas(
   // Pseudo inverse
   auto driver = "gelsd";
   alphasOut
-    = std::get<0>(torch::linalg::lstsq(r_axes, r_data, c10::nullopt, driver));
+    = std::get<0>(torch::linalg_lstsq(r_axes, r_data, c10::nullopt, driver));
 
   alphasOut.reshape({-1, 1});
 }
@@ -2347,7 +2347,7 @@ void ttk::MergeTreeAutoencoder::createCustomRecs(
     torch::Tensor alphasWeight;
     if(initByTreesAlphas) {
       auto driver = "gelsd";
-      alphasWeight = std::get<0>(torch::linalg::lstsq(
+      alphasWeight = std::get<0>(torch::linalg_lstsq(
                                    allTreesAlphas[latLayer].transpose(0, 1),
                                    alphas, c10::nullopt, driver))
                        .transpose(0, 1);
@@ -2371,7 +2371,7 @@ void ttk::MergeTreeAutoencoder::createCustomRecs(
       torch::Tensor maxNorm;
       for(unsigned int j = 0; j < allAlphasInit.size(); ++j) {
         allAlphasInit[j] = torch::randn({vSTensor_[l].sizes()[1], 1});
-        auto norm = torch::linalg::vector_norm(
+        auto norm = torch::linalg_vector_norm(
           allAlphasInit[j], 2, 0, false, c10::nullopt);
         if(j == 0 or maxNorm.item<float>() < norm.item<float>())
           maxNorm = norm;
@@ -2609,8 +2609,8 @@ void ttk::MergeTreeAutoencoder::execute(
   printErr("This module requires Torch.");
 #else
 #ifdef TTK_ENABLE_OPENMP
-  int ompNested = omp_get_nested();
-  omp_set_nested(1);
+  int ompNested = omp_get_max_active_levels();
+  omp_set_max_active_levels(100);
 #endif
   // --- Preprocessing
   Timer t_preprocess;
@@ -2697,7 +2697,7 @@ void ttk::MergeTreeAutoencoder::execute(
     }
   }
 #ifdef TTK_ENABLE_OPENMP
-  omp_set_nested(ompNested);
+  omp_set_max_active_levels(ompNested);
 #endif
 #endif
 }

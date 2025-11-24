@@ -146,7 +146,7 @@ list(INSERT CMAKE_MODULE_PATH 0
 
 # mandatory packages
 
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED CONFIG)
 if(Boost_FOUND)
   message(STATUS "Found Boost ${Boost_VERSION} (${Boost_INCLUDE_DIR})")
 endif()
