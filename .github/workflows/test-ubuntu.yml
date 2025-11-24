@@ -1,0 +1,240 @@
+name: test_build-ubuntu
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+env:
+  PV_TAG: v6.0.1-headless
+  PV_REPO: topology-tool-kit/ttk-paraview
+  CMAKE_GENERATOR: Ninja
+  CMAKE_BUILD_TYPE: Release
+  CMAKE_CC_COMPILER_LAUNCHER: sccache
+  CMAKE_CXX_COMPILER_LAUNCHER: sccache
+  SCCACHE_GHA_ENABLED: "true"
+  SCCACHE_IDLE_TIMEOUT: 0
+
+
+jobs:
+
+  # ------------------#
+  # Test Ubuntu build #
+  # ------------------#
+  test-build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+
+    steps:
+    - uses: actions/checkout@v4
+      name: Checkout TTK source code
+
+    - name: Install Ubuntu dependencies
+      run: |
+        sudo apt update
+        # TTK dependencies
+        sudo apt install -y \
+          libboost-system-dev \
+          libcgal-dev \
+          libeigen3-dev \
+          libgraphviz-dev \
+          libosmesa-dev \
+          libopenmpi-dev \
+          libsqlite3-dev \
+          libwebsocketpp-dev \
+          graphviz \
+          python3-sklearn \
+          ninja-build \
+          zlib1g-dev \
+          libqhull-dev \
+          dpkg-dev
+
+    - name: Run sccache-cache
+      uses: mozilla-actions/sccache-action@v0.0.9
+
+    - name: Install optional Spectra dependency
+      uses: ./.github/actions/install-spectra-unix
+
+    - name: Install optional ZFP dependency
+      uses: ./.github/actions/install-zfp-unix
+
+    # TODO: try to replicate for mac
+    - name: Install Torch
+      shell: bash
+      run: |
+        wget https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.3.1%2Bcpu.zip
+        unzip libtorch-cxx11-abi-shared-with-deps-2.3.1+cpu.zip
+        sudo cp -R libtorch/* /usr/local/
+
+    - name: Fetch TTK-ParaView headless Debian package
+      run: |
+        wget -O ttk-paraview-headless.deb \
+          https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless-${{ matrix.os }}.deb
+
+    - name: Install ParaView .deb
+      run: |
+        sudo apt install ./ttk-paraview-headless.deb
+
+    - name: Create & configure TTK build directory
+      run: |
+        mkdir build
+        cd build
+        cmake \
+          -DCMAKE_COMPILE_WARNING_AS_ERROR=ON \
+          -DCMAKE_INSTALL_PREFIX=/usr \
+          -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
+          -DTTK_BUILD_VTK_WRAPPERS=TRUE \
+          -DTTK_BUILD_STANDALONE_APPS=TRUE \
+          -DTTK_ENABLE_KAMIKAZE=TRUE \
+          -DTTK_ENABLE_MPI=TRUE \
+          -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE \
+          -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE \
+          -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 \
+          $GITHUB_WORKSPACE
+
+    - uses: ammaraskar/gcc-problem-matcher@master
+    - name: Build, install TTK & package it
+      run: |
+        cd build
+        cmake --build . --parallel
+        cpack -G DEB
+        sudo cmake --build . --target install
+
+    - name: Run TTK tests
+      uses: ./.github/actions/test-ttk-ubuntu
+
+    - name: Upload TTK .deb package for fast install in tests
+      uses: actions/upload-artifact@v4
+      with:
+        name: ttk-for-tests-${{ matrix.os }}.deb
+        path: build/ttk.deb
+
+  # ------------------#
+  # Tests on ttk-data #
+  # ------------------#
+  run-python-screenshots-tests:
+    runs-on: ${{ matrix.os }}
+    needs: test-build
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+        testSet: [pyTests, screenshotTests]
+    steps:
+    - name: Install Ubuntu dependencies
+      run: |
+        sudo apt update
+
+    - name: Install Torch
+      shell: bash
+      run: |
+        wget https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.3.1%2Bcpu.zip
+        unzip libtorch-cxx11-abi-shared-with-deps-2.3.1+cpu.zip
+        sudo cp -R libtorch/* /usr/local/
+
+    - name: Fetch TTK-ParaView headless Debian package
+      run: |
+        wget -O ttk-paraview-headless.deb \
+          https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless-${{ matrix.os }}.deb
+
+    - name: Install ParaView .deb
+      run: |
+        sudo apt install ./ttk-paraview-headless.deb
+
+    - name: Fetch TTK packages we just built in the test-build-ubuntu job
+      uses: actions/download-artifact@v4.1.7
+      with:
+        name: ttk-for-tests-${{ matrix.os }}.deb
+
+    - name: Installing the previously built ttk package
+      run: |
+        sudo apt install ./ttk.deb
+
+    - uses: actions/checkout@v4
+      with:
+        repository: "topology-tool-kit/ttk-data"
+        ref: "dev"
+        path: "ttk-data"
+      name: Checkout ttk-data
+
+    - name: Resample large datasets
+      shell: python3 {0}
+      working-directory: ./ttk-data
+      run: |
+        from paraview import simple
+        for ds in ["ctBones.vti"]:
+            vti = simple.XMLImageDataReader(FileName=ds)
+            rsi = simple.ResampleToImage(Input=vti)
+            rsi.SamplingDimensions = [128, 128, 128]
+            simple.SaveData(ds, rsi)
+
+    - name: Run ttk-data states [NOT ENFORCED]
+      if: matrix.testSet == 'screenshotTests'
+      id: validate
+      continue-on-error: true
+      run: |
+        VERS=$(hostnamectl | grep "Operating System")
+        # Ubuntu 22.04 OOM killer also kills the parent process...
+        if [[ "$VERS" == *"22.04"* ]] || [[ "$VERS" == *"24.04"* ]]; then
+          rm ttk-data/states/mergeTreeClustering.pvsm
+          rm ttk-data/states/mergeTreePGA.pvsm
+          rm ttk-data/states/mergeTreeTemporalReduction.pvsm
+          rm ttk-data/states/persistentGenerators_darkSky.pvsm
+        fi
+        # remove buggy example
+        # related issue: https://github.com/topology-tool-kit/ttk/issues/1055
+        rm ttk-data/states/nestedTrackingFromOverlap.py
+        # remove examples which fill up the memory
+        rm ttk-data/states/topologicalOptimization_darkSky.pvsm
+        rm ttk-data/states/topologicalOptimization*.pvsm
+
+        cd ttk-data/tests
+        mkdir output_screenshots
+        if ! python3 -u validate.py; then
+
+          if [[ "$VERS" == *"22.04"* ]] || [[ "$VERS" == *"24.04"* ]]; then
+            # weird opacity difference between the two Ubuntus
+            rm -f output_screenshots/clusteringKelvinHelmholtzInstabilities_1.png
+            rm -f output_screenshots/clusteringKelvinHelmholtzInstabilities_2.png
+          fi
+          if [ "$(ls -A output_screenshots)" ]; then
+            tar zcf screenshots.tar.gz output_screenshots
+            false
+          fi
+        fi
+
+    - name: Upload result screenshots
+      if: steps.validate.outcome == 'failure' && matrix.testSet == 'screenshotTests'
+      uses: actions/upload-artifact@v4
+      with:
+        name: screenshots-${{ matrix.os }}.tar.gz
+        path: ttk-data/tests/screenshots.tar.gz
+        retention-days: 10
+
+    - name: Run ttk-data Python scripts
+      if: matrix.testSet == 'pyTests'
+      run: |
+        cd ttk-data
+        # remove buggy example
+        # related issue: https://github.com/topology-tool-kit/ttk/issues/1055
+        rm python/nestedTrackingFromOverlap.py
+        # tmp removal of mpi example
+        rm python/mpiExample.py
+        # remove examples which fill up the memory
+        rm python/topologicalOptimization_darkSky.py
+        pvpython -u python/run.py
+
+    - name: Test ttk-data Python scripts results [NOT ENFORCED]
+      if: matrix.testSet == 'pyTests'
+      continue-on-error: true
+      run: |
+        cd ttk-data
+        cat python/res.json
+        diff python/hashes/${{ matrix.os }}.json python/res.json
+
+    - name: Delete TTK package artifact
+      uses: geekyeggo/delete-artifact@v5
+      # delete package only once
+      if: matrix.testSet == 'screenshotTests'
+      with:
+        name: ttk-for-tests-${{ matrix.os }}.deb
