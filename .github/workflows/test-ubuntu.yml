@@ -63,8 +63,8 @@ jobs:
     - name: Install Torch
       shell: bash
       run: |
-        wget https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.3.1%2Bcpu.zip
-        unzip libtorch-cxx11-abi-shared-with-deps-2.3.1+cpu.zip
+        wget https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.9.1%2Bcpu.zip
+        unzip libtorch-shared-with-deps-2.9.1+cpu.zip
         sudo cp -R libtorch/* /usr/local/
 
     - name: Fetch TTK-ParaView headless Debian package
@@ -128,8 +128,8 @@ jobs:
     - name: Install Torch
       shell: bash
       run: |
-        wget https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.3.1%2Bcpu.zip
-        unzip libtorch-cxx11-abi-shared-with-deps-2.3.1+cpu.zip
+        wget https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.9.1%2Bcpu.zip
+        unzip libtorch-shared-with-deps-2.9.1+cpu.zip
         sudo cp -R libtorch/* /usr/local/
 
     - name: Fetch TTK-ParaView headless Debian package
