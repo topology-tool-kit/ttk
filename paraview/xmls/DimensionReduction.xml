@@ -995,6 +995,44 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         </Hints>
       </IntVectorProperty>
 
+      <IntVectorProperty name="ae_PreOptimize"
+        label="Pre-optimize autoencoder"
+        command="Setae_PreOptimize"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this to initialize the autoencoder on the output of another dimension reduction method.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="ae_PreOptimizeMethod"
+        label="PreMethod"
+        command="Setae_PreOptimizeMethod"
+        number_of_elements="1"
+        default_values="5"
+        panel_visibility="advanced">
+        <EnumerationDomain name="enum">
+            <Entry value="0" text="Spectral Embedding"/>
+            <Entry value="1" text="Locally Linear Embedding"/>
+            <Entry value="2" text="Multi-Dimensional Scaling" />
+            <Entry value="3" text="t-distributed Stochastic Neighbor Embedding"/>
+            <Entry value="4" text="Isomap Embedding"/>
+            <Entry value="5" text="Principal Component Analysis" />
+            <Entry value="6" text="TopoMap (IEEE VIS 2020)" />
+        </EnumerationDomain>
+        <Documentation>
+          Dimension reduction method used for initializing the autoencoder.
+        </Documentation>
+        <Hints>
+         <PropertyWidgetDecorator type="GenericDecorator"
+                                  mode="visibility"
+                                  property="ae_PreOptimize"
+                                  value="1" />
+        </Hints>
+      </IntVectorProperty>
+
       <IntVectorProperty name="ae_CUDA"
         label="Use CUDA if available"
         command="Setae_CUDA"
@@ -1197,6 +1235,8 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
         <Property name="ae_BatchNormalization" />
         <Property name="ae_Deterministic" />
         <Property name="ae_Seed" />
+        <Property name="ae_PreOptimize" />
+        <Property name="ae_PreOptimizeMethod" />
         <Property name="ae_CUDA" />
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"

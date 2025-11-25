@@ -14,7 +14,7 @@ namespace ttk::rpd {
   using value_t = double;
   constexpr value_t inf = std::numeric_limits<value_t>::infinity();
 
-  using PointCloud = std::vector<std::vector<double>>;
+  using PointCloud = std::vector<std::vector<value_t>>;
 
   using Simplex = std::vector<id_t>;
   using FiltratedSimplex = std::pair<Simplex, value_t>;

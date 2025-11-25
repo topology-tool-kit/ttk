@@ -88,6 +88,15 @@ int DimensionReduction::execute(
     for(int d = 0; d < NumberOfComponents; d++)
       outputEmbedding[d].resize(nRows);
 
+    if(ae_PreOptimize) {
+      DimensionReduction initDR;
+      initDR.setDebugLevel(debugLevel_);
+      initDR.setInputMethod(ae_PreOptimizeMethod);
+      std::vector<std::vector<double>> latentInitialization;
+      initDR.execute(latentInitialization, inputMatrix, nRows, nColumns);
+      tcdr.setLatentInitialization(latentInitialization);
+    }
+
     tcdr.execute(outputEmbedding, inputMatrix, nRows);
 
     this->printMsg("Computed AE dimension reduction", 1.0, t.getElapsedTime(),

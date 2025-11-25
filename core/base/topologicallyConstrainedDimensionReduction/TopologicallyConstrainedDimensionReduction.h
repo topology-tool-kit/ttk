@@ -101,6 +101,9 @@ namespace ttk {
                 const std::vector<double> &inputMatrix,
                 size_t n);
 
+    void setLatentInitialization(
+      std::vector<std::vector<double>> const &latentInitialization);
+
   protected:
     const int NumberOfComponents;
     const int Epochs;
@@ -117,9 +120,16 @@ namespace ttk {
 
   private:
     torch::DeviceType device{torch::kCPU};
-    std::shared_ptr<DimensionReductionModel> model{nullptr};
-    std::shared_ptr<torch::optim::Optimizer> torchOptimizer{nullptr};
-    std::shared_ptr<TopologicalLoss> topologicalLossContainer{nullptr};
+    std::unique_ptr<DimensionReductionModel> model{nullptr};
+    std::unique_ptr<torch::optim::Optimizer> torchOptimizer{nullptr};
+    std::unique_ptr<TopologicalLoss> topologicalLossContainer{nullptr};
+    torch::Tensor latentInitialization_{};
+
+    int initializeModel(int inputSize, int inputDimension);
+    void initializeOptimizer();
+
+    void preOptimize(const torch::Tensor &input,
+                     const torch::Tensor &target) const;
 
     void optimize(const torch::Tensor &input) const;
     void optimizeSimple(const torch::Tensor &input) const;

@@ -40,6 +40,44 @@ ttk::TCDR::TCDR(bool useCUDA,
   }
 }
 
+int ttk::TCDR::initializeModel(int inputSize, int inputDimension) {
+  if((!InputIsImages && !AutoEncoder::isStringValid(Architecture))
+     || (InputIsImages
+         && !ConvolutionalAutoEncoder::isStringValid(Architecture))) {
+    printErr("Invalid string for layers description.");
+    return 1;
+  }
+  if(ModelType == MODEL::AUTOENCODER) {
+    if(!InputIsImages)
+      model = std::make_unique<AutoEncoder>(inputDimension, NumberOfComponents,
+                                            Architecture, Activation,
+                                            BatchNormalization);
+    else
+      model = std::make_unique<ConvolutionalAutoEncoder>(
+        sqrt(inputDimension), NumberOfComponents, Architecture,
+        BatchNormalization);
+  } else if(ModelType == MODEL::AUTODECODER)
+    model = std::make_unique<AutoDecoder>(inputDimension, inputSize,
+                                          NumberOfComponents, Architecture,
+                                          Activation, false);
+  else if(ModelType == MODEL::DIRECT)
+    model = std::make_unique<DirectOptimization>(inputSize, NumberOfComponents);
+  model->to(device);
+  return 0;
+}
+
+void ttk::TCDR::initializeOptimizer() {
+  if(Optimizer == OPTIMIZER::ADAM)
+    torchOptimizer = std::make_unique<torch::optim::Adam>(
+      model->parameters(), /*lr=*/LearningRate);
+  else if(Optimizer == OPTIMIZER::SGD)
+    torchOptimizer = std::make_unique<torch::optim::SGD>(
+      model->parameters(), /*lr=*/LearningRate);
+  else if(Optimizer == OPTIMIZER::LBFGS)
+    torchOptimizer = std::make_unique<torch::optim::LBFGS>(
+      model->parameters(), /*lr=*/LearningRate);
+}
+
 int ttk::TCDR::execute(std::vector<std::vector<double>> &outputEmbedding,
                        const std::vector<double> &inputMatrix,
                        size_t n) {
@@ -65,38 +103,9 @@ int ttk::TCDR::execute(std::vector<std::vector<double>> &outputEmbedding,
   printWrn("TTK not compiled with CGAL enabled: this backend could be slow.");
 #endif
 
-  if((!InputIsImages && !AutoEncoder::isStringValid(Architecture))
-     || (InputIsImages
-         && !ConvolutionalAutoEncoder::isStringValid(Architecture))) {
-    printErr("Invalid string for layers description.");
-    return -1;
-  }
-  if(ModelType == MODEL::AUTOENCODER) {
-    if(!InputIsImages)
-      model = std::make_shared<AutoEncoder>(inputDimension, NumberOfComponents,
-                                            Architecture, Activation,
-                                            BatchNormalization);
-    else
-      model = std::make_shared<ConvolutionalAutoEncoder>(
-        sqrt(inputDimension), NumberOfComponents, Architecture,
-        BatchNormalization);
-  } else if(ModelType == MODEL::AUTODECODER)
-    model = std::make_shared<AutoDecoder>(inputDimension, inputSize,
-                                          NumberOfComponents, Architecture,
-                                          Activation, false);
-  else if(ModelType == MODEL::DIRECT)
-    model = std::make_shared<DirectOptimization>(inputSize, NumberOfComponents);
-  model->to(device);
-
-  if(Optimizer == OPTIMIZER::ADAM)
-    torchOptimizer = std::make_shared<torch::optim::Adam>(
-      model->parameters(), /*lr=*/LearningRate);
-  else if(Optimizer == OPTIMIZER::SGD)
-    torchOptimizer = std::make_shared<torch::optim::SGD>(
-      model->parameters(), /*lr=*/LearningRate);
-  else if(Optimizer == OPTIMIZER::LBFGS)
-    torchOptimizer = std::make_shared<torch::optim::LBFGS>(
-      model->parameters(), /*lr=*/LearningRate);
+  if(initializeModel(inputSize, inputDimension))
+    return 1;
+  initializeOptimizer();
 
   const torch::Tensor input
     = torch::from_blob(const_cast<double *>(inputMatrix.data()),
@@ -104,11 +113,15 @@ int ttk::TCDR::execute(std::vector<std::vector<double>> &outputEmbedding,
         .to(torch::kFloat32)
         .to(device);
 
-  std::vector<std::vector<ripser::value_t>> points(
-    inputSize, std::vector<ripser::value_t>(inputDimension));
+  rpd::PointCloud points(inputSize, std::vector<double>(inputDimension));
   for(int i = 0; i < inputSize; ++i) {
     for(int j = 0; j < inputDimension; ++j)
       points[i][j] = inputMatrix[inputDimension * i + j];
+  }
+
+  if(latentInitialization_.numel()) {
+    preOptimize(input, latentInitialization_);
+    initializeOptimizer();
   }
 
   if(Method == REGUL::NO_REGUL) {
@@ -117,7 +130,7 @@ int ttk::TCDR::execute(std::vector<std::vector<double>> &outputEmbedding,
   } else {
     printMsg("Computing input persistence", 0., tm.getElapsedTime());
     topologicalLossContainer
-      = std::make_shared<TopologicalLoss>(input, points, Method);
+      = std::make_unique<TopologicalLoss>(input, points, Method);
     printMsg("Starting optimization", 0., tm.getElapsedTime());
     optimize(input);
   }
@@ -132,9 +145,23 @@ int ttk::TCDR::execute(std::vector<std::vector<double>> &outputEmbedding,
   return 0;
 }
 
+void ttk::TCDR::setLatentInitialization(
+  std::vector<std::vector<double>> const &latentInitialization) {
+  std::vector<torch::Tensor> tensors;
+  for(auto const &column : latentInitialization)
+    tensors.push_back(torch::from_blob(const_cast<double *>(column.data()),
+                                       {static_cast<int>(column.size())},
+                                       torch::kFloat64)
+                        .to(torch::kFloat32)
+                        .to(device));
+  latentInitialization_ = torch::stack(tensors).transpose(0, 1);
+}
+
 void ttk::TCDR::optimizeSimple(const torch::Tensor &input) const {
-  TensorIndex indices = Slice();
-  for(int epoch = 0; epoch < Epochs; ++epoch) {
+  int epoch = 0;
+
+  auto closure = [&] {
+    TensorIndex indices = Slice();
     if(BatchSize > 0)
       indices
         = torch::randint(input.size(0), {BatchSize}, torch::kInt).to(device);
@@ -147,11 +174,15 @@ void ttk::TCDR::optimizeSimple(const torch::Tensor &input) const {
     const torch::Tensor loss
       = torch::mse_loss(prediction, input.index(indices));
     loss.backward();
-    torchOptimizer->step();
 
     // IO
     printLoss(epoch, loss.item<double>());
-  }
+
+    return loss;
+  };
+
+  for(; epoch < Epochs; ++epoch)
+    torchOptimizer->step(closure);
 }
 
 void ttk::TCDR::optimize(const torch::Tensor &input) const {
@@ -168,6 +199,31 @@ void ttk::TCDR::optimize(const torch::Tensor &input) const {
       = RegCoefficient * topologicalLossContainer->computeLoss(latent);
     const torch::Tensor reconstructionLoss = torch::mse_loss(prediction, input);
     const torch::Tensor loss = reconstructionLoss + topologicalLoss;
+    loss.backward();
+
+    // IO
+    printLoss(epoch, loss.item<double>());
+
+    return loss;
+  };
+
+  for(; epoch < Epochs; ++epoch)
+    torchOptimizer->step(closure);
+}
+
+void ttk::TCDR::preOptimize(const torch::Tensor &input,
+                            const torch::Tensor &target) const {
+  int epoch = 0;
+
+  auto closure = [&] {
+    // step initialization
+    torchOptimizer->zero_grad();
+    const torch::Tensor latent = model->encode(input);
+    const torch::Tensor prediction = model->decode(latent);
+
+    // loss and optimizer step
+    const torch::Tensor loss
+      = torch::mse_loss(latent, target) + torch::mse_loss(prediction, input);
     loss.backward();
 
     // IO
