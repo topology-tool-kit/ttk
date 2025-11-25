@@ -71,7 +71,6 @@
 /// Mattéo Clémot, Julie Digne, Julien Tierny, \n
 /// arXiv preprint, 2025.
 
-
 #pragma once
 
 // VTK Module
