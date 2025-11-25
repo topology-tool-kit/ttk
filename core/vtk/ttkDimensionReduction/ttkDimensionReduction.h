@@ -53,7 +53,24 @@
 /// "Topomap: A 0-dimensional homology preserving projection of high-dimensional
 /// data"\n Harish Doraiswamy, Julien Tierny, Paulo J. S. Silva, Luis Gustavo
 /// Nonato, and Claudio Silva\n Proc. of IEEE VIS 2020.\n IEEE Transactions on
-/// Visualization and Computer Graphics 27(2): 561-571, 2020.
+/// Visualization and Computer Graphics 27(2): 561-571, 2020. \n
+///
+/// "Topological Autoencoders" \n
+/// Michael Moor, Max Horn, Bastian Rieck, Karsten Borgwardt, \n
+/// Proceedings of the 37th International Conference on Machine Learning,
+/// 2020. \n
+///
+/// "Optimizing persistent homology-based functions" \n
+/// Mathieu Carriere, Frederic Chazal, Marc Glisse, Yuichi Ike,
+/// Hariprasad Kannan, Yuhei Umeda, \n
+/// Proceedings of the 38th International Conference on Machine Learning,
+/// 2021. \n
+///
+/// "Topological Autoencoders++: Fast and Accurate Cycle-Aware Dimensionality
+/// Reduction" \n
+/// Mattéo Clémot, Julie Digne, Julien Tierny, \n
+/// arXiv preprint, 2025.
+
 
 #pragma once
 

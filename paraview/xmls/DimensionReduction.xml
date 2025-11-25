@@ -39,7 +39,21 @@
 
         "Topomap: A 0-dimensional homology preserving projection of high-dimensional data".
         H.Doraiswamy, J. Tierny, P. J. S. Silva, L. G. Nonato and C. Silva.
-IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
+        IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
+
+        "Topological Autoencoders" 
+        Michael Moor, Max Horn, Bastian Rieck, Karsten Borgwardt, 
+        37th International Conference on Machine Learning, 2020. 
+
+        "Optimizing persistent homology-based functions" 
+        Mathieu Carriere, Frederic Chazal, Marc Glisse, Yuichi Ike,
+        Hariprasad Kannan, Yuhei Umeda, 
+        38th International Conference on Machine Learning, 2021. 
+
+        "Topological Autoencoders++: Fast and Accurate Cycle-Aware Dimensionality Reduction" 
+        Mattéo Clémot, Julie Digne, Julien Tierny
+        arXiv preprint, 2025.
+
       </Documentation>
       <InputProperty
         name="Input"
@@ -813,8 +827,8 @@ IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
             <Entry value="1" text="Topological Autoencoder (ICML 2020)"/>
             <Entry value="2" text="Topological Autoencoder with dimension 1"/>
             <Entry value="3" text="Cascade Autoencoder"/>
-            <Entry value="4" text="Asymmetric Cascade Autoencoder"/>
-            <Entry value="5" text="W1 regularization"/>
+            <Entry value="4" text="Asymmetric Cascade Autoencoder (TopoAE++)"/>
+            <Entry value="5" text="W1 regularization (ICML 2021)"/>
         </EnumerationDomain>
         <Documentation>
         </Documentation>
