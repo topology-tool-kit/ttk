@@ -1,0 +1,160 @@
+name: test_build-macos
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+env:
+  PV_TAG: v6.0.1-headless
+  PV_REPO: topology-tool-kit/ttk-paraview
+  CMAKE_GENERATOR: Ninja
+  CMAKE_BUILD_TYPE: Release
+  CMAKE_CC_COMPILER_LAUNCHER: sccache
+  CMAKE_CXX_COMPILER_LAUNCHER: sccache
+  SCCACHE_GHA_ENABLED: "true"
+  SCCACHE_IDLE_TIMEOUT: 0
+
+
+jobs:
+
+  # -----------------#
+  # Test macOS build #
+  # -----------------#
+  test-build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-14, macos-15]
+    env:
+      DYLD_LIBRARY_PATH: /usr/local/lib
+
+    steps:
+    - uses: actions/checkout@v4
+      name: Checkout TTK source code
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - name: Install macOS dependencies
+      run: |
+        # ParaView dependencies
+        brew install --cask xquartz
+        brew install ninja open-mpi libomp
+        # TTK dependencies
+        brew install boost cgal eigen graphviz spectra sqlite numpy qhull
+
+    - name: Run sccache-cache
+      uses: mozilla-actions/sccache-action@v0.0.9
+
+    - name: Install optional Spectra dependency
+      uses: ./.github/actions/install-spectra-unix
+
+    - name: Install optional ZFP dependency
+      uses: ./.github/actions/install-zfp-unix
+
+    - name: Fetch TTK-ParaView headless macOS binary archive
+      run: |
+          wget -O ttk-paraview-headless.tar.gz \
+            https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless-${{ matrix.os }}.tar.gz
+
+    - name: Install ParaView
+      run: |
+        tar xzf ttk-paraview-headless.tar.gz
+        sudo cp -r ttk-paraview/* /usr/local
+        # pvpython does not embed the correct PYTHONPATH
+        echo "PYTHONPATH=/usr/local/lib/python3.13/site-packages:$PYTHONPATH" >> $GITHUB_ENV
+        pvpython -m pip install --break-system-packages scikit-learn
+        # pvpython is expecting a vtkpython executable at this path
+        sudo ln -s /usr/local/bin/pvpython /Library/Frameworks/Python.framework/Versions/3.13/vtkpython
+
+    - name: Create & configure TTK build directory
+      run: |
+        mkdir build
+        cd build
+        cmake \
+          -DCMAKE_COMPILE_WARNING_AS_ERROR=ON \
+          -DOpenMP_C_FLAGS="-Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include" \
+          -DOpenMP_C_LIB_NAMES="omp" \
+          -DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include" \
+          -DOpenMP_CXX_LIB_NAMES="omp" \
+          -DOpenMP_omp_LIBRARY=/opt/homebrew/opt/libomp/lib/libomp.dylib \
+          -DCMAKE_EXE_LINKER_FLAGS="-L/opt/homebrew/opt/libomp/lib -lomp" \
+          -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
+          -DTTK_BUILD_VTK_WRAPPERS=TRUE \
+          -DTTK_BUILD_STANDALONE_APPS=TRUE \
+          -DTTK_ENABLE_KAMIKAZE=TRUE \
+          -DTTK_ENABLE_MPI=FALSE \
+          -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE \
+          -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE \
+          -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 \
+          $GITHUB_WORKSPACE
+
+    - uses: ammaraskar/gcc-problem-matcher@master
+    - name: Build & install TTK
+      run: |
+        cd build
+        cmake --build . --parallel
+        sudo cmake --build . --target install
+
+    - name: Run TTK tests
+      uses: ./.github/actions/test-ttk-macos
+
+    - uses: actions/checkout@v4
+      with:
+        repository: "topology-tool-kit/ttk-data"
+        ref: "dev"
+        path: "ttk-data"
+      name: Checkout ttk-data
+
+    - name: Run ttk-data states [NOT ENFORCED]
+      id: validate
+      continue-on-error: true
+      run: |
+        # remove buggy example
+        # related issue: https://github.com/topology-tool-kit/ttk/issues/1055
+        rm ttk-data/states/nestedTrackingFromOverlap.py
+        # remove examples which fill up the memory
+        rm ttk-data/states/topologicalOptimization_darkSky.pvsm
+        # remove examples that take too long to render under mac
+        rm ttk-data/states/cosmicWeb.pvsm
+        rm ttk-data/states/persistenceClusteringGallery.pvsm
+        rm ttk-data/states/persistentGenerators_householdAnalysis.pvsm
+        rm ttk-data/states/topologicalOptimization*.pvsm
+        cd ttk-data/tests
+        mkdir output_screenshots
+        pvpython -u validate.py || (tar zcf screenshots.tar.gz output_screenshots && false)
+      env:
+        PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
+
+    - name: Upload result screenshots
+      if: steps.validate.outcome == 'failure'
+      uses: actions/upload-artifact@v4
+      with:
+        name: screenshots-${{ matrix.os }}.tar.gz
+        path: ttk-data/tests/screenshots.tar.gz
+        retention-days: 10
+
+    - name: Run ttk-data Python scripts
+      run: |
+        cd ttk-data
+        # remove buggy example
+        # related issue: https://github.com/topology-tool-kit/ttk/issues/1055
+        rm python/nestedTrackingFromOverlap.py
+        # tmp removal of mpi example
+        rm python/mpiExample.py
+        rm python/distributedPersistenceDiagram.py
+        # remove examples which fill up the memory
+        rm python/topologicalOptimization_darkSky.py
+        # remove sklearn examples -- buggy on MacOS since sklearn-1.7
+        rm python/1manifoldLearning.py python/clusteringKelvinHelmholtzInstabilities.py python/karhunenLoveDigits64Dimensions.py python/mergeTreeClustering.py python/persistentGenerators_householdAnalysis.py python/persistentGenerators_periodicPicture.py
+        pvpython -u python/run.py
+      env:
+        PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
+
+    - name: Test ttk-data Python scripts results [NOT ENFORCED]
+      continue-on-error: true
+      run: |
+        cd ttk-data
+        cat python/res.json
+        diff python/hashes/macOS.json python/res.json

@@ -1015,7 +1015,7 @@ void ttk::MergeTreeAutoencoder::computeAlphas(
   // Pseudo inverse
   auto driver = "gelsd";
   alphasOut
-    = std::get<0>(torch::linalg::lstsq(r_axes, r_data, c10::nullopt, driver));
+    = std::get<0>(torch::linalg_lstsq(r_axes, r_data, c10::nullopt, driver));
 
   alphasOut.reshape({-1, 1});
 }
@@ -2347,7 +2347,7 @@ void ttk::MergeTreeAutoencoder::createCustomRecs(
     torch::Tensor alphasWeight;
     if(initByTreesAlphas) {
       auto driver = "gelsd";
-      alphasWeight = std::get<0>(torch::linalg::lstsq(
+      alphasWeight = std::get<0>(torch::linalg_lstsq(
                                    allTreesAlphas[latLayer].transpose(0, 1),
                                    alphas, c10::nullopt, driver))
                        .transpose(0, 1);
@@ -2371,7 +2371,7 @@ void ttk::MergeTreeAutoencoder::createCustomRecs(
       torch::Tensor maxNorm;
       for(unsigned int j = 0; j < allAlphasInit.size(); ++j) {
         allAlphasInit[j] = torch::randn({vSTensor_[l].sizes()[1], 1});
-        auto norm = torch::linalg::vector_norm(
+        auto norm = torch::linalg_vector_norm(
           allAlphasInit[j], 2, 0, false, c10::nullopt);
         if(j == 0 or maxNorm.item<float>() < norm.item<float>())
           maxNorm = norm;
