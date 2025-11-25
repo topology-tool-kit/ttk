@@ -1,7 +1,8 @@
 ## TTK - ChangeLog
 =
 ### dev
-- Distributed computation of persistent homology!
+- Cycle-aware dimensionality reduction (TopoAE++)
+- Distributed computation of persistent homology! (IEEE TPDS 2025)
 - New backend for TrackingFromFields (critical point based)
 - Fast planar Rips filtration persistence computation
 - Migration to ParaView 6
