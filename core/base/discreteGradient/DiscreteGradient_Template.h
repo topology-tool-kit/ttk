@@ -36,18 +36,16 @@ dataType DiscreteGradient::getPersistence(
 template <typename triangulationType>
 int DiscreteGradient::buildGradient(const triangulationType &triangulation,
                                     bool bypassCache,
-                                    const std::vector<bool> *updateMask,
-                                    const unsigned int &seed) {
+                                    const std::vector<bool> *updateMask) {
 
   return buildGradient<double, triangulationType>(
-    triangulation, bypassCache, updateMask, seed);
+    triangulation, bypassCache, updateMask);
 }
 
 template <typename dataType, typename triangulationType>
 int DiscreteGradient::buildGradient(const triangulationType &triangulation,
                                     bool bypassCache,
-                                    const std::vector<bool> *updateMask,
-                                    const unsigned int &seed) {
+                                    const std::vector<bool> *updateMask) {
 
 #ifdef TTK_ENABLE_MPI_TIME
   ttk::Timer t_mpi;
@@ -94,7 +92,7 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
                      tm.getElapsedTime(), this->threadNumber_);
     } else if(this->BackEnd == BACKEND::STOCHASTIC_BACKEND) {
       this->processLowerStarsStochastic<dataType, triangulationType>(
-        this->inputOffsets_, triangulation, seed);
+        this->inputOffsets_, triangulation);
       this->printMsg("Build stochastic discrete gradient", 1.0,
                      tm.getElapsedTime(), this->threadNumber_);
 
@@ -1090,9 +1088,7 @@ int DiscreteGradient::processLowerStarsWithMask(
 
 template <typename dataType, typename triangulationType>
 int DiscreteGradient::processLowerStarsStochastic(
-  const SimplexId *const offsets,
-  const triangulationType &triangulation,
-  const unsigned int &seed) {
+  const SimplexId *const offsets, const triangulationType &triangulation) {
 
   // WARNING
   // If you modify this function, please make sure to also report your edit to
@@ -1271,7 +1267,7 @@ int DiscreteGradient::processLowerStarsStochastic(
         }
 
         std::mt19937 gen;
-        gen.seed(seed + x);
+        gen.seed(Seed + x);
         std::uniform_real_distribution<float> dis(0.0, 1.0);
         float random_number = dis(gen);
         size_t it = 0;

@@ -270,14 +270,12 @@ triangulation.
       template <typename dataType, typename triangulationType>
       int buildGradient(const triangulationType &triangulation,
                         bool bypassCache = false,
-                        const std::vector<bool> *updateMask = nullptr,
-                        const unsigned int &seed = 0);
+                        const std::vector<bool> *updateMask = nullptr);
 
       template <typename triangulationType>
       int buildGradient(const triangulationType &triangulation,
                         bool bypassCache = false,
-                        const std::vector<bool> *updateMask = nullptr,
-                        const unsigned int &seed = 0);
+                        const std::vector<bool> *updateMask = nullptr);
 
 #ifdef TTK_ENABLE_MPI
       template <typename triangulationType>
@@ -298,8 +296,22 @@ triangulation.
         inputScalarField_ = std::make_pair(data, mTime);
       }
 
-      inline void setBackend(const BACKEND backend) {
-        BackEnd = backend;
+      inline void setBackend(const BACKEND newBackend) {
+        OldBackEnd = BackEnd;
+        BackEnd = newBackend;
+      }
+
+      inline void setSeed(const unsigned int &newSeed) {
+        OldSeed = Seed;
+        Seed = newSeed;
+      }
+
+      inline bool newSeed() {
+        return OldSeed != Seed;
+      }
+
+      inline bool newBackend() {
+        return OldBackEnd != BackEnd;
       }
 
       inline void setSaddleConnectorsPersistenceThreshold(double threshold) {
@@ -664,8 +676,7 @@ in the gradient.
 
       template <typename dataType, typename triangulationType>
       int processLowerStarsStochastic(const SimplexId *const offsets,
-                                      const triangulationType &triangulation,
-                                      const unsigned int &seed = 0);
+                                      const triangulationType &triangulation);
 
       template <typename triangulationType>
       void buildStencil(const SimplexId &x,
@@ -925,6 +936,9 @@ gradient, false otherwise.
       double SaddleConnectorsPersistenceThreshold{};
       SimplexId numberOfVertices_{};
       BACKEND BackEnd{BACKEND::CLASSIC_BACKEND};
+      BACKEND OldBackEnd{BACKEND::CLASSIC_BACKEND};
+      unsigned int Seed{};
+      unsigned int OldSeed{};
 
       // spare storage (bypass cache) for gradient internal structure
       AbstractTriangulation::gradientType localGradient_{};

@@ -477,8 +477,15 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
   this->discreteGradient_.setInputScalarField(scalars, scalarsMTime);
   this->discreteGradient_.setInputOffsets(offsets);
   this->discreteGradient_.setBackend(this->DiscreteGradientBackend);
+  if(this->DiscreteGradientBackend
+     == DiscreteGradient::BACKEND::STOCHASTIC_BACKEND) {
+    this->discreteGradient_.setSeed(seed);
+  }
+  bool bypassCache = this->ReturnSaddleConnectors
+                     || (discreteGradient_.newBackend())
+                     || (discreteGradient_.newSeed());
   this->discreteGradient_.buildGradient<dataType, triangulationType>(
-    triangulation, this->ReturnSaddleConnectors, nullptr, seed);
+    triangulation, bypassCache, nullptr);
   if(this->ReturnSaddleConnectors) {
     auto persistenceThreshold{this->SaddleConnectorsPersistenceThreshold};
     if(!this->ThresholdIsAbsolute) {
