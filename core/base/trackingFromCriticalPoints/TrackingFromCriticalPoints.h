@@ -26,6 +26,7 @@ namespace ttk {
     double meshDiameter_{1};
     double tolerance_{10e-3};
     int assignmentMethod_{0};
+    double assignmentPrecision{0.01};
     double xWeight_{1};
     double yWeight_{1};
     double zWeight_{1};
@@ -46,6 +47,10 @@ namespace ttk {
 
     void setTolerance(double t) {
       tolerance_ = t;
+    }
+
+    void setAssignmentPrecision(double p) {
+      assignmentPrecision = p;
     }
 
     void setAssignmentMethod(int a) {

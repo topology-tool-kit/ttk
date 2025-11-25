@@ -83,6 +83,10 @@ public:
   vtkGetMacro(RelativeDestructionCost, double);
   /// @}
 
+  vtkSetMacro(AssignmentPrecision, double);
+  vtkGetMacro(AssignmentPrecision, double);
+  /// @}
+
   /// @brief Importance weight for the X component of the extremum.
   /// @{
   vtkSetMacro(PX, double);
@@ -193,6 +197,7 @@ private:
   double PF{0};
 
   double RelativeDestructionCost{0.1};
+  double AssignmentPrecision{0.01};
   int AssignmentMethod{0};
 
   // Bottleneck config.
