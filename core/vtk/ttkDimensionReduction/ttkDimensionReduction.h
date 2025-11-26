@@ -45,7 +45,7 @@
 ///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/">Persistent
 ///   Generators Periodic Picture example</a> \n
 ///   - <a
-///   href="https://topology-tool-kit.github.io/examples/topoAEppTeaser/">Topological 
+///   href="https://topology-tool-kit.github.io/examples/topoAEppTeaser/">Topological
 ///   Autoencoders++ Teaser example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/topoMapTeaser/">TopoMap
@@ -280,14 +280,22 @@ public:
   vtkSetMacro(ae_LearningRate, double);
   vtkGetMacro(ae_LearningRate, double);
 
-  ttkSetEnumMacro(ae_Method, ttk::TCDR::REGUL);
-  vtkGetEnumMacro(ae_Method, ttk::TCDR::REGUL);
+  ttkSetEnumMacro(ae_Method,
+                  ttk::TopologicallyConstrainedDimensionalityReduction::REGUL);
+  vtkGetEnumMacro(ae_Method,
+                  ttk::TopologicallyConstrainedDimensionalityReduction::REGUL);
 
-  ttkSetEnumMacro(ae_Optimizer, ttk::TCDR::OPTIMIZER);
-  vtkGetEnumMacro(ae_Optimizer, ttk::TCDR::OPTIMIZER);
+  ttkSetEnumMacro(
+    ae_Optimizer,
+    ttk::TopologicallyConstrainedDimensionalityReduction::OPTIMIZER);
+  vtkGetEnumMacro(
+    ae_Optimizer,
+    ttk::TopologicallyConstrainedDimensionalityReduction::OPTIMIZER);
 
-  ttkSetEnumMacro(ae_Model, ttk::TCDR::MODEL);
-  vtkGetEnumMacro(ae_Model, ttk::TCDR::MODEL);
+  ttkSetEnumMacro(ae_Model,
+                  ttk::TopologicallyConstrainedDimensionalityReduction::MODEL);
+  vtkGetEnumMacro(ae_Model,
+                  ttk::TopologicallyConstrainedDimensionalityReduction::MODEL);
 
   vtkSetMacro(ae_Architecture, const std::string &);
   vtkGetMacro(ae_Architecture, std::string);

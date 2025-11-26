@@ -1,18 +1,19 @@
 /// \ingroup base
-/// \class ttk::TCDR
+/// \class ttk::TopologicallyConstrainedDimensionalityReduction
 /// \author Mattéo Clémot <matteo.clemot@univ-lyon1.fr>
 /// \date 2024.
 ///
 /// \brief TTK base class that embeds points into 2D, under topological
 /// constraints
 ///
-/// This module defines the %TCDR class that serves as a backend for the
-/// DimensionReduction module. It embeds high-dimensional point clouds into 2D,
-/// under topological constraints, with an autoencoder-based approach.
+/// This module defines the %TopologicallyConstrainedDimensionalityReduction
+/// class that serves as a backend for the DimensionReduction module. It embeds
+/// high-dimensional point clouds into 2D, under topological constraints, with
+/// an autoencoder-based approach.
 ///
 /// \b Online \b examples: \n
 ///   - <a
-///   href="https://topology-tool-kit.github.io/examples/topoAEppTeaser/">Topological 
+///   href="https://topology-tool-kit.github.io/examples/topoAEppTeaser/">Topological
 ///   Autoencoders++ Teaser example</a> \n
 ///
 /// \b Related \b publications \n
@@ -45,12 +46,12 @@
 namespace ttk {
 
   /**
-   * The TCDR class provides a backend for dimension reduction using
-   * autoencoders, with possible constraints on the preservation of the
-   * topology of the input high dimensional point cloud when projecting in low
-   * dimension
+   * The TopologicallyConstrainedDimensionalityReduction class provides a
+   * backend for dimension reduction using autoencoders, with possible
+   * constraints on the preservation of the topology of the input high
+   * dimensional point cloud when projecting in low dimension
    */
-  class TCDR : virtual public Debug {
+  class TopologicallyConstrainedDimensionalityReduction : virtual public Debug {
 
   public:
     enum class OPTIMIZER : std::uint8_t {
@@ -75,21 +76,22 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_TORCH
 
-    TCDR(bool useCUDA,
-         bool deterministic,
-         int seed,
-         int numberOfComponents,
-         int epochs,
-         double learningRate,
-         OPTIMIZER optimizer,
-         REGUL method,
-         MODEL modelType,
-         const std::string &architecture,
-         const std::string &activation,
-         int batchSize,
-         bool batchNormalization,
-         double regCoefficient,
-         bool inputIsImages);
+    TopologicallyConstrainedDimensionalityReduction(
+      bool useCUDA,
+      bool deterministic,
+      int seed,
+      int numberOfComponents,
+      int epochs,
+      double learningRate,
+      OPTIMIZER optimizer,
+      REGUL method,
+      MODEL modelType,
+      const std::string &architecture,
+      const std::string &activation,
+      int batchSize,
+      bool batchNormalization,
+      double regCoefficient,
+      bool inputIsImages);
 
     /**
      * @brief Computes the projection with an AutoEncoder
@@ -143,6 +145,6 @@ namespace ttk {
 
 #endif
 
-  }; // TCDR class
+  }; // TopologicallyConstrainedDimensionalityReduction class
 
 } // namespace ttk

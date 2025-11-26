@@ -40,7 +40,7 @@
 ///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/">Persistent
 ///   Generators Periodic Picture example</a> \n
 ///   - <a
-///   href="https://topology-tool-kit.github.io/examples/topoAEppTeaser/">Topological 
+///   href="https://topology-tool-kit.github.io/examples/topoAEppTeaser/">Topological
 ///   Autoencoders++ Teaser example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/topoMapTeaser/">TopoMap
@@ -353,9 +353,13 @@ namespace ttk {
     int ae_Seed{0};
     int ae_Epochs{1000};
     double ae_LearningRate{1e-2};
-    TCDR::OPTIMIZER ae_Optimizer{TCDR::OPTIMIZER::ADAM};
-    TCDR::REGUL ae_Method{TCDR::REGUL::ASYMMETRIC_CASCADE};
-    TCDR::MODEL ae_Model{TCDR::MODEL::AUTOENCODER};
+    TopologicallyConstrainedDimensionalityReduction::OPTIMIZER ae_Optimizer{
+      TopologicallyConstrainedDimensionalityReduction::OPTIMIZER::ADAM};
+    TopologicallyConstrainedDimensionalityReduction::REGUL ae_Method{
+      TopologicallyConstrainedDimensionalityReduction::REGUL::
+        ASYMMETRIC_CASCADE};
+    TopologicallyConstrainedDimensionalityReduction::MODEL ae_Model{
+      TopologicallyConstrainedDimensionalityReduction::MODEL::AUTOENCODER};
     std::string ae_Architecture{"32 32"};
     std::string ae_Activation{"ReLU"};
     int ae_BatchSize{0};

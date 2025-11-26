@@ -77,10 +77,11 @@ int DimensionReduction::execute(
 
   if(this->Method == METHOD::AE) {
 #ifdef TTK_ENABLE_TORCH
-    TCDR tcdr(ae_CUDA, ae_Deterministic, ae_Seed, NumberOfComponents, ae_Epochs,
-              ae_LearningRate, ae_Optimizer, ae_Method, ae_Model,
-              ae_Architecture, ae_Activation, ae_BatchSize,
-              ae_BatchNormalization, ae_RegCoefficient, IsInputImages);
+    TopologicallyConstrainedDimensionalityReduction tcdr(
+      ae_CUDA, ae_Deterministic, ae_Seed, NumberOfComponents, ae_Epochs,
+      ae_LearningRate, ae_Optimizer, ae_Method, ae_Model, ae_Architecture,
+      ae_Activation, ae_BatchSize, ae_BatchNormalization, ae_RegCoefficient,
+      IsInputImages);
     tcdr.setDebugLevel(debugLevel_);
     tcdr.setThreadNumber(threadNumber_);
 
