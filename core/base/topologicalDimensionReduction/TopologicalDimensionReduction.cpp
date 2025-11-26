@@ -1,33 +1,32 @@
-#include <TopologicallyConstrainedDimensionReduction.h>
+#include <TopologicalDimensionReduction.h>
 
 #ifdef TTK_ENABLE_TORCH
 
 using namespace torch::indexing;
 
-ttk::TopologicallyConstrainedDimensionalityReduction::
-  TopologicallyConstrainedDimensionalityReduction(
-    bool useCUDA,
-    bool deterministic,
-    int seed,
-    int numberOfComponents,
-    int epochs,
-    double learningRate,
-    OPTIMIZER optimizer,
-    REGUL method,
-    MODEL modelType,
-    const std::string &architecture,
-    const std::string &activation,
-    int batchSize,
-    bool batchNormalization,
-    double regCoefficient,
-    bool inputIsImages)
+ttk::TopologicalDimensionReduction::TopologicalDimensionReduction(
+  bool useCUDA,
+  bool deterministic,
+  int seed,
+  int numberOfComponents,
+  int epochs,
+  double learningRate,
+  OPTIMIZER optimizer,
+  REGUL method,
+  MODEL modelType,
+  const std::string &architecture,
+  const std::string &activation,
+  int batchSize,
+  bool batchNormalization,
+  double regCoefficient,
+  bool inputIsImages)
   : NumberOfComponents(numberOfComponents), Epochs(epochs),
     LearningRate(learningRate), Optimizer(optimizer), Method(method),
     ModelType(modelType), InputIsImages(inputIsImages),
     Architecture(architecture), Activation(activation), BatchSize(batchSize),
     BatchNormalization(batchNormalization), RegCoefficient(regCoefficient) {
   // inherited from Debug: prefix will be printed at the beginning of every msg
-  this->setDebugMsgPrefix("TopologicallyConstrainedDimensionalityReduction");
+  this->setDebugMsgPrefix("TopologicalDimensionReduction");
 
   if(torch::cuda::is_available() && useCUDA && !deterministic)
     device = torch::kCUDA;
@@ -42,8 +41,8 @@ ttk::TopologicallyConstrainedDimensionalityReduction::
   }
 }
 
-int ttk::TopologicallyConstrainedDimensionalityReduction::initializeModel(
-  int inputSize, int inputDimension) {
+int ttk::TopologicalDimensionReduction::initializeModel(int inputSize,
+                                                        int inputDimension) {
   if((!InputIsImages && !AutoEncoder::isStringValid(Architecture))
      || (InputIsImages
          && !ConvolutionalAutoEncoder::isStringValid(Architecture))) {
@@ -69,8 +68,7 @@ int ttk::TopologicallyConstrainedDimensionalityReduction::initializeModel(
   return 0;
 }
 
-void ttk::TopologicallyConstrainedDimensionalityReduction::
-  initializeOptimizer() {
+void ttk::TopologicalDimensionReduction::initializeOptimizer() {
   if(Optimizer == OPTIMIZER::ADAM)
     torchOptimizer = std::make_unique<torch::optim::Adam>(
       model->parameters(), /*lr=*/LearningRate);
@@ -82,7 +80,7 @@ void ttk::TopologicallyConstrainedDimensionalityReduction::
       model->parameters(), /*lr=*/LearningRate);
 }
 
-int ttk::TopologicallyConstrainedDimensionalityReduction::execute(
+int ttk::TopologicalDimensionReduction::execute(
   std::vector<std::vector<double>> &outputEmbedding,
   const std::vector<double> &inputMatrix,
   size_t n) {
@@ -150,9 +148,8 @@ int ttk::TopologicallyConstrainedDimensionalityReduction::execute(
   return 0;
 }
 
-void ttk::TopologicallyConstrainedDimensionalityReduction::
-  setLatentInitialization(
-    std::vector<std::vector<double>> const &latentInitialization) {
+void ttk::TopologicalDimensionReduction::setLatentInitialization(
+  std::vector<std::vector<double>> const &latentInitialization) {
   std::vector<torch::Tensor> tensors;
   for(auto const &column : latentInitialization)
     tensors.push_back(torch::from_blob(const_cast<double *>(column.data()),
@@ -163,7 +160,7 @@ void ttk::TopologicallyConstrainedDimensionalityReduction::
   latentInitialization_ = torch::stack(tensors).transpose(0, 1);
 }
 
-void ttk::TopologicallyConstrainedDimensionalityReduction::optimizeSimple(
+void ttk::TopologicalDimensionReduction::optimizeSimple(
   const torch::Tensor &input) const {
   int epoch = 0;
 
@@ -192,7 +189,7 @@ void ttk::TopologicallyConstrainedDimensionalityReduction::optimizeSimple(
     torchOptimizer->step(closure);
 }
 
-void ttk::TopologicallyConstrainedDimensionalityReduction::optimize(
+void ttk::TopologicalDimensionReduction::optimize(
   const torch::Tensor &input) const {
   int epoch = 0;
 
@@ -219,7 +216,7 @@ void ttk::TopologicallyConstrainedDimensionalityReduction::optimize(
     torchOptimizer->step(closure);
 }
 
-void ttk::TopologicallyConstrainedDimensionalityReduction::preOptimize(
+void ttk::TopologicalDimensionReduction::preOptimize(
   const torch::Tensor &input, const torch::Tensor &target) const {
   int epoch = 0;
 
@@ -244,8 +241,8 @@ void ttk::TopologicallyConstrainedDimensionalityReduction::preOptimize(
     torchOptimizer->step(closure);
 }
 
-void ttk::TopologicallyConstrainedDimensionalityReduction::printLoss(
-  int epoch, double loss) const {
+void ttk::TopologicalDimensionReduction::printLoss(int epoch,
+                                                   double loss) const {
   if(epoch % std::max(1, Epochs / 10) == 0)
     printMsg(
       "Loss at epoch " + std::to_string(epoch) + " : " + std::to_string(loss),

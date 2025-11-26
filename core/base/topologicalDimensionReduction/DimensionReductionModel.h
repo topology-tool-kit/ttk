@@ -13,7 +13,7 @@
 /// DirectOptimization
 /// ConvolutionalAutoEncoder
 ///
-/// \sa TopologicallyConstrainedDimensionReduction.cpp %for a usage example.
+/// \sa TopologicalDimensionReduction.cpp %for a usage example.
 
 #pragma once
 

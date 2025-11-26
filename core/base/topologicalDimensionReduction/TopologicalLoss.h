@@ -16,7 +16,7 @@
 /// (4) : asymmetric cascade-extended "Topological Autoencoder" loss
 /// (5) : Wasserstein distance between 1-dimensional persistence diagrams
 ///
-/// \sa TopologicallyConstrainedDimensionReduction.cpp %for a usage example.
+/// \sa TopologicalDimensionReduction.cpp %for a usage example.
 
 #pragma once
 

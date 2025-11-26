@@ -73,7 +73,7 @@
 
 #include <Debug.h>
 #include <TopoMap.h>
-#include <TopologicallyConstrainedDimensionReduction.h>
+#include <TopologicalDimensionReduction.h>
 
 namespace ttk {
 
@@ -353,13 +353,12 @@ namespace ttk {
     int ae_Seed{0};
     int ae_Epochs{1000};
     double ae_LearningRate{1e-2};
-    TopologicallyConstrainedDimensionalityReduction::OPTIMIZER ae_Optimizer{
-      TopologicallyConstrainedDimensionalityReduction::OPTIMIZER::ADAM};
-    TopologicallyConstrainedDimensionalityReduction::REGUL ae_Method{
-      TopologicallyConstrainedDimensionalityReduction::REGUL::
-        ASYMMETRIC_CASCADE};
-    TopologicallyConstrainedDimensionalityReduction::MODEL ae_Model{
-      TopologicallyConstrainedDimensionalityReduction::MODEL::AUTOENCODER};
+    TopologicalDimensionReduction::OPTIMIZER ae_Optimizer{
+      TopologicalDimensionReduction::OPTIMIZER::ADAM};
+    TopologicalDimensionReduction::REGUL ae_Method{
+      TopologicalDimensionReduction::REGUL::ASYMMETRIC_CASCADE};
+    TopologicalDimensionReduction::MODEL ae_Model{
+      TopologicalDimensionReduction::MODEL::AUTOENCODER};
     std::string ae_Architecture{"32 32"};
     std::string ae_Activation{"ReLU"};
     int ae_BatchSize{0};

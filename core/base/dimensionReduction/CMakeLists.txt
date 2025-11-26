@@ -6,7 +6,7 @@ ttk_add_base_library(dimensionReduction
   DEPENDS
     triangulation
     topoMap
-    topologicallyConstrainedDimensionReduction
+    topologicalDimensionReduction
   )
 
 install(

@@ -82,7 +82,7 @@
 // TTK includes
 #include <DimensionReduction.h>
 #include <TopoMap.h>
-#include <TopologicallyConstrainedDimensionReduction.h>
+#include <TopologicalDimensionReduction.h>
 #include <ttkAlgorithm.h>
 #include <ttkMacros.h>
 
@@ -280,22 +280,14 @@ public:
   vtkSetMacro(ae_LearningRate, double);
   vtkGetMacro(ae_LearningRate, double);
 
-  ttkSetEnumMacro(ae_Method,
-                  ttk::TopologicallyConstrainedDimensionalityReduction::REGUL);
-  vtkGetEnumMacro(ae_Method,
-                  ttk::TopologicallyConstrainedDimensionalityReduction::REGUL);
+  ttkSetEnumMacro(ae_Method, ttk::TopologicalDimensionReduction::REGUL);
+  vtkGetEnumMacro(ae_Method, ttk::TopologicalDimensionReduction::REGUL);
 
-  ttkSetEnumMacro(
-    ae_Optimizer,
-    ttk::TopologicallyConstrainedDimensionalityReduction::OPTIMIZER);
-  vtkGetEnumMacro(
-    ae_Optimizer,
-    ttk::TopologicallyConstrainedDimensionalityReduction::OPTIMIZER);
+  ttkSetEnumMacro(ae_Optimizer, ttk::TopologicalDimensionReduction::OPTIMIZER);
+  vtkGetEnumMacro(ae_Optimizer, ttk::TopologicalDimensionReduction::OPTIMIZER);
 
-  ttkSetEnumMacro(ae_Model,
-                  ttk::TopologicallyConstrainedDimensionalityReduction::MODEL);
-  vtkGetEnumMacro(ae_Model,
-                  ttk::TopologicallyConstrainedDimensionalityReduction::MODEL);
+  ttkSetEnumMacro(ae_Model, ttk::TopologicalDimensionReduction::MODEL);
+  vtkGetEnumMacro(ae_Model, ttk::TopologicalDimensionReduction::MODEL);
 
   vtkSetMacro(ae_Architecture, const std::string &);
   vtkGetMacro(ae_Architecture, std::string);

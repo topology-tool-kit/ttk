@@ -1,12 +1,12 @@
 /// \ingroup base
-/// \class ttk::TopologicallyConstrainedDimensionalityReduction
+/// \class ttk::TopologicalDimensionReduction
 /// \author Mattéo Clémot <matteo.clemot@univ-lyon1.fr>
 /// \date 2024.
 ///
 /// \brief TTK base class that embeds points into 2D, under topological
 /// constraints
 ///
-/// This module defines the %TopologicallyConstrainedDimensionalityReduction
+/// This module defines the %TopologicalDimensionReduction
 /// class that serves as a backend for the DimensionReduction module. It embeds
 /// high-dimensional point clouds into 2D, under topological constraints, with
 /// an autoencoder-based approach.
@@ -46,12 +46,12 @@
 namespace ttk {
 
   /**
-   * The TopologicallyConstrainedDimensionalityReduction class provides a
+   * The TopologicalDimensionReduction class provides a
    * backend for dimension reduction using autoencoders, with possible
    * constraints on the preservation of the topology of the input high
    * dimensional point cloud when projecting in low dimension
    */
-  class TopologicallyConstrainedDimensionalityReduction : virtual public Debug {
+  class TopologicalDimensionReduction : virtual public Debug {
 
   public:
     enum class OPTIMIZER : std::uint8_t {
@@ -76,22 +76,21 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_TORCH
 
-    TopologicallyConstrainedDimensionalityReduction(
-      bool useCUDA,
-      bool deterministic,
-      int seed,
-      int numberOfComponents,
-      int epochs,
-      double learningRate,
-      OPTIMIZER optimizer,
-      REGUL method,
-      MODEL modelType,
-      const std::string &architecture,
-      const std::string &activation,
-      int batchSize,
-      bool batchNormalization,
-      double regCoefficient,
-      bool inputIsImages);
+    TopologicalDimensionReduction(bool useCUDA,
+                                  bool deterministic,
+                                  int seed,
+                                  int numberOfComponents,
+                                  int epochs,
+                                  double learningRate,
+                                  OPTIMIZER optimizer,
+                                  REGUL method,
+                                  MODEL modelType,
+                                  const std::string &architecture,
+                                  const std::string &activation,
+                                  int batchSize,
+                                  bool batchNormalization,
+                                  double regCoefficient,
+                                  bool inputIsImages);
 
     /**
      * @brief Computes the projection with an AutoEncoder
@@ -145,6 +144,6 @@ namespace ttk {
 
 #endif
 
-  }; // TopologicallyConstrainedDimensionalityReduction class
+  }; // TopologicalDimensionReduction class
 
 } // namespace ttk
