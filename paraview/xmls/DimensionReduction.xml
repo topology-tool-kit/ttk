@@ -13,7 +13,7 @@
         long_help="TTK dimensionReduction plugin."
         short_help="TTK dimensionReduction plugin.">
         TTK filter for generic dimension reduction methods.
-        This filter supports various methods via the scikit-learn third party dependency (spectral embedding, local linear embedding, multi-dimensional scaling, t-SNE, isomap, PCA) as well as TopoMap (IEEE VIS 2020)
+        This filter supports various methods via the scikit-learn third party dependency (spectral embedding, local linear embedding, multi-dimensional scaling, t-SNE, isomap, PCA) as well as topology-aware methods, e.g.  TopoMap (IEEE VIS 2020), TopoAE++ (2025).
 
         Online examples:
 
@@ -32,6 +32,8 @@
         - https://topology-tool-kit.github.io/examples/persistentGenerators_householdAnalysis/
 
         - https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/
+
+        - https://topology-tool-kit.github.io/examples/topoAEppTeaser/
 
         - https://topology-tool-kit.github.io/examples/topoMapTeaser/
 

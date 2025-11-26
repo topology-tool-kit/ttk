@@ -40,6 +40,9 @@
 ///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/">Persistent
 ///   Generators Periodic Picture example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topoAEppTeaser/">Topological 
+///   Autoencoders++ Teaser example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/topoMapTeaser/">TopoMap
 ///   Teaser example</a> \n
 ///

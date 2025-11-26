@@ -10,6 +10,11 @@
 /// DimensionReduction module. It embeds high-dimensional point clouds into 2D,
 /// under topological constraints, with an autoencoder-based approach.
 ///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topoAEppTeaser/">Topological 
+///   Autoencoders++ Teaser example</a> \n
+///
 /// \b Related \b publications \n
 ///
 /// "Topological Autoencoders" \n
