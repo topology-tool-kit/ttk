@@ -12,6 +12,7 @@
 /// "Distributed Discrete Morse Sandwich: Efficient Computation
 //  of Persistence Diagrams for Massive Scalar Data" \n
 /// Eve Le Guillou, Pierre Fortin, Julien Tierny \n
+/// IEEE Transactions on Parallel and Distributed Systems, 2025. \n
 /// arXiv:2505.21266, 2025.
 ///
 ///
