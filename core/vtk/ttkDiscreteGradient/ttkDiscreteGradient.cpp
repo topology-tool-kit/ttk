@@ -4,6 +4,7 @@
 
 #include <vtkCellData.h>
 #include <vtkIdTypeArray.h>
+#include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkIntArray.h>
 #include <vtkLine.h>
@@ -290,9 +291,21 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
   this->setInputOffsets(
     static_cast<SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)));
 
-  BACKEND selectedBackend
-    = Backend == 1 ? BACKEND::STOCHASTIC_BACKEND : BACKEND::CLASSIC_BACKEND;
-  this->setBackend(selectedBackend);
+  const auto imageDataInput = vtkImageData::SafeDownCast(input);
+
+  if(Backend == 0) {
+    this->setBackend(BACKEND::CLASSIC_BACKEND);
+  }
+  if(Backend == 1 && !imageDataInput) {
+    this->setBackend(BACKEND::CLASSIC_BACKEND);
+    this->printWrn("The Stochastic algorithm (IEEE TVCG 2012) can only be used "
+                   "on vtkImageData (.vti).");
+    this->printWrn("Defaulting to Homotopic expansion "
+                   "algorithm (IEEE PAMI 2011).");
+  }
+  if(Backend == 1 && imageDataInput) {
+    this->setBackend(BACKEND::STOCHASTIC_BACKEND);
+  }
   this->setSeed(StochasticGradientSeed);
 
   ttkVtkTemplateMacro(

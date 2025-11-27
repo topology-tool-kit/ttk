@@ -9,6 +9,7 @@
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIdTypeArray.h>
+#include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
@@ -504,11 +505,25 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
   this->setReturnSaddleConnectors(ReturnSaddleConnectors);
   this->setSaddleConnectorsPersistenceThreshold(
     SaddleConnectorsPersistenceThreshold);
-  DiscreteGradient::BACKEND selectedDiscreteGradientBackend
-    = DiscreteGradientBackend == 1
-        ? DiscreteGradient::BACKEND::STOCHASTIC_BACKEND
-        : DiscreteGradient::BACKEND::CLASSIC_BACKEND;
-  this->setDiscreteGradientBackend(selectedDiscreteGradientBackend);
+
+  const auto imageDataInput = vtkImageData::SafeDownCast(input);
+
+  if(DiscreteGradientBackend == 0) {
+    this->setDiscreteGradientBackend(
+      DiscreteGradient::BACKEND::CLASSIC_BACKEND);
+  }
+  if(DiscreteGradientBackend == 1 && !imageDataInput) {
+    this->setDiscreteGradientBackend(
+      DiscreteGradient::BACKEND::CLASSIC_BACKEND);
+    this->printWrn("The Stochastic algorithm (IEEE TVCG 2012) can only be used "
+                   "on vtkImageData (.vti).");
+    this->printWrn("Defaulting to Homotopic expansion "
+                   "algorithm (IEEE PAMI 2011).");
+  }
+  if(DiscreteGradientBackend == 1 && imageDataInput) {
+    this->setDiscreteGradientBackend(
+      DiscreteGradient::BACKEND::STOCHASTIC_BACKEND);
+  }
 
   int ret{};
 
