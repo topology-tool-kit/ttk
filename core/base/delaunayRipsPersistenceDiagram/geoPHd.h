@@ -503,7 +503,7 @@ namespace ttk::gph {
 
   template <unsigned DIM>
   void tryDimension(rpd::PointCloud const& points, MultidimensionalDiagram &diagram) {
-    if constexpr (DIM <= TTK_DELAUNAY_MAXIMUM_DIMENSION) {
+    if constexpr (DIM <= TTK_DELAUNAY_MAX_COMPILED_DIMENSION) {
       if (points[0].size() == DIM)
         runDelaunayRipsPersistenceDiagram<DIM>(points, diagram);
       else

@@ -10,9 +10,9 @@ ttk_add_base_library(delaunayRipsPersistenceDiagram
     ripsPersistenceDiagram
 )
 
-set(TTK_DELAUNAY_MAXIMUM_DIMENSION "8" CACHE STRING "Maximum compiled dimension for arbitrary dimension Delaunay-related code")
-mark_as_advanced(TTK_DELAUNAY_MAXIMUM_DIMENSION)
-target_compile_definitions(delaunayRipsPersistenceDiagram PUBLIC TTK_DELAUNAY_MAXIMUM_DIMENSION=${TTK_DELAUNAY_MAXIMUM_DIMENSION})
+set(TTK_DELAUNAY_MAX_COMPILED_DIMENSION "8" CACHE STRING "Maximum compiled dimension for arbitrary dimension Delaunay-related code")
+mark_as_advanced(TTK_DELAUNAY_MAX_COMPILED_DIMENSION)
+target_compile_definitions(delaunayRipsPersistenceDiagram PUBLIC TTK_DELAUNAY_MAX_COMPILED_DIMENSION=${TTK_DELAUNAY_MAX_COMPILED_DIMENSION})
 
 target_link_libraries(delaunayRipsPersistenceDiagram PUBLIC Boost::boost)
 
