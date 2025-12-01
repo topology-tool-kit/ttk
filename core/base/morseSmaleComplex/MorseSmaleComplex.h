@@ -481,7 +481,6 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
      == DiscreteGradient::BACKEND::STOCHASTIC_BACKEND) {
     this->discreteGradient_.setSeed(seed);
   }
-
   this->discreteGradient_.buildGradient<dataType, triangulationType>(
     triangulation, this->ReturnSaddleConnectors);
   if(this->ReturnSaddleConnectors) {

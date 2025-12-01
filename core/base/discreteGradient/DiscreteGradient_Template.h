@@ -73,11 +73,13 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
   this->dimensionality_ = triangulation.getCellVertexNumber(0) - 1;
   this->numberOfVertices_ = triangulation.getNumberOfVertices();
 
-  this->gradient_ = bypassCache ? &this->localGradient_ : findGradient();
   bool newParameters = (this->newBackend()) || (this->newSeed());
+  bool fetchCache = !bypassCache || newParameters;
+  this->gradient_ = fetchCache ? findGradient() : &this->localGradient_;
+
   if(this->gradient_ == nullptr || bypassCache || newParameters) {
 
-    if(!bypassCache) {
+    if(!bypassCache && this->gradient_ == nullptr) {
       // add new cache entry
       cacheHandler.insert(this->inputScalarField_, {});
       this->gradient_ = cacheHandler.get(this->inputScalarField_);
