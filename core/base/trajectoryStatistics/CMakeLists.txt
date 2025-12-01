@@ -5,6 +5,10 @@ ttk_add_base_library(trajectoryStatistics
     TrajectoryStatistics.h
   DEPENDS
     triangulation
+	persistenceDiagram
+	ftmTreePP
+	topologicalSimplification
+	exTreeM
 )
 
 if(TTK_ENABLE_EIGEN)

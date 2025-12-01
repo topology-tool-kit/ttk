@@ -20,17 +20,20 @@
 // ttk common includes
 #include <Debug.h>
 #include <Triangulation.h>
+#include <PersistenceDiagram.h>
+#include <TopologicalSimplification.h>
+#include <FTMTreePP.h>
+#include <ExTreeM.h>
+#include <OrderDisambiguation.h>
 #ifdef TTK_ENABLE_EIGEN
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <Eigen/Cholesky>
 #include <Eigen/IterativeLinearSolvers>
-
 #include <vector>
 #include <algorithm>
 #include <cmath>
 #include <limits>
-
 
 #endif
 
@@ -59,13 +62,20 @@ namespace ttk {
     inline void setInterFrame(double v) { interFrame_ = v; }
     inline void setConvertDur(bool v) { convertDur_ = v; }
     inline void setMinVx(double v) { minVx_ = v; }
-//    inline void setCoordCratere(int v[2]) { coordCratere_[0] = v[0]; coordCratere_[1] = v[1]; }
-//    inline void setCraterAngle(double v) { threshCratereAngle_ = v; }
-    inline void setMaxX(int v){ maxX_ = v; }
+    inline void setMaxVx(double v) { maxVx_ = v; }
+	inline void setEnableFilteringMinVx(int v) { enableFilteringMinVx_ = v;}
+	inline void setEnableFilteringTimeOrigin(int v) { enableFilteringTimeOrigin_ = v; }
+	inline void SetEnableFilteringDuration(int v) { enableFilteringDuration_ = v; }
+	inline void setEnableFilteringCosY(int v) { enableFilteringCosY_ = v; }
+	inline void setDuraMin(int v) { duraMin_ = v; }
+	inline void setXOrigin(int v){ xOrigin_ = v; }
+	inline void setMinTimeOrigin(int v){ minTimeOrigin_ = v; }
+	inline void setMaxX(int v){ maxX_ = v; }
     inline void setMaxY(int v){ maxY_ = v; }
     inline void setMinY(int v){ minY_ = v; }
     inline void setMinX(int v){ minX_ = v; }
     inline void setSurfaceMethod(int m){ surfaceMethod_ = m; }
+	inline void setPersisThresh(double m){ persistenceThreshold_ = m; }
 
     struct FuseRecord {
       int i, j;           
@@ -165,6 +175,14 @@ namespace ttk {
                 double                             errSurf,
                 const triangulationType          *triangulation);
 
+	template <class dataType, class triangulationType>
+	int computeMergeTree(
+	  const ttk::SimplexId frameSurf,
+	  const triangulationType *triangulation,
+	  std::vector<std::vector<double>> &finalTraj,
+	  std::vector<std::vector<ttk::SimplexId>> &allVertexDebris
+	); 
+
 
     template<class dataType, class triangulationType>
     void collectNearMaxInSquare(
@@ -217,14 +235,21 @@ namespace ttk {
     double interFrame_;
     bool convertDur_;
     double minVx_;
-    int minFrameDist_;
-//    int coordCratere_[2];
-//    double threshCratereAngle_;
+	double maxVx_;
+	int enableFilteringMinVx_;
+	int enableFilteringTimeOrigin_;
+	int enableFilteringCosY_;
+	int enableFilteringDuration_;
+	int duraMin_;
+	int xOrigin_;
+	int minTimeOrigin_;
+	int minFrameDist_;
     int maxX_;
     int maxY_;
     int minY_;
     int minX_;
     int surfaceMethod_;
+	double persistenceThreshold_;
   }; // TrajectoryStatistics class
 
 } // namespace ttk
@@ -442,13 +467,59 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     return false;
   };
 
-  auto passDirSpeed = [&](const std::vector<double> &c) -> bool {
-    if (minVx_ == 0.0 && filtreY_ == 1.0) return true;
-    const double mag = std::sqrt(c[0] * c[0] + c[1] * c[1] + 1.0);
-    const double ny = c[1] / mag;
-    const double vx_abs = std::abs(c[0] * spatialScale_ * (1.0 / interFrame_));
-    return (-filtreY_ < ny && ny <= filtreY_) && (vx_abs > minVx_);
+  // Filtre sur l'inclinaison en Y : on travaille sur ny = composante Y d'un vecteur unité
+  auto passInclinationYNy = [&](double ny) -> bool {
+    if(enableFilteringCosY_ == 0) { return true; }
+    return (-filtreY_ <= ny && ny <= filtreY_);
   };
+
+  // Filtre sur la vitesse en X, à partir de la pente ax
+  auto passSpeedXAx = [&](double ax) -> bool {
+    const double vx_abs = ax * spatialScale_ * (1.0 / interFrame_);
+    return (enableFilteringMinVx_ == 0.0) ? true : (vx_abs >= minVx_ && vx_abs <= maxVx_);
+  };
+
+  auto passDirSpeedNyAx = [&](double ny, double ax) -> bool {
+    if(enableFilteringMinVx_ == 0.0 && filtreY_ == 1.0) {
+      return true;
+    }
+    if(!passInclinationYNy(ny)) {
+      return false;
+    }
+    return passSpeedXAx(ax);
+  };
+
+  // c = [ax, ay, bx, by, start, end]
+  auto passDirSpeed = [&](const std::vector<double> &c) -> bool {
+    const double mag = std::sqrt(c[0] * c[0] + c[1] * c[1] + 1.0);
+    const double ny  = c[1] / mag; 
+    const double ax  = c[0];
+    return passDirSpeedNyAx(ny, ax);
+  };
+
+  auto passDura = [&](const std::vector<double> &c) -> bool {
+  	if (enableFilteringDuration_ == 0) { return true; }
+	const int start = c[4];
+	const int end = c[5];
+	return (duraMin_ <= std::abs(end - start));
+  };
+
+  auto passTimeOrigin = [&](const std::vector<double> &c) -> bool{
+	if (enableFilteringTimeOrigin_ == 0) { return true; }
+    const double ax     = c[0];
+    const double bx     = c[2];
+    const double eps = 1e-8;
+
+    // Trajectoire quasi horizontale en Y
+    if(std::abs(ax) < eps) {
+      return true;
+    }
+    
+	const double tCross = (xOrigin_ - bx) / ax;
+
+    return (tCross >= minTimeOrigin_);  	
+  };
+
 
   auto buildSamplesForChain = [&](const std::vector<FuseRecord> &finalTraj,
                                   std::vector<int> &T, std::vector<double> &X, std::vector<double> &Y) {
@@ -485,24 +556,6 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     lineCoef.push_back(trajTime[finalTraj.back().j].back());      // end
     return lineCoef;
   };
-
-/*  auto angleTowardCraterOk = [&](const std::vector<double> &c) -> bool {
-    // angle = |cos(theta)|
-    const double x_start = projX(c, static_cast<int>(c[4]));
-    const double y_start = projY(c, static_cast<int>(c[4]));
-    const double x_end   = projX(c, static_cast<int>(c[5]));
-    const double y_end   = projY(c, static_cast<int>(c[5]));
-    const double vx_traj = x_start - x_end;
-    const double vy_traj = y_start - y_end;
-    const double vx_crat = static_cast<double>(coordCratere_[0]) - x_end;
-    const double vy_crat = static_cast<double>(coordCratere_[1]) - y_end;
-    const double dot = vx_traj * vx_crat + vy_traj * vy_crat;
-    const double traj_norm = std::sqrt(vx_traj * vx_traj + vy_traj * vy_traj);
-    const double crat_norm = std::sqrt(vx_crat * vx_crat + vy_crat * vy_crat);
-    const double angle = std::abs(dot / (traj_norm * crat_norm));
-    return (angle >= threshCratereAngle_);
-  };
-*/
 
 #ifdef TTK_ENABLE_EIGEN
   for(int i = 0; i < numTraj; ++i) {
@@ -611,7 +664,7 @@ int ttk::TrajectoryStatistics::correctTrajectory(
 
     std::vector<double> lineCoef = fitLineCoefForChain(finalTraj);
 
-    if(passDirSpeed(lineCoef)) {
+    if(passDirSpeed(lineCoef) && passTimeOrigin(lineCoef) && passDura(lineCoef)) {
       if(violatesBBox(lineCoef)) {
         resetContribChain(finalTraj);
       } else {
@@ -623,12 +676,12 @@ int ttk::TrajectoryStatistics::correctTrajectory(
   }
 
 
-  // Orphan trajectory
   for(int i = 0; i < numTraj; ++i) {
     if(usedAsStart[i] || usedAsEnd[i] || trajTime[i].empty()) continue;
 
-    if(  (-filtreY_ < meanDy[i] && meanDy[i] <= filtreY_)
-        && std::abs(newTraj[i][0] * spatialScale_ * (1.0 / interFrame_)) > minVx_) {
+    const double nyOrphan = meanDy[i];      
+    const double axOrphan = newTraj[i][0]; 
+    if(passDirSpeedNyAx(nyOrphan, axOrphan)) {
 
       std::vector<double> lineCoef = newTraj[i];
       lineCoef[4] = trajTime[i].front();
@@ -637,13 +690,13 @@ int ttk::TrajectoryStatistics::correctTrajectory(
       if(violatesBBox(lineCoef)) {
         continue;
       }
+	  if(!passTimeOrigin(lineCoef) || !passDura(lineCoef)) { continue ; }
 
-//      if(angleTowardCraterOk(lineCoef)) {
       newTraj[i][4] = static_cast<double>(merge.size());
       merge.push_back(lineCoef);
-//      }
     }
   }
+
 
   return 1;
 }
@@ -708,7 +761,14 @@ int ttk::TrajectoryStatistics::execute(
         surfMin, surfMax, surfMoy,
         allVertexDebris,
         frameSurf, triangulation);
-    }
+    } else if (surfaceMethod_ == 3) {
+		computeMergeTree<dataType, triangulationType>(
+				frameSurf,
+				triangulation,
+				finalTraj,
+				allVertexDebris);
+
+	}
 
     return 1;
 }
@@ -1462,6 +1522,288 @@ int ttk::TrajectoryStatistics::computeSurfacesPersistence(
   }
 
   this->printMsg("Surface (Persistence/minima, multi-source) — OK");
+  return 0;
+}
+
+/*
+template <class dataType, class triangulationType>
+int ttk::TrajectoryStatistics::computeMergeTree(
+  const ttk::SimplexId frameSurf,
+  ttk::Triangulation *triangulation,
+  const std::vector<std::vector<double>> &finalTraj,
+  std::vector<std::vector<ttk::SimplexId>> &allVertexDebris
+) {
+  
+  const auto &frameData = inputData_[frameSurf];
+
+  const int nFrames = inputData_.size();
+  const int nPixels = triangulation->getNumberOfVertices();
+
+  // Step 1: Compute persistence diagram
+  ttk::PersistenceDiagram persistenceDiagram;
+  persistenceDiagram.preconditionTriangulation(triangulation);
+
+  std::vector<std::array<SimplexId, 2>> diagramEdges;
+  std::vector<std::tuple<dcg::Cell, dcg::Cell, int, dataType>> diagram;
+
+  persistenceDiagram.execute<dataType>(
+    frameData,
+    *triangulation,
+    diagram,
+    diagramEdges
+  );
+
+  // Step 2: Filter by persistence threshold
+  std::vector<SimplexId> criticalPoints;
+  for(const auto &tpl : diagram) {
+    const auto &[c1, c2, dim, pers] = tpl;
+    if(pers >= this->persistenceThreshold_ && dim == 0) {
+      criticalPoints.push_back(c1.id_);
+      criticalPoints.push_back(c2.id_);
+    }
+  }
+
+  // 3. Simplification
+  std::vector<dataType> outScalars(frameData);
+
+  ttk::TopologicalSimplification topologicalSimplification;
+  
+  topologicalSimplification.preconditionTriangulation(triangulation);
+  
+  topologicalSimplification.execute<dataType>(
+    frameData,
+    criticalPoints,
+    *triangulation,
+    outScalars.data()
+  );
+
+
+  const auto nTraj = finalTraj.size();
+  allVertexDebris.resize(nTraj);
+
+  for(size_t trajId = 0; trajId < nTraj; ++trajId) {
+    const auto &traj = finalTraj[trajId];
+	const double ax = traj[0];
+	const double ay = traj[1];
+	const double bx = traj[2];
+	const double by = traj[3];
+	const double startF = traj[4];
+	const double endF = traj[5];
+
+
+    for(SimplexId f = 0; f < nFrames; ++f) {
+      // Point sur la droite à la frame f
+      const double x = ax * f + bx;
+      const double y = ay * f + by;
+
+      const SimplexId xi = std::round(x);
+      const SimplexId yi = std::round(y);
+  
+      // Accès au vertex le plus proche (tu dois avoir cette méthode, sinon à implémenter)
+      const SimplexId id = triangulation->FindPoint(xi, yi, f);
+
+      if(id < 0 || id >= nPixels)
+        continue;
+
+      if(regionType[id] == 0) {
+        allVertexDebris[trajId].push_back(id);
+      }
+    }
+  }
+
+
+  return 0;
+}
+*/
+
+template <class dataType, class triangulationType>
+int ttk::TrajectoryStatistics::computeMergeTree(
+  const ttk::SimplexId frameSurf,
+  const triangulationType *triangulation,
+  std::vector<std::vector<double>> &finalTraj,
+  std::vector<std::vector<ttk::SimplexId>> &allVertexDebris
+) {
+
+  //const auto *frameData = static_cast<dataType *>(inputData_[frameSurf]);
+  const ttk::SimplexId nPixels = triangulation->getNumberOfVertices();
+  this->printMsg("Entrance"); 
+  
+// Step 1: Compute persistence diagram (même style que ton exemple)
+  ttk::PersistenceDiagram persistenceDiagram;
+  persistenceDiagram.setThreadNumber(this->threadNumber_); 
+  persistenceDiagram.setBackend(
+    ttk::PersistenceDiagram::BACKEND::DISCRETE_MORSE_SANDWICH);
+
+// vecteur de sortie pour le diagramme
+  ttk::DiagramType diagram;
+
+// cast des pointeurs comme dans ton exemple
+  auto *scalars = static_cast<dataType *>(inputData_[frameSurf]);
+
+  this->printMsg("juste avant l'appel");
+// appel identique à ton code de référence
+  persistenceDiagram.execute(
+    diagram,      // sortie : persistenceDiagrams[frameSurf]
+    scalars,      // (dataType *)(inputData_[frameSurf])
+    0,            // même 3e argument que dans ton exemple
+    nullptr,      // inputOffsets_[frameSurf]
+    triangulation // même triangulation
+  );
+
+this->printMsg("diagram done"); 
+
+// diagram : ttk::DiagramType déjà rempli par PersistenceDiagram
+
+  ttk::DiagramType constraintDiagram;
+  constraintDiagram.reserve(diagram.size());
+
+  for(const auto &pair : diagram) {
+  // On ne garde que les paires de dimension 0
+    if(pair.dim != 0)
+      continue;
+
+    const auto pers = pair.persistence();
+    if(pers < this->persistenceThreshold_)
+      continue;
+
+    constraintDiagram.push_back(pair);
+  }
+   
+  this->printMsg("persis thresh"); 
+// 3. Simplification topologique
+
+// 3.1. Pointeur vers les scalaires d'entrée de la frame
+  auto *inputScalars
+    = static_cast<const dataType *>(inputData_[frameSurf]);
+
+// 3.2. Copie de travail pour les scalaires de sortie
+  std::vector<dataType> outScalars(nPixels);
+  std::copy(inputScalars, inputScalars + nPixels, outScalars.begin());
+
+// 3.3. Offsets d'entrée (ordre total sur les sommets)
+  std::vector<ttk::SimplexId> inputOffsets(nPixels);
+
+  ttk::preconditionOrderArray<dataType>(
+    static_cast<size_t>(nPixels),
+    inputScalars,              // const dataType*
+    inputOffsets.data(),       // ttk::SimplexId*
+    this->threadNumber_        // ou 1 si tu n'as pas d'info de threads ici
+  );
+
+// 3.4. Offsets de travail (modifiables par l'algo)
+  std::vector<ttk::SimplexId> offsets = inputOffsets;
+
+// 3.5. Lancement de la simplification
+  ttk::TopologicalSimplification topoSimp;
+  topoSimp.setThreadNumber(this->threadNumber_);
+  topoSimp.setBackend(ttk::TopologicalSimplification::BACKEND::LTS);
+
+// true = on autorise une petite perturbation pour casser les égalités
+  const bool addPerturbation = true;
+
+  topoSimp.execute<dataType, triangulationType>(
+    inputScalars,                    // const dataType *const inputScalars
+    outScalars.data(),               // dataType *const outputScalars
+    nullptr,                         // const SimplexId *const identifiers (on utilise constraintDiagram)
+    inputOffsets.data(),             // const SimplexId *const inputOffsets
+    offsets.data(),                  // SimplexId *const offsets
+    static_cast<ttk::SimplexId>(constraintDiagram.size()), // constraintNumber
+    addPerturbation,                 // bool addPerturbation
+    *const_cast<triangulationType *>(triangulation),                  // triangulationType &triangulation
+    constraintDiagram                // const ttk::DiagramType &constraintDiagram
+  );
+
+
+  this->printMsg("topological simplification"); 
+
+  std::vector<ttk::SimplexId> order(nPixels);
+  std::iota(order.begin(), order.end(), 0); // 0,1,2,...,nPixels-1
+
+  std::sort(order.begin(), order.end(),
+    [&](const ttk::SimplexId a, const ttk::SimplexId b) {
+      const auto va = outScalars[a];
+      const auto vb = outScalars[b];
+      if(va < vb) return true;
+      if(va > vb) return false;
+      return a < b;
+    });
+
+  // ex: order[v] = indice du sommet v dans le tri des scalaires
+
+  // 2. Buffers nécessaires à ExTreeM
+  std::vector<ttk::SimplexId> segmentation(nPixels, -1);
+  std::vector<char>           regionType(nPixels, 0);
+  std::vector<ttk::SimplexId> descendingManifold(nPixels, -1);
+  std::vector<ttk::SimplexId> tempArray(nPixels, -1);
+
+  std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> persistencePairs;
+  std::map<ttk::SimplexId, int> cpMap;
+  std::vector<ttk::ExTreeM::Branch> branches;
+
+  // 3. ExTreeM : calcul du merge tree + segmentation
+  ttk::ExTreeM exTreeM;
+  exTreeM.preconditionTriangulation(const_cast<triangulationType *>(triangulation));
+
+
+  // type = 'J' pour Join tree (comme dans ttkMergeTree)
+  const char treeTypeChar = 'J';
+
+  int status = exTreeM.computePairs<triangulationType>(
+    persistencePairs,           // sorties persistence
+    cpMap,                      // map sommets -> type CP
+    branches,                   // arbre de merge en branches
+    segmentation.data(),        // [out] segmentId par sommet
+    regionType.data(),          // [out] regionType par sommet
+    descendingManifold.data(),  // buffer interne
+    tempArray.data(),           // buffer interne
+    order.data(),               // ordre topologique
+    triangulation,              // triangulation
+    treeTypeChar                // 'J' / 'S' / ...
+  );
+ this->printMsg("merge tree"); 
+  if(status != 1) {
+    this->printErr("ExTreeM::computePairs failed");
+    return -1;
+  }
+
+  // À partir d’ici, c’est la réponse à ta question :
+  //  - segmentation[v] contient le segmentId (ID de branche)
+  //  - regionType[v] contient le type de région
+  // Tu n’as rien d’autre à “récupérer” : ce sont directement *tes* vecteurs.
+
+  // 4. Associer aux trajectoires uniquement si regionType == 0
+  const int nFrames = inputData_.size();
+  const auto nTraj = finalTraj.size();
+  allVertexDebris.assign(nTraj, {});
+
+  for(size_t trajId = 0; trajId < nTraj; ++trajId) {
+    const auto &traj = finalTraj[trajId];
+    const double ax = traj[0];
+    const double ay = traj[1];
+    const double bx = traj[2];
+    const double by = traj[3];
+    const int    startF = static_cast<int>(traj[4]);
+    const int    endF   = static_cast<int>(traj[5]);
+
+    for(int f = startF; f <= endF && f < nFrames; ++f) {
+      const double x = ax * f + bx;
+      const double y = ay * f + by;
+      const ttk::SimplexId xi = std::lround(x);
+      const ttk::SimplexId yi = std::lround(y);
+
+      // À adapter à ta triangulation : ici j’imagine un accès 2D grille régulière
+      // ou une fonction utilitaire pour trouver le vertex le plus proche
+      ttk::SimplexId vId = xi + yi*384;/* TODO: récupère l'ID du sommet (xi, yi, f) dans ta triangulation */
+
+      if(vId < 0 || vId >= nPixels)
+        continue;
+
+      if(regionType[vId] == 0) {          // <--- ton critère
+        allVertexDebris[trajId].push_back(vId);
+      }
+    }
+  }
+
   return 0;
 }
 

@@ -234,13 +234,20 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   this->setInterFrame(interFrame*std::pow(10.0,-6.0));
   this->setConvertDur(convertDur);
   this->setMinVx(minVx);
-//  this->setCoordCratere(coordCratere);
-//  this->setCraterAngle(threshCratereAngle);
+  this->setMaxVx(maxVx);
+  this->setEnableFilteringMinVx(enableFilteringMinVx);
+  this->setEnableFilteringTimeOrigin(enableFilteringTimeOrigin);
+  this->setEnableFilteringCosY(enableFilteringCosY);
+  this->SetEnableFilteringDuration(enableFilteringDuration);
+  this->setDuraMin(duraMin);
+  this->setXOrigin(xOrigin);
+  this->setMinTimeOrigin(minTimeOrigin);
   this->setMaxX(maxX);
   this->setMaxY(maxY);
   this->setMinY(minY);
   this->setMinX(minX);
   this->setSurfaceMethod(surfaceMethod);
+  this->setPersisThresh(persisThresh);
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(inputDataSet);
   if(!triangulation) return 0;
@@ -347,6 +354,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   auto colSurfMin  = makeDblCol("SurfaceMin",  numMerge);
   auto colSurfMax  = makeDblCol("SurfaceMax",  numMerge);
   auto colSurfMean = makeDblCol("SurfaceMean", numMerge);
+  auto colVolMean = makeDblCol("VolumeMean", numMerge);
 
   for(int i = 0; i < numMerge; ++i) {
     colStartF->SetValue(i, static_cast<int>(finalTraj[i][4]));
@@ -383,6 +391,13 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     colSurfMax ->SetValue(i, vMax);
     colSurfMean->SetValue(i, mean);
     sMean += mean;
+
+	double vol = 0.0;
+	if (mean > 0.0) {
+		constexpr double pi = 3.14159265358979323846;
+		vol = std::pow(mean, 1.5) / (6.0 * std::sqrt(pi));
+	}
+	colVolMean->SetValue(i,vol);
   }
 
   outputTable->AddColumn(colStartF);
@@ -393,6 +408,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   outputTable->AddColumn(colSurfMin);
   outputTable->AddColumn(colSurfMax);
   outputTable->AddColumn(colSurfMean);
+  outputTable->AddColumn(colVolMean);
   
   // ------------------------- SURFACE POINT DATA -----------------------------
 
@@ -421,7 +437,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   
       const int current = surfaceFinalId->GetValue(v);
       if(current == -1) {
-        surfaceFinalId->SetValue(v, finalId);
+        surfaceFinalId->SetValue(v, i);
       } else {
         surfaceFinalId->SetValue(v, -2);
       }
@@ -510,7 +526,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   
   for(vtkIdType i = 0; i < n; ++i) {
     const auto &coef = finalTraj[static_cast<size_t>(i)];
-    const double startF = extendTraj ? 0.0 : static_cast<double>(coef[4]);
+    const double startF = extendTraj ? -5000.0 : static_cast<double>(coef[4]);
     const double endF   = static_cast<double>(coef[5]);
   
     const double x0 = evalX(coef, startF);

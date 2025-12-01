@@ -84,14 +84,20 @@ private:
   double interFrame{1.0};
   bool convertDur{false};
   double minVx{0.0};
+  double maxVx{0.0};
   double extendTraj{false};
-  int enableDirectionalFiltering{0}; 
-//  int coordCratere[2]{0,0};
-//  double threshCratereAngle{0.0};
+  int enableFilteringMinVx{0};
+  int enableFilteringCosY{0};
+  int enableFilteringTimeOrigin{0};
+  int enableFilteringDuration{0};
+  int duraMin{0};
+  int xOrigin{0};
+  int minTimeOrigin{0};
   int maxX{-1};
   int maxY{-1};
   int minY{-1};
   int minX{-1};
+  double persisThresh{0.0};
   int surfaceMethod{0};
 
 public:
@@ -134,14 +140,35 @@ public:
   vtkSetMacro(minVx, double);
   vtkGetMacro(minVx, double);
 
+  vtkSetMacro(maxVx, double);
+  vtkGetMacro(maxVx, double);
+
   vtkSetMacro(extendTraj, bool);
   vtkGetMacro(extendTraj, bool);
 
-  vtkSetMacro(enableDirectionalFiltering, int);
-  vtkGetMacro(enableDirectionalFiltering, int);
+  vtkSetMacro(enableFilteringMinVx, int);
+  vtkGetMacro(enableFilteringMinVx, int);
 
-//  vtkSetVector2Macro(coordCratere, int);
-//  vtkGetVector2Macro(coordCratere, int);
+  vtkSetMacro(enableFilteringCosY, int);
+  vtkGetMacro(enableFilteringCosY, int);
+
+  vtkSetMacro(enableFilteringTimeOrigin, int);
+  vtkGetMacro(enableFilteringTimeOrigin, int);
+
+  vtkSetMacro(enableFilteringDuration, int);
+  vtkGetMacro(enableFilteringDuration, int);
+
+  vtkSetMacro(xOrigin, int);
+  vtkGetMacro(xOrigin, int);
+
+  vtkSetMacro(minTimeOrigin, int);
+  vtkGetMacro(minTimeOrigin, int);
+
+  vtkSetMacro(persisThresh, double);
+  vtkGetMacro(persisThresh, double);
+
+  vtkSetMacro(duraMin, int);
+  vtkGetMacro(duraMin, int);
 
   vtkSetMacro(maxX, int);
   vtkGetMacro(maxX, int);
@@ -153,8 +180,6 @@ public:
   vtkGetMacro(minX, int);
 
 
-//  vtkSetMacro(threshCratereAngle, double);
-//  vtkGetMacro(threshCratereAngle, double);
 
   vtkSetMacro(surfaceMethod, int);
   vtkGetMacro(surfaceMethod, int);

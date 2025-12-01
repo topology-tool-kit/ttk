@@ -51,13 +51,19 @@
                             number_of_elements="1" default_values="0.0">
         <Documentation>Surface parameter: threshold for BFS or β for Random Walker (controls region growth strength).</Documentation>
       </DoubleVectorProperty>
-    
+      <DoubleVectorProperty name="persisThresh" command="SetpersisThresh"
+                            label="Persistence Threshold (MergeTree)"
+                            number_of_elements="1" default_values="0.0">
+        <Documentation></Documentation>
+      </DoubleVectorProperty>
+
       <IntVectorProperty name="surfaceMethod" command="SetsurfaceMethod" label="Surface: Method"
                          number_of_elements="1" default_values="0" panel_visibility="advanced">
         <EnumerationDomain name="enum">
           <Entry value="0" text="BFS (region grow)"/>
           <Entry value="1" text="Random Walker (multilabel)"/>
-          <Entry value="2" text="Persistence-based"/>
+		  <Entry value="2" text="Persistence-based"/>
+		  <Entry value="3" text="MergeTree"/>
         </EnumerationDomain>
         <Documentation>Choose how surfaces are extracted on the selected frame.</Documentation>
       </IntVectorProperty>
@@ -86,24 +92,61 @@
 
 
       <!-- Directional filtering -->
-      <IntVectorProperty name="enableDirectionalFiltering"
-                         command="SetenableDirectionalFiltering"
-                         label="Directional filtering ?"
+      <IntVectorProperty name="enableFilteringMinVx"
+                         command="SetenableFilteringMinVx"
+                         label="Vx filtering ?"
                          number_of_elements="1" default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>Enable to show and activate directional filtering parameters.</Documentation>
       </IntVectorProperty>
-      
+
+	  <IntVectorProperty name="enableFilteringCosY"
+                         command="SetenableFilteringCosY"
+                         label="Cos Y filtering ?"
+                         number_of_elements="1" default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>Enable to show and activate directional filtering parameters.</Documentation>
+	</IntVectorProperty>    
+
+	<IntVectorProperty name="enableFilteringTimeOrigin"
+                         command="SetenableFilteringTimeOrigin"
+                         label="Time for x0 filtering ?"
+                         number_of_elements="1" default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>Enable to show and activate directional filtering parameters.</Documentation>
+	</IntVectorProperty>    
+
+
+	<IntVectorProperty name="enableFilteringDuration"
+                         command="SetenableFilteringDuration"
+                         label="Duration Filtering ?"
+                         number_of_elements="1" default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>Enable to show and activate directional filtering parameters.</Documentation>
+	</IntVectorProperty>   
+
       <DoubleVectorProperty name="minVx" command="SetminVx" label="Filter: Min |Vx| (mm/s)"
                             number_of_elements="1" default_values="0.0">
         <Documentation>Minimum absolute X velocity required to accept a trajectory (after unit conversion).</Documentation>
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
-                                   property="enableDirectionalFiltering"
+                                   property="enableFilteringMinVx"
                                    value="1"/>
         </Hints>
       </DoubleVectorProperty>
+
+      <DoubleVectorProperty name="maxVx" command="SetmaxVx" label="Filter: Max |Vx| (mm/s)"
+                            number_of_elements="1" default_values="0.0">
+        <Documentation>Minimum absolute X velocity required to accept a trajectory (after unit conversion).</Documentation>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="enableFilteringMinVx"
+                                   value="1"/>
+        </Hints>
+	</DoubleVectorProperty>
+
 
       <DoubleVectorProperty name="filtreY" command="SetfiltreY"
                             label="Direction: Y cosine max"
@@ -112,12 +155,43 @@
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
-                                   property="enableDirectionalFiltering"
+                                   property="enableFilteringCosY"
                                    value="1"/>
         </Hints>
-      </DoubleVectorProperty>
+	  </DoubleVectorProperty>
      
+      <IntVectorProperty name="xOrigin" command="SetxOrigin" label="X Origin"
+                            number_of_elements="1" default_values="0">
+        <Documentation>Minimum absolute X velocity required to accept a trajectory (after unit conversion).</Documentation>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="enableFilteringDuration"
+                                   value="1"/>
+        </Hints>
+	</IntVectorProperty>
 
+   <IntVectorProperty name="duraMin" command="SetduraMin" label="Duration min"
+                            number_of_elements="1" default_values="0">
+        <Documentation>Minimum absolute X velocity required to accept a trajectory (after unit conversion).</Documentation>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SetenableFilteringDuration"
+                                   value="1"/>
+        </Hints>
+	</IntVectorProperty>
+
+    <IntVectorProperty name="minTimeOrigin" command="SetminTimeOrigin" label="Min Time Origin"
+                            number_of_elements="1" default_values="0">
+        <Documentation>Minimum absolute X velocity required to accept a trajectory (after unit conversion).</Documentation>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="enableFilteringTimeOrigin"
+                                   value="1"/>
+        </Hints>
+	</IntVectorProperty>
 
       <!-- Initial Position -->
 
@@ -182,10 +256,17 @@
 
      </PropertyGroup>
 
-     <PropertyGroup panel_widget="Line" label="Directional filtering">
-       <Property name="enableDirectionalFiltering"/>
-       <Property name="filtreY"/>
-       <Property name="minVx"/>
+     <PropertyGroup panel_widget="Line" label="Filtering">
+		<Property name="enableFilteringMinVx"/>
+		<Property name="enableFilteringCosY"/>
+		<Property name="enableFilteringTimeOrigin"/>
+		<Property name="enableFilteringDuration"/>
+		<Property name="minVx"/>
+		<Property name="maxVx"/>
+		<Property name="filtreY"/>
+		<Property name="xOrigin"/>
+		<Property name="minTimeOrigin"/>
+		<Property name="duraMin"/>
      </PropertyGroup>
 
      <PropertyGroup panel_widget="Line" label="Initial position">
@@ -194,12 +275,6 @@
        <Property name="minY"/>
        <Property name="maxY"/>
      </PropertyGroup>
-
-<!--     <PropertyGroup panel_widget="Line" label="Crater targeting">
-       <Property name="coordCratere"/>
-       <Property name="threshCratereAngle"/>
-     </PropertyGroup>
--->    
 
     
       <!-- OUTPUTS (inchangés) -->
