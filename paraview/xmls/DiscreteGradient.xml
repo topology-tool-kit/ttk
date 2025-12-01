@@ -84,7 +84,7 @@
                              value='1' />
       </Hints>
       <Documentation>
-        The seed for the random device used to shuffle critical points ids.
+        The seed for the random generator used by the stochastic backend.
       </Documentation>
       </IntVectorProperty>
 
