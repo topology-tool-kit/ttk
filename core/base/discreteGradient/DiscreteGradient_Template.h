@@ -74,7 +74,8 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
   this->numberOfVertices_ = triangulation.getNumberOfVertices();
 
   this->gradient_ = bypassCache ? &this->localGradient_ : findGradient();
-  if(this->gradient_ == nullptr || bypassCache) {
+  bool newParameters = (this->newBackend()) || (this->newSeed());
+  if(this->gradient_ == nullptr || bypassCache || newParameters) {
 
     if(!bypassCache) {
       // add new cache entry
@@ -93,13 +94,13 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
     } else if(this->BackEnd == BACKEND::STOCHASTIC_BACKEND) {
       this->processLowerStarsStochastic<dataType, triangulationType>(
         this->inputOffsets_, triangulation);
-      this->printMsg("Build stochastic discrete gradient", 1.0,
+      this->printMsg("Built discrete gradient (Stochastic elgorithm)", 1.0,
                      tm.getElapsedTime(), this->threadNumber_);
 
     } else if(this->BackEnd == BACKEND::CLASSIC_BACKEND) {
       this->processLowerStars(this->inputOffsets_, triangulation);
-      this->printMsg("Built discrete gradient", 1.0, tm.getElapsedTime(),
-                     this->threadNumber_);
+      this->printMsg("Built discrete gradient (Homotopic expansion algorithm)",
+                     1.0, tm.getElapsedTime(), this->threadNumber_);
 #ifdef TTK_ENABLE_MPI_TIME
       double elapsedTime
         = ttk::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);

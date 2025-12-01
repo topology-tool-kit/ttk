@@ -481,11 +481,9 @@ int ttk::MorseSmaleComplex::execute(OutputCriticalPoints &outCP,
      == DiscreteGradient::BACKEND::STOCHASTIC_BACKEND) {
     this->discreteGradient_.setSeed(seed);
   }
-  bool bypassCache = this->ReturnSaddleConnectors
-                     || (discreteGradient_.newBackend())
-                     || (discreteGradient_.newSeed());
+
   this->discreteGradient_.buildGradient<dataType, triangulationType>(
-    triangulation, bypassCache, nullptr);
+    triangulation, this->ReturnSaddleConnectors);
   if(this->ReturnSaddleConnectors) {
     auto persistenceThreshold{this->SaddleConnectorsPersistenceThreshold};
     if(!this->ThresholdIsAbsolute) {
