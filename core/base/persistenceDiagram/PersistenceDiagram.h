@@ -64,7 +64,8 @@
 /// "Distributed Discrete Morse Sandwich: Efficient Computation of Persistence
 /// Diagrams for Massive Scalar Data" \n
 /// Eve Le Guillou, Pierre Fortin, Julien Tierny \n
-/// https://arxiv.org/abs/2505.21266, 2025.
+/// IEEE Transactions on Parallel and Distributed Systems, 2025. \n
+/// https://arxiv.org/abs/2505.21266, 2025. \n
 /// Fast, hybrid MPI-OpenMP backend for large-scale datasets on supercomputers.
 ///
 /// \sa ttkPersistenceDiagram.cpp %for a usage example.

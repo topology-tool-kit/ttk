@@ -40,6 +40,9 @@
 ///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/">Persistent
 ///   Generators Periodic Picture example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topoAEppTeaser/">Topological
+///   Autoencoders++ Teaser example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/topoMapTeaser/">TopoMap
 ///   Teaser example</a> \n
 ///
@@ -48,12 +51,29 @@
 /// "Topomap: A 0-dimensional homology preserving projection of high-dimensional
 /// data"\n Harish Doraiswamy, Julien Tierny, Paulo J. S. Silva, Luis Gustavo
 /// Nonato, and Claudio Silva\n Proc. of IEEE VIS 2020.\n IEEE Transactions on
-/// Visualization and Computer Graphics 27(2): 561-571, 2020.
+/// Visualization and Computer Graphics 27(2): 561-571, 2020. \n
+///
+/// "Topological Autoencoders" \n
+/// Michael Moor, Max Horn, Bastian Rieck, Karsten Borgwardt, \n
+/// Proceedings of the 37th International Conference on Machine Learning,
+/// 2020. \n
+///
+/// "Optimizing persistent homology-based functions" \n
+/// Mathieu Carriere, Frederic Chazal, Marc Glisse, Yuichi Ike,
+/// Hariprasad Kannan, Yuhei Umeda, \n
+/// Proceedings of the 38th International Conference on Machine Learning,
+/// 2021. \n
+///
+/// "Topological Autoencoders++: Fast and Accurate Cycle-Aware Dimensionality
+/// Reduction" \n
+/// Mattéo Clémot, Julie Digne, Julien Tierny, \n
+/// arXiv preprint, 2025.
 
 #pragma once
 
 #include <Debug.h>
 #include <TopoMap.h>
+#include <TopologicalDimensionReduction.h>
 
 namespace ttk {
 
@@ -78,6 +98,8 @@ namespace ttk {
       PCA = 5,
       /** TopoMap */
       TOPOMAP = 6,
+      /** AutoEncoder */
+      AE = 7,
     };
 
     inline void setSEParameters(const std::string &Affinity,
@@ -228,6 +250,9 @@ namespace ttk {
         case METHOD::TOPOMAP:
           methodName = "TopoMap (IEEE VIS 2020)";
           break;
+        case METHOD::AE:
+          methodName = "Autoencoder";
+          break;
       }
       this->printMsg("Using backend `" + methodName + "`");
     }
@@ -322,6 +347,26 @@ namespace ttk {
     bool topomap_CheckMST;
     TopoMap::STRATEGY topomap_Strategy{TopoMap::STRATEGY::KRUSKAL};
 
+    // AutoEncoder
+    bool ae_CUDA{true};
+    bool ae_Deterministic{false};
+    int ae_Seed{0};
+    int ae_Epochs{1000};
+    double ae_LearningRate{1e-2};
+    TopologicalDimensionReduction::OPTIMIZER ae_Optimizer{
+      TopologicalDimensionReduction::OPTIMIZER::ADAM};
+    TopologicalDimensionReduction::REGUL ae_Method{
+      TopologicalDimensionReduction::REGUL::ASYMMETRIC_CASCADE};
+    TopologicalDimensionReduction::MODEL ae_Model{
+      TopologicalDimensionReduction::MODEL::AUTOENCODER};
+    std::string ae_Architecture{"32 32"};
+    std::string ae_Activation{"ReLU"};
+    int ae_BatchSize{0};
+    bool ae_BatchNormalization{true};
+    double ae_RegCoefficient{1e-2};
+    bool ae_PreOptimize{false};
+    METHOD ae_PreOptimizeMethod{METHOD::PCA};
+
     // testing
     std::string ModulePath{"default"};
     std::string ModuleName{"dimensionReduction"};
@@ -334,5 +379,6 @@ namespace ttk {
     int IsDeterministic{true};
     char majorVersion_{'0'};
     bool IsInputADistanceMatrix{false};
+    bool IsInputImages{false};
   };
 } // namespace ttk

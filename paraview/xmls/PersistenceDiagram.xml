@@ -45,7 +45,7 @@
         Related publication:
         'A Progressive Approach to Scalar Field Topology'
         Jules Vidal, Pierre Guillou, Julien Tierny
-        IEEE Transaction on Visualization and Computer Graphics, 2021
+        IEEE Transactions on Visualization and Computer Graphics, 2021
 
         This approach necessitates the input data to be defined on an implicit regular grid.
         It processes the data using a multiresolution hierarchical
@@ -93,6 +93,7 @@
         Related publication:
         'Distributed Discrete Morse Sandwich: Efficient Computation of Persistence Diagrams for Massive Scalar Data'
         Eve Le Guillou, Pierre Fortin, Julien Tierny
+        IEEE Transactions on Parallel and Distributed Systems, 2025.
         https://arxiv.org/abs/2505.21266, 2025.
 
 
@@ -259,7 +260,7 @@
           <Entry value="2" text="Discrete Morse Sandwich (IEEE TVCG 2023)"/>          
           <Entry value="3" text="Approximation Approach (IEEE LDAV 2021)"/>
           <Entry value="4" text="Persistent Simplex (Zomorodian 2010)"/>
-          <Entry value="5" text="Distributed Discrete Morse Sandwich"/>
+          <Entry value="5" text="Distributed Discrete Morse Sandwich (IEEE TPDS 2025)"/>
 
         </EnumerationDomain>
         <Documentation>
