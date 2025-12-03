@@ -89,5 +89,5 @@ private:
   bool ForceInputOffsetScalarField{false};
   bool ComputeGradientGlyphs{true};
   int Backend{0};
-  unsigned int StochasticGradientSeed{};
+  unsigned int StochasticGradientSeed{0};
 };

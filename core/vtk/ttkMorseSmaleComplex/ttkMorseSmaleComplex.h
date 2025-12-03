@@ -202,5 +202,5 @@ private:
   int IterationThreshold{-1};
   int DiscreteGradientBackend{0};
   OutputManifold segmentations_{};
-  unsigned int StochasticGradientSeed{};
+  unsigned int StochasticGradientSeed{0};
 };
