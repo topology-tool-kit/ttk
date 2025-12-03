@@ -4,6 +4,7 @@
 - Cycle-aware dimensionality reduction (TopoAE++)
 - Distributed computation of persistent homology! (IEEE TPDS 2025)
 - New backend for TrackingFromFields (critical point based)
+- Stochastic discrete gradient (IEEE VIS 2012)
 - Fast planar Rips filtration persistence computation
 - Migration to ParaView 6
 - CI updates
