@@ -515,10 +515,9 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
   if(DiscreteGradientBackend == 1 && !imageDataInput) {
     this->setDiscreteGradientBackend(
       DiscreteGradient::BACKEND::CLASSIC_BACKEND);
-    this->printWrn("The Stochastic algorithm (IEEE TVCG 2012) can only be used "
-                   "on vtkImageData (.vti).");
-    this->printWrn("Defaulting to Homotopic expansion "
-                   "algorithm (IEEE PAMI 2011).");
+    this->printWrn("The stochastic gradient (IEEE TVCG 2012) can only");
+    this->printWrn("be used on vtkImageData (.vti).");
+    this->printWrn("Defaulting to homotopic expansion PAMI 2011).");
   }
   if(DiscreteGradientBackend == 1 && imageDataInput) {
     this->setDiscreteGradientBackend(

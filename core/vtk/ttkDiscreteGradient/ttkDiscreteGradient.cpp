@@ -298,10 +298,9 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
   }
   if(Backend == 1 && !imageDataInput) {
     this->setBackend(BACKEND::CLASSIC_BACKEND);
-    this->printWrn("The Stochastic algorithm (IEEE TVCG 2012) can only be used "
-                   "on vtkImageData (.vti).");
-    this->printWrn("Defaulting to Homotopic expansion "
-                   "algorithm (IEEE PAMI 2011).");
+    this->printWrn("The stochastic gradient (IEEE TVCG 2012) can only");
+    this->printWrn("be used on vtkImageData (.vti).");
+    this->printWrn("Defaulting to homotopic expansion PAMI 2011).");
   }
   if(Backend == 1 && imageDataInput) {
     this->setBackend(BACKEND::STOCHASTIC_BACKEND);
