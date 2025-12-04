@@ -263,7 +263,8 @@ int RangeDrivenOctree::statNode(const SimplexId &nodeId, std::ostream &stream) {
          << nodeList_[nodeId].domainBox_[1].first << " "
          << nodeList_[nodeId].domainBox_[1].second << "] ["
          << nodeList_[nodeId].domainBox_[2].first << " "
-         << nodeList_[nodeId].domainBox_[2].second << "] " << " volume="
+         << nodeList_[nodeId].domainBox_[2].second << "] "
+         << " volume="
          << (nodeList_[nodeId].domainBox_[0].second
              - nodeList_[nodeId].domainBox_[0].first)
               * (nodeList_[nodeId].domainBox_[1].second
@@ -276,7 +277,8 @@ int RangeDrivenOctree::statNode(const SimplexId &nodeId, std::ostream &stream) {
          << nodeList_[nodeId].rangeBox_.first.first << " "
          << nodeList_[nodeId].rangeBox_.first.second << "] ["
          << nodeList_[nodeId].rangeBox_.second.first << " "
-         << nodeList_[nodeId].rangeBox_.second.second << "] " << " area="
+         << nodeList_[nodeId].rangeBox_.second.second << "] "
+         << " area="
          << (nodeList_[nodeId].rangeBox_.first.second
              - nodeList_[nodeId].rangeBox_.first.first)
               * (nodeList_[nodeId].rangeBox_.second.second

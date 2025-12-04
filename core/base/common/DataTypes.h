@@ -68,7 +68,8 @@ namespace ttk {
   const char SeparatrixStabilityOccurrenceCount[] = "Occurrence";
   const char SeparatrixStabilityIsomorphismClassId[] = "IsomorphismClassId";
   const char SeparatrixStabilityMatchingIdName[] = "MatchingIdInBlock";
-  const char SeparatrixStabilityMatchingIdSeparatrixName[] = "SeparatrixMatchingIdInBlock";
+  const char SeparatrixStabilityMatchingIdSeparatrixName[]
+    = "SeparatrixMatchingIdInBlock";
 
   // default names for persistence diagram meta data
   const char PersistenceCriticalTypeName[] = "CriticalType";

@@ -713,8 +713,8 @@ int ttk::IntegralLines::execute(triangulationType *triangulation) {
   int const taskNumber = (int)seedNumber_ / chunkSize_;
 #ifdef TTK_ENABLE_OPENMP4
 #ifdef TTK_ENABLE_MPI
-#pragma omp parallel shared(                                          \
-    ttk::intgl::finishedElement_, toSend_, ttk::intgl::addedElement_) \
+#pragma omp parallel shared(                                        \
+  ttk::intgl::finishedElement_, toSend_, ttk::intgl::addedElement_) \
   num_threads(threadNumber_)
   {
 #else

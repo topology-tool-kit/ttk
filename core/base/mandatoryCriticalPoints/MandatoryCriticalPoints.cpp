@@ -469,8 +469,8 @@ int MandatoryCriticalPoints::computePlanarLayout(
 
   for(int i = 0; i < numberOfPoints; i++) {
     std::stringstream msg;
-    msg << "  (" << i << ") :" << "  x = " << xCoord[i]
-        << "  y = " << yCoord[i];
+    msg << "  (" << i << ") :"
+        << "  x = " << xCoord[i] << "  y = " << yCoord[i];
     this->printMsg(msg.str(), debug::Priority::DETAIL);
   }
 
@@ -703,8 +703,8 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
     for(size_t i = 0; i < mandatoryExtremum.size(); i++) {
       std::stringstream msg;
       msg << "  -> " << pt << " (" << std::setw(3) << std::right << i << ") ";
-      msg << " \t" << "Vertex  " << std::setw(9) << std::left
-          << mandatoryExtremum[i];
+      msg << " \t"
+          << "Vertex  " << std::setw(9) << std::left << mandatoryExtremum[i];
       msg << " \tInterval  [ " << std::setw(12) << std::right
           << criticalInterval[i].first << " ; " << std::setprecision(9)
           << std::setw(11) << std::left << criticalInterval[i].second << " ]";

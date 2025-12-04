@@ -113,23 +113,20 @@ namespace ttk {
 
     virtual int getTetrahedronEdge(const SimplexId &tetId,
                                    const int &id,
-                                   SimplexId &edgeId) const
-      = 0;
+                                   SimplexId &edgeId) const = 0;
 
     int getTetrahedronEdges(std::vector<std::vector<SimplexId>> &edges) const;
 
     virtual int getTetrahedronTriangle(const SimplexId &tetId,
                                        const int &id,
-                                       SimplexId &triangleId) const
-      = 0;
+                                       SimplexId &triangleId) const = 0;
 
     int getTetrahedronTriangles(
       std::vector<std::vector<SimplexId>> &triangles) const;
 
     virtual int getTetrahedronNeighbor(const SimplexId &tetId,
                                        const int &localNeighborId,
-                                       SimplexId &neighborId) const
-      = 0;
+                                       SimplexId &neighborId) const = 0;
 
     SimplexId getTetrahedronNeighborNumber(const SimplexId &tetId) const;
 
@@ -137,8 +134,7 @@ namespace ttk {
 
     virtual int getTetrahedronVertex(const SimplexId &tetId,
                                      const int &localVertexId,
-                                     SimplexId &vertexId) const
-      = 0;
+                                     SimplexId &vertexId) const = 0;
 
     SimplexId getTriangleEdgeNumberInternal(
       const SimplexId &ttkNotUsed(triangleId)) const override {
@@ -161,8 +157,7 @@ namespace ttk {
 
     virtual int getTriangleNeighbor(const SimplexId &triangleId,
                                     const int &localNeighborId,
-                                    SimplexId &neighborId) const
-      = 0;
+                                    SimplexId &neighborId) const = 0;
 
     SimplexId getTriangleNeighborNumber(const SimplexId &triangleId) const;
 

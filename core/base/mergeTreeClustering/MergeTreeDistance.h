@@ -930,7 +930,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP4
 #pragma omp task firstprivate(taskQueue, nodeT) UNTIED()         \
   shared(treeTable, forestTable, treeBackTable, forestBackTable, \
-           treeChildDone, treeNodeDone) if(isTree1)
+         treeChildDone, treeNodeDone) if(isTree1)
         {
 #endif
           ftm::FTMTree_MT *treeT = (isTree1) ? tree1 : tree2;
@@ -1084,7 +1084,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP4
 #pragma omp task firstprivate(nodeT) UNTIED()                    \
   shared(treeTable, forestTable, treeBackTable, forestBackTable, \
-           treeChildDone, treeNodeDone)
+         treeChildDone, treeNodeDone)
         {
 #endif
           while((int)nodeT != -1) {

@@ -1067,10 +1067,12 @@ bool ttk::ApproximateTopology::printPolarity(
   std::stringstream mymsg;
   std::vector<std::pair<polarity, polarity>> &vlp
     = vertexLinkPolarity[vertexId];
-  mymsg << "POLARITY PRINT" << "\n";
+  mymsg << "POLARITY PRINT"
+        << "\n";
   mymsg << "vertex " << vertexId << " has "
         << multiresTriangulation_.getVertexNeighborNumber(vertexId)
-        << " neighbors" << "\n";
+        << " neighbors"
+        << "\n";
   mymsg << "\tself  f:" << fakeScalars[vertexId] << " s:" << scalars[vertexId]
         << " o:" << offsets[vertexId] << " m:" << monotonyOffsets[vertexId]
         << "  isnew: " << (int)isNew[vertexId] << "\n";
@@ -1113,12 +1115,13 @@ bool ttk::ApproximateTopology::printPolarity(
     mymsg << " " << i << "th: " << nId << " f:" << fakeScalars[nId]
           << " s:" << scalars[nId] << " o:" << offsets[nId]
           << " m:" << monotonyOffsets[nId] << "  , pol:" << (bool)vlp[i].first
-          << "(" << (bool)vlp[i].second << ")" << " rpol:" << (bool)rpol
-          << "  true pol:" << (bool)isUpper << " init " << init
-          << "  isnew: " << (int)isNew[nId] << "\n";
+          << "(" << (bool)vlp[i].second << ")"
+          << " rpol:" << (bool)rpol << "  true pol:" << (bool)isUpper
+          << " init " << init << "  isnew: " << (int)isNew[nId] << "\n";
     if((rpol == isUpper and !vlp2.empty())
        or (isUpper != vlp[i].first and !vlp[i].second)) {
-      mymsg << "POLARITY ERROR " << "\n";
+      mymsg << "POLARITY ERROR "
+            << "\n";
       error = true;
     }
   }
