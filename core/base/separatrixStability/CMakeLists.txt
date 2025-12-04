@@ -1,4 +1,4 @@
-ttk_add_base_library(SeparatrixStability
+ttk_add_base_library(separatrixStability
   SOURCES
     SeparatrixStability.cpp
   HEADERS
