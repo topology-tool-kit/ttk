@@ -9,6 +9,7 @@ ttk_add_base_library(trajectoryStatistics
 	ftmTreePP
 	topologicalSimplification
 	exTreeM
+	pathCompression
 )
 
 if(TTK_ENABLE_EIGEN)

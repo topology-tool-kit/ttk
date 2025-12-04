@@ -427,10 +427,10 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   for(size_t i = 0; i < allVertexDebris.size(); ++i) {
     const auto &trajSurface = allVertexDebris[i];
   
-    int finalId = -1;
-    if(i < newTraj.size() && newTraj[i].size() > 4 && static_cast<int>(newTraj[i][4]) != -1) {
-      finalId = static_cast<int>(newTraj[i][4]);
-    }
+    int finalId = i;
+//    if(i < newTraj.size() && newTraj[i].size() > 4 && static_cast<int>(newTraj[i][4]) != -1) {
+//      finalId = static_cast<int>(newTraj[i][4]);
+//    }
   
     for(const auto v : trajSurface) {
       if(v < 0 || v >= nPts) continue;
