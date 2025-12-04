@@ -390,7 +390,7 @@ int ttk::SeparatrixStability::buildOccurrenceArrays(
     &matchingArraySeparatrixForEachBlock) {
 
   int n_blocks = adjacencyMatrices.size();
-  int status;
+  int status{};
   for(int i = 0; i < n_blocks; i++) {
     matchingArraySeparatrixForEachBlock[i].resize(n_blocks);
     for(int j = 0; j < n_blocks; j++) {
