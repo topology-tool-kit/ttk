@@ -73,13 +73,12 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
   this->dimensionality_ = triangulation.getCellVertexNumber(0) - 1;
   this->numberOfVertices_ = triangulation.getNumberOfVertices();
 
-  bool newParameters = (this->newBackend()) || (this->newSeed());
-  bool fetchCache = !bypassCache || newParameters;
-  this->gradient_ = fetchCache ? findGradient() : &this->localGradient_;
-
-  if(this->gradient_ == nullptr || bypassCache || newParameters) {
-
-    if(!bypassCache && this->gradient_ == nullptr) {
+  this->gradient_ = !bypassCache ? findGradient() : &this->localGradient_;
+  this->setReturnSaddleConnectors(bypassCache);
+  if(this->gradient_ == nullptr || bypassCache || this->newParameters()
+     || FirstRun) {
+    FirstRun = false;
+    if(this->gradient_ == nullptr && !bypassCache) {
       // add new cache entry
       cacheHandler.insert(this->inputScalarField_, {});
       this->gradient_ = cacheHandler.get(this->inputScalarField_);
@@ -96,7 +95,7 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
     } else if(this->BackEnd == BACKEND::STOCHASTIC_BACKEND) {
       this->processLowerStarsStochastic<dataType, triangulationType>(
         this->inputOffsets_, triangulation);
-      this->printMsg("Built discrete gradient (Stochastic elgorithm)", 1.0,
+      this->printMsg("Built discrete gradient (Stochastic algorithm)", 1.0,
                      tm.getElapsedTime(), this->threadNumber_);
 
     } else if(this->BackEnd == BACKEND::CLASSIC_BACKEND) {

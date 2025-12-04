@@ -306,12 +306,15 @@ triangulation.
         Seed = newSeed;
       }
 
-      inline bool newSeed() {
-        return OldSeed != Seed;
+      inline void
+        setReturnSaddleConnectors(const bool &returnSaddleConnectors) {
+        OldReturnSaddleConnectors = ReturnSaddleConnectors;
+        ReturnSaddleConnectors = returnSaddleConnectors;
       }
 
-      inline bool newBackend() {
-        return OldBackEnd != BackEnd;
+      inline bool newParameters() {
+        return OldSeed != Seed || OldBackEnd != BackEnd
+               || OldReturnSaddleConnectors != ReturnSaddleConnectors;
       }
 
       inline void setSaddleConnectorsPersistenceThreshold(double threshold) {
@@ -319,7 +322,8 @@ triangulation.
       }
 
       /**
-       * Preprocess all the required connectivity requests on the triangulation.
+       * Preprocess all the required connectivity requests on the
+       * triangulation.
        */
       inline void preconditionTriangulation(AbstractTriangulation *const data) {
         if(data != nullptr) {
@@ -407,8 +411,8 @@ discrete gradient, false otherwise.
       bool isCellCritical(const Cell &cell) const;
 
       /**
-       * Return the identifier of the cell paired to the cell given by the user
-in the gradient.
+       * Return the identifier of the cell paired to the cell given by the
+user in the gradient.
        */
       template <typename triangulationType>
       SimplexId getPairedCell(const Cell &cell,
@@ -461,8 +465,8 @@ in the gradient.
                                        bool *const cycleFound = nullptr) const;
 
       /**
-       * Detect the presence of a cycle on a edge-triangle path starting from an
-       * edge.
+       * Detect the presence of a cycle on a edge-triangle path starting from
+       * an edge.
        */
       template <typename triangulationType>
       bool detectGradientCycle(const Cell &cell,
@@ -686,8 +690,8 @@ in the gradient.
                         std::vector<float> &stencilLength);
 
       /**
-       * @brief Compute the opposite of numerical gradient at point x with given
-       * stencil
+       * @brief Compute the opposite of numerical gradient at point x with
+       * given stencil
        */
       void computeDerivatives(
         const SimplexId &x,
@@ -939,7 +943,9 @@ gradient, false otherwise.
       BACKEND OldBackEnd{BACKEND::CLASSIC_BACKEND};
       unsigned int Seed{};
       unsigned int OldSeed{};
-
+      bool ReturnSaddleConnectors{};
+      bool OldReturnSaddleConnectors{};
+      bool FirstRun{true};
       // spare storage (bypass cache) for gradient internal structure
       AbstractTriangulation::gradientType localGradient_{};
       // cache key (scalar field pointer + timestamp)
