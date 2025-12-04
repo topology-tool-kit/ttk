@@ -280,11 +280,20 @@ int ttkSeparatrixStability::execute(
     std::string sourceSizeString
       = std::to_string(globalSourcePointIdForEachBlock[i].size());
     std::string blockIdString = std::to_string(i);
-    this->printMsg("Number of critical points (min-max) for block "
-                   + blockIdString + " : " + destinationSizeString);
-    if(!MergeEdgesOnSaddles)
-      this->printMsg("Number of critical points (1sad-2sad) for block "
-                     + blockIdString + " : " + sourceSizeString);
+
+    std::string msg1 = "Number of critical points (min-max) for block ";
+    msg1 += blockIdString;
+    msg1 += " : ";
+    msg1 += destinationSizeString;
+    this->printMsg(msg1);
+
+    if(!MergeEdgesOnSaddles) {
+      std::string msg2 = "Number of critical points (1sad-2sad) for block ";
+      msg2 += blockIdString;
+      msg2 += " : ";
+      msg2 += sourceSizeString;
+      this->printMsg(msg2);
+    }
   }
 
   status = this->buildOccurrenceArrays(
