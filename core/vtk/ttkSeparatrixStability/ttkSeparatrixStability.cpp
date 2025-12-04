@@ -57,9 +57,6 @@ bool ttkSeparatrixStability::updateVisitedVertices(
   if(localId == -1) {
     localId = localToGlobal.size();
     localToGlobal.push_back(globalId);
-    std::array<double, 3> newCoords;
-    points->GetPoint(pointId, sourceCoords.data());
-    coords.push_back(newCoords);
   }
   return false;
 }

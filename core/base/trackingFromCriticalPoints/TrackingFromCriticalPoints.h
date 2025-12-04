@@ -22,17 +22,15 @@ namespace ttk {
   class TrackingFromCriticalPoints : virtual public Debug {
 
   private:
-    double epsilonConstant{10e-1};
-    double epsilonAdapt{0.5};
-    double meshDiameter{1};
-    double tolerance{10e-3};
-    int assignmentMethod{0};
-    int dimension{2};
-    double xWeight{1};
-    double yWeight{1};
-    double zWeight{1};
-    double fWeight{1};
-    bool adaptiveDeathBirthCost{false};
+    double relativeEpsilon_{10e-1};
+    double meshDiameter_{1};
+    double tolerance_{10e-3};
+    int assignmentMethod_{0};
+    double assignmentPrecision{0.01};
+    double xWeight_{1};
+    double yWeight_{1};
+    double zWeight_{1};
+    double fWeight_{0};
 
   public:
     TrackingFromCriticalPoints() {
@@ -44,11 +42,7 @@ namespace ttk {
     }
 
     void setEpsilon(double e) {
-      epsilonConstant = e;
-    }
-
-    void setEpsilonAdapt(double e) {
-      epsilonAdapt = e;
+      relativeEpsilon_ = e;
     }
 
     void setTolerance(double t) {
@@ -63,14 +57,6 @@ namespace ttk {
       if(a == 0 || a == 1) {
         assignmentMethod_ = a;
       }
-    }
-
-    void setAdaptDeathBirthCost(bool b) {
-      adaptiveDeathBirthCost = b;
-    }
-
-    void setDimension(int d) {
-      dimension = d;
     }
 
     void setWeights(double PX, double PY, double PZ, double PF) {
@@ -103,34 +89,32 @@ namespace ttk {
                        + fWeight_ * std::pow(maxScalar - minScalar, 2));
     }
 
-    void performMatchings(
-      const std::vector<DiagramType> persistenceDiagrams,
-      std::vector<std::vector<MatchingType>> &maximaMatchings,
-      std::vector<std::vector<MatchingType>> &sad_1_Matchings,
-      std::vector<std::vector<MatchingType>> &sad_2_Matchings,
-      std::vector<std::vector<MatchingType>> &minimaMatchings,
-      std::vector<std::vector<MatchingType>> &maxMatchingsPersistence,
-      std::vector<std::vector<MatchingType>> &sad_1_MatchingsPersistence,
-      std::vector<std::vector<MatchingType>> &sad_2_MatchingsPersistence,
-      std::vector<std::vector<MatchingType>> &minMatchingsPersistence,
-      int fieldNumber);
-
+    void
+      performMatchings(const std::vector<DiagramType> &persistenceDiagrams,
+                       std::vector<std::vector<MatchingType>> &maximaMatchings,
+                       std::vector<std::vector<MatchingType>> &sad_1_Matchings,
+                       std::vector<std::vector<MatchingType>> &sad_2_Matchings,
+                       std::vector<std::vector<MatchingType>> &minimaMatchings,
+                       std::vector<std::vector<SimplexId>> &maxMap,
+                       std::vector<std::vector<SimplexId>> &sad_1Map,
+                       std::vector<std::vector<SimplexId>> &sad_2Map,
+                       std::vector<std::vector<SimplexId>> &minMap);
     void performTrackings(
-      int fieldNumber,
-      std::vector<std::vector<MatchingType>> &maximaMatchings,
-      std::vector<std::vector<MatchingType>> &sad_1_Matchings,
-      std::vector<std::vector<MatchingType>> &sad_2_Matchings,
-      std::vector<std::vector<MatchingType>> &minimaMatchings,
-      std::vector<std::vector<MatchingType>> &maxMatchingsPersistence,
-      std::vector<std::vector<MatchingType>> &sad_1_MatchingsPersistence,
-      std::vector<std::vector<MatchingType>> &sad_2_MatchingsPersistence,
-      std::vector<std::vector<MatchingType>> &minMatchingsPersistence,
+      const std::vector<DiagramType> &persistenceDiagrams,
+      const std::vector<std::vector<MatchingType>> &maximaMatchings,
+      const std::vector<std::vector<MatchingType>> &sad_1_Matchings,
+      const std::vector<std::vector<MatchingType>> &sad_2_Matchings,
+      const std::vector<std::vector<MatchingType>> &minimaMatchings,
+      const std::vector<std::vector<SimplexId>> &maxMap,
+      const std::vector<std::vector<SimplexId>> &sad_1Map,
+      const std::vector<std::vector<SimplexId>> &sad_2Map,
+      const std::vector<std::vector<SimplexId>> &minMap,
       std::vector<trackingTuple> &allTrackings,
-      std::vector<std::vector<double>> &allTrackingCost,
-      std::vector<double> &allTrackingsMeanPersistences,
-      unsigned int (&sizes)[]);
+      std::vector<std::vector<double>> &allTrackingsCost,
+      std::vector<std::vector<double>> &allTrackingsInstantPersistences,
+      unsigned int (&typesArrayLimits)[3]);
 
-  protected:
+  private:
     double computeRelevantPersistence(const DiagramType &d1,
                                       const DiagramType &d2) {
       const auto sp = this->tolerance_;

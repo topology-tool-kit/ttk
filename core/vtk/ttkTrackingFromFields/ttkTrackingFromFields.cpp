@@ -2,7 +2,6 @@
 #include <vtkInformation.h>
 #include <vtkPointData.h>
 
-#include <Timer.h>
 #include <ttkMacros.h>
 #include <ttkTrackingFromFields.h>
 #include <ttkTrackingFromPersistenceDiagrams.h>
@@ -100,11 +99,6 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
 
   output->ShallowCopy(persistenceDiagram);
 
-  double Mesh_RT = timer.getElapsedTime() - clock;
-  std::cout << std::fixed << "DiagramComputationRT = " << Diagram_RT
-            << ", PerformMatchingRT = " << Matching_RT
-            << ", PerformTrackingRT = " << Tracking_RT
-            << ", BuildMeshRT = " << Mesh_RT << std::endl;
   return 1;
 }
 
@@ -114,11 +108,10 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   unsigned long fieldNumber,
   const triangulationType *triangulation) {
 
-  ttk::Timer timer;
-  double clock = timer.getElapsedTime();
-  ttk::CriticalPointTracking tracker;
-  float x, y, z;
-  float maxX, minX, maxY, minY, maxZ, minZ;
+  ttk::Timer t{};
+
+  float x = 0, y = 0, z = 0;
+  float maxX = 0, minX = 0, maxY = 0, minY = 0, maxZ = 0, minZ = 0;
   triangulation->getVertexPoint(0, minX, minY, minZ);
   triangulation->getVertexPoint(0, maxX, maxY, maxZ);
 
@@ -132,58 +125,58 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
     minZ = std::min(z, minZ);
   }
 
-  double const costDeathBirth = CostDeathBirth;
+  double const relativeDestructionCost = RelativeDestructionCost;
   double const tolerance = (double)Tolerance;
   float meshDiameter
     = std::sqrt(std::pow(maxX - minX, 2) + std::pow(maxY - minY, 2)
                 + std::pow(maxZ - minZ, 2));
   int assignmentMethod = AssignmentMethod;
-  bool adaptDeathBirthCost = AdaptDeathBirthCost;
-  double epsilonAdapt = EpsilonAdapt;
 
-  tracker.setMeshDiamater(meshDiameter);
+  ttk::TrackingFromCriticalPoints tracker;
+  tracker.setMeshDiameter(meshDiameter);
   tracker.setTolerance(tolerance);
-  tracker.setEpsilon(costDeathBirth);
-  tracker.setAdaptDeathBirthCost(adaptDeathBirthCost);
+  tracker.setEpsilon(relativeDestructionCost);
   tracker.setAssignmentMethod(assignmentMethod);
-  tracker.setDimension(triangulation->getDimensionality());
-  tracker.setEpsilonAdapt(epsilonAdapt);
   tracker.setWeights(PX, PY, PZ, PF);
+  tracker.setAssignmentPrecision(AssignmentPrecision);
 
   tracker.setThreadNumber(this->threadNumber_);
+  tracker.setDebugLevel(this->debugLevel_);
 
   std::vector<ttk::DiagramType> persistenceDiagrams(fieldNumber);
   this->performDiagramComputation<dataType, triangulationType>(
     (int)fieldNumber, persistenceDiagrams, triangulation);
 
-  double Diagram_RT = timer.getElapsedTime() - clock;
-  clock = timer.getElapsedTime();
+  this->printMsg("Diagram computed", 1, t.getElapsedTime(), threadNumber_);
+  double previousStepTime = t.getElapsedTime();
+
   std::vector<std::vector<ttk::MatchingType>> maximaMatchings(fieldNumber - 1);
   std::vector<std::vector<ttk::MatchingType>> sad_1_Matchings(fieldNumber - 1);
   std::vector<std::vector<ttk::MatchingType>> sad_2_Matchings(fieldNumber - 1);
   std::vector<std::vector<ttk::MatchingType>> minimaMatchings(fieldNumber - 1);
 
-  std::vector<std::vector<ttk::MatchingType>> maxMatchingsPersistence(
-    fieldNumber - 1);
-  std::vector<std::vector<ttk::MatchingType>> sad_1_MatchingsPersistence(
-    fieldNumber - 1);
-  std::vector<std::vector<ttk::MatchingType>> sad_2_MatchingsPersistence(
-    fieldNumber - 1);
-  std::vector<std::vector<ttk::MatchingType>> minMatchingsPersistence(
-    fieldNumber - 1);
+  std::vector<std::vector<ttk::SimplexId>> maxMap(fieldNumber);
+  std::vector<std::vector<ttk::SimplexId>> sad_1Map(fieldNumber);
+  std::vector<std::vector<ttk::SimplexId>> sad_2Map(fieldNumber);
+  std::vector<std::vector<ttk::SimplexId>> minMap(fieldNumber);
 
-  tracker.performMatchings(
-    persistenceDiagrams, maximaMatchings, sad_1_Matchings, sad_2_Matchings,
-    minimaMatchings, maxMatchingsPersistence, sad_1_MatchingsPersistence,
-    sad_2_MatchingsPersistence, minMatchingsPersistence, fieldNumber);
+  tracker.performMatchings(persistenceDiagrams, maximaMatchings,
+                           sad_1_Matchings, sad_2_Matchings, minimaMatchings,
+                           maxMap, sad_1Map, sad_2Map, minMap);
 
-  double Matching_RT = timer.getElapsedTime() - clock;
-  clock = timer.getElapsedTime();
+  this->printMsg("Matchings computed", 1, t.getElapsedTime() - previousStepTime,
+                 threadNumber_);
+  previousStepTime = t.getElapsedTime();
+
   vtkNew<vtkPoints> const points{};
-  vtkNew<vtkUnstructuredGrid> const criticalPointTracking{};
+  vtkNew<vtkUnstructuredGrid> const outputMesh{};
 
   vtkNew<vtkDoubleArray> costs{};
   vtkNew<vtkDoubleArray> averagePersistences{};
+  vtkNew<vtkDoubleArray> integratedPersistences{};
+  vtkNew<vtkDoubleArray> maximalPersistences{};
+  vtkNew<vtkDoubleArray> minimalPersistences{};
+  vtkNew<vtkDoubleArray> instantPersistences{};
   vtkNew<vtkDoubleArray> valueScalars{};
   vtkNew<vtkIntArray> globalVertexIds{};
   vtkNew<vtkIntArray> lengthScalars{};
@@ -193,6 +186,10 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
 
   costs->SetName("Costs");
   averagePersistences->SetName("AveragePersistence");
+  integratedPersistences->SetName("IntegratedPersistence");
+  maximalPersistences->SetName("MaximalPersistence");
+  minimalPersistences->SetName("MinimalPersistence");
+  instantPersistences->SetName("InstantPersistence");
   valueScalars->SetName("Scalar");
   globalVertexIds->SetName("VertexGlobalId");
   lengthScalars->SetName("ComponentLength");
@@ -201,45 +198,43 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   pointsCriticalType->SetName("CriticalType");
 
   std::vector<ttk::trackingTuple> allTrackings;
-  std::vector<double> allTrackingsMeanPersistence;
   std::vector<std::vector<double>> allTrackingsCosts;
+  std::vector<std::vector<double>> allTrackingsInstantPersistence;
 
   unsigned int typesArrayLimits[3] = {};
+
   tracker.performTrackings(
-    fieldNumber, maximaMatchings, sad_1_Matchings, sad_2_Matchings,
-    minimaMatchings, maxMatchingsPersistence, sad_1_MatchingsPersistence,
-    sad_2_MatchingsPersistence, minMatchingsPersistence, allTrackings,
-    allTrackingsCosts, allTrackingsMeanPersistence, typesArrayLimits);
+    persistenceDiagrams, maximaMatchings, sad_1_Matchings, sad_2_Matchings,
+    minimaMatchings, maxMap, sad_1Map, sad_2Map, minMap, allTrackings,
+    allTrackingsCosts, allTrackingsInstantPersistence, typesArrayLimits);
 
-  std::cout << "balise 1" << std::endl;
-
-  double Tracking_RT = timer.getElapsedTime() - clock;
-  clock = timer.getElapsedTime();
+  this->printMsg("Trackings computed", 1, t.getElapsedTime() - previousStepTime,
+                 threadNumber_);
+  previousStepTime = t.getElapsedTime();
 
   double const spacing = Spacing;
   bool const useGeometricSpacing = UseGeometricSpacing;
 
-  ttkTrackingFromPersistenceDiagrams::buildMesh(
-    triangulation, allTrackings, allTrackingsCosts, allTrackingsMeanPersistence,
-    useGeometricSpacing, spacing, points, criticalPointTracking,
-    pointsCriticalType, timeScalars, lengthScalars, globalVertexIds,
-    connectedComponentIds, costs, averagePersistences, typesArrayLimits);
+  ttkTrackingFromPersistenceDiagrams::buildMeshAlt(
+    triangulation, allTrackings, allTrackingsCosts,
+    allTrackingsInstantPersistence, useGeometricSpacing, spacing, points,
+    outputMesh, pointsCriticalType, timeScalars, lengthScalars, globalVertexIds,
+    connectedComponentIds, costs, averagePersistences, integratedPersistences,
+    maximalPersistences, minimalPersistences, instantPersistences,
+    typesArrayLimits);
 
-  output->ShallowCopy(criticalPointTracking);
+  this->printMsg(
+    "Mesh built", 1, t.getElapsedTime() - previousStepTime, threadNumber_);
+  this->printMsg("Total run time ", 1, t.getElapsedTime(), this->threadNumber_);
 
-  double Mesh_RT = timer.getElapsedTime() - clock;
-  std::cout << std::fixed << "DiagramComputationRT = " << Diagram_RT
-            << ", PerformMatchingRT = " << Matching_RT
-            << ", PerformTrackingRT = " << Tracking_RT
-            << ", BuildMeshRT = " << Mesh_RT << std::endl;
+  output->ShallowCopy(outputMesh);
+
   return 1;
 }
 
 int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
-
-  ttk::Timer timer;
 
   auto input = vtkDataSet::GetData(inputVector[0]);
   auto output = vtkUnstructuredGrid::GetData(outputVector);
@@ -306,7 +301,7 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
   std::string const algorithm = DistanceAlgorithm;
   int const pvalg = PVAlgorithm;
   bool useTTKMethod = false;
-  bool criticalPointTracking = (pvalg == 2);
+  bool trackWithCriticalPoints = (pvalg == 2);
 
   if(pvalg >= 0) {
     switch(pvalg) {
@@ -363,8 +358,6 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
   }
   this->setInputOffsets(inputOrders);
 
-  double clock = timer.getElapsedTime();
-
   int status = 0;
   this->printMsg("Tracking trajectories over " + std::to_string(fieldNumber)
                  + " timesteps");
@@ -373,7 +366,7 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
       inputScalarFields[0]->GetDataType(), triangulation->getType(),
       (status = this->trackWithPersistenceMatching<VTK_TT, TTK_TT>(
          output, fieldNumber, (TTK_TT *)triangulation->getData())));
-  } else if(useTTKMethod && criticalPointTracking) {
+  } else if(useTTKMethod && trackWithCriticalPoints) {
     ttkVtkTemplateMacro(
       inputScalarFields[0]->GetDataType(), triangulation->getType(),
       (status = this->trackWithCriticalPointMatching<VTK_TT, TTK_TT>(
@@ -382,7 +375,5 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
     this->printMsg("The specified matching method is not supported.");
   }
 
-  double total_rt = timer.getElapsedTime() - clock;
-  std::cout << "TrackingMethodTime = " << total_rt << std::endl;
   return status;
 }
