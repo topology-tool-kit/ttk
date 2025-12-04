@@ -65,7 +65,7 @@ namespace ttk {
 
   // default name for SeparatrixStability
 
-  const char SeparatrixStabilityOccurenceCount[] = "Occurence";
+  const char SeparatrixStabilityOccurrenceCount[] = "Occurrence";
   const char SeparatrixStabilityIsomorphismClassId[] = "IsomorphismClassId";
   const char SeparatrixStabilityMatchingIdName[] = "MatchingIdInBlock";
   const char SeparatrixStabilityMatchingIdSeparatrixName[] = "SeparatrixMatchingIdInBlock";

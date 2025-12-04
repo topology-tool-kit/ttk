@@ -27,9 +27,6 @@ class TTKSEPARATRIXSTABILITY_EXPORT ttkSeparatrixStability
     protected ttk::SeparatrixStability {
 
 private:
-  bool ComputeOccurenceType0{true};
-  bool ComputeOccurenceType1{false};
-  bool ComputeOccurenceType2{true};
   double PX{1};
   double PY{1};
   double PZ{1};
@@ -38,8 +35,6 @@ private:
   double CostDeathBirth{};
 
 public:
-
-
   vtkSetMacro(PX, double);
   vtkGetMacro(PX, double);
 
@@ -51,19 +46,17 @@ public:
 
   vtkSetMacro(PF, double);
   vtkGetMacro(PF, double);
-  
+
   vtkSetMacro(MergeEdgesOnSaddles, bool);
   vtkGetMacro(MergeEdgesOnSaddles, bool);
 
   vtkSetMacro(CostDeathBirth, double);
   vtkGetMacro(CostDeathBirth, double);
 
-
   static ttkSeparatrixStability *New();
   vtkTypeMacro(ttkSeparatrixStability, ttkAlgorithm);
 
 protected:
-
   ttkSeparatrixStability();
   ~ttkSeparatrixStability() override = default;
 
@@ -99,7 +92,6 @@ protected:
                    const double &scalar,
                    std::vector<std::array<double, 3>> &coords,
                    std::vector<double> &scalars);
-
 
   int prepareData(vtkDataSet *block,
                   std::vector<int> &localToGlobal,
