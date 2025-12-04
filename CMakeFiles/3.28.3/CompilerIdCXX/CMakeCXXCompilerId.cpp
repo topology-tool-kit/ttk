@@ -872,15 +872,15 @@ const char *info_language_standard_default = "INFO"
 #if CXX_STD > 202002L
                                              "23"
 #elif CXX_STD > 201703L
-                                              "20"
+                                             "20"
 #elif CXX_STD >= 201703L
-                                              "17"
+                                             "17"
 #elif CXX_STD >= 201402L
-                                              "14"
+                                             "14"
 #elif CXX_STD >= 201103L
-                                              "11"
+                                             "11"
 #else
-                                              "98"
+                                             "98"
 #endif
                                              "]";
 
@@ -892,7 +892,7 @@ const char *info_language_extensions_default = "INFO"
   && !defined(__STRICT_ANSI__)
                                                "ON"
 #else
-                                                "OFF"
+                                               "OFF"
 #endif
                                                "]";
 
