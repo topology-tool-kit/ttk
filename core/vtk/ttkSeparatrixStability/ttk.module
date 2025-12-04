@@ -5,5 +5,5 @@ SOURCES
 HEADERS
   ttkSeparatrixStability.h
 DEPENDS
-  SeparatrixStability
+  separatrixStability
   ttkAlgorithm
