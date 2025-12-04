@@ -1941,23 +1941,9 @@ int ttk::MorseSmaleComplex::returnSaddleConnectorsStochastic(
   Timer t;
 
   const bool allowBoundary = true;
-  // const bool returnSaddleConnectors = false;
-  // bool allowBruteForce = false;
 
   std::vector<char> isPL;
   this->discreteGradient_.getCriticalPointMap(criticalPoints, isPL);
-
-  // dmt1Saddle2PL_.resize(triangulation.getNumberOfEdges());
-  // std::fill(dmt1Saddle2PL_.begin(), dmt1Saddle2PL_.end(), -1);
-
-  // if(dimensionality_ == 3) {
-  //   this->discreteGradient_.simplifySaddleSaddleConnections1<dataType>(
-  //     criticalPoints, isPL, IterationThreshold, allowBoundary,
-  //     allowBruteForce, returnSaddleConnectors, triangulation);
-  //   this->discreteGradient_.simplifySaddleSaddleConnections2<dataType>(
-  //     criticalPoints, isPL, IterationThreshold, allowBoundary,
-  //     allowBruteForce, returnSaddleConnectors, triangulation);
-  // }
 
   if(triangulation.getDimensionality() == 3) {
     this->discreteGradient_.filterSaddleConnectors<dataType>(

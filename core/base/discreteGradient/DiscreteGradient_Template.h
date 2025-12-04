@@ -2671,8 +2671,6 @@ int DiscreteGradient::getRemovableSaddles1(
   isRemovableSaddle.resize(numberOfEdges);
 
   std::vector<int> dmt1Saddle2PL_(numberOfEdges, -1);
-  // dmt1Saddle2PL_.resize(numberOfEdges);
-  // std::fill(dmt1Saddle2PL_.begin(), dmt1Saddle2PL_.end(), -1);
 
   // by default : 1-saddle is removable
 #ifdef TTK_ENABLE_OPENMP
@@ -2735,8 +2733,6 @@ int DiscreteGradient::getRemovableSaddles2(
   isRemovableSaddle.resize(numberOfTriangles);
 
   std::vector<int> dmt2Saddle2PL_(numberOfTriangles, -1);
-  // dmt2Saddle2PL_.resize(numberOfTriangles);
-  // std::fill(dmt2Saddle2PL_.begin(), dmt2Saddle2PL_.end(), -1);
 
   // by default : 2-saddle is removable
 #ifdef TTK_ENABLE_OPENMP
@@ -3301,12 +3297,6 @@ int DiscreteGradient::processSaddleSaddleConnections1(
     }
 
     if(vpath.isValid_) {
-      // add persistence pair to collection if necessary
-      // if(CollectPersistencePairs and outputPersistencePairs_) {
-      //  const Cell &minSaddle1 = criticalPoints[vpath.source_].cell_;
-      //  const Cell &minSaddle2 = criticalPoints[vpath.destination_].cell_;
-      //  outputPersistencePairs_->push_back({minSaddle1, minSaddle2});
-      //}
 
       const SimplexId sourceId = vpath.source_;
       const SimplexId destinationId = vpath.destination_;
