@@ -245,8 +245,10 @@ void ttk::TopologicalDimensionReduction::printLoss(int epoch,
                                                    double loss) const {
   if(epoch % std::max(1, Epochs / 10) == 0)
     printMsg(
-      "Loss at epoch " + std::to_string(epoch) + " : " + std::to_string(loss),
+      "Loss at epoch " + std::to_string(epoch) + ": " + std::to_string(loss),
       double(epoch) / Epochs, -1, -1, debug::LineMode::REPLACE);
+  else if(epoch == Epochs - 1)
+    printMsg("Final loss value: " + std::to_string(loss), 1.);
 }
 
 #endif
