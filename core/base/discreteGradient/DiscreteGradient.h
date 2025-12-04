@@ -945,7 +945,6 @@ gradient, false otherwise.
       unsigned int OldSeed{};
       bool ReturnSaddleConnectors{};
       bool OldReturnSaddleConnectors{};
-      bool FirstRun{true};
       // spare storage (bypass cache) for gradient internal structure
       AbstractTriangulation::gradientType localGradient_{};
       // cache key (scalar field pointer + timestamp)

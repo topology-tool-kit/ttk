@@ -75,9 +75,7 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
 
   this->gradient_ = !bypassCache ? findGradient() : &this->localGradient_;
   this->setReturnSaddleConnectors(bypassCache);
-  if(this->gradient_ == nullptr || bypassCache || this->newParameters()
-     || FirstRun) {
-    FirstRun = false;
+  if(this->gradient_ == nullptr || bypassCache || this->newParameters()) {
     if(this->gradient_ == nullptr && !bypassCache) {
       // add new cache entry
       cacheHandler.insert(this->inputScalarField_, {});
