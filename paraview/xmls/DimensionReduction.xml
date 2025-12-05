@@ -1023,6 +1023,93 @@
         </Documentation>
       </IntVectorProperty>
 
+      <IntVectorProperty name="ae_PreOptimizeEpochs"
+        label="Number of epochs"
+        command="Setae_PreOptimizeEpochs"
+        number_of_elements="1"
+        default_values="1000"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="1" max="1000"/>
+        <Documentation>
+        </Documentation>
+        <Hints>
+         <PropertyWidgetDecorator type="GenericDecorator"
+                                  mode="visibility"
+                                  property="ae_PreOptimize"
+                                  value="1" />
+        </Hints>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="SelectInitializationFieldsWithRegexp"
+        label="Select Initialization with a Regexp"
+        command="SetSelectInitializationFieldsWithRegexp"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Select input scalar fields matching a regular expression.
+        </Documentation>
+        <Hints>
+         <PropertyWidgetDecorator type="GenericDecorator"
+                                  mode="visibility"
+                                  property="ae_PreOptimize"
+                                  value="1" />
+        </Hints>
+      </IntVectorProperty>
+
+      <StringVectorProperty command="SetInitializationFields"
+        clean_command="ClearInitializationFields"
+        label="Initialization Columns"
+        name="InitializationFields"
+        number_of_elements="0"
+        default_values="1"
+        number_of_elements_per_command="1"
+        repeat_command="1">
+        <ArrayListDomain name="array_list"
+          default_values="1">
+          <RequiredProperties>
+            <Property name="Input"
+              function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <NoDefault />
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="SelectInitializationFieldsWithRegexp"
+                                       value="0" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="ae_PreOptimize"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Select the initialization fields.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+              name="InitializationRegexp"
+              command="SetInitializationRegexpString"
+              number_of_elements="1"
+              default_values=".*" >
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectInitializationFieldsWithRegexp"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          This regexp will be used to filter the chosen fields for initialization. Only
+          matching ones will be selected.
+        </Documentation>
+      </StringVectorProperty>
+
       <IntVectorProperty name="ae_PreOptimizeMethod"
         label="PreMethod"
         command="Setae_PreOptimizeMethod"
@@ -1251,9 +1338,22 @@
         <Property name="ae_BatchNormalization" />
         <Property name="ae_Deterministic" />
         <Property name="ae_Seed" />
-        <Property name="ae_PreOptimize" />
-        <Property name="ae_PreOptimizeMethod" />
         <Property name="ae_CUDA" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Method"
+            value="7" />
+        </Hints>
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Initialization">
+        <Property name="ae_PreOptimize" />
+        <Property name="ae_PreOptimizeEpochs" />
+        <Property name="SelectInitializationFieldsWithRegexp" />
+        <Property name="InitializationFields" />
+        <Property name="InitializationRegexp" />
+        <Property name="ae_PreOptimizeMethod" />
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
             mode="visibility"

@@ -111,6 +111,22 @@ public:
   vtkSetMacro(RegexpString, const std::string &);
   vtkGetMacro(RegexpString, std::string);
 
+  void SetInitializationFields(const std::string &s) {
+    InitializationFields.push_back(s);
+    Modified();
+  }
+
+  void ClearInitializationFields() {
+    InitializationFields.clear();
+    Modified();
+  }
+
+  vtkSetMacro(SelectInitializationFieldsWithRegexp, bool);
+  vtkGetMacro(SelectInitializationFieldsWithRegexp, bool);
+
+  vtkSetMacro(InitializationRegexpString, const std::string &);
+  vtkGetMacro(InitializationRegexpString, std::string);
+
   vtkSetMacro(NumberOfComponents, int);
   vtkGetMacro(NumberOfComponents, int);
 
@@ -310,6 +326,9 @@ public:
   vtkSetMacro(ae_PreOptimize, bool);
   vtkGetMacro(ae_PreOptimize, bool);
 
+  vtkSetMacro(ae_PreOptimizeEpochs, int);
+  vtkGetMacro(ae_PreOptimizeEpochs, int);
+
   ttkSetEnumMacro(ae_PreOptimizeMethod, METHOD);
   vtkGetEnumMacro(ae_PreOptimizeMethod, METHOD);
 
@@ -337,6 +356,10 @@ private:
   bool SelectFieldsWithRegexp{false};
   std::string RegexpString{".*"};
   std::vector<std::string> ScalarFields{};
+
+  bool SelectInitializationFieldsWithRegexp{false};
+  std::string InitializationRegexpString{".*"};
+  std::vector<std::string> InitializationFields{};
 
   bool KeepAllDataArrays{true};
 

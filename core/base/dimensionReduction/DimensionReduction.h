@@ -365,6 +365,7 @@ namespace ttk {
     bool ae_BatchNormalization{true};
     double ae_RegCoefficient{1e-2};
     bool ae_PreOptimize{false};
+    int ae_PreOptimizeEpochs{1000};
     METHOD ae_PreOptimizeMethod{METHOD::PCA};
 
     // testing

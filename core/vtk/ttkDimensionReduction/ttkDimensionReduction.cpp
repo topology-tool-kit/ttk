@@ -74,8 +74,35 @@ int ttkDimensionReduction::RequestData(vtkInformation *ttkNotUsed(request),
   arrays.reserve(ScalarFields.size());
   for(const auto &s : ScalarFields)
     arrays.push_back(input->GetColumnByName(s.data()));
+
+  if(Method == METHOD::AE && ae_PreOptimize) {
+    if (SelectInitializationFieldsWithRegexp) {
+      // select all input columns whose name is matching the regexp
+      InitializationFields.clear();
+      const auto n = input->GetNumberOfColumns();
+      for(int i = 0; i < n; ++i) {
+        const auto &name = input->GetColumnName(i);
+        if(std::regex_match(name, std::regex(InitializationRegexpString))) {
+          InitializationFields.emplace_back(name);
+        }
+      }
+    }
+
+    const int numberOfInitializationColumns = InitializationFields.size();
+    if(numberOfInitializationColumns != NumberOfComponents) {
+      this->printErr("The number of initialization columns ("
+                     + std::to_string(numberOfInitializationColumns) + ")");
+      this->printErr("must match the number of components ("
+                     + std::to_string(NumberOfComponents) + ")");
+      return 0;
+    }
+
+    for(const auto &s : InitializationFields)
+      arrays.push_back(input->GetColumnByName(s.data()));
+  }
+
   for(SimplexId i = 0; i < numberOfRows; ++i) {
-    for(auto arr : arrays)
+    for(const auto arr : arrays)
       inputData.push_back(arr->GetVariantValue(i).ToDouble());
   }
 
