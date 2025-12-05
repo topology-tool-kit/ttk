@@ -329,9 +329,6 @@ public:
   vtkSetMacro(ae_PreOptimizeEpochs, int);
   vtkGetMacro(ae_PreOptimizeEpochs, int);
 
-  ttkSetEnumMacro(ae_PreOptimizeMethod, METHOD);
-  vtkGetEnumMacro(ae_PreOptimizeMethod, METHOD);
-
   // testing
   vtkSetMacro(ModulePath, const std::string &);
   vtkGetMacro(ModulePath, std::string);

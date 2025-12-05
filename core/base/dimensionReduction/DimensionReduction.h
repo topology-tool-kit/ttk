@@ -366,7 +366,6 @@ namespace ttk {
     double ae_RegCoefficient{1e-2};
     bool ae_PreOptimize{false};
     int ae_PreOptimizeEpochs{1000};
-    METHOD ae_PreOptimizeMethod{METHOD::PCA};
 
     // testing
     std::string ModulePath{"default"};
