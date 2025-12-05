@@ -526,6 +526,18 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
 
   int ret{};
 
+  /*
+
+  WARNING :
+
+  When this->ReturnSaddleConnectors == false, the discrete gradient is stored in
+  the cache associated with the triangulation. If the user creates another
+  MorseSmaleComplex object and execute the filter with
+  this->ReturnSaddleConnectors==false, the output will be the gradient in the
+  cache which may not be calculated with the same parameters (backend or seed).
+
+  */
+
   ttkVtkTemplateMacro(
     inputScalars->GetDataType(), triangulation->getType(),
     (ret = dispatch<VTK_TT, TTK_TT>(
