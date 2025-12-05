@@ -76,7 +76,7 @@ int ttkDimensionReduction::RequestData(vtkInformation *ttkNotUsed(request),
     arrays.push_back(input->GetColumnByName(s.data()));
 
   if(Method == METHOD::AE && ae_PreOptimize) {
-    if (SelectInitializationFieldsWithRegexp) {
+    if(SelectInitializationFieldsWithRegexp) {
       // select all input columns whose name is matching the regexp
       InitializationFields.clear();
       const auto n = input->GetNumberOfColumns();

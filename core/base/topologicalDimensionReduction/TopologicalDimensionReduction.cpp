@@ -26,7 +26,8 @@ ttk::TopologicalDimensionReduction::TopologicalDimensionReduction(
     LearningRate(learningRate), Optimizer(optimizer), Method(method),
     ModelType(modelType), InputIsImages(inputIsImages),
     Architecture(architecture), Activation(activation), BatchSize(batchSize),
-    BatchNormalization(batchNormalization), RegCoefficient(regCoefficient), PreOptimize(preOptimize), PreOptimizeEpochs(preOptimizeEpochs) {
+    BatchNormalization(batchNormalization), RegCoefficient(regCoefficient),
+    PreOptimize(preOptimize), PreOptimizeEpochs(preOptimizeEpochs) {
   // inherited from Debug: prefix will be printed at the beginning of every msg
   this->setDebugMsgPrefix("TopologicalDimensionReduction");
 
@@ -91,7 +92,8 @@ int ttk::TopologicalDimensionReduction::execute(
 
   const int inputSize = n;
   const int inputRawDimension = inputMatrix.size() / n;
-  const int inputDimension = inputRawDimension - PreOptimize*NumberOfComponents;
+  const int inputDimension
+    = inputRawDimension - PreOptimize * NumberOfComponents;
   if(!InputIsImages)
     this->printMsg("input dimension: " + std::to_string(inputDimension), 0.0,
                    tm.getElapsedTime());
@@ -118,7 +120,8 @@ int ttk::TopologicalDimensionReduction::execute(
                        {inputSize, inputRawDimension}, torch::kFloat64)
         .to(torch::kFloat32)
         .to(device);
-  const torch::Tensor input = rawInput.index({Slice(), Slice(None,inputDimension)});
+  const torch::Tensor input
+    = rawInput.index({Slice(), Slice(None, inputDimension)});
 
   rpd::PointCloud points(inputSize, std::vector<double>(inputDimension));
   for(int i = 0; i < inputSize; ++i) {
