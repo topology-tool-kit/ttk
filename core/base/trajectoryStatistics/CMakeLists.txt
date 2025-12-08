@@ -6,7 +6,6 @@ ttk_add_base_library(trajectoryStatistics
   DEPENDS
     triangulation
 	persistenceDiagram
-	ftmTreePP
 	topologicalSimplification
 	exTreeM
 	pathCompression

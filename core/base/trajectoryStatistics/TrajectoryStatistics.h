@@ -22,19 +22,19 @@
 #include <Triangulation.h>
 #include <PersistenceDiagram.h>
 #include <TopologicalSimplification.h>
-#include <FTMTreePP.h>
+//  #include <FTMTreePP.h>
 #include <ExTreeM.h>
-#include <OrderDisambiguation.h>
+// #include <OrderDisambiguation.h>
 #include <PathCompression.h>
 #ifdef TTK_ENABLE_EIGEN
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <Eigen/Cholesky>
 #include <Eigen/IterativeLinearSolvers>
-#include <vector>
-#include <algorithm>
-#include <cmath>
-#include <limits>
+// #include <vector>
+// #include <algorithm>
+// #include <cmath>
+// #include <limits>
 
 #endif
 
@@ -77,6 +77,8 @@ namespace ttk {
     inline void setMinX(int v){ minX_ = v; }
     inline void setSurfaceMethod(int m){ surfaceMethod_ = m; }
 	inline void setPersisThresh(double m){ persistenceThreshold_ = m; }
+	inline void setMinSeg(std::vector<ttk::SimplexId> &m){ minSeg_ = &m; }
+	inline void setSaddleSeg(std::vector<ttk::SimplexId> &m){ saddleSeg_ = &m; }
 
     struct FuseRecord {
       int i, j;           
@@ -251,6 +253,8 @@ namespace ttk {
     int minX_;
     int surfaceMethod_;
 	double persistenceThreshold_;
+	std::vector<ttk::SimplexId> *minSeg_;
+	std::vector<ttk::SimplexId> *saddleSeg_;
   }; // TrajectoryStatistics class
 
 } // namespace ttk
@@ -1534,6 +1538,8 @@ int ttk::TrajectoryStatistics::computeMergeTree(
   std::vector<std::vector<ttk::SimplexId>> &allVertexDebris
 ) {
 
+
+
   const ttk::SimplexId nPixels = triangulation->getNumberOfVertices();
   const int nFrames = inputData_.size();
   this->printMsg("Entrance");
@@ -1714,6 +1720,7 @@ int ttk::TrajectoryStatistics::computeMergeTree(
     triangulation,                // [in]  triangulation (const triangulationType*)
     treeType                      // [in]  ttk::ftm::TreeType::Join
   );
+
   
   this->printMsg("merge tree: computePairs done");
   
@@ -1737,7 +1744,27 @@ int ttk::TrajectoryStatistics::computeMergeTree(
   	  if (regionType[vId] == 0)
 	  	segmentId[segmentation[vId]].push_back(vId);
   }
-
+  std::vector<ttk::SimplexId> segMinVertex(segmentId.size(), -1);
+  
+  for(size_t s = 0; s < segmentId.size(); ++s) {
+    const auto &verts = segmentId[s];
+    if(verts.empty())
+      continue;
+  
+    ttk::SimplexId bestV   = verts[0];
+    auto           bestOrd = order[bestV];  
+  
+    for(const auto v : verts) {
+      const auto o = order[v];
+      if(o > bestOrd) {
+        bestOrd = o;
+        bestV   = v;
+      }
+    }
+  
+    segMinVertex[s] = bestV;
+  }
+  
   for(size_t trajId = 0; trajId < nTraj; ++trajId) {
     const auto &traj = finalTraj[trajId];
     const double ax = traj[0];
@@ -1759,7 +1786,10 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 	  continue;
 
     if(regionType[vId] == 0) {
-      allVertexDebris[trajId] = segmentId[segmentation[vId]];
+      auto segId = segmentation[vId];
+      allVertexDebris[trajId] = segmentId[segId];
+	  (*saddleSeg_)[trajId] = segMinVertex[segId];
+	  (*minSeg_)[trajId] = segId;
     }
   }
 

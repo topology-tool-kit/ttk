@@ -248,6 +248,10 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   this->setMinX(minX);
   this->setSurfaceMethod(surfaceMethod);
   this->setPersisThresh(persisThresh);
+  std::vector<ttk::SimplexId> minSeg(numTraj);
+  std::vector<ttk::SimplexId> saddleSeg(numTraj);
+  this->setMinSeg(minSeg);
+  this->setSaddleSeg(saddleSeg);
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(inputDataSet);
   if(!triangulation) return 0;
@@ -423,9 +427,24 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   const vtkIdType nPts = inputDataSet->GetNumberOfPoints();
   surfaceFinalId->SetNumberOfTuples(nPts);
   surfaceFinalId->FillComponent(0, -1);
+
+
+  auto criticalSurface = vtkSmartPointer<vtkDoubleArray>::New();
+  criticalSurface->SetName("isCritical");
+  criticalSurface->SetNumberOfTuples(nPts);
+  criticalSurface->FillComponent(0,-1);
   
   for(size_t i = 0; i < allVertexDebris.size(); ++i) {
     const auto &trajSurface = allVertexDebris[i];
+	ttk::SimplexId min =minSeg[i];
+	auto field = static_cast<double *>(inputFields[frameSurface]);
+	double min_value = field[min];
+	ttk::SimplexId saddle = saddleSeg[i];
+	double saddle_value = field[saddle];
+	double percentage = (saddle_value*100)/min_value;
+	criticalSurface->SetValue(saddle, percentage);
+
+
   
     int finalId = i;
 //    if(i < newTraj.size() && newTraj[i].size() > 4 && static_cast<int>(newTraj[i][4]) != -1) {
@@ -445,6 +464,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   outputSurface->GetPointData()->AddArray(surfaceFinalId);
+  outputSurface->GetPointData()->AddArray(criticalSurface);
  
   // --------------------------- LINEAR REG && ADDED --------------------------
   
