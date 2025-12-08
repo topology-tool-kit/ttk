@@ -1526,96 +1526,6 @@ int ttk::TrajectoryStatistics::computeSurfacesPersistence(
   return 0;
 }
 
-/*
-template <class dataType, class triangulationType>
-int ttk::TrajectoryStatistics::computeMergeTree(
-  const ttk::SimplexId frameSurf,
-  ttk::Triangulation *triangulation,
-  const std::vector<std::vector<double>> &finalTraj,
-  std::vector<std::vector<ttk::SimplexId>> &allVertexDebris
-) {
-  
-  const auto &frameData = inputData_[frameSurf];
-
-  const int nFrames = inputData_.size();
-  const int nPixels = triangulation->getNumberOfVertices();
-
-  // Step 1: Compute persistence diagram
-  ttk::PersistenceDiagram persistenceDiagram;
-  persistenceDiagram.preconditionTriangulation(triangulation);
-
-  std::vector<std::array<SimplexId, 2>> diagramEdges;
-  std::vector<std::tuple<dcg::Cell, dcg::Cell, int, dataType>> diagram;
-
-  persistenceDiagram.execute<dataType>(
-    frameData,
-    *triangulation,
-    diagram,
-    diagramEdges
-  );
-
-  // Step 2: Filter by persistence threshold
-  std::vector<SimplexId> criticalPoints;
-  for(const auto &tpl : diagram) {
-    const auto &[c1, c2, dim, pers] = tpl;
-    if(pers >= this->persistenceThreshold_ && dim == 0) {
-      criticalPoints.push_back(c1.id_);
-      criticalPoints.push_back(c2.id_);
-    }
-  }
-
-  // 3. Simplification
-  std::vector<dataType> outScalars(frameData);
-
-  ttk::TopologicalSimplification topologicalSimplification;
-  
-  topologicalSimplification.preconditionTriangulation(triangulation);
-  
-  topologicalSimplification.execute<dataType>(
-    frameData,
-    criticalPoints,
-    *triangulation,
-    outScalars.data()
-  );
-
-
-  const auto nTraj = finalTraj.size();
-  allVertexDebris.resize(nTraj);
-
-  for(size_t trajId = 0; trajId < nTraj; ++trajId) {
-    const auto &traj = finalTraj[trajId];
-	const double ax = traj[0];
-	const double ay = traj[1];
-	const double bx = traj[2];
-	const double by = traj[3];
-	const double startF = traj[4];
-	const double endF = traj[5];
-
-
-    for(SimplexId f = 0; f < nFrames; ++f) {
-      // Point sur la droite à la frame f
-      const double x = ax * f + bx;
-      const double y = ay * f + by;
-
-      const SimplexId xi = std::round(x);
-      const SimplexId yi = std::round(y);
-  
-      // Accès au vertex le plus proche (tu dois avoir cette méthode, sinon à implémenter)
-      const SimplexId id = triangulation->FindPoint(xi, yi, f);
-
-      if(id < 0 || id >= nPixels)
-        continue;
-
-      if(regionType[id] == 0) {
-        allVertexDebris[trajId].push_back(id);
-      }
-    }
-  }
-
-
-  return 0;
-}
-*/
 template <class dataType, class triangulationType>
 int ttk::TrajectoryStatistics::computeMergeTree(
   const ttk::SimplexId frameSurf,
@@ -1686,7 +1596,6 @@ int ttk::TrajectoryStatistics::computeMergeTree(
     if(pers < this->persistenceThreshold_)
       continue;
 
-    // birth & death sont des ttk::dcg::Cell avec un champ id
     criticalPoints.push_back(pair.birth.id);
     criticalPoints.push_back(pair.death.id);
   }
@@ -1699,11 +1608,9 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 
   const dataType *inputScalars = scalars;
 
-  // copie de travail pour la sortie
   std::vector<dataType> outScalars(nPixels);
   std::copy(inputScalars, inputScalars + nPixels, outScalars.begin());
 
-  // offsets d'entrée (on réutilise ceux du PD)
   std::vector<ttk::SimplexId> inputOffsets = pdOffsets;
   std::vector<ttk::SimplexId> offsets      = inputOffsets;
 
@@ -1717,7 +1624,6 @@ int ttk::TrajectoryStatistics::computeMergeTree(
   const ttk::SimplexId constraintNumber
     = static_cast<ttk::SimplexId>(criticalPoints.size());
 
-  // pas de diagramme de contraintes ici : on passe les sommets directement
   const ttk::DiagramType emptyDiagram;
 
   topoSimp.execute<dataType, triangulationType>(
@@ -1736,41 +1642,36 @@ int ttk::TrajectoryStatistics::computeMergeTree(
   this->printMsg("topological simplification"); 
 
   // ---------------------------------------------------------------------------
-  // 4. Merge tree via ExTreeM (même logique que ttkMergeTree BACKEND=EXTREEM)
+  // 4. Merge tree via ExTreeM 
   // ---------------------------------------------------------------------------
   this->printMsg("merge tree: build order & path compression");
   
-  // 4.1. Construire l'order array pour les scalaires simplifiés outScalars
   std::vector<ttk::SimplexId> order(nPixels);
   ttk::preconditionOrderArray<dataType>(
     static_cast<size_t>(nPixels),
-    outScalars.data(),   // champ scalaire après simplification
+    outScalars.data(),  
     order.data(),
     this->threadNumber_);
   
-  // 4.2. Calculer les segmentations ascendante & descendante via PathCompression
   std::vector<ttk::SimplexId> ascendingManifold(nPixels, -1);
   std::vector<ttk::SimplexId> descendingManifold(nPixels, -1);
   
   ttk::PathCompression pathComp;
   pathComp.setThreadNumber(this->threadNumber_);
   pathComp.setDebugLevel(this->debugLevel_);
-  // on veut les deux segmentations (ascendante & descendante), pas les PL
   pathComp.setComputeSegmentation(true, true, false);
   
-  // structure de sortie pour PathCompression
   ttk::PathCompression::OutputSegmentation om{
     ascendingManifold.data(),
     descendingManifold.data(),
-    nullptr // pas de PL segmentation ici
+    nullptr 
   };
   
-  // exécution de PathCompression sur la triangulation et l'ordre
   {
     const int statusPC = pathComp.execute<triangulationType>(
       om,
-      order.data(),                                   // offsets "natifs"
-      *const_cast<triangulationType *>(triangulation) // triangulation&
+      order.data(),                                   
+      *const_cast<triangulationType *>(triangulation) 
     );
     if(statusPC != 0) {
       this->printErr("PathCompression::execute failed");
@@ -1780,7 +1681,6 @@ int ttk::TrajectoryStatistics::computeMergeTree(
   
   this->printMsg("merge tree: path compression done");
   
-  // 4.3. Préparer les buffers pour ExTreeM
   std::vector<ttk::SimplexId> segmentation(nPixels, -1);
   std::vector<char>           regionType(nPixels, 0);
   
@@ -1792,7 +1692,6 @@ int ttk::TrajectoryStatistics::computeMergeTree(
   exTreeM.setThreadNumber(this->threadNumber_);
   exTreeM.setDebugLevel(this->debugLevel_);
   
-  // 4.4. Construire l'ordre spécifique Join Tree (inversion comme dans ttkMergeTree)
   std::vector<ttk::SimplexId> orderJoin(order);
   #ifdef TTK_ENABLE_OPENMP
   #pragma omp parallel for num_threads(this->threadNumber_)
@@ -1801,8 +1700,6 @@ int ttk::TrajectoryStatistics::computeMergeTree(
     orderJoin[i] = nPixels - orderJoin[i] - 1;
   }
   
-  // 4.5. Appel à ExTreeM::computePairs pour un Join Tree
-  // (équivalent de params_.treeType == ttk::ftm::TreeType::Join)
   const auto treeType = ttk::ftm::TreeType::Join;
   
   int statusMT = exTreeM.computePairs<triangulationType>(
@@ -1826,7 +1723,7 @@ int ttk::TrajectoryStatistics::computeMergeTree(
   }
   
   // ---------------------------------------------------------------------------
-  // 5. Association aux trajectoires (inchangé, sauf utilisation de segmentation/regionType)
+  // 5. Association aux trajectoires 
   // ---------------------------------------------------------------------------
 
   const auto nTraj = finalTraj.size();
@@ -1849,6 +1746,7 @@ int ttk::TrajectoryStatistics::computeMergeTree(
     const double by = traj[3];
     const int    startF = static_cast<int>(traj[4]);
     const int    endF   = static_cast<int>(traj[5]);
+	if (frameSurf < startF || frameSurf > endF) continue;
 
     const double x = ax * frameSurf + bx; if (x<0 || x > 384) continue;
     const double y = ay * frameSurf + by; if (y<0 || y > 224) continue;
