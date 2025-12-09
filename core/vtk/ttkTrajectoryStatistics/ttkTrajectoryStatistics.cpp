@@ -359,6 +359,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   auto colSurfMax  = makeDblCol("SurfaceMax",  numMerge);
   auto colSurfMean = makeDblCol("SurfaceMean", numMerge);
   auto colVolMean = makeDblCol("VolumeMean", numMerge);
+  double scale_pixel_to_meter = 1/(spatialScale*1000);
 
   for(int i = 0; i < numMerge; ++i) {
     colStartF->SetValue(i, static_cast<int>(finalTraj[i][4]));
@@ -366,40 +367,14 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     colDur   ->SetValue(i, durations[i]); 
     colVX    ->SetValue(i, VX[i]);
     colVY    ->SetValue(i, VY[i]);
-  }
-  
-  const size_t F = finalTraj.size();
-  std::vector<double> aggMin(F, std::numeric_limits<double>::infinity());
-  std::vector<double> aggMax(F, -std::numeric_limits<double>::infinity());
-  std::vector<double> aggSum(F, 0.0);
-  std::vector<size_t> aggCnt(F, 0);
-  
-  for(size_t ti = 0; ti < newTraj.size(); ++ti) {
-    if(newTraj[ti].size() > 4) {
-      const int fid = static_cast<int>(newTraj[ti][4]);
-      if(fid >= 0 && fid < static_cast<int>(F)) {
-        aggMin[fid] = std::min(aggMin[fid], surfMin[ti]);
-        aggMax[fid] = std::max(aggMax[fid], surfMax[ti]);
-        aggSum[fid] += surfMean[ti];
-        aggCnt[fid] += 1;
-      }
-    }
-  }
-  
-  double sMean = 0.0;
-  for(int i = 0; i < numMerge; ++i) {
-    double mean = (aggCnt[i] > 0 ? (aggSum[i] / static_cast<double>(aggCnt[i])) : 0.0);
-    const double vMin = (aggCnt[i] > 0 ? aggMin[i] : 0.0);
-    const double vMax = (aggCnt[i] > 0 ? aggMax[i] : 0.0);
-    colSurfMin ->SetValue(i, vMin);
-    colSurfMax ->SetValue(i, vMax);
-    colSurfMean->SetValue(i, mean);
-    sMean += mean;
+	colSurfMin -> SetValue(i, surfMin[i]);
+	colSurfMax -> SetValue(i, surfMax[i]);
+	colSurfMean -> SetValue(i, surfMean[i]);
 
 	double vol = 0.0;
-	if (mean > 0.0) {
+	if (surfMean[i] > 0.0 && surfMean[i]<100) {
 		constexpr double pi = 3.14159265358979323846;
-		vol = std::pow(mean, 1.5) / (6.0 * std::sqrt(pi));
+		vol = std::pow(surfMean[i]*std::pow(scale_pixel_to_meter, 2), 1.5) / (6.0 * std::sqrt(pi));
 	}
 	colVolMean->SetValue(i,vol);
   }
