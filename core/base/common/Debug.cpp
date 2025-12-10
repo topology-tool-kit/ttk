@@ -25,7 +25,7 @@ Debug::~Debug() {
   if((lastObject_) && (ttk::goodbyeMsg_)) {
 
     printMsg(
-      "Goodbye :)", debug::Priority::PERFORMANCE, debug::LineMode::NEW, cout);
+      "Goodbye :)", debug::Priority::PERFORMANCE, debug::LineMode::NEW, std::cout);
 
     ttk::goodbyeMsg_ = false;
   }
@@ -147,7 +147,7 @@ int Debug::welcomeMsg(ostream &stream) {
 int Debug::setDebugLevel(const int &debugLevel) {
   debugLevel_ = debugLevel;
 
-  welcomeMsg(cout);
+  welcomeMsg(std::cout);
 
   return 0;
 }

@@ -272,12 +272,12 @@ void FTMTree_MT::closeSuperArc(idSuperArc superArcId, idNode upNodeId) {
 #ifndef TTK_ENABLE_KAMIKAZE
 
   if(superArcId >= getNumberOfSuperArcs()) {
-    cout << "[Merge Tree] closeSuperArc on a inexisting arc !" << endl;
+    std::cout << "[Merge Tree] closeSuperArc on a inexisting arc !" << std::endl;
     return;
   }
 
   if(upNodeId >= getNumberOfNodes()) {
-    cout << "[Merge Tree] closeOpenedArc on a inexisting node !" << endl;
+    std::cout << "[Merge Tree] closeOpenedArc on a inexisting node !" << std::endl;
     return;
   }
 
@@ -295,11 +295,11 @@ void FTMTree_MT::delNode(idNode node) {
 #ifndef TTK_ENABLE_KAMIKAZE
     if(mainNode->getNumberOfDownSuperArcs() != 1) {
       // Root with several children: impossible /\ .
-      cout << endl << "[FTMTree_MT]:delNode won't delete ";
-      cout << mainNode->getVertexId() << " (root) with ";
-      cout << static_cast<unsigned>(mainNode->getNumberOfDownSuperArcs())
+      std::cout << std::endl << "[FTMTree_MT]:delNode won't delete ";
+      std::cout << mainNode->getVertexId() << " (root) with ";
+      std::cout << static_cast<unsigned>(mainNode->getNumberOfDownSuperArcs())
            << " down ";
-      cout << static_cast<unsigned>(mainNode->getNumberOfUpSuperArcs())
+      std::cout << static_cast<unsigned>(mainNode->getNumberOfUpSuperArcs())
            << " up ";
       return;
     }
@@ -339,7 +339,7 @@ void FTMTree_MT::delNode(idNode node) {
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   else
-    cerr << "delete node with multiple childrens " << endl;
+    std::cerr << "delete node with multiple childrens " << std::endl;
 #endif
 }
 
@@ -745,25 +745,25 @@ void FTMTree_MT::printTree2() {
 #pragma omp critical
 #endif
   {
-    cout << "Nodes----------" << endl;
+    std::cout << "Nodes----------" << std::endl;
     for(idNode nid = 0; nid < getNumberOfNodes(); nid++) {
-      cout << printNode(nid) << endl;
+      std::cout << printNode(nid) << std::endl;
     }
 
-    cout << "Arcs-----------" << endl;
+    std::cout << "Arcs-----------" << std::endl;
     for(idSuperArc said = 0; said < getNumberOfSuperArcs(); ++said) {
-      cout << printArc(said) << endl;
+      std::cout << printArc(said) << std::endl;
     }
 
-    cout << "Leaves" << endl;
+    std::cout << "Leaves" << std::endl;
     for(const auto &l : mt_data_.leaves)
-      cout << " " << (*mt_data_.nodes)[l].getVertexId();
-    cout << endl;
+      std::cout << " " << (*mt_data_.nodes)[l].getVertexId();
+    std::cout << std::endl;
 
-    cout << "Roots" << endl;
+    std::cout << "Roots" << std::endl;
     for(const auto &r : *mt_data_.roots)
-      cout << " " << (*mt_data_.nodes)[r].getVertexId();
-    cout << endl;
+      std::cout << " " << (*mt_data_.nodes)[r].getVertexId();
+    std::cout << std::endl;
   }
 }
 

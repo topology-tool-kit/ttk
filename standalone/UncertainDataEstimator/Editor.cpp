@@ -197,7 +197,7 @@ int Editor::init(int &argc, char **argv) {
   if(inputFileName_.empty()) {
     std::stringstream msg;
     msg << "No " << inputFormat_ << " file in directory " << inputDirectory_
-        << endl;
+        << std::endl;
     this->printErr(msg.str());
     return -1;
   } else {
@@ -363,11 +363,11 @@ int Editor::loadData(const std::string &fileName) {
   // // handle debug messages
   // {
   //   stringstream msg;
-  //   msg << "[Editor] Reading input mesh..." << endl;
+  //   msg << "[Editor] Reading input mesh..." << std::endl;
   //   // choose where to display this message (cout, cerr, a file)
   //   // choose the priority of this message (1, nearly always displayed,
   //   // higher values mean lower priorities)
-  //   dMsg(cout, msg.str(), 1);
+  //   dMsg(std::cout, msg.str(), 1);
   // }
   //
   // reader_->Update();
@@ -379,8 +379,8 @@ int Editor::loadData(const std::string &fileName) {
   //     << input_->GetNumberOfPoints()
   //     << " vertices, "
   //     << input_->GetNumberOfCells()
-  //     << " cells)" << endl;
-  //   dMsg(cout, msg.str(), 1);
+  //     << " cells)" << std::endl;
+  //   dMsg(std::cout, msg.str(), 1);
   // }
 }
 
@@ -395,7 +395,7 @@ int Editor::saveData() const {
     }
     fileName << outputPrefix_ << ".vti";
 
-    cout << fileName.str() << endl;
+    std::cout << fileName.str() << std::endl;
 
     imageWriter->SetFileName(fileName.str().c_str());
     imageWriter->SetInputData(outputBounds_);
@@ -420,7 +420,7 @@ int Editor::saveData() const {
     // } else {
     //   stringstream msg;
     //   msg << "[Editor] File format " << inputFormat_ << " not supported" <<
-    //   endl; dMsg(cerr, msg.str(), fatalMsg); return -2;
+    //   std::endl; dMsg(std::cerr, msg.str(), fatalMsg); return -2;
     // }
   }
 

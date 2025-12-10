@@ -1043,8 +1043,8 @@ namespace ttk {
 
       // SimplexId test = 1;
       // if (currentVertex == test)
-      // cout << test << " : " << vect_neighUF.size() << " " <<
-      // vect_interfaceUF.size() << endl; Make output
+      // std::cout << test << " : " << vect_neighUF.size() << " " <<
+      // vect_interfaceUF.size() << std::endl; Make output
       if(!neighSize) {
         // we are on a real extrema we have to create a new UNION FIND and a
         // branch a real extrema can't be a virtual extrema
@@ -1060,7 +1060,7 @@ namespace ttk {
         currentNode = makeNode(currentVertex);
         getNode(currentNode)->setOrigin(currentNode);
         currentArc = openSuperArc(currentNode, overlapB, overlapA);
-        // if(overlap && partition_ == 1) cout << currentVertex << endl;
+        // if(overlap && partition_ == 1) std::cout << currentVertex << std::endl;
         treeData_.leaves.emplace_back(currentNode);
 
         if(params_->debugLevel >= static_cast<int>(debug::Priority::DETAIL)) {
@@ -1092,9 +1092,9 @@ namespace ttk {
           // For the one who will continue, it will be override later
           vertex2Node(neigh->find()->getOrigin())->setTermination(closingNode);
 
-          // cout <<
+          // std::cout <<
           // getNode(getCorrespondingNode(neigh->find()->getOrigin()))->getVertexId()
-          //<< " terminate on " << getNode(closingNode)->getVertexId() << endl;
+          //<< " terminate on " << getNode(closingNode)->getVertexId() << std::endl;
 
           if((isJT && isLower(neigh->find()->getOrigin(), farOrigin))
              || (!isJT && isHigher(neigh->find()->getOrigin(), farOrigin))) {
@@ -1103,9 +1103,9 @@ namespace ttk {
             // current leaf (or is the root) It might be not intuitive but it is
             // more convenient for degenerate cases
             farOrigin = neigh->find()->getOrigin();
-            // cout << "find origin  " << farOrigin << " for " << currentVertex
+            // std::cout << "find origin  " << farOrigin << " for " << currentVertex
             // << " " << isJT
-            //<< endl;
+            //<< std::endl;
           }
         }
 
@@ -1117,9 +1117,9 @@ namespace ttk {
         seed->setOrigin(farOrigin);
         getNode(closingNode)->setOrigin(getCorrespondingNodeId(farOrigin));
 
-        // cout << "  " << getNode(closingNode)->getVertexId() << " have origin
+        // std::cout << "  " << getNode(closingNode)->getVertexId() << " have origin
         // at "
-        //<< getNode(getCorrespondingNode(farOrigin))->getVertexId() << endl;
+        //<< getNode(getCorrespondingNode(farOrigin))->getVertexId() << std::endl;
 
         this->printMsg("Saddle node id: " + std::to_string(currentVertex),
                        debug::Priority::DETAIL);

@@ -64,8 +64,8 @@ int FTMTree_CT::combine() {
   } // else can't clone, not same up and down
 
   if(DEBUG) {
-    cout << "growingNodes : " << growingNodes.size()
-         << " in : " << stepTime.getElapsedTime() << endl;
+    std::cout << "growingNodes : " << growingNodes.size()
+         << " in : " << stepTime.getElapsedTime() << std::endl;
   }
 
   // Warning, have a reserve here, can't make it at the begnining, need build
@@ -75,7 +75,7 @@ int FTMTree_CT::combine() {
   mt_data_.nodes->reserve(jt_.getNumberOfNodes());
 
   if(growingNodes.empty()) {
-    cout << "[FTMTree_CT::combine ] Nothing to combine" << endl;
+    std::cout << "[FTMTree_CT::combine ] Nothing to combine" << std::endl;
   }
 
 #ifdef TTK_ENABLE_FTM_TREE_DUAL_QUEUE_COMBINE
@@ -97,8 +97,8 @@ int FTMTree_CT::combine() {
       if(xt->getNode(currentNodeId)->getNumberOfUpSuperArcs() == 1) {
         growingNodes.emplace(isJT, currentNodeId);
         if(DEBUG) {
-          cout << "repush in growing:" << isJT
-               << "::" << xt->printNode(currentNodeId) << endl;
+          std::cout << "repush in growing:" << isJT
+               << "::" << xt->printNode(currentNodeId) << std::endl;
         }
       }
     }
@@ -123,17 +123,17 @@ int FTMTree_CT::combine() {
 
       if(DEBUG) {
         if(xt == &jt_)
-          cout << endl << "JT ";
+          std::cout << std::endl << "JT ";
         else
-          cout << endl << "ST ";
-        cout << "node : " << currentNode->getVertexId() << endl;
+          std::cout << std::endl << "ST ";
+        std::cout << "node : " << currentNode->getVertexId() << std::endl;
       }
 
       // "choose a non-root leaf that is not a split in ST" so we ignore such
       // nodes
       if(currentNode->getNumberOfUpSuperArcs() == 0) {
         if(DEBUG) {
-          cout << " ignore already processed" << endl;
+          std::cout << " ignore already processed" << std::endl;
         }
         continue;
       }
@@ -143,10 +143,10 @@ int FTMTree_CT::combine() {
 
       if(yt->getNode(correspondingNodeId)->getNumberOfDownSuperArcs() > 1) {
         if(DEBUG) {
-          cout << "put remain:" << isJT << "::" << xt->printNode(currentNodeId)
-               << endl;
-          cout << " which is in yt : " << yt->printNode(correspondingNodeId)
-               << endl;
+          std::cout << "put remain:" << isJT << "::" << xt->printNode(currentNodeId)
+               << std::endl;
+          std::cout << " which is in yt : " << yt->printNode(correspondingNodeId)
+               << std::endl;
         }
 #ifdef TTK_ENABLE_FTM_TREE_DUAL_QUEUE_COMBINE
         remainingNodes.emplace(isJT, currentNodeId);
@@ -180,7 +180,7 @@ int FTMTree_CT::combine() {
       const Node *parentNode = xt->getNode(parentId);
 
       if(DEBUG) {
-        cout << " parent node :" << parentNode->getVertexId() << endl;
+        std::cout << " parent node :" << parentNode->getVertexId() << std::endl;
       }
 
       SimplexId const parVert = parentNode->getVertexId();
@@ -216,7 +216,7 @@ int FTMTree_CT::combine() {
       }
 
       if(DEBUG) {
-        cout << "create arc : " << printArc(createdArc) << endl;
+        std::cout << "create arc : " << printArc(createdArc) << std::endl;
       }
 
       // DEL NODES
@@ -224,8 +224,8 @@ int FTMTree_CT::combine() {
       // DelNode(XT, i)
       {
         if(DEBUG) {
-          cout << " delete xt (" << (xt == &jt_) << ") ";
-          cout << "node :" << xt->printNode(currentNodeId) << endl;
+          std::cout << " delete xt (" << (xt == &jt_) << ") ";
+          std::cout << "node :" << xt->printNode(currentNodeId) << std::endl;
         }
 
         xt->delNode(currentNodeId);
@@ -234,8 +234,8 @@ int FTMTree_CT::combine() {
       // DelNode(YT, i)
       {
         if(DEBUG) {
-          cout << " delete yt (" << isJT << ") node :";
-          cout << yt->printNode(correspondingNodeId) << endl;
+          std::cout << " delete yt (" << isJT << ") node :";
+          std::cout << yt->printNode(correspondingNodeId) << std::endl;
         }
 
         yt->delNode(correspondingNodeId);
@@ -248,7 +248,7 @@ int FTMTree_CT::combine() {
         growingNodes.emplace(isJT, parentId);
 
         if(DEBUG) {
-          cout << "will see : " << parentNode->getVertexId() << endl;
+          std::cout << "will see : " << parentNode->getVertexId() << std::endl;
         }
       }
     }

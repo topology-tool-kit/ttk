@@ -12,6 +12,8 @@
 #include <vtkStringArray.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <iostream>
+
 #ifdef TTK_ENABLE_MPI_TIME
 #include <mpi.h>
 #endif
@@ -285,7 +287,7 @@ void ttkUtils::SetVoidArray(vtkDataArray *array,
     vtkTemplateMacro(
       auto *aosArray = vtkAOSDataArrayTemplate<VTK_TT>::FastDownCast(array);
       if(aosArray) { aosArray->SetVoidArray(data, size, save); } else {
-        std::cerr << "SetVoidArray on incompatible vtkDataArray:" << endl;
+        std::cerr << "SetVoidArray on incompatible vtkDataArray:" << std::endl;
         array->Print(std::cerr);
       });
   }

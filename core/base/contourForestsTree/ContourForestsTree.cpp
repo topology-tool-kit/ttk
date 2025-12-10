@@ -80,7 +80,7 @@ int ContourForestsTree::combine(
   }
 
   if(DEBUG) {
-    cout << "growingNodes : " << growingNodes.size() << endl;
+    std::cout << "growingNodes : " << growingNodes.size() << std::endl;
   }
 
   if(nbAddedleavesST == 1 && nbAddedleavesJT == 1) {
@@ -94,7 +94,7 @@ int ContourForestsTree::combine(
   treeData_.leaves.reserve(jt_.getLeaves().size() + st_.getLeaves().size());
 
   if(growingNodes.empty()) {
-    cout << "[ContourForestsTree::combine ] Nothing to combine" << endl;
+    std::cout << "[ContourForestsTree::combine ] Nothing to combine" << std::endl;
   }
 
   // seed : to keep crossing edges;
@@ -121,10 +121,10 @@ int ContourForestsTree::combine(
 
     if(DEBUG) {
       if(xt == &jt_)
-        cout << "JT ";
+        std::cout << "JT ";
       else
-        cout << "ST ";
-      cout << "node : " << currentNode->getVertexId() << endl;
+        std::cout << "ST ";
+      std::cout << "node : " << currentNode->getVertexId() << std::endl;
     }
 
     correspondingNodeId
@@ -152,15 +152,15 @@ int ContourForestsTree::combine(
 
       // if(currentNode->getNumberOfUpSuperArcs() == 0){
       // if (DEBUG) {
-      // cout << "ignore orphan" << endl;
+      // std::cout << "ignore orphan" << std::endl;
       //}
       // continue;
       //}
 
       if(yt->getNode(correspondingNodeId)->getNumberOfDownSuperArcs() > 1) {
         if(DEBUG) {
-          cout << "re-enqueue and ignore " << yt->printNode(correspondingNodeId)
-               << endl;
+          std::cout << "re-enqueue and ignore " << yt->printNode(correspondingNodeId)
+               << std::endl;
         }
 
         growingNodes.emplace(head.first, head.second);
@@ -168,7 +168,7 @@ int ContourForestsTree::combine(
       }
 
       if(DEBUG) {
-        cout << "  ignore" << endl;
+        std::cout << "  ignore" << std::endl;
       }
 
       continue;
@@ -191,7 +191,7 @@ int ContourForestsTree::combine(
 
     parentNode = xt->getNode(parentId);
 
-    // cout << " parent node :" << parentNode->getVertexId() << endl;
+    // std::cout << " parent node :" << parentNode->getVertexId() << std::endl;
 
     // HERE parent is null ...
     if(isCorrespondingNode(parentNode->getVertexId())) {
@@ -255,16 +255,16 @@ int ContourForestsTree::combine(
       }
 
       if(DEBUG) {
-        cout << " arc added : (segm: " << nbv << ") ";
-        cout << printArc(createdArc) << endl;
+        std::cout << " arc added : (segm: " << nbv << ") ";
+        std::cout << printArc(createdArc) << std::endl;
       }
     }
 
     // DelNode(XT, i)
     {
       if(DEBUG) {
-        cout << " delete xt (" << (xt == &jt_)
-             << ") node :" << xt->getNode(head.second)->getVertexId() << endl;
+        std::cout << " delete xt (" << (xt == &jt_)
+             << ") node :" << xt->getNode(head.second)->getVertexId() << std::endl;
       }
 
       xt->delNode(head.second, storage);
@@ -274,16 +274,16 @@ int ContourForestsTree::combine(
     {
       if(yt->getNode(correspondingNodeId)->getNumberOfDownSuperArcs() < 2) {
         if(DEBUG) {
-          cout << " delete yt (" << head.first << ") node :";
-          cout << yt->getNode(correspondingNodeId)->getVertexId();
-          cout << " have : ";
-          cout << static_cast<unsigned>(
+          std::cout << " delete yt (" << head.first << ") node :";
+          std::cout << yt->getNode(correspondingNodeId)->getVertexId();
+          std::cout << " have : ";
+          std::cout << static_cast<unsigned>(
             yt->getNode(correspondingNodeId)->getNumberOfDownSuperArcs());
-          cout << " down";
-          cout << " and : "
+          std::cout << " down";
+          std::cout << " and : "
                << static_cast<unsigned>(
                     yt->getNode(correspondingNodeId)->getNumberOfUpSuperArcs())
-               << " up" << endl;
+               << " up" << std::endl;
         }
 
         yt->delNode(correspondingNodeId, storage, arcVertList, arcVertSize);
@@ -295,7 +295,7 @@ int ContourForestsTree::combine(
       growingNodes.emplace(head.first, parentId);
 
       if(DEBUG) {
-        cout << "will see : " << parentNode->getVertexId() << endl;
+        std::cout << "will see : " << parentNode->getVertexId() << std::endl;
       }
     }
 

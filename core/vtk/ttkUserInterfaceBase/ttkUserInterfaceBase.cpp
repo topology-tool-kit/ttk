@@ -189,7 +189,7 @@ int ttkUserInterfaceBase::run() {
 
   {
     stringstream msg;
-    msg << "[UserInterface] Initializing user interface..." << endl;
+    msg << "[UserInterface] Initializing user interface..." << std::endl;
     printMsg(msg.str());
   }
 
@@ -214,7 +214,7 @@ int ttkUserInterfaceBase::run() {
 
   {
     stringstream msg;
-    msg << "[ttkUserInterfaceBase] Running user interface!" << endl;
+    msg << "[ttkUserInterfaceBase] Running user interface!" << std::endl;
     printMsg(msg.str());
   }
 
@@ -241,7 +241,7 @@ int ttkUserInterfaceBase::switchOutput(const int &outputId) {
   } else {
     msg << "on";
   }
-  msg << endl;
+  msg << std::endl;
   printMsg(msg.str());
 
   visibleOutputs_[outputId] = !visibleOutputs_[outputId];
@@ -259,7 +259,7 @@ int ttkUserInterfaceBase::switchTransparency() {
   } else {
     msg << "on";
   }
-  msg << endl;
+  msg << std::endl;
   printMsg(msg.str());
 
   transparency_ = !transparency_;
