@@ -102,6 +102,7 @@ namespace ttk {
                 double errSurf,
                 std::vector<std::vector<double>> gradientNorms,
                 std::vector<std::vector<double>> &merge,
+  				std::vector<std::vector<double>> &distance,
                 const triangulationType *triangulation);
 
     
@@ -186,7 +187,8 @@ namespace ttk {
                std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
                std::vector<double>              &surfMin,
                std::vector<double>              &surfMax,
-               std::vector<double>              &surfMoy
+               std::vector<double>              &surfMoy,
+  			   std::vector<std::vector<double>> &distance
 	); 
 
 
@@ -725,6 +727,7 @@ int ttk::TrajectoryStatistics::execute(
                 double errSurf,
                 std::vector<std::vector<double>> gradientNorms,
                 std::vector<std::vector<double>> &finalTraj,
+  				std::vector<std::vector<double>> &distance,
                 const triangulationType *triangulation) {
 
     
@@ -775,7 +778,7 @@ int ttk::TrajectoryStatistics::execute(
 				triangulation,
 				finalTraj,
 				allVertexDebris,
-				surfMin, surfMax, surfMoy);
+				surfMin, surfMax, surfMoy, distance);
 
 	}
 
@@ -1544,7 +1547,8 @@ int ttk::TrajectoryStatistics::computeMergeTree(
   std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
   std::vector<double>              &surfMin,
   std::vector<double>              &surfMax,
-  std::vector<double>              &surfMoy
+  std::vector<double>              &surfMoy,
+  std::vector<std::vector<double>> &distance
 ) {
 
   const ttk::SimplexId nPixels = triangulation->getNumberOfVertices();
@@ -1552,6 +1556,9 @@ int ttk::TrajectoryStatistics::computeMergeTree(
   std::vector<std::vector<double>> trajSurfaces(finalTraj.size());
   const auto nTraj = finalTraj.size();
   allVertexDebris.assign(nTraj, {});
+  distance.assign(nTraj, {});
+  std::vector<std::vector<double>> distanceFrame(nTraj);
+
   this->printMsg("Computing Merge Tree Segmentation");
 
   for(int frame = 0; frame < nFrames; frame++) {
@@ -1792,7 +1799,6 @@ int ttk::TrajectoryStatistics::computeMergeTree(
       const double y = ay * frame + by;
       if(y < 0 || y > 224)
         continue;
-
       const ttk::SimplexId xi = std::lround(x);
       const ttk::SimplexId yi = std::lround(y);
 
@@ -1803,20 +1809,80 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 
       if(regionType[vId] == 0) {
         auto segId = segmentation[vId];
+			
+		float xyz[3];
+		triangulation->getVertexPoint(segMinVertex[segId], xyz[0], xyz[1], xyz[2]);
+		double dist = std::pow(std::pow(xi - xyz[0], 2) + std::pow(yi - xyz[1], 2), 0.5);
 
+		distance[trajId].push_back(dist);
+		distanceFrame[trajId].push_back(frame);
         // surface instantanée
         double surfVal = static_cast<double>(
         computeSurfaceCellCount(segmentId[segId], triangulation));
+		if (surfVal == 0) surfVal = 1;
         trajSurfaces[trajId].push_back(surfVal);
+		
         if(frame == static_cast<int>(frameSurf)) {
-		  this->printMsg("frameSuurf");
           allVertexDebris[trajId] = segmentId[segId];
-          (*saddleSeg_)[trajId]   = segMinVertex[segId];
+          
+		  (*saddleSeg_)[trajId]   = segMinVertex[segId];
           (*minSeg_)[trajId]      = segId;
         }
       }
     } // fin boucle trajId
   }   // fin boucle frames
+
+
+  // -------------------------------------------------------------------------
+  // 5bis) Analyse du vecteur distance : médiane + max + |max - médiane|
+  // -------------------------------------------------------------------------
+  auto medianOfCopy = [](std::vector<double> v) -> double {
+    const size_t n = v.size();
+    if(n == 0)
+      return std::numeric_limits<double>::quiet_NaN();
+
+    const size_t mid = n / 2;
+    std::nth_element(v.begin(), v.begin() + mid, v.end());
+    const double upperMid = v[mid];
+
+    if(n % 2 == 1) {
+      return upperMid;
+    }
+
+    // médiane pour n pair = moyenne des 2 centraux
+    const double lowerMid = *std::max_element(v.begin(), v.begin() + mid);
+    return 0.5 * (lowerMid + upperMid);
+  };
+
+  for(size_t trajId = 0; trajId < nTraj; ++trajId) {
+    const auto &d = distance[trajId];
+
+    if(d.empty()) {
+      this->printMsg("trajId=" + std::to_string(trajId)
+                     + " distance: empty");
+      continue;
+    }
+
+    // max + indice original (dans d)
+    auto itMax = std::max_element(d.begin(), d.end());
+    const double maxVal = *itMax;
+    const size_t maxIdx = static_cast<size_t>(std::distance(d.begin(), itMax));
+
+    // médiane (sur une copie réordonnée)
+    const double med = medianOfCopy(d);
+
+    const double distMaxToMed = std::abs(maxVal - med);
+
+    this->printMsg(
+      "trajId=" + std::to_string(trajId)
+      + " |max-med|=" + std::to_string(distMaxToMed)
+      + " frame=" + std::to_string(distanceFrame[trajId][maxIdx])
+      + " maxVal=" + std::to_string(maxVal)
+      + " median=" + std::to_string(med)
+      + " n=" + std::to_string(d.size())
+    );
+  }
+
 
   // -------------------------------------------------------------------------
   // 6) Statistiques surfMin, surfMax, surfMoy par trajectoire (parallélisée)

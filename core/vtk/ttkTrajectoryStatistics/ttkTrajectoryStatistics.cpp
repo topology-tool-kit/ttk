@@ -268,6 +268,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
                       surfMin(numTraj), surfMax(numTraj), surfMean(numTraj);
   std::vector<std::vector<ttk::SimplexId>> allVertexDebris(numTraj);
   std::vector<std::vector<double>> gradientNorms;
+  std::vector<std::vector<double>> distance(finalTraj.size());
 
   if(!computeAllGradientMagnitudes(inputDataSet,
                                    fields,
@@ -292,6 +293,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
                         errSurf,
                         gradientNorms,
                         finalTraj,
+						distance,
                         (TTK_TT *)triangulation->getData()
                         )));
   if (status != 1) return 0;
@@ -411,16 +413,6 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   
   for(size_t i = 0; i < allVertexDebris.size(); ++i) {
     const auto &trajSurface = allVertexDebris[i];
-	ttk::SimplexId min =minSeg[i];
-	auto field = static_cast<double *>(inputFields[frameSurface]);
-	double min_value = field[min];
-	ttk::SimplexId saddle = saddleSeg[i];
-	double saddle_value = field[saddle];
-	double percentage = (saddle_value*100)/min_value;
-	criticalSurface->SetValue(saddle, percentage);
-
-
-  
     int finalId = i;
 //    if(i < newTraj.size() && newTraj[i].size() > 4 && static_cast<int>(newTraj[i][4]) != -1) {
 //      finalId = static_cast<int>(newTraj[i][4]);
@@ -438,8 +430,16 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     }
   }
 
+  for (size_t i = 0; i<finalTraj.size(); i++){
+  	//this->printMsg("TRAJ = " + std::to_string(i) + " start = " + std::to_string(finalTraj[i][4]) + " end = " + std::to_string(finalTraj[i][5]));
+	for (size_t j= 0; j<distance[i].size(); j++){
+		int frameUse = finalTraj[i][4] + j;
+		//this->printMsg("  " + std::to_string(distance[i][j]) + " frame = " + std::to_string(frameUse));
+	}
+  }
+
   outputSurface->GetPointData()->AddArray(surfaceFinalId);
-  outputSurface->GetPointData()->AddArray(criticalSurface);
+  // outputSurface->GetPointData()->AddArray(criticalSurface);
  
   // --------------------------- LINEAR REG && ADDED --------------------------
   
