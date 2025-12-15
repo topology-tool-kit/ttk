@@ -29,11 +29,12 @@ ttk::rpd::PairCellsWithOracle::PairCellsWithOracle(
   }
 }
 
-ttk::rpd::PairCellsWithOracle::PairCellsWithOracle(float *data,
-                                                   int n,
-                                                   int dim,
-                                                   MultidimensionalDiagram const &oracle,
-                                                   bool parallelSort)
+ttk::rpd::PairCellsWithOracle::PairCellsWithOracle(
+  float *data,
+  int n,
+  int dim,
+  MultidimensionalDiagram const &oracle,
+  bool parallelSort)
   : n_(n), parallelSort_(parallelSort), oracle_(oracle) {
   // inherited from Debug: prefix will be printed at the beginning of every msg
   this->setDebugMsgPrefix("PairCellsWithOracle");
