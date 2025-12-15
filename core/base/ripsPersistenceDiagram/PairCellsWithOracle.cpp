@@ -29,6 +29,26 @@ ttk::rpd::PairCellsWithOracle::PairCellsWithOracle(
   }
 }
 
+ttk::rpd::PairCellsWithOracle::PairCellsWithOracle(float *data,
+                                                   int n,
+                                                   int dim,
+                                                   MultidimensionalDiagram const &oracle,
+                                                   bool parallelSort)
+  : n_(n), parallelSort_(parallelSort), oracle_(oracle) {
+  // inherited from Debug: prefix will be printed at the beginning of every msg
+  this->setDebugMsgPrefix("PairCellsWithOracle");
+
+  for(int i = 1; i < n_; ++i) {
+    for(int j = 0; j < i; ++j) {
+      double s = 0.;
+      for(int d = 0; d < dim; ++d)
+        s += (data[dim * i + d] - data[dim * j + d])
+             * (data[dim * i + d] - data[dim * j + d]);
+      compressedDM_.push_back(sqrt(s));
+    }
+  }
+}
+
 void ttk::rpd::PairCellsWithOracle::callOracle(const PointCloud &points,
                                                MultidimensionalDiagram &oracle,
                                                double threshold,

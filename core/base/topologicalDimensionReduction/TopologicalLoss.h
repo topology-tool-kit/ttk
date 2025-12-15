@@ -20,7 +20,6 @@
 
 #pragma once
 
-#include <PairCells.h>
 #include <PairCellsWithOracle.h>
 #include <PersistenceDiagramWarmRestartAuction.h>
 #include <RipsPersistenceDiagram.h>

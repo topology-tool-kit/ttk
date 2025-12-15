@@ -26,6 +26,11 @@ namespace ttk::rpd {
                         MultidimensionalDiagram const &oracle,
                         bool distanceMatrix = false,
                         bool parallelSort = false);
+    PairCellsWithOracle(float *data,
+                        int n,
+                        int dim,
+                        MultidimensionalDiagram const &oracle,
+                        bool parallelSort = false);
 
     void run();
 

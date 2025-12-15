@@ -111,14 +111,16 @@ void ttk::TopologicalLoss::computeLatentCascades(
       latent_.cpu().data_ptr<float>(), latent_.size(0))
       .computeRips0And1Persistence(latentCriticalAndCascades, false, false);
   else {
-    rpd::PairCells pc(
-      latent_.cpu().data_ptr<float>(), latent_.size(0), latent_.size(1));
+    rpd::MultidimensionalDiagram latentPD;
+    ripser::ripser(latent_.cpu().data_ptr<float>(), latent_.size(0), latent_.size(1), latentPD, rpd::inf, 1, false);
+    rpd::PairCellsWithOracle pc(latent_.cpu().data_ptr<float>(), latent_.size(0), latent_.size(1), latentPD, false);
     pc.run();
     pc.getCascades(latentCriticalAndCascades);
   }
 #else
-  rpd::PairCells pc(
-    latent_.cpu().data_ptr<float>(), latent_.size(0), latent_.size(1));
+  rpd::MultidimensionalDiagram latentPD;
+  ripser::ripser(latent_.cpu().data_ptr<float>(), latent_.size(0), latent_.size(1), latentPD, rpd::inf, 1, false);
+  rpd::PairCellsWithOracle pc(latent_.cpu().data_ptr<float>(), latent_.size(0), latent_.size(1), latentPD, false);
   pc.run();
   pc.getCascades(latentCriticalAndCascades);
 #endif
