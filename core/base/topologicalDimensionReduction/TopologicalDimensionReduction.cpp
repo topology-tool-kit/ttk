@@ -98,10 +98,11 @@ int ttk::TopologicalDimensionReduction::execute(
     this->printMsg("input dimension: " + std::to_string(inputDimension), 0.0,
                    tm.getElapsedTime());
   else
-    this->printMsg("input dimension: " + std::to_string(inputDimension) + " = "
-                     + std::to_string((int)sqrt(inputDimension)) + " x "
-                     + std::to_string((int)sqrt(inputDimension)) + " images",
-                   .0, tm.getElapsedTime());
+    this->printMsg(
+      "input dimension: " + std::to_string(inputDimension) + " = "
+        + std::to_string(static_cast<int>(sqrt(inputDimension))) + " x "
+        + std::to_string(static_cast<int>(sqrt(inputDimension))) + " images",
+      .0, tm.getElapsedTime());
   this->printMsg("output dimension: " + std::to_string(NumberOfComponents), 0.0,
                  tm.getElapsedTime());
   this->printMsg(
@@ -242,7 +243,7 @@ void ttk::TopologicalDimensionReduction::printLoss(int epoch,
   if(epoch % std::max(1, maxEpoch / 10) == 0)
     printMsg(
       "Loss at epoch " + std::to_string(epoch) + ": " + std::to_string(loss),
-      double(epoch) / maxEpoch, -1, -1, debug::LineMode::REPLACE);
+      static_cast<double>(epoch) / maxEpoch, -1, -1, debug::LineMode::REPLACE);
   else if(epoch == maxEpoch - 1)
     printMsg("Final loss value: " + std::to_string(loss), 1.);
 }
