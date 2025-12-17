@@ -35,8 +35,9 @@
 
 class TTKDELAUNAYRIPSPERSISTENCEDIAGRAM_EXPORT ttkDelaunayRipsPersistenceDiagram
   : public ttkAlgorithm, // we inherit from the generic ttkAlgorithm class
-    protected ttk::DelaunayRipsPersistenceDiagram { // and we inherit from the base
-                                            // class
+    protected ttk::DelaunayRipsPersistenceDiagram { // and we inherit from the
+                                                    // base
+  // class
 private:
   bool KeepAllDataArrays{true};
   bool SelectFieldsWithRegexp{false};

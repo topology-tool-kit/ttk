@@ -32,26 +32,24 @@ namespace ttk {
   class DelaunayRipsPersistenceDiagram : virtual public Debug {
 
   public:
-
     DelaunayRipsPersistenceDiagram();
 
     /**
-    * @brief Main entry point (without generators)
-    *
-    * @param[in] points Input point cloud
-    * @param[out] ph Persistence diagram
-    */
-    int execute(const PointCloud &points,
-                MultidimensionalDiagram &ph) const;
+     * @brief Main entry point (without generators)
+     *
+     * @param[in] points Input point cloud
+     * @param[out] ph Persistence diagram
+     */
+    int execute(const PointCloud &points, MultidimensionalDiagram &ph) const;
 
     /**
-    * @brief Main entry point (with generators)
-    *
-    * @param[in] points Input point cloud
-    * @param[out] ph Persistence diagram
-    * @param[out] generators1 1-dimensional persistent generators
-    * @param[out] generators2 2-dimensional persistent generators
-    */
+     * @brief Main entry point (with generators)
+     *
+     * @param[in] points Input point cloud
+     * @param[out] ph Persistence diagram
+     * @param[out] generators1 1-dimensional persistent generators
+     * @param[out] generators2 2-dimensional persistent generators
+     */
     int execute(const PointCloud &points,
                 MultidimensionalDiagram &ph,
                 std::vector<Generator1> &generators1,

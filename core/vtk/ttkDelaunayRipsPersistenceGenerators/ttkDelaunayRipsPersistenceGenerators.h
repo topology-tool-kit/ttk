@@ -39,10 +39,12 @@ void GeneratorsToVTU(vtkUnstructuredGrid *vtu,
                      vtkPoints *inputPoints,
                      const std::vector<Generator2> &generators);
 
-class TTKDELAUNAYRIPSPERSISTENCEGENERATORS_EXPORT ttkDelaunayRipsPersistenceGenerators
+class TTKDELAUNAYRIPSPERSISTENCEGENERATORS_EXPORT
+  ttkDelaunayRipsPersistenceGenerators
   : public ttkAlgorithm, // we inherit from the generic ttkAlgorithm class
-    protected ttk::DelaunayRipsPersistenceDiagram { // and we inherit from the base
-                                            // class
+    protected ttk::DelaunayRipsPersistenceDiagram { // and we inherit from the
+                                                    // base
+  // class
 private:
   bool KeepAllDataArrays{true};
   bool SelectFieldsWithRegexp{false};

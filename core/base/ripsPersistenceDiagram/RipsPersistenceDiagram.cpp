@@ -16,8 +16,7 @@ ttk::RipsPersistenceDiagram::RipsPersistenceDiagram() {
 }
 
 int ttk::RipsPersistenceDiagram::execute(
-  const rpd::PointCloud &points,
-  rpd::MultidimensionalDiagram &ph) const {
+  const rpd::PointCloud &points, rpd::MultidimensionalDiagram &ph) const {
 
   bool forceRipser = false;
 

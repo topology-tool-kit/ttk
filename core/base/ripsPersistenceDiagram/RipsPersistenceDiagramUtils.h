@@ -30,8 +30,8 @@ namespace ttk::rpd {
   using Cascade = EdgeSet;
 
   using Facet = std::array<id_t, 3>;
-  using Generator1 = std::pair<std::vector<Edge>,  std::pair<value_t,value_t>>;
-  using Generator2 = std::pair<std::vector<Facet>, std::pair<value_t,value_t>>;
+  using Generator1 = std::pair<std::vector<Edge>, std::pair<value_t, value_t>>;
+  using Generator2 = std::pair<std::vector<Facet>, std::pair<value_t, value_t>>;
 
   struct FiltratedEdge {
     Edge e;

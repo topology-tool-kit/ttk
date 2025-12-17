@@ -6,37 +6,37 @@ ttk::DelaunayRipsPersistenceDiagram::DelaunayRipsPersistenceDiagram() {
 }
 
 int ttk::DelaunayRipsPersistenceDiagram::execute(
-  const PointCloud &points,
-  MultidimensionalDiagram &ph) const {
+  const PointCloud &points, MultidimensionalDiagram &ph) const {
 
 #ifdef TTK_ENABLE_CGAL
   const unsigned dim = points[0].size();
-  if (points.size() <= dim) {
+  if(points.size() <= dim) {
     printErr("Not enough points");
     return 1;
   }
-  if (dim == 2) {
+  if(dim == 2) {
     FastRipsPersistenceDiagram2 FRPD(points);
     FRPD.setDebugLevel(debugLevel_);
     FRPD.computeDelaunayRips0And1Persistence(ph);
-  }
-  else if (dim == 3) {
+  } else if(dim == 3) {
 #ifndef CGAL_LINKED_WITH_TBB
-    if (getThreadNumber() > 1) {
+    if(getThreadNumber() > 1) {
       printWrn("TTK was not compiled with TBB:");
       printWrn("sequential Delaunay triangulation only");
     }
 #endif
     gph::runDelaunayRipsPersistenceDiagram3(points, ph, getThreadNumber());
-    ph[0].emplace_back(FiltratedSimplex{{-1}, 0.}, FiltratedSimplex{{-1}, inf}); // infinite pair
-  }
-  else {
-    if (dim > TTK_DELAUNAY_MAX_COMPILED_DIMENSION)
-      printWrn("High dimension: " + std::to_string(dim) + ">" + std::to_string(TTK_DELAUNAY_MAX_COMPILED_DIMENSION));
+    ph[0].emplace_back(
+      FiltratedSimplex{{-1}, 0.}, FiltratedSimplex{{-1}, inf}); // infinite pair
+  } else {
+    if(dim > TTK_DELAUNAY_MAX_COMPILED_DIMENSION)
+      printWrn("High dimension: " + std::to_string(dim) + ">"
+               + std::to_string(TTK_DELAUNAY_MAX_COMPILED_DIMENSION));
     gph::tryDimensions(points, ph, getThreadNumber());
-    ph[0].emplace_back(FiltratedSimplex{{-1}, 0.}, FiltratedSimplex{{-1}, inf}); // infinite pair
-    for (auto &diag : ph) {
-      for (auto &[b,d] : diag) {
+    ph[0].emplace_back(
+      FiltratedSimplex{{-1}, 0.}, FiltratedSimplex{{-1}, inf}); // infinite pair
+    for(auto &diag : ph) {
+      for(auto &[b, d] : diag) {
         b.first = {-1};
         d.first = {-1};
       }
@@ -60,29 +60,30 @@ int ttk::DelaunayRipsPersistenceDiagram::execute(
 
 #ifdef TTK_ENABLE_CGAL
   const unsigned dim = points[0].size();
-  if (dim > 3) {
+  if(dim > 3) {
     printErr("Input dimension too large: " + std::to_string(dim) + ">3");
     return 1;
   }
-  if (points.size() <= dim) {
+  if(points.size() <= dim) {
     printErr("Not enough points");
     return 1;
   }
-  if (dim == 2) {
+  if(dim == 2) {
     FastRipsPersistenceDiagram2 FRPD(points);
     FRPD.setDebugLevel(debugLevel_);
     FRPD.computeDelaunayRips0And1Persistence(ph);
     FRPD.exportRips1Generators(generators1);
-  }
-  else if (dim == 3) {
+  } else if(dim == 3) {
 #ifndef CGAL_LINKED_WITH_TBB
-    if (getThreadNumber() > 1) {
+    if(getThreadNumber() > 1) {
       printWrn("TTK was not compiled with TBB:");
       printWrn("sequential Delaunay triangulation only");
     }
 #endif
-    gph::runDelaunayRipsPersistenceDiagram3(points, ph, generators1, generators2, getThreadNumber());
-    ph[0].emplace_back(FiltratedSimplex{{-1}, 0.}, FiltratedSimplex{{-1}, inf}); // infinite pair
+    gph::runDelaunayRipsPersistenceDiagram3(
+      points, ph, generators1, generators2, getThreadNumber());
+    ph[0].emplace_back(
+      FiltratedSimplex{{-1}, 0.}, FiltratedSimplex{{-1}, inf}); // infinite pair
   }
   return 0;
 #else

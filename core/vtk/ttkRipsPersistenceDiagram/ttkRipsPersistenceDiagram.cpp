@@ -241,7 +241,9 @@ int ttkRipsPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
   if(this->execute(points, diagram) != 0)
     return 0;
 
-  DiagramToVTU(outputPersistenceDiagram, diagram, (BackEnd == BACKEND::GEOMETRY) ? ttk::rpd::inf : SimplexMaximumDiameter);
+  DiagramToVTU(
+    outputPersistenceDiagram, diagram,
+    (BackEnd == BACKEND::GEOMETRY) ? ttk::rpd::inf : SimplexMaximumDiameter);
 
   this->printMsg("Complete", 1.0, tm.getElapsedTime(), 1);
 
