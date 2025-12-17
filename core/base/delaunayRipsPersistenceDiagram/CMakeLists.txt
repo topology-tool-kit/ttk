@@ -19,8 +19,7 @@ target_link_libraries(delaunayRipsPersistenceDiagram PUBLIC Boost::boost)
 
 if(TTK_ENABLE_EIGEN)
   target_compile_definitions(delaunayRipsPersistenceDiagram PUBLIC TTK_ENABLE_EIGEN)
-  target_include_directories(delaunayRipsPersistenceDiagram PUBLIC ${EIGEN3_INCLUDE_DIR})
-  target_link_libraries(delaunayRipsPersistenceDiagram PUBLIC ${EIGEN3_LIBRARIES})
+  target_link_libraries(delaunayRipsPersistenceDiagram PUBLIC Eigen3::Eigen)
 endif()
 
 if(TTK_ENABLE_CGAL)
