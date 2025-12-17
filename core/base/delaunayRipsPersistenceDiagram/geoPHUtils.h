@@ -36,14 +36,13 @@
 
 #include <dset.h>
 
-using namespace ttk::rpd;
-
 namespace ttk::gph {
   using id_t = int;
 
   template <unsigned DIM>
-  using PointD = std::
-    conditional_t<DIM == 0, std::vector<value_t>, std::array<value_t, DIM>>;
+  using PointD = std::conditional_t<DIM == 0,
+                                    std::vector<rpd::value_t>,
+                                    std::array<rpd::value_t, DIM>>;
 
   template <unsigned DIM>
   using PointCloud = std::vector<PointD<DIM>>;

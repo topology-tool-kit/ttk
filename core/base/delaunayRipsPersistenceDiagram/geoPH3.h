@@ -9,6 +9,8 @@
 #include <CGAL/Triangulation_cell_base_with_info_3.h>
 #include <CGAL/Triangulation_vertex_base_with_info_3.h>
 
+using namespace ttk::rpd;
+
 namespace ttk::gph {
 
   using Facet = std::array<id_t, 3>;
@@ -1202,7 +1204,11 @@ namespace ttk::gph {
     for(unsigned i = 0; i < points.size(); ++i)
       p[i] = {points[i][0], points[i][1], points[i][2]};
     if(threads > 1) {
+#ifdef TTK_GPH_PARALLEL
       DRPersistence3_p drpd(p, threads);
+#else
+      DRPersistence3 drpd(p);
+#endif
       drpd.run(diagram, generators1, generators2);
     } else {
       DRPersistence3 drpd(p);
