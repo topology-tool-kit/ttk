@@ -1,5 +1,7 @@
 #include <DelaunayRipsPersistenceDiagram.h>
 
+using namespace ttk::rpd;
+
 ttk::DelaunayRipsPersistenceDiagram::DelaunayRipsPersistenceDiagram() {
   // inherited from Debug: prefix will be printed at the beginning of every msg
   this->setDebugMsgPrefix("DelaunayRipsPD");

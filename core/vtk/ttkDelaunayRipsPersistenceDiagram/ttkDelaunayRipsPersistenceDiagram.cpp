@@ -12,6 +12,8 @@
 
 vtkStandardNewMacro(ttkDelaunayRipsPersistenceDiagram);
 
+using namespace ttk::rpd;
+
 ttkDelaunayRipsPersistenceDiagram::ttkDelaunayRipsPersistenceDiagram() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);

@@ -37,7 +37,7 @@
 
 void GeneratorsToVTU(vtkUnstructuredGrid *vtu,
                      vtkPoints *inputPoints,
-                     const std::vector<Generator2> &generators);
+                     const std::vector<ttk::rpd::Generator2> &generators);
 
 class TTKDELAUNAYRIPSPERSISTENCEGENERATORS_EXPORT
   ttkDelaunayRipsPersistenceGenerators

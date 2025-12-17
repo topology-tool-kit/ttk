@@ -13,6 +13,8 @@
 
 vtkStandardNewMacro(ttkDelaunayRipsPersistenceGenerators);
 
+using namespace ttk::rpd;
+
 static void MakeVtkPoints(vtkPoints *vtkPoints,
                           const std::vector<std::vector<double>> &pointsData) {
 

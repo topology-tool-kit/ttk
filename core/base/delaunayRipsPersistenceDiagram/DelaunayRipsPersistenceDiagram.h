@@ -40,7 +40,8 @@ namespace ttk {
      * @param[in] points Input point cloud
      * @param[out] ph Persistence diagram
      */
-    int execute(const PointCloud &points, MultidimensionalDiagram &ph) const;
+    int execute(const rpd::PointCloud &points,
+                rpd::MultidimensionalDiagram &ph) const;
 
     /**
      * @brief Main entry point (with generators)
@@ -50,10 +51,10 @@ namespace ttk {
      * @param[out] generators1 1-dimensional persistent generators
      * @param[out] generators2 2-dimensional persistent generators
      */
-    int execute(const PointCloud &points,
-                MultidimensionalDiagram &ph,
-                std::vector<Generator1> &generators1,
-                std::vector<Generator2> &generators2) const;
+    int execute(const rpd::PointCloud &points,
+                rpd::MultidimensionalDiagram &ph,
+                std::vector<rpd::Generator1> &generators1,
+                std::vector<rpd::Generator2> &generators2) const;
 
   }; // DelaunayRipsPersistenceDiagram class
 

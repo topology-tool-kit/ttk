@@ -11,6 +11,12 @@
 
 namespace ttk::gph {
 
+  using rpd::Diagram;
+  using rpd::inf;
+  using rpd::MultidimensionalDiagram;
+  using rpd::Simplex;
+  using rpd::UnionFind;
+
   constexpr static unsigned DYN_DIM = 0;
 
   template <unsigned D>
@@ -18,8 +24,9 @@ namespace ttk::gph {
     conditional_t<D == DYN_DIM, std::vector<id_t>, std::array<id_t, D + 1>>;
 
   template <unsigned D>
-  using ValueArray = std::
-    conditional_t<D == DYN_DIM, std::vector<value_t>, std::array<value_t, D>>;
+  using ValueArray = std::conditional_t<D == DYN_DIM,
+                                        std::vector<rpd::value_t>,
+                                        std::array<rpd::value_t, D>>;
 
   template <unsigned D>
   using ConnectivityHashMap
