@@ -21,6 +21,10 @@
 #include <tbb/global_control.h>
 #endif
 
+#ifdef TTK_ENABLE_OPENMP
+#include <omp.h>
+#endif
+
 #ifdef __cpp_lib_execution
 #include <execution>
 #endif
@@ -41,27 +45,6 @@ namespace ttk::gph {
 
   template <unsigned DIM>
   using PointCloud = std::vector<PointD<DIM>>;
-
-  using Facet = std::array<id_t, 3>;
-
-  struct FiltratedFacet {
-    Facet f;
-    double d;
-  };
-
-  inline FiltratedFacet max(FiltratedFacet const& a, FiltratedFacet const& b) {
-    if (a.d > b.d)
-      return a;
-    return b;
-  }
-
-  struct FiltratedQuadFacet {
-    Facet f;
-    int c1;
-    int c2;
-    double d;
-    double a;
-  };
 
 #if ((BOOST_VERSION / 100) % 1000) >= 81
   template <typename X, typename Y> using HashMap = boost::unordered_flat_map<X, Y>;

@@ -33,7 +33,7 @@ int ttk::DelaunayRipsPersistenceDiagram::execute(
   else {
     if (dim > TTK_DELAUNAY_MAX_COMPILED_DIMENSION)
       printWrn("High dimension: " + std::to_string(dim) + ">" + std::to_string(TTK_DELAUNAY_MAX_COMPILED_DIMENSION));
-    gph::tryDimensions(points, ph);
+    gph::tryDimensions(points, ph, getThreadNumber());
     ph[0].emplace_back(FiltratedSimplex{{-1}, 0.}, FiltratedSimplex{{-1}, inf}); // infinite pair
     for (auto &diag : ph) {
       for (auto &[b,d] : diag) {

@@ -679,7 +679,11 @@ namespace ttk::gph {
     tbb::concurrent_vector<FiltratedDSimplex<minus1(D)>> critical;
     DisjointSets UF_msa (N_msa);
 
-    concurrent_msa_connectivity.cvisit_all(std::execution::par, [&](const auto& x) {
+    concurrent_msa_connectivity.cvisit_all(
+#ifdef __cpp_lib_execution
+      std::execution::par,
+#endif
+      [&](const auto& x) {
       const auto& [s, neighbors] = x;
 
       // first determine whether s is Urquhart
