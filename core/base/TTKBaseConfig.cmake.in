@@ -43,5 +43,9 @@ if (@TTK_ENABLE_CGAL@ AND @CGAL_FOUND@)
   find_dependency(CGAL REQUIRED)
 endif()
 
+if (@TTK_ENABLE_EIGEN@ AND @Eigen3_FOUND@)
+  find_dependency(Eigen3 REQUIRED)
+endif()
+
 # Include the actual targets for TTK Base
 include("${CMAKE_CURRENT_LIST_DIR}/TTKBaseTargets.cmake")
