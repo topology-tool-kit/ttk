@@ -3,6 +3,7 @@ ttk_add_base_library(delaunayRipsPersistenceDiagram
     DelaunayRipsPersistenceDiagram.cpp
   HEADERS
     DelaunayRipsPersistenceDiagram.h
+    dset.h
     geoPH3.h
     geoPHd.h
     geoPHUtils.h
@@ -32,6 +33,7 @@ if(TTK_ENABLE_CGAL)
 endif()
 
 if(TTK_ENABLE_TBB)
+  target_compile_definitions(delaunayRipsPersistenceDiagram PUBLIC TTK_ENABLE_TBB)
   target_compile_definitions(delaunayRipsPersistenceDiagram PUBLIC CGAL_LINKED_WITH_TBB)
   target_link_libraries(delaunayRipsPersistenceDiagram PUBLIC TBB::tbb TBB::tbbmalloc)
 endif()

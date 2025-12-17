@@ -22,6 +22,11 @@ namespace ttk::gph {
   template <unsigned D>
   using ConnectivityHashMap = HashMap<DSimplex<D>, std::vector<std::pair<int,int>>>;
 
+#ifdef TTK_CONCURRENT_HASHTABLE_AVAILABLE
+  template <unsigned D>
+  using ConcurrentConnectivityHashMap = ConcurrentHashMap<DSimplex<D>, std::vector<std::pair<int,int>>>;
+#endif
+
   template <unsigned D>
   struct FiltratedDSimplex {
     DSimplex<D> s;
@@ -72,7 +77,7 @@ namespace ttk::gph {
     };
 
   public:
-    explicit DRPersistenceD(PointCloud<DIM> &points);
+    explicit DRPersistenceD(PointCloud<DIM> &points, unsigned nThreads=1);
     void run(MultidimensionalDiagram &ph);
 
   private:
@@ -80,6 +85,7 @@ namespace ttk::gph {
     unsigned N_c {};
     Delaunay del_;
     PointCloud<DIM> &points_;
+    const int nThreads_{1};
 
     [[nodiscard]] double squaredDistance(const unsigned i1, const unsigned i2) const {
       return std::inner_product(points_[i1].begin(),points_[i1].end(), points_[i2].begin(), 0.,
@@ -152,21 +158,29 @@ namespace ttk::gph {
     void computeDPH(Diagram &ph,
                     DSimplicialComplex<minus1(DIM)> &MSA);
 
+    void computeDPH_p(Diagram &ph,
+                      DSimplicialComplex<minus1(DIM)> &MSA);
+
     template <unsigned D>
     void computeNextPH(Diagram &ph,
-                       DSimplicialComplex<D> const& MSA,
+                       DSimplicialComplex<D> &MSA,
                        DSimplicialComplex<minus1(D)> &nextMSA) const;
 
     template <unsigned D>
+    void computeNextPH_p(Diagram &ph,
+                         DSimplicialComplex<D> &MSA,
+                         DSimplicialComplex<minus1(D)> &nextMSA) const;
+
+    template <unsigned D>
     void recurse(MultidimensionalDiagram &ph,
-                 DSimplicialComplex<D> const& MSA) const;
+                 DSimplicialComplex<D> &MSA) const;
   };
 
   template <unsigned DIM>
-  DRPersistenceD<DIM>::DRPersistenceD(PointCloud<DIM> &points) : N_p(points.size()), del_(DIM), points_(points) {}
+  DRPersistenceD<DIM>::DRPersistenceD(PointCloud<DIM> &points, const unsigned nThreads) : N_p(points.size()), del_(DIM), points_(points), nThreads_(nThreads) {}
 
   template <>
-  inline DRPersistenceD<DYN_DIM>::DRPersistenceD(PointCloud<DYN_DIM> &points) : N_p(points.size()), del_(points[0].size()), points_(points) {}
+  inline DRPersistenceD<DYN_DIM>::DRPersistenceD(PointCloud<DYN_DIM> &points, const unsigned nThreads) : N_p(points.size()), del_(points[0].size()), points_(points), nThreads_(nThreads) {}
 
   template <unsigned DIM>
   void DRPersistenceD<DIM>::run(MultidimensionalDiagram &ph) {
@@ -174,10 +188,13 @@ namespace ttk::gph {
 
     computeDelaunay();
 
-    DSimplicialComplex<DIM-1> MSA1;
-    computeDPH(ph[DIM-1], MSA1);
+    DSimplicialComplex<DIM-1> MSA;
+    if (nThreads_==1)
+      computeDPH(ph[DIM-1], MSA);
+    else
+      computeDPH_p(ph[DIM-1], MSA);
 
-    recurse(ph, MSA1);
+    recurse(ph, MSA);
   }
 
   template <>
@@ -188,12 +205,18 @@ namespace ttk::gph {
     computeDelaunay();
 
     DSimplicialComplex<DYN_DIM> MSA;
-    computeDPH(ph[DIM-1], MSA);
+    if (nThreads_==1)
+      computeDPH(ph[DIM-1], MSA);
+    else
+      computeDPH_p(ph[DIM-1], MSA);
 
     unsigned D = DIM-1;
     while (D > 1) {
       DSimplicialComplex<DYN_DIM> nextMSA;
-      computeNextPH<DYN_DIM>(ph[D-1], MSA, nextMSA);
+      if (nThreads_==1)
+        computeNextPH<DYN_DIM>(ph[D-1], MSA, nextMSA);
+      else
+        computeNextPH_p<DYN_DIM>(ph[D-1], MSA, nextMSA);
       MSA = std::move(nextMSA);
       D--;
     }
@@ -204,10 +227,13 @@ namespace ttk::gph {
 
   template <unsigned DIM>
   template <unsigned D>
-  void DRPersistenceD<DIM>::recurse(MultidimensionalDiagram &ph, DSimplicialComplex<D> const& MSA) const {
+  void DRPersistenceD<DIM>::recurse(MultidimensionalDiagram &ph, DSimplicialComplex<D> &MSA) const {
     if constexpr (D >= 2) {
       DSimplicialComplex<D-1> nextMSA;
-      computeNextPH(ph[D-1], MSA, nextMSA);
+      if (nThreads_==1)
+        computeNextPH(ph[D-1], MSA, nextMSA);
+      else
+        computeNextPH_p(ph[D-1], MSA, nextMSA);
       recurse(ph, nextMSA);
     }
     else if constexpr (D == 1) { //this is the 0-dimensional homology
@@ -339,26 +365,167 @@ namespace ttk::gph {
       else // this is a facet from the minimal spanning acycle
         MSA.push_back({f.s, f.d, f.a});
     }
+  }
 
+  template<unsigned DIM>
+  void DRPersistenceD<DIM>::computeDPH_p(Diagram &ph, DSimplicialComplex<minus1(DIM)> &MSA) {
+#ifndef TTK_GPH_PARALLEL
+    computeDPH(ph, MSA);
+#else
+    tbb::global_control gc(tbb::global_control::max_allowed_parallelism, nThreads_);
+    omp_set_num_threads(nThreads_);
+
+    DisjointSets UF(N_c);
+    tbb::concurrent_vector<FiltratedQuadFacet> hyperUrquhart;
+
+    std::vector<FiltratedDSimplex<DIM>> cells(N_c);
+    for (auto c_it = del_.finite_full_cells_begin(); c_it != del_.finite_full_cells_end(); ++c_it) {
+      FiltratedDSimplex<DIM> cell;
+      cell.d = -1.;
+      for (unsigned i = 0; i<cell.s.size(); ++i)
+        cell.s[i] = c_it->vertex(i)->data();
+      cells[c_it->data()] = cell;
+    }
+
+    #pragma omp parallel for
+    for (unsigned i = 0; i<cells.size(); ++i) {
+      if (cells[i].d == -1.) {
+        auto [d,a] = squaredPerturbedDiameter<DIM>(cells[i].s);
+        cells[i].d = d;
+        cells[i].a = a;
+      }
+    }
+
+    std::vector<std::tuple<DSimplex<minus1(DIM)>, int, int, int, int>> facets;
+    for (auto f_it = del_.facets_begin(); f_it != del_.facets_end(); ++f_it) {
+      const Facet f = *f_it;
+      const CellHandle c = f.full_cell();
+      const CellHandle c_mirror = c->neighbor(f.index_of_covertex());
+      if (del_.is_infinite(f))
+        UF.unite(c->data(), c_mirror->data());
+      else {
+        DSimplex<minus1(DIM)> facet;
+        if constexpr (DIM==DYN_DIM)
+          facet.resize(del_.current_dimension());
+        for (unsigned i = 0; i<facet.size(); ++i)
+          facet[i] = c->vertex((f.index_of_covertex() + i + 1) % (facet.size()+1))->data();
+
+        const auto linkPoint1 = c->vertex(f.index_of_covertex());
+        const auto linkPoint2 = c_mirror->vertex(c->mirror_index(f.index_of_covertex()));
+        const int n1 = del_.is_infinite(linkPoint1)?-1:linkPoint1->data();
+        const int n2 = del_.is_infinite(linkPoint2)?-1:linkPoint2->data();
+        const int c1 = c->data();
+        const int c2 = c_mirror->data();
+        facets.emplace_back(facet, c1, n1, c2, n2);
+      }
+    }
+
+    #pragma omp parallel for
+    for (auto &[facet, c1, n1, c2, n2] : facets) {
+      // first determine whether s is Urquhart
+      std::sort(facet.begin(), facet.end());
+      const auto diam = squaredPerturbedDiameter<minus1(DIM)>(facet);
+
+      bool is_urquhart = true;
+      for (const id_t k : {n1, n2}) {
+        if (k != -1) {
+          bool largest = true;
+          for (unsigned i = 0; i<facet.size(); ++i) {
+            DSimplex<minus1(DIM)> neighbor = facet;
+            neighbor[i] = k;
+            if (squaredPerturbedDiameter<minus1(DIM)>(neighbor) > diam) {
+              largest = false;
+              break;
+            }
+          }
+          if (largest) {
+            is_urquhart = false;
+            break;
+          }
+        }
+      }
+
+      if (is_urquhart)
+        hyperUrquhart.push_back({facet, diam.first, diam.second, c1, c2});
+      else
+        UF.unite(c1, c2);
+
+      if (n1 == -1)
+        cells[c1].d = inf;
+      else if (n2 == -1)
+        cells[c2].d = inf;
+    }
+
+    std::vector<std::mutex> maxDelaunayLocks(N_c);
+    #pragma omp parallel for
+    for (unsigned x = 0; x<N_c; ++x) {
+      const int poly = UF.find(x);
+      std::lock_guard lock(maxDelaunayLocks[poly]);
+      cells[poly] = max(cells[poly], cells[x]);
+    }
+
+    TTK_PSORT(nThreads_,
+              hyperUrquhart.begin(),
+              hyperUrquhart.end(),
+              [](const FiltratedQuadFacet &f1, const FiltratedQuadFacet &f2) {
+      if (f1.d == f2.d)
+        return f1.a > f2.a;
+      return f1.d > f2.d;
+    });
+
+    /* reverse-delete algorithm to determine MSA */
+    std::vector<int> latest(N_c);
+    std::iota(latest.begin(), latest.end(), 0);
+
+    for (FiltratedQuadFacet const& f : hyperUrquhart) { //sorted by decreasing order
+      const int v1 = UF.find(f.c1);
+      const int v2 = UF.find(f.c2);
+      if (v1 != v2) { // two distinct codimension-1 cavities: merge them by deleting the facet
+        UF.unite(v1, v2);
+
+        const int latest1 = latest[v1];
+        const int latest2 = latest[v2];
+        const FiltratedDSimplex<DIM>& death1 = cells[latest1];
+        const FiltratedDSimplex<DIM>& death2 = cells[latest2];
+
+        if (death1.d < death2.d) {
+          if (f.d < death1.d)
+            ph.emplace_back(FiltratedSimplex{Simplex(f.s.begin(), f.s.end()), sqrt(f.d)},
+                            FiltratedSimplex{Simplex(death1.s.begin(), death1.s.end()), sqrt(death1.d)});
+          latest[UF.find(v1)] = latest2;
+        }
+        else if (death2.d < death1.d) {
+          if (f.d < death2.d)
+            ph.emplace_back(FiltratedSimplex{Simplex(f.s.begin(), f.s.end()), sqrt(f.d)},
+                            FiltratedSimplex{Simplex(death2.s.begin(), death2.s.end()), sqrt(death2.d)});
+          latest[UF.find(v1)] = latest1;
+        }
+      }
+      else // this is a facet from the minimal spanning acycle
+        MSA.push_back({f.s, f.d, f.a});
+    }
+#endif
   }
 
   template <unsigned DIM>
   template <unsigned D>
   void DRPersistenceD<DIM>::computeNextPH(Diagram &ph,
-                                          DSimplicialComplex<D> const& MSA,
+                                          DSimplicialComplex<D> &MSA,
                                           DSimplicialComplex<minus1(D)> &nextMSA) const {
+    const unsigned N_msa = MSA.size();
+
     /* Connectivity */
 
     ConnectivityHashMap<minus1(D)> msa_connectivity;
-    msa_connectivity.reserve(MSA.size());
-    for (unsigned i = 0; i<MSA.size(); ++i) {
+    msa_connectivity.reserve(N_msa);
+    for (unsigned i = 0; i<N_msa; ++i) {
       DSimplex<minus1(D)> face;
       if constexpr (D == DYN_DIM)
         face.resize(MSA[0].s.size()-1);
       for (unsigned k=0; k<MSA[0].s.size(); ++k) {
         for (unsigned j=0; j<MSA[0].s.size()-1; ++j)
           face[j] = MSA[i].s[j + (j>=k)];
-        msa_connectivity[face].reserve(4); //todo adjust guess
+        msa_connectivity[face].reserve(4); //guess
         msa_connectivity[face].emplace_back(i, MSA[i].s[k]);
       }
     }
@@ -366,8 +533,7 @@ namespace ttk::gph {
     /* Urquhart-ness and Urquhart-polytopes */
 
     std::vector<FiltratedDSimplex<minus1(D)>> critical;
-    UnionFind UF_msa (MSA.size());
-    std::vector<FiltratedDSimplex<minus1(D)>> maxDelaunay (MSA.size());
+    UnionFind UF_msa (N_msa);
 
     for (auto const& [s, neighbors] : msa_connectivity) {
 
@@ -375,11 +541,9 @@ namespace ttk::gph {
       bool is_urquhart = true;
       ValueArray<D*minus1(D)/2> lengths;
       getLengths<minus1(D)>(s, lengths);
-      std::pair<double,double> diam;
-      for (double const& l : lengths) {
-        diam.first = std::max(diam.first, l);
-        diam.second += l;
-      }
+      std::pair diam {0.0, 0.0};
+      for (double const& l : lengths)
+        diam = {std::max(diam.first, l), diam.second + l};
 
       for (auto [coface_id, linkPoint_id] : neighbors) {
         if (checkLinkUrquhart<minus1(D)>(s, lengths, diam, linkPoint_id)) {
@@ -393,50 +557,46 @@ namespace ttk::gph {
         critical.push_back({s, diam.first, diam.second});
       else {
         if (neighbors.size() == 1) //set infinite polytope
-          maxDelaunay[UF_msa.find(neighbors[0].first)].d = inf;
-        else if (neighbors.size() == 2) {
-          const int poly1 = UF_msa.find(neighbors[0].first);
-          const int poly2 = UF_msa.find(neighbors[1].first);
-          maxDelaunay[UF_msa.mergeRet(poly1, poly2)] = max(FiltratedDSimplex<minus1(D)>{s, diam.first, diam.second},
-                                                               max(maxDelaunay[poly1], maxDelaunay[poly2]));
-        }
-        else {
+          MSA[neighbors[0].first].d = inf;
+        else if (neighbors.size() == 2)
+          UF_msa.merge(neighbors[0].first, neighbors[1].first);
+        else
           critical.push_back({s, diam.first, diam.second});
-          for (auto const& f_id : neighbors) {
-            const int poly = UF_msa.find(f_id.first);
-            maxDelaunay[poly] = max(FiltratedDSimplex<minus1(D)>{s, diam.first, diam.second}, maxDelaunay[poly]);
-          }
-        }
       }
+    }
+
+    for (unsigned x = 0; x<N_msa; ++x) {
+      const int poly = UF_msa.find(x);
+      MSA[poly] = max(MSA[poly], MSA[x]);
     }
 
     /* Graph critical -- polytope */
 
     std::vector<id_t> polytopes;
-    for (unsigned x=0; x<MSA.size(); ++x) {
-      if (UF_msa.isRoot(x) && maxDelaunay[x].d < inf)
+    for (unsigned x=0; x<N_msa; ++x) {
+      if (UF_msa.isRoot(x) && MSA[x].d < inf)
         polytopes.emplace_back(x);
     }
 
     std::sort(polytopes.begin(), polytopes.end(), [&](const int x1, const int x2) {
-      return maxDelaunay[x1] < maxDelaunay[x2];
+      return MSA[x1] < MSA[x2];
     });
 
     std::vector<int> criticalIndices(critical.size());
     std::iota(criticalIndices.begin(), criticalIndices.end(), 0);
     std::sort(criticalIndices.begin(), criticalIndices.end(), [&](const int x1, const int x2) {
-          return critical[x1].d < critical[x2].d;
-        });
+      return critical[x1].d < critical[x2].d;
+    });
     std::vector<int> criticalOrder(critical.size());
     for (unsigned i=0; i<criticalIndices.size(); ++i)
       criticalOrder[criticalIndices[i]] = i;
 
-    std::vector<std::vector<int>> poly_to_crit(MSA.size());
+    std::vector<std::vector<int>> poly_to_crit(N_msa);
     for (const int poly : polytopes)
-      poly_to_crit[poly].reserve(D+1); //todo adjust guess
+      poly_to_crit[poly].reserve(D+1); //guess
     for (unsigned i=0; i<critical.size(); ++i) {
       for (const auto& [poly,_] : msa_connectivity[critical[i].s]) {
-        if (maxDelaunay[UF_msa.find(poly)].d < inf) {
+        if (MSA[UF_msa.find(poly)].d < inf) {
           auto &neighbors = poly_to_crit[UF_msa.find(poly)];
           auto it = std::find(neighbors.begin(), neighbors.end(), criticalOrder[i]);
           if (it == neighbors.end())
@@ -457,7 +617,7 @@ namespace ttk::gph {
         if (partner[youngest_id] == -1) {
           partner[youngest_id] = poly;
           const FiltratedDSimplex<minus1(D)> &c = critical[criticalIndices[youngest_id]];
-          const FiltratedDSimplex<minus1(D)> &death = maxDelaunay[poly];
+          const FiltratedDSimplex<D> &death = MSA[poly];
           if (c.d < death.d)
             ph.emplace_back(FiltratedSimplex{Simplex(c.s.begin(), c.s.end()), sqrt(c.d)},
                             FiltratedSimplex{Simplex(death.s.begin(), death.s.end()), sqrt(death.d)});
@@ -484,37 +644,210 @@ namespace ttk::gph {
   }
 
   template <unsigned DIM>
-  void runDelaunayRipsPersistenceDiagram(rpd::PointCloud const& points, MultidimensionalDiagram &diagram) {
+  template <unsigned D>
+  void DRPersistenceD<DIM>::computeNextPH_p(Diagram &ph,
+                                            DSimplicialComplex<D> &MSA,
+                                            DSimplicialComplex<minus1(D)> &nextMSA) const {
+#ifndef TTK_GPH_PARALLEL
+    computeNextPH(ph, MSA, nextMSA);
+#else
+    tbb::global_control gc(tbb::global_control::max_allowed_parallelism, nThreads_);
+    omp_set_num_threads(nThreads_);
+    const unsigned N_msa = MSA.size();
+
+    /* Connectivity */
+
+    ConcurrentConnectivityHashMap<minus1(D)> concurrent_msa_connectivity;
+    concurrent_msa_connectivity.reserve(N_msa);
+
+    #pragma omp parallel for
+    for (unsigned i = 0; i<N_msa; ++i) {
+      DSimplex<minus1(D)> face;
+      if constexpr (D == DYN_DIM)
+        face.resize(MSA[0].s.size()-1);
+      for (unsigned k=0; k<MSA[0].s.size(); ++k) {
+        for (unsigned j=0; j<MSA[0].s.size()-1; ++j)
+          face[j] = MSA[i].s[j + (j>=k)];
+        concurrent_msa_connectivity.emplace_or_visit(face, std::vector<std::pair<int,int>>{std::make_pair(i, MSA[i].s[k])},  [&](auto& x) {
+          x.second.emplace_back(i, MSA[i].s[k]);
+        });
+      }
+    }
+
+    /* Urquhart-ness and Urquhart-polytopes */
+
+    tbb::concurrent_vector<FiltratedDSimplex<minus1(D)>> critical;
+    DisjointSets UF_msa (N_msa);
+
+    concurrent_msa_connectivity.cvisit_all(std::execution::par, [&](const auto& x) {
+      const auto& [s, neighbors] = x;
+
+      // first determine whether s is Urquhart
+      bool is_urquhart = true;
+      ValueArray<D*minus1(D)/2> lengths;
+      getLengths<minus1(D)>(s, lengths);
+      std::pair diam {0.0, 0.0};
+      for (double const& l : lengths)
+        diam = {std::max(diam.first, l), diam.second + l};
+
+      for (auto [coface_id, linkPoint_id] : neighbors) {
+        if (checkLinkUrquhart<minus1(D)>(s, lengths, diam, linkPoint_id)) {
+          is_urquhart = false;
+          break;
+        }
+      }
+
+      // now maintain the polytope structure
+      if (is_urquhart)
+        critical.push_back({s, diam.first, diam.second});
+      else {
+        if (neighbors.size() == 1) //set infinite polytope
+          MSA[neighbors[0].first].d = inf;
+        else if (neighbors.size() == 2)
+          UF_msa.unite(neighbors[0].first, neighbors[1].first);
+        else
+          critical.push_back({s, diam.first, diam.second});
+      }
+    });
+
+    std::vector<std::mutex> maxDelaunayLocks(N_msa);
+    #pragma omp parallel for
+    for (unsigned x = 0; x<N_msa; ++x) {
+      const int poly = UF_msa.find(x);
+      std::lock_guard lock(maxDelaunayLocks[poly]);
+      MSA[poly] = max(MSA[poly], MSA[x]);
+    }
+
+    const ConnectivityHashMap<minus1(D)> msa_connectivity = std::move(concurrent_msa_connectivity);
+
+    /* Graph critical -- polytope */
+
+    std::vector<id_t> polytopes;
+    for (unsigned x=0; x<N_msa; ++x) {
+      if (UF_msa.isRoot(x) && MSA[x].d < inf)
+        polytopes.emplace_back(x);
+    }
+
+    TTK_PSORT(nThreads_, polytopes.begin(), polytopes.end(), [&](const int x1, const int x2) {
+      return MSA[x1] < MSA[x2];
+    });
+
+    std::vector<int> criticalIndices(critical.size());
+    std::iota(criticalIndices.begin(), criticalIndices.end(), 0);
+    TTK_PSORT(nThreads_, criticalIndices.begin(), criticalIndices.end(), [&](const int x1, const int x2) {
+      return critical[x1].d < critical[x2].d;
+    });
+    std::vector<int> criticalOrder(critical.size());
+    for (unsigned i=0; i<criticalIndices.size(); ++i)
+      criticalOrder[criticalIndices[i]] = i;
+
+    std::vector<std::vector<int>> poly_to_crit(N_msa);
+    std::vector<std::mutex> poly_mutex(N_msa);
+    std::vector<std::mutex> crit_mutex(critical.size());
+
+    #pragma omp parallel for
+    for (unsigned i = 0; i < critical.size(); ++i) {
+      for (const auto& [poly, _] : msa_connectivity.find(critical[i].s)->second) {
+        const int uf_poly = UF_msa.find(poly);
+        if (MSA[uf_poly].d < inf) {
+          auto &neighbors = poly_to_crit[uf_poly];
+          std::lock_guard lock(poly_mutex[uf_poly]);
+          auto it = std::find(neighbors.begin(), neighbors.end(), criticalOrder[i]);
+          if (it == neighbors.end())
+            neighbors.push_back(criticalOrder[i]);
+          else
+            neighbors.erase(it);
+        }
+      }
+    }
+
+    /* PairCells */
+
+    std::vector<int> partner(critical.size(), -1);
+
+    auto eliminateBoundary = [&] (const int poly) -> int {
+      std::lock_guard lock(poly_mutex[poly]);
+      HashSet<int> boundary (poly_to_crit[poly].begin(), poly_to_crit[poly].end(), poly_to_crit[poly].size());;
+      while (true) {
+        const int youngest_id = *std::max_element(boundary.begin(), boundary.end());
+        std::lock_guard lock_crit(crit_mutex[youngest_id]);
+        if (partner[youngest_id] == -1) {
+          partner[youngest_id] = poly;
+          poly_to_crit[poly].assign(boundary.begin(), boundary.end());
+          return -1;
+        }
+        std::lock_guard lock_partner(poly_mutex[partner[youngest_id]]);
+        if (MSA[partner[youngest_id]].d > MSA[poly].d) {
+          const int tmp = partner[youngest_id];
+          partner[youngest_id] = poly;
+          poly_to_crit[poly].assign(boundary.begin(), boundary.end());
+          return tmp;
+        }
+        for (const int crit : poly_to_crit[partner[youngest_id]]) {
+          const auto it = boundary.find(crit);
+          if (it == boundary.end())
+            boundary.insert(crit);
+          else
+            boundary.erase(it);
+        }
+      }
+    };
+
+    #pragma omp parallel for
+    for (const int poly : polytopes) {
+      int p = poly;
+      while (p >= 0)
+        p = eliminateBoundary(p);
+    }
+
+    /* Next MSA */
+    for (unsigned i=0; i<critical.size(); ++i) {
+      const int poly = partner[i];
+      if (poly == -1) // unassigned -> go in next MSA
+        nextMSA.emplace_back(critical[criticalIndices[i]]);
+      else {
+        const FiltratedDSimplex<minus1(D)> &c = critical[criticalIndices[i]];
+        const FiltratedDSimplex<D> &death = MSA[poly];
+        if (c.d < death.d)
+          ph.emplace_back(FiltratedSimplex{Simplex(c.s.begin(), c.s.end()), sqrt(c.d)},
+                          FiltratedSimplex{Simplex(death.s.begin(), death.s.end()), sqrt(death.d)});
+      }
+    }
+#endif
+  }
+
+  template <unsigned DIM>
+  void runDelaunayRipsPersistenceDiagram(rpd::PointCloud const& points, MultidimensionalDiagram &diagram, const int threads) {
     PointCloud<DIM> p(points.size());
     for (unsigned i = 0; i < points.size(); ++i) {
       for (unsigned d = 0; d < DIM; ++d)
         p[i][d] = points[i][d];
     }
-    DRPersistenceD<DIM> drpd(p);
+    DRPersistenceD<DIM> drpd(p, threads);
     drpd.run(diagram);
   }
 
   template <>
-  inline void runDelaunayRipsPersistenceDiagram<DYN_DIM>(rpd::PointCloud const& points, MultidimensionalDiagram &diagram) {
+  inline void runDelaunayRipsPersistenceDiagram<DYN_DIM>(rpd::PointCloud const& points, MultidimensionalDiagram &diagram, const int threads) {
     PointCloud<DYN_DIM> p = points;
-    DRPersistenceD<DYN_DIM> drpd(p);
+    DRPersistenceD<DYN_DIM> drpd(p, threads);
     drpd.run(diagram);
   }
 
   template <unsigned DIM>
-  void tryDimension(rpd::PointCloud const& points, MultidimensionalDiagram &diagram) {
+  void tryDimension(rpd::PointCloud const& points, MultidimensionalDiagram &diagram, const int threads) {
     if constexpr (DIM <= TTK_DELAUNAY_MAX_COMPILED_DIMENSION) {
       if (points[0].size() == DIM)
-        runDelaunayRipsPersistenceDiagram<DIM>(points, diagram);
+        runDelaunayRipsPersistenceDiagram<DIM>(points, diagram, threads);
       else
-        tryDimension<DIM+1>(points, diagram);
+        tryDimension<DIM+1>(points, diagram, threads);
     }
     else
-      runDelaunayRipsPersistenceDiagram<DYN_DIM>(points, diagram);
+      runDelaunayRipsPersistenceDiagram<DYN_DIM>(points, diagram, threads);
   }
 
-  inline void tryDimensions(rpd::PointCloud const& points, MultidimensionalDiagram &diagram) {
-    tryDimension<4>(points, diagram);
+  inline void tryDimensions(rpd::PointCloud const& points, MultidimensionalDiagram &diagram, const int threads) {
+    tryDimension<4>(points, diagram, threads);
   }
 
 }

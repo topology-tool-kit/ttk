@@ -6,14 +6,30 @@
 #if ((BOOST_VERSION / 100) % 1000) >= 81
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <boost/unordered/unordered_flat_set.hpp>
-#elif ((BOOST_VERSION / 100) % 1000) >= 36
+#else
 #include <boost/unordered/unordered_map.hpp>
 #include <boost/unordered/unordered_set.hpp>
-#else
-#include <unordered_map>
-#include <unordered_set>
-#include <boost/container_hash/hash.hpp>
 #endif
+
+#if ((BOOST_VERSION / 100) % 1000) >= 83
+#include <boost/unordered/concurrent_flat_map.hpp>
+#define TTK_CONCURRENT_HASHTABLE_AVAILABLE
+#endif
+
+#ifdef TTK_ENABLE_TBB
+#include <tbb/concurrent_vector.h>
+#include <tbb/global_control.h>
+#endif
+
+#ifdef __cpp_lib_execution
+#include <execution>
+#endif
+
+#if defined(TTK_ENABLE_OPENMP) and defined(TTK_ENABLE_TBB) and defined(TTK_CONCURRENT_HASHTABLE_AVAILABLE)
+#define TTK_GPH_PARALLEL
+#endif
+
+#include <dset.h>
 
 using namespace ttk::rpd;
 
@@ -50,12 +66,13 @@ namespace ttk::gph {
 #if ((BOOST_VERSION / 100) % 1000) >= 81
   template <typename X, typename Y> using HashMap = boost::unordered_flat_map<X, Y>;
   template <typename X> using HashSet = boost::unordered_flat_set<X>;
-#elif ((BOOST_VERSION / 100) % 1000) >= 36
+#else
   template <typename X, typename Y> using HashMap = boost::unordered_map<X, Y>;
   template <typename X> using HashSet = boost::unordered_set<X>;
-#else
-  template <typename X, typename Y> using HashMap = std::unordered_map<X, Y, boost::hash<X>>;
-  template <typename X> using HashSet = std::unordered_set<X, boost::hash<X>>;
+#endif
+
+#if ((BOOST_VERSION / 100) % 1000) >= 83
+  template <typename X, typename Y> using ConcurrentHashMap = boost::concurrent_flat_map<X, Y>;
 #endif
 
 }
