@@ -232,7 +232,7 @@ if(NOT TTK_ENABLE_ZFP)
   find_package(ZFP QUIET)
 endif()
 
-find_package(Eigen3 3.3 QUIET NO_MODULE)
+find_package(Eigen3 QUIET NO_MODULE)
 if(Eigen3_FOUND)
   option(TTK_ENABLE_EIGEN "Enable Eigen3 support" ON)
   message(STATUS "Found Eigen ${Eigen3_VERSION} (${EIGEN3_INCLUDE_DIR})")
