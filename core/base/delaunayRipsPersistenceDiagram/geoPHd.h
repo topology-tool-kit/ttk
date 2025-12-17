@@ -381,6 +381,8 @@ namespace ttk::gph {
     std::vector<FiltratedDSimplex<DIM>> cells(N_c);
     for (auto c_it = del_.finite_full_cells_begin(); c_it != del_.finite_full_cells_end(); ++c_it) {
       FiltratedDSimplex<DIM> cell;
+      if constexpr (DIM==DYN_DIM)
+        cell.s.resize(del_.current_dimension()+1);
       cell.d = -1.;
       for (unsigned i = 0; i<cell.s.size(); ++i)
         cell.s[i] = c_it->vertex(i)->data();
