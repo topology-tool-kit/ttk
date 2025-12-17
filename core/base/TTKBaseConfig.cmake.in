@@ -39,11 +39,11 @@ if (@TTK_ENABLE_SCIKIT_LEARN@ AND NOT @TTK_ENABLE_SHARED_BASE_LIBRARIES@)
   find_package(Python3 COMPONENTS Development NumPy)
 endif()
 
-if (@TTK_ENABLE_CGAL@ AND @CGAL_FOUND@)
+if (@TTK_ENABLE_CGAL@)
   find_dependency(CGAL REQUIRED)
 endif()
 
-if (@TTK_ENABLE_EIGEN@ AND @Eigen3_FOUND@)
+if (@TTK_ENABLE_EIGEN@)
   find_dependency(Eigen3 REQUIRED)
 endif()
 
