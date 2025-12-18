@@ -44,7 +44,7 @@ if (@TTK_ENABLE_CGAL@)
 endif()
 
 if (@TTK_ENABLE_EIGEN@)
-  find_dependency(Eigen3 REQUIRED)
+  find_dependency(Eigen3 CONFIG REQUIRED)
 endif()
 
 # Include the actual targets for TTK Base
