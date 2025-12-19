@@ -405,7 +405,6 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   surfaceFinalId->SetNumberOfTuples(nPts);
   surfaceFinalId->FillComponent(0, -1);
 
-
   auto criticalSurface = vtkSmartPointer<vtkDoubleArray>::New();
   criticalSurface->SetName("isCritical");
   criticalSurface->SetNumberOfTuples(nPts);
@@ -417,35 +416,87 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
 //    if(i < newTraj.size() && newTraj[i].size() > 4 && static_cast<int>(newTraj[i][4]) != -1) {
 //      finalId = static_cast<int>(newTraj[i][4]);
 //    }
+
   
     for(const auto v : trajSurface) {
       if(v < 0 || v >= nPts) continue;
-  
+ 	  auto *scalars = static_cast<double *>(inputFields[frameSurface]);
       const int current = surfaceFinalId->GetValue(v);
       if(current == -1) {
         surfaceFinalId->SetValue(v, i);
+		criticalSurface->SetValue(v, static_cast<double>(scalars[saddleSeg[i]]) - static_cast<double>(scalars[minSeg[i]]));
       } else {
         surfaceFinalId->SetValue(v, -2);
       }
     }
   }
 
-  for (size_t i = 0; i<finalTraj.size(); i++){
-  	//this->printMsg("TRAJ = " + std::to_string(i) + " start = " + std::to_string(finalTraj[i][4]) + " end = " + std::to_string(finalTraj[i][5]));
-	for (size_t j= 0; j<distance[i].size(); j++){
-		int frameUse = finalTraj[i][4] + j;
-		//this->printMsg("  " + std::to_string(distance[i][j]) + " frame = " + std::to_string(frameUse));
-	}
+  vtkDataSet *ds = outputSurface; 
+  
+  vtkIdType nCells = ds->GetNumberOfCells();
+  
+  auto surfaceFinalIdCellProp = vtkSmartPointer<vtkIntArray>::New();
+  surfaceFinalIdCellProp->SetName("FinalTrajId"); 
+  surfaceFinalIdCellProp->SetNumberOfTuples(nPts);
+  surfaceFinalIdCellProp->FillComponent(0, -1);
+  
+  for(vtkIdType p = 0; p < nPts; ++p) {
+    surfaceFinalIdCellProp->SetValue(p, surfaceFinalId->GetValue(p));
   }
-
+  
+    for(vtkIdType cId = 0; cId < nCells; ++cId) {
+    vtkCell *cell = ds->GetCell(cId);
+    if(!cell) continue;
+  
+    vtkIdList *ptIds = cell->GetPointIds();
+    if(!ptIds) continue;
+  
+    int chosen = -1;
+    bool conflict = false;
+  
+    const vtkIdType m = ptIds->GetNumberOfIds();
+    for(vtkIdType k = 0; k < m; ++k) {
+      const vtkIdType pId = ptIds->GetId(k);
+      const int v = surfaceFinalId->GetValue(pId);
+  
+      if(v == -1) continue;
+  
+      if(chosen == -1) {
+        chosen = v; 
+      } else if(v != chosen) {
+        conflict = true;
+        break;
+      }
+    }
+  
+    if(chosen == -1) {
+      continue; 
+    }
+  
+    const int writeVal = conflict ? -2 : chosen;
+  
+    for(vtkIdType k = 0; k < m; ++k) {
+      const vtkIdType pId = ptIds->GetId(k);
+  
+      const int cur = surfaceFinalIdCellProp->GetValue(pId);
+      if(cur == -1) {
+        surfaceFinalIdCellProp->SetValue(pId, writeVal);
+      } else if(cur != writeVal) {
+        surfaceFinalIdCellProp->SetValue(pId, -2);
+      }
+    }
+  }
+  
+  surfaceFinalId = surfaceFinalIdCellProp;
+  
   outputSurface->GetPointData()->AddArray(surfaceFinalId);
-  // outputSurface->GetPointData()->AddArray(criticalSurface);
+  outputSurface->GetPointData()->AddArray(criticalSurface);
  
   // --------------------------- LINEAR REG && ADDED --------------------------
   
   const vtkIdType nInit  = static_cast<vtkIdType>(newTraj.size());
   const vtkIdType nLinks = static_cast<vtkIdType>(fuseRecords.size());
-  const vtkIdType nCells = nInit + nLinks;
+  nCells = nInit + nLinks;
   
   auto pts   = vtkSmartPointer<vtkPoints>::New();
   auto lines = vtkSmartPointer<vtkCellArray>::New();
@@ -542,33 +593,6 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   
   this->printMsg("End TrajectoryStatistic");
 
-  //  copy of the input grid with per-segment final trajectory id ---
-  /*
-  vtkSmartPointer<vtkUnstructuredGrid> segCopy = vtkSmartPointer<vtkUnstructuredGrid>::Take(inputGrid->NewInstance());
-  segCopy->ShallowCopy(inputGrid);
-
-  vtkIdType inNumCells = inputGrid->GetNumberOfCells();
-  vtkSmartPointer<vtkIntArray> cellLinearFinalId = vtkSmartPointer<vtkIntArray>::New();
-  cellLinearFinalId->SetName("linearFinalId");
-  cellLinearFinalId->SetNumberOfTuples(inNumCells);
-  cellLinearFinalId->FillComponent(0, -1);
-
-  for(size_t i = 0; i < cellsPerTraj.size(); ++i) {
-    int finalId = -1;
-    if(i < newTraj.size() && newTraj[i].size() > 4) {
-      finalId = static_cast<int>(newTraj[i][4]);
-    }
-    const auto &cells = cellsPerTraj[i];
-    for(const auto cId : cells) {
-      if(cId >= 0 && cId < inNumCells) {
-        cellLinearFinalId->SetValue(cId, finalId);
-      }
-    }
-  }
-
-  outputSegmentsLabeled->ShallowCopy(segCopy);
-  outputSegmentsLabeled->GetCellData()->AddArray(cellLinearFinalId);
-  */
   return 1;
 }
 

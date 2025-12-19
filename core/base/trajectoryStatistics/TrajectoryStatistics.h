@@ -231,6 +231,22 @@ namespace ttk {
                             const ttk::AbstractTriangulation *triangulation
     );
 
+	template <typename dataType, typename triangulationType>
+	void cleanDarkSegmentInPlace(
+								   std::vector<ttk::SimplexId> &segmentVerts,
+                                   const dataType *scalars,
+                                   const triangulationType *triangulation,
+                                   const int otsuBins
+	);
+
+
+	template <class dataType>
+	dataType otsuThresholdLocal(
+							       const std::vector<ttk::SimplexId> &verts,
+                                   const dataType *scalars,
+                                   const int nbins
+	);
+
 
     std::vector<void *> inputData_{};
     std::vector<std::vector<double>> instantPers_;
@@ -1561,7 +1577,7 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 
   this->printMsg("Computing Merge Tree Segmentation");
 
-  for(int frame = 0; frame < nFrames; frame++) {
+  for(int frame = 0  ; frame < nFrames; frame++) {
 	this->printMsg("Computing frame : " + std::to_string(frame));
     // -----------------------------------------------------------------------
     // 1) Persistence diagram : scalars + offsets (pattern TTK)
@@ -1584,8 +1600,6 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 
     ttk::DiagramType diagram;
 
-    this->printMsg("juste avant l'appel PD");
-
     const int statusPD = persistenceDiagram.execute(
       diagram,
       scalars,
@@ -1597,8 +1611,6 @@ int ttk::TrajectoryStatistics::computeMergeTree(
       this->printErr("PersistenceDiagram::execute failed");
       return -1;
     }
-
-    this->printMsg("diagram done");
 
     // -----------------------------------------------------------------------
     // 2) Extraction des sommets critiques (dimension 0, pers >= seuil)
@@ -1617,8 +1629,6 @@ int ttk::TrajectoryStatistics::computeMergeTree(
       criticalPoints.push_back(pair.birth.id);
       criticalPoints.push_back(pair.death.id);
     }
-
-    this->printMsg("persis thresh");
 
     // -----------------------------------------------------------------------
     // 3) TopologicalSimplification
@@ -1654,12 +1664,9 @@ int ttk::TrajectoryStatistics::computeMergeTree(
       *const_cast<triangulationType *>(triangulation),
       emptyDiagram);
 
-    this->printMsg("topological simplification");
-
     // -----------------------------------------------------------------------
     // 4) Merge tree via ExTreeM
     // -----------------------------------------------------------------------
-    this->printMsg("merge tree: build order & path compression");
 
     std::vector<ttk::SimplexId> order(nPixels);
     ttk::preconditionOrderArray<dataType>(
@@ -1691,8 +1698,6 @@ int ttk::TrajectoryStatistics::computeMergeTree(
         return -1;
       }
     }
-
-    this->printMsg("merge tree: path compression done");
 
     std::vector<ttk::SimplexId> segmentation(nPixels, -1);
     std::vector<char>           regionType(nPixels, 0);
@@ -1731,8 +1736,6 @@ int ttk::TrajectoryStatistics::computeMergeTree(
       triangulation,
       treeType);
 
-    this->printMsg("merge tree: computePairs done");
-
     if(statusMT != 1) {
       this->printErr("ExTreeM::computePairs failed");
       return -1;
@@ -1746,7 +1749,6 @@ int ttk::TrajectoryStatistics::computeMergeTree(
     std::vector<std::vector<ttk::SimplexId>> segmentId(
       *std::max_element(segmentation.begin(), segmentation.end()) + 1);
 
-    // Construction des listes de sommets par segment (séquentiel, push_back)
     for(size_t vId = 0; vId < segmentation.size(); vId++) {
       if(regionType[vId] == 0)
         segmentId[segmentation[vId]].push_back(static_cast<ttk::SimplexId>(vId));
@@ -1754,7 +1756,6 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 
     std::vector<ttk::SimplexId> segMinVertex(segmentId.size(), -1);
 
-    // Recherche du sommet "min" par segment (parallélisable)
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
     for(size_t s = 0; s < segmentId.size(); ++s) {
@@ -1779,7 +1780,6 @@ int ttk::TrajectoryStatistics::computeMergeTree(
       segMinVertex[s] = bestV;
     }
 
-    // Boucle sur les trajectoires (parallélisable)
     for(size_t trajId = 0; trajId < nTraj; ++trajId) {
       const auto &traj = finalTraj[trajId];
       const double ax = traj[0];
@@ -1806,82 +1806,38 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 
       if(vId < 0 || vId >= nPixels)
         continue;
+	  
+	  std::vector<char> segCleaned(segmentId.size(), 0);
 
-      if(regionType[vId] == 0) {
-        auto segId = segmentation[vId];
-			
-		float xyz[3];
-		triangulation->getVertexPoint(segMinVertex[segId], xyz[0], xyz[1], xyz[2]);
-		double dist = std::pow(std::pow(xi - xyz[0], 2) + std::pow(yi - xyz[1], 2), 0.5);
+	  if(regionType[vId] == 0) {
+	    auto segId = segmentation[vId];
 
-		distance[trajId].push_back(dist);
-		distanceFrame[trajId].push_back(frame);
-        // surface instantanée
-        double surfVal = static_cast<double>(
-        computeSurfaceCellCount(segmentId[segId], triangulation));
-		if (surfVal == 0) surfVal = 1;
-        trajSurfaces[trajId].push_back(surfVal);
-		
-        if(frame == static_cast<int>(frameSurf)) {
-          allVertexDebris[trajId] = segmentId[segId];
-          
-		  (*saddleSeg_)[trajId]   = segMinVertex[segId];
-          (*minSeg_)[trajId]      = segId;
-        }
-      }
-    } // fin boucle trajId
-  }   // fin boucle frames
+	    // --- POST-TRAITEMENT ---
+		if(segId >= 0 && segId < (ttk::SimplexId)segmentId.size() && !segCleaned[segId] && segmentId[segId].size() > 8) 		 {
+	  	  cleanDarkSegmentInPlace<dataType, triangulationType>(
+	  	    segmentId[segId], scalars, triangulation, 64);
+	  	  segCleaned[segId] = 1;
+	    }
 
+	    double surfVal = static_cast<double>(
+	  	computeSurfaceCellCount(segmentId[segId], triangulation));
+	    if(surfVal == 0) surfVal = 1;
 
-  // -------------------------------------------------------------------------
-  // 5bis) Analyse du vecteur distance : médiane + max + |max - médiane|
-  // -------------------------------------------------------------------------
-  auto medianOfCopy = [](std::vector<double> v) -> double {
-    const size_t n = v.size();
-    if(n == 0)
-      return std::numeric_limits<double>::quiet_NaN();
+	    trajSurfaces[trajId].push_back(surfVal);
+	    distance[trajId].push_back(surfVal);
+	    distanceFrame[trajId].push_back(frame);
 
-    const size_t mid = n / 2;
-    std::nth_element(v.begin(), v.begin() + mid, v.end());
-    const double upperMid = v[mid];
+	    if(frame == static_cast<int>(frameSurf)) {
+	  	  allVertexDebris[trajId] = segmentId[segId];
 
-    if(n % 2 == 1) {
-      return upperMid;
-    }
+	  	  (*saddleSeg_)[trajId]   = segMinVertex[segId];
+	  	  (*minSeg_)[trajId]      = segId;
+	    }
+	  }
 
-    // médiane pour n pair = moyenne des 2 centraux
-    const double lowerMid = *std::max_element(v.begin(), v.begin() + mid);
-    return 0.5 * (lowerMid + upperMid);
-  };
+    } 
+  }   
 
-  for(size_t trajId = 0; trajId < nTraj; ++trajId) {
-    const auto &d = distance[trajId];
-
-    if(d.empty()) {
-      this->printMsg("trajId=" + std::to_string(trajId)
-                     + " distance: empty");
-      continue;
-    }
-
-    // max + indice original (dans d)
-    auto itMax = std::max_element(d.begin(), d.end());
-    const double maxVal = *itMax;
-    const size_t maxIdx = static_cast<size_t>(std::distance(d.begin(), itMax));
-
-    // médiane (sur une copie réordonnée)
-    const double med = medianOfCopy(d);
-
-    const double distMaxToMed = std::abs(maxVal - med);
-
-    this->printMsg(
-      "trajId=" + std::to_string(trajId)
-      + " |max-med|=" + std::to_string(distMaxToMed)
-      + " frame=" + std::to_string(distanceFrame[trajId][maxIdx])
-      + " maxVal=" + std::to_string(maxVal)
-      + " median=" + std::to_string(med)
-      + " n=" + std::to_string(d.size())
-    );
-  }
 
 
   // -------------------------------------------------------------------------
@@ -1924,5 +1880,179 @@ int ttk::TrajectoryStatistics::computeMergeTree(
   }
 
   return 0;
+}
+
+
+// ------------------------------------------------------------
+// Helper: compute Otsu threshold on a set of scalar values
+// Works for generic scalar types by discretizing into nbins.
+// ------------------------------------------------------------
+template <class dataType>
+dataType ttk::TrajectoryStatistics::otsuThresholdLocal(
+							       const std::vector<ttk::SimplexId> &verts,
+                                   const dataType *scalars,
+                                   const int nbins) {
+  if(verts.empty())
+    return dataType{0};
+
+  dataType vmin = scalars[verts[0]];
+  dataType vmax = scalars[verts[0]];
+  for(const auto v : verts) {
+    const auto s = scalars[v];
+    if(s < vmin) vmin = s;
+    if(s > vmax) vmax = s;
+  }
+
+  if(vmax <= vmin) // constant region
+    return vmin;
+
+  std::vector<double> hist(nbins, 0.0);
+
+  const double minD = static_cast<double>(vmin);
+  const double maxD = static_cast<double>(vmax);
+  const double invRange = 1.0 / (maxD - minD);
+
+  for(const auto v : verts) {
+    const double s = static_cast<double>(scalars[v]);
+    int b = static_cast<int>(std::floor((s - minD) * invRange * (nbins - 1)));
+    b = std::max(0, std::min(nbins - 1, b));
+    hist[b] += 1.0;
+  }
+
+  const double total = static_cast<double>(verts.size());
+  for(auto &h : hist) h /= total;
+
+  // cumulative sums
+  std::vector<double> omega(nbins, 0.0); // weights
+  std::vector<double> mu(nbins, 0.0);    // means
+  omega[0] = hist[0];
+  mu[0] = 0.0 * hist[0];
+  for(int i = 1; i < nbins; ++i) {
+    omega[i] = omega[i - 1] + hist[i];
+    mu[i] = mu[i - 1] + static_cast<double>(i) * hist[i];
+  }
+  const double muT = mu[nbins - 1];
+
+  int bestK = 0;
+  double bestSigma = -1.0;
+
+  for(int k = 0; k < nbins; ++k) {
+    const double w0 = omega[k];
+    const double w1 = 1.0 - w0;
+    if(w0 <= 1e-12 || w1 <= 1e-12)
+      continue;
+
+    const double mu0 = mu[k] / w0;
+    const double mu1 = (muT - mu[k]) / w1;
+
+    const double sigmaB = w0 * w1 * (mu0 - mu1) * (mu0 - mu1);
+    if(sigmaB > bestSigma) {
+      bestSigma = sigmaB;
+      bestK = k;
+    }
+  }
+
+  // Map bin index back to scalar threshold
+  const double t = minD + (static_cast<double>(bestK) / (nbins - 1)) * (maxD - minD);
+  return static_cast<dataType>(t);
+}
+
+// ------------------------------------------------------------
+// - compute local Otsu threshold T on this segment
+// - keep only vertices with scalars[v] <= T (dark part)
+// - keep only the largest connected component among kept vertices
+// ------------------------------------------------------------
+template <typename dataType, typename triangulationType>
+void ttk::TrajectoryStatistics::cleanDarkSegmentInPlace(
+								   std::vector<ttk::SimplexId> &segmentVerts,
+                                   const dataType *scalars,
+                                   const triangulationType *triangulation,
+                                   const int otsuBins) {
+  if(segmentVerts.size() < 2)
+    return;
+
+  // 1) Local adaptive threshold
+  const dataType T = otsuThresholdLocal<dataType>(segmentVerts, scalars, otsuBins);
+
+  // 2) Keep only dark vertices (<= T)
+  std::vector<char> inSeg(triangulation->getNumberOfVertices(), 0);
+  std::vector<ttk::SimplexId> kept;
+  kept.reserve(segmentVerts.size());
+
+  for(const auto v : segmentVerts) {
+    if(scalars[v] <= T) {
+      kept.push_back(v);
+      inSeg[v] = 1;
+    }
+  }
+
+  // If Otsu kept almost nothing, don't destroy the segment:
+  // fall back to keep N darkest (robust fallback)
+  const size_t segSize = segmentVerts.size();
+  const size_t minKeep = std::max<size_t>(2, (size_t)std::ceil(0.10 * (double)segSize)); // 10%
+  if(kept.size() < minKeep && segSize >= 2) {
+  
+    for(const auto v : kept) inSeg[v] = 0;
+    kept.clear();
+
+    std::vector<ttk::SimplexId> tmp = segmentVerts;
+    std::sort(tmp.begin(), tmp.end(),
+              [&](ttk::SimplexId a, ttk::SimplexId b) {
+                return scalars[(ttk::SimplexId)a] < scalars[(ttk::SimplexId)b];
+              });
+    
+    for(size_t i = 0; i < std::min(minKeep, tmp.size()); ++i) {
+      kept.push_back(tmp[i]);
+      inSeg[(ttk::SimplexId)tmp[i]] = 1;
+    }
+    
+  }
+
+  if(kept.empty())
+    return;
+
+  // 3) Connected components on kept vertices, keep the largest CC
+  std::vector<char> visited(triangulation->getNumberOfVertices(), 0);
+
+  std::vector<ttk::SimplexId> bestCC;
+  bestCC.reserve(kept.size());
+
+  std::queue<ttk::SimplexId> q;
+
+  for(const auto seed : kept) {
+    if(visited[seed])
+      continue;
+
+    // BFS
+    std::vector<ttk::SimplexId> cc;
+    cc.reserve(128);
+
+    visited[seed] = 1;
+    q.push(seed);
+
+    while(!q.empty()) {
+      const auto u = q.front();
+      q.pop();
+      cc.push_back(u);
+
+      const auto deg = triangulation->getVertexNeighborNumber(u);
+      for(ttk::SimplexId i = 0; i < deg; ++i) {
+        ttk::SimplexId nb{};
+        triangulation->getVertexNeighbor(u, i, nb);
+
+        if(nb < 0) continue;
+        if(!inSeg[nb]) continue;
+        if(visited[nb]) continue;
+
+        visited[nb] = 1;
+        q.push(nb);
+      }
+    }
+
+    if(cc.size() > bestCC.size())
+      bestCC.swap(cc);
+  }
+
+  segmentVerts.swap(bestCC);
 }
 
