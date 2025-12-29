@@ -299,7 +299,6 @@
         <Property name="ComputeAscendingSegmentation"/>
         <Property name="ComputeDescendingSegmentation"/>
         <Property name="ComputeFinalSegmentation"/>
-        <Property name="ComputeVectorGlyphs" />
         <Property name="RunSimplification"/>
         <Property name="SimplificationThreshold"/>
         <Property name="ReverseFullOrbit" />
