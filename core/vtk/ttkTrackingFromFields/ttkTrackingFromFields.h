@@ -83,11 +83,9 @@ public:
   vtkGetMacro(RelativeDestructionCost, double);
   /// @}
 
-  vtkSetMacro(AdaptDeathBirthCost, bool);
-  vtkGetMacro(AdaptDeathBirthCost, bool);
-
-  vtkSetMacro(EpsilonAdapt, double);
-  vtkGetMacro(EpsilonAdapt, double);
+  vtkSetMacro(AssignmentPrecision, double);
+  vtkGetMacro(AssignmentPrecision, double);
+  /// @}
 
   /// @brief Importance weight for the X component of the extremum.
   /// @{
@@ -199,9 +197,8 @@ private:
   double PF{0};
 
   double RelativeDestructionCost{0.1};
-  double EpsilonAdapt{0.5};
+  double AssignmentPrecision{0.01};
   int AssignmentMethod{0};
-  bool AdaptDeathBirthCost{false};
 
   // Bottleneck config.
   bool UseGeometricSpacing{false};

@@ -46,7 +46,7 @@ if (TTK_ENABLE_MPI)
   option(TTK_ENABLE_MPI_TIME "Enable time measuring for MPI computation" FALSE)
   mark_as_advanced(TTK_ENABLE_MPI_TIME)
   option(TTK_ENABLE_MPI_RANK_ID_INT "Enable rank ids of type int (default char) for distributed sort" FALSE)
-  mark_as_advanced(TTK_ENABLE_MPI_RANK_ID_TIME)
+  mark_as_advanced(TTK_ENABLE_MPI_RANK_ID_INT)
 
 endif()
 
@@ -146,7 +146,7 @@ list(INSERT CMAKE_MODULE_PATH 0
 
 # mandatory packages
 
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED CONFIG)
 if(Boost_FOUND)
   message(STATUS "Found Boost ${Boost_VERSION} (${Boost_INCLUDE_DIR})")
 endif()
@@ -160,6 +160,15 @@ if(TORCH_FOUND)
 else()
   option(TTK_ENABLE_TORCH "Enable Torch support" OFF)
   message(STATUS "Torch not found, disabling Torch support in TTK.")
+endif()
+
+find_package(CGAL QUIET)
+if(CGAL_FOUND)
+  option(TTK_ENABLE_CGAL "Enable CGAL support" ON)
+  message(STATUS "Found CGAL ${CGAL_VERSION} (${CGAL_DIR})")
+else()
+  option(TTK_ENABLE_CGAL "Enable CGAL support" OFF)
+  message(STATUS "CGAL not found, disabling CGAL support in TTK.")
 endif()
 
 find_package(ZLIB QUIET)

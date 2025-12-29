@@ -22,6 +22,7 @@
 #include <vtkTransform.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkVRMLExporter.h>
+#include <vtkVersionMacros.h>
 
 // base code includes
 #include <Debug.h>
@@ -145,7 +146,12 @@ TTKWRLEXPORTER_EXPORT void vtkVRMLExporter::WriteAnActor(vtkActor *anActor,
     fprintf(fp, "            solid FALSE\n");
 
     if(!pointDataWritten) {
+
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 4, 20250513)
+      this->WritePointData(points, normals, tcoords, colors, false, fp);
+#else
       this->WritePointData(points, normals, tcoords, colors, fp);
+#endif
       pointDataWritten = 1;
     } else {
       fprintf(fp, "            coord  USE VTKcoordinates\n");
@@ -189,7 +195,13 @@ TTKWRLEXPORTER_EXPORT void vtkVRMLExporter::WriteAnActor(vtkActor *anActor,
     fprintf(fp, "          geometry IndexedFaceSet {\n");
 
     if(!pointDataWritten) {
+
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 4, 20250513)
+      this->WritePointData(points, normals, tcoords, colors, false, fp);
+#else
       this->WritePointData(points, normals, tcoords, colors, fp);
+#endif
+
       pointDataWritten = 1;
     } else {
       fprintf(fp, "            coord  USE VTKcoordinates\n");
@@ -238,7 +250,12 @@ TTKWRLEXPORTER_EXPORT void vtkVRMLExporter::WriteAnActor(vtkActor *anActor,
     fprintf(fp, "          geometry IndexedLineSet {\n");
 
     if(!pointDataWritten) {
+
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 4, 20250513)
+      this->WritePointData(points, nullptr, nullptr, colors, false, fp);
+#else
       this->WritePointData(points, nullptr, nullptr, colors, fp);
+#endif
     } else {
       fprintf(fp, "            coord  USE VTKcoordinates\n");
 
@@ -440,6 +457,9 @@ TTKWRLEXPORTER_EXPORT void
                                   vtkDataArray *normals,
                                   vtkDataArray *tcoords,
                                   vtkUnsignedCharArray *colors,
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 4, 20250513)
+                                  bool vtkNotUsed(cellData),
+#endif
                                   FILE *fp) {
 
   double *p;

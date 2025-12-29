@@ -14,12 +14,14 @@ namespace ttk {
   struct CriticalVertex {
     /** vertex id in domain */
     ttk::SimplexId id;
-    /** critical type */
-    ttk::CriticalType type;
     /** scalar field value */
     double sfValue;
+    /* global offset of the vertex*/
+    ttk::SimplexId offset;
     /** 3D coordinates in domain */
     std::array<float, 3> coords;
+    /** critical type */
+    ttk::CriticalType type;
   };
 
   /**
@@ -35,7 +37,7 @@ namespace ttk {
     /** to help distinguish homology classes with infinite persistence
         (connected components, topological handles or cavities in the
         domain) */
-    bool isFinite;
+    char isFinite;
 
     /**
      * @brief Order pairs according to their birth value

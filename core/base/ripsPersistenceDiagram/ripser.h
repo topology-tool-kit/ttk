@@ -4,17 +4,6 @@
 
 #pragma once
 
-#include <algorithm>
-#include <cassert>
-#include <chrono>
-#include <cmath>
-#include <fstream>
-#include <iostream>
-#include <numeric>
-#include <queue>
-#include <sstream>
-#include <unordered_map>
-
 #include <RipsPersistenceDiagramUtils.h>
 
 namespace ripser {
@@ -35,6 +24,7 @@ namespace ripser {
               index_t dim_max,
               bool distanceMatrix,
               bool criticalEdgesOnly = true,
+              bool infinitePairs = true,
               coefficient_t modulus = 2);
 
   template <typename PersistenceType>
@@ -44,8 +34,18 @@ namespace ripser {
               PersistenceType &ph,
               value_t threshold,
               index_t dim_max,
-              bool distanceMatrix,
               bool criticalEdgesOnly = true,
-              coefficient_t modulus = 2);
+              bool infinitePairs = true,
+              coefficient_t modulus = 2) {
+
+    std::vector<std::vector<value_t>> points(n);
+    for(int i = 0; i < n; ++i) {
+      for(int j = 0; j < dim; ++j)
+        points[i].push_back(data[dim * i + j]);
+    }
+
+    ripser(points, ph, threshold, dim_max, false, criticalEdgesOnly,
+           infinitePairs, modulus);
+  }
 
 } // namespace ripser

@@ -62,6 +62,7 @@ private:
   bool oldKS = keepSubtree_;
 
   bool UseFieldDataParameters = false;
+  int DiagramPairTypes = 0;
 
 public:
   /**
@@ -189,6 +190,9 @@ public:
 
   vtkSetMacro(mixtureCoefficient_, double);
   vtkGetMacro(mixtureCoefficient_, double);
+
+  vtkSetMacro(DiagramPairTypes, int);
+  vtkGetMacro(DiagramPairTypes, int);
 
   /**
    * This static method and the macro below are VTK conventions on how to

@@ -429,16 +429,16 @@ std::vector<int> ttk::PDClustering::execute(
       Good const &g = centroids_max_[c].at(0);
       const auto &critCoords = g.GetCriticalCoordinates();
       final_centroids[c].emplace_back(PersistencePair{
-        CriticalVertex{0, CriticalType::Local_minimum, g.x_, critCoords},
-        CriticalVertex{0, CriticalType::Local_maximum, g.y_, critCoords}, 0,
+        CriticalVertex{0, g.x_, {}, critCoords, CriticalType::Local_minimum},
+        CriticalVertex{0, g.y_, {}, critCoords, CriticalType::Local_maximum}, 0,
         false});
       addedFirstPairMax = 1;
     } else if(do_min_) {
       Good const &g = centroids_min_[c].at(0);
       const auto &critCoords = g.GetCriticalCoordinates();
       final_centroids[c].emplace_back(PersistencePair{
-        CriticalVertex{0, CriticalType::Local_minimum, g.x_, critCoords},
-        CriticalVertex{0, CriticalType::Local_maximum, g.y_, critCoords}, 0,
+        CriticalVertex{0, g.x_, {}, critCoords, CriticalType::Local_minimum},
+        CriticalVertex{0, g.y_, {}, critCoords, CriticalType::Local_maximum}, 0,
         false});
       addedFirstPairMin = 1;
     }
@@ -448,8 +448,9 @@ std::vector<int> ttk::PDClustering::execute(
         Good const &g = centroids_min_[c].at(i);
         const auto &critCoords = g.GetCriticalCoordinates();
         final_centroids[c].emplace_back(PersistencePair{
-          CriticalVertex{0, CriticalType::Local_minimum, g.x_, critCoords},
-          CriticalVertex{0, CriticalType::Saddle1, g.y_, critCoords}, 0, true});
+          CriticalVertex{0, g.x_, {}, critCoords, CriticalType::Local_minimum},
+          CriticalVertex{0, g.y_, {}, critCoords, CriticalType::Saddle1}, 0,
+          true});
         if(g.getPersistence() > 1000) {
           this->printMsg("Found a abnormally high persistence in min diagram",
                          debug::Priority::WARNING);
@@ -462,8 +463,9 @@ std::vector<int> ttk::PDClustering::execute(
         Good const &g = centroids_saddle_[c].at(i);
         const auto &critCoords = g.GetCriticalCoordinates();
         final_centroids[c].emplace_back(PersistencePair{
-          CriticalVertex{0, CriticalType::Saddle1, g.x_, critCoords},
-          CriticalVertex{0, CriticalType::Saddle2, g.y_, critCoords}, 1, true});
+          CriticalVertex{0, g.x_, {}, critCoords, CriticalType::Saddle1},
+          CriticalVertex{0, g.y_, {}, critCoords, CriticalType::Saddle2}, 1,
+          true});
         if(g.getPersistence() > 1000) {
           this->printMsg("Found a abnormally high persistence in sad diagram",
                          debug::Priority::WARNING);
@@ -482,9 +484,9 @@ std::vector<int> ttk::PDClustering::execute(
           saddle_type = ttk::CriticalType::Saddle1;
 
         final_centroids[c].emplace_back(PersistencePair{
-          CriticalVertex{0, saddle_type, g.x_, critCoords},
-          CriticalVertex{0, CriticalType::Local_maximum, g.y_, critCoords}, 2,
-          true});
+          CriticalVertex{0, g.x_, {}, critCoords, saddle_type},
+          CriticalVertex{0, g.y_, {}, critCoords, CriticalType::Local_maximum},
+          2, true});
 
         if(g.getPersistence() > 1000) {
           this->printMsg("Found a abnormally high persistence in min diagram",

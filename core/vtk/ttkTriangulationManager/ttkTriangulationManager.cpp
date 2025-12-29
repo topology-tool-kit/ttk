@@ -246,7 +246,7 @@ int ttkTriangulationManager::processExplicit(
   }
 
   for(unsigned int i = 0; i < cells.size(); i++) {
-    std::array<vtkIdType, 4> cell{};
+    std::vector<vtkIdType> cell(4);
     for(size_t j = 0; j < dimension; j++) {
       ttk::SimplexId vertexId;
       triangulation.getCellVertex(cells[i], j, vertexId);

@@ -1,0 +1,192 @@
+name: test_build-windows
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+env:
+  PV_TAG: v6.0.1-headless
+  PV_REPO: topology-tool-kit/ttk-paraview
+  PV_DIR: C:\Program Files\TTK-ParaView
+  TTK_DIR: C:\Program Files (x86)\ttk
+  CONDA_ROOT: C:\Miniconda
+  CC: clang-cl.exe
+  CXX: clang-cl.exe
+  CMAKE_GENERATOR: Ninja
+  CMAKE_BUILD_TYPE: Release
+  CMAKE_CC_COMPILER_LAUNCHER: sccache
+  CMAKE_CXX_COMPILER_LAUNCHER: sccache
+  SCCACHE_GHA_ENABLED: "true"
+  SCCACHE_IDLE_TIMEOUT: 0
+
+
+jobs:
+
+  # ------------------ #
+  # Test Windows build #
+  # ------------------ #
+  test-build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-2022]
+
+    steps:
+    - uses: actions/checkout@v4
+      name: Checkout TTK source code
+
+    - uses: s-weigand/setup-conda@v1
+
+    - name: Install dependencies with conda
+      shell: bash
+      run: |
+        conda install -c conda-forge libboost-devel glew eigen spectralib zfp  \
+          sqlite scikit-learn graphviz ninja python=3.10 zlib qhull \
+          llvm-openmp clangxx=18
+        # add TTK & ParaView install folders to PATH
+        echo "$PV_DIR/bin" >> $GITHUB_PATH
+        echo "$TTK_DIR/bin" >> $GITHUB_PATH
+        conda info --all
+
+    - name: Run sccache-cache
+      uses: mozilla-actions/sccache-action@v0.0.9
+
+    - name: Remove hosted Python
+      shell: bash
+      run: |
+        rm -rf C:/hostedtoolcache/windows/Python
+
+    - name: Fetch TTK-ParaView headless Windows installer
+      run: |
+        curl.exe -OL https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless.exe
+
+    - name: Install ParaView
+      shell: cmd
+      run: |
+        ttk-paraview-headless.exe /S
+
+    - name: Create & configure TTK build directory
+      shell: cmd
+      run: |
+        set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library\lib\cmake;%CONDA_ROOT%\Library\share\eigen3\cmake;%CONDA_ROOT%\Library\share\Qull\cmake;%CONDA_ROOT%\Library\cmake;%ProgramFiles%\TTK-ParaView\lib\cmake;
+        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        mkdir build
+        cd build
+        cmake ^
+          -DCMAKE_COMPILE_WARNING_AS_ERROR=ON ^
+          -DCMAKE_POLICY_DEFAULT_CMP0092=NEW ^
+          -DCMAKE_POLICY_DEFAULT_CMP0074=NEW ^
+          -DBUILD_SHARED_LIBS:BOOL=TRUE ^
+          -DPython3_ROOT_DIR="%CONDA_ROOT%" ^
+          -DGraphviz_INCLUDE_DIR="%CONDA_ROOT%\Library\include\graphviz" ^
+          -DGraphviz_CDT_LIBRARY="%CONDA_ROOT%\Library\lib\cdt.lib" ^
+          -DGraphviz_GVC_LIBRARY="%CONDA_ROOT%\Library\lib\gvc.lib" ^
+          -DGraphviz_CGRAPH_LIBRARY="%CONDA_ROOT%\Library\lib\cgraph.lib" ^
+          -DGraphviz_PATHPLAN_LIBRARY="%CONDA_ROOT%\Library\lib\pathplan.lib" ^
+          -DZLIB_ROOT="%CONDA_ROOT%\Library" ^
+          -DSQLite3_ROOT="%CONDA_ROOT%\Library" ^
+          -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE ^
+          -DTTK_BUILD_VTK_WRAPPERS=TRUE ^
+          -DTTK_BUILD_STANDALONE_APPS=TRUE ^
+          -DTTK_ENABLE_KAMIKAZE=TRUE ^
+          -DTTK_ENABLE_OPENMP=TRUE ^
+          -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE ^
+          -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE ^
+          -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 ^
+          ..
+
+    - name: Fix clang-cl OpenMP flags in build.ninja
+      shell: bash
+      run: |
+        sed -i 's/-Xclang -fopenmp/-openmp/' build/build.ninja
+
+    - name: Build & install TTK
+      shell: cmd
+      run: |
+        cd build
+        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        cmake --build . --config Release --parallel --target install
+
+    - name: Test C++ example
+      shell: cmd
+      run: |
+        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
+        cd %GITHUB_WORKSPACE%\examples\c++
+        mkdir build
+        cd build
+        cmake ..
+        cmake --build . --config Release --parallel
+        ttkExample-c++.exe -i ..\..\data\inputData.off
+
+    - name: Test VTK-C++ example
+      shell: cmd
+      run: |
+        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
+        cd %GITHUB_WORKSPACE%\examples\vtk-c++
+        mkdir build
+        cd build
+        cmake ..
+        cmake --build . --config Release --parallel
+        ttkExample-vtk-c++.exe -i ..\..\data\inputData.vtu
+
+    - name: Test Python example [TEMPORARILY NOT ENFORCED] 
+      continue-on-error: true
+      shell: cmd
+      run: |
+        set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
+        cd %GITHUB_WORKSPACE%\examples\python
+        python example.py ..\data\inputData.vtu
+
+    - name: Test pvpython example
+      shell: cmd
+      run: |
+        set PYTHONPATH=%CONDA_ROOT%\Lib
+        set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
+        cd %GITHUB_WORKSPACE%\examples\pvpython
+        pvpython.exe example.py ..\data\inputData.vtu
+
+    - name: Test standalone
+      shell: cmd
+      run: |
+        cd %GITHUB_WORKSPACE%\examples\vtk-c++
+        ttkHelloWorldCmd.exe -i %GITHUB_WORKSPACE%\examples\data\inputData.vtu
+
+    - uses: actions/checkout@v4
+      with:
+        repository: "topology-tool-kit/ttk-data"
+        ref: "dev"
+        path: "ttk-data"
+      name: Checkout ttk-data
+
+    - name: Resample large datasets
+      shell: cmd
+      run: |
+        set PYTHONPATH=%CONDA_ROOT%\Lib
+        set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
+        cd ttk-data
+        pvpython.exe python\resample.py ctBones.vti 128 128 128 ctBones.vti
+
+    - name: Run ttk-data Python scripts
+      shell: cmd
+      run: |
+        set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib;%CONDA_ROOT%\DLLs
+        set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
+        cd ttk-data
+        rm python/nestedTrackingFromOverlap.py
+        # tmp removal of mpi example
+        rm python/mpiExample.py
+        # remove examples which fill up the memory
+        rm python/topologicalOptimization_darkSky.py
+        # remove examples using raster features
+        rm python/geometryApproximation.py
+        pvpython.exe -u python\run.py
+
+    - name: Test ttk-data Python scripts results [NOT ENFORCED]
+      continue-on-error: true
+      shell: cmd
+      run: |
+        cd ttk-data
+        type python\res.json
+        FC python\hashes\windows.json python\res.json
