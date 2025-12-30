@@ -1,7 +1,7 @@
 ## TTK - ChangeLog
 =
 ### dev
-- Cycle-aware dimensionality reduction (TopoAE++)
+- Cycle-aware dimensionality reduction (TopoAE++, IEEE TVCG 2026)
 - Distributed computation of persistent homology! (IEEE TPDS 2025)
 - New backend for TrackingFromFields (critical point based)
 - Fast planar Rips filtration persistence computation

@@ -52,9 +52,10 @@
         Hariprasad Kannan, Yuhei Umeda, 
         38th International Conference on Machine Learning, 2021. 
 
-        "Topological Autoencoders++: Fast and Accurate Cycle-Aware Dimensionality Reduction" 
-        Mattéo Clémot, Julie Digne, Julien Tierny
-        arXiv preprint, 2025.
+        "Topological Autoencoders++: Fast and Accurate Cycle-Aware Dimensionality Reduction"
+        MattÃ©o ClÃ©mot, Julie Digne, Julien Tierny,
+        IEEE Transactions on Visualization and Computer Graphics.
+        Accepted, to be presented at IEEE VIS 2026.
 
       </Documentation>
       <InputProperty

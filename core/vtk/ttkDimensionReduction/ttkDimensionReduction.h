@@ -71,8 +71,9 @@
 ///
 /// "Topological Autoencoders++: Fast and Accurate Cycle-Aware Dimensionality
 /// Reduction" \n
-/// Mattéo Clémot, Julie Digne, Julien Tierny, \n
-/// arXiv preprint, 2025.
+/// MattÃ©o ClÃ©mot, Julie Digne, Julien Tierny, \n
+/// IEEE Transactions on Visualization and Computer Graphics.
+/// Accepted, to be presented at IEEE VIS 2026.
 
 #pragma once
 
