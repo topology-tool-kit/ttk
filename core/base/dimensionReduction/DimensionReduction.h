@@ -70,7 +70,6 @@
 /// IEEE Transactions on Visualization and Computer Graphics.
 /// Accepted, to be presented at IEEE VIS 2026.
 
-
 #pragma once
 
 #include <Debug.h>
