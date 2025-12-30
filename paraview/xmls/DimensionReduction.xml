@@ -830,7 +830,7 @@
             <Entry value="1" text="Topological Autoencoder (ICML 2020)"/>
             <Entry value="2" text="Topological Autoencoder with dimension 1"/>
             <Entry value="3" text="Cascade Autoencoder"/>
-            <Entry value="4" text="Asymmetric Cascade Autoencoder (TopoAE++)"/>
+            <Entry value="4" text="Asymmetric Cascade Autoencoder (TopoAE++, IEEE TVCG 2026)"/>
             <Entry value="5" text="W1 regularization (ICML 2021)"/>
         </EnumerationDomain>
         <Documentation>
