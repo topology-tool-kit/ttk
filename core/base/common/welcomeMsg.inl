@@ -2,7 +2,7 @@
 // Julien Tierny <julien.tierny@sorbonne-universite.fr>
 // January 2020.
 
-// "TTK                   (c) 2025"
+// "TTK                   (c) 2026"
 
 printMsg(
   debug::output::BOLD
@@ -12,7 +12,7 @@ printMsg(
   debug::LineMode::NEW,
   stream);
 printMsg(debug::output::BOLD
-  + "|_   _|_   _| |/ /                   / /__\\ \\  |___ \\ / _ \\___ \\ / /"
+  + "|_   _|_   _| |/ /                   / /__\\ \\  |___ \\ / _ \\___ \\ / /_"
            + debug::output::ENDCOLOR,
          debug::Priority::PERFORMANCE,
          debug::LineMode::NEW,

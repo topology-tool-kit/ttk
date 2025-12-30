@@ -1,0 +1,95 @@
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkVectorWeightCurve"
+      class="ttkVectorWeightCurve"
+      label="TTK VectorWeightCurve">
+      <Documentation
+        long_help="TTK plugin for the computation of vector field weight curve."
+        short_help="TTK plugin for the computation of vector field weight curve.">
+        TTK plugin for the computation of vector field weight curve.
+
+
+      </Documentation>
+       <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_vectors" attribute_type="point" number_of_components="3">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set of vectors to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty name="Vector Field" 
+                            label="Input Array" 
+                            command="SetInputArrayToProcess" 
+                            element_types="0 0 0 0 2" 
+                            number_of_elements="5">
+        <ArrayListDomain attribute_type="Vectors" name="array_list">
+          <RequiredProperties>
+            <Property function="Input" name="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>The vector array that will be used to compute the weight curve.</Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="ReverseFullOrbit"
+         label="Trace/Simplify Full Orbit"
+         command="SetReverseFullOrbit"
+         number_of_elements="1"
+         default_values="1"
+         panel_visibility="default">
+         <BooleanDomain name="bool"/>
+         <Documentation>
+           Whether the weight curve should adjust weight values to include tracing the entire orbit.
+         </Documentation>
+       </IntVectorProperty>
+
+       <IntVectorProperty name="DisplayExtrema"
+         label="Display Extrema"
+         command="SetDisplayExtrema"
+         number_of_elements="1"
+         default_values="0"
+         panel_visibility="default">
+         <BooleanDomain name="bool"/>
+         <Documentation>
+           Whether the weight curve should display the number of extrema (sinks/sources) being added and deleted.
+         </Documentation>
+       </IntVectorProperty>
+
+      <IntVectorProperty name="DisplayOrbits"
+         label="Display Orbits"
+         command="SetDisplayOrbits"
+         number_of_elements="1"
+         default_values="0"
+         panel_visibility="default">
+         <BooleanDomain name="bool"/>
+         <Documentation>
+           Whether the weight curve should display the number of orbits being added and deleted.
+         </Documentation>
+       </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <OutputPort name="All pairs" index="0" id="port0" />
+
+      <Hints>
+        <View type="XYChartView" />
+        <ShowInMenu category="TTK - Vector Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
