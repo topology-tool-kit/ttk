@@ -28,7 +28,6 @@
 ///   Vector Field Topology example</a> \n
 ///
 
-
 #pragma once
 
 // VTK includes

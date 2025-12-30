@@ -31,7 +31,6 @@
 ///   Vector Field Topology example</a> \n
 ///
 
-
 #pragma once
 
 #include <DiscreteVectorField.h>
