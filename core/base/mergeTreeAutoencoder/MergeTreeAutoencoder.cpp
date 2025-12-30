@@ -718,7 +718,7 @@ void ttk::MergeTreeAutoencoder::createCustomRecs() {
       for(unsigned int j = 0; j < allAlphasInit.size(); ++j) {
         allAlphasInit[j]
           = torch::randn({layers_[l].getVSTensor().sizes()[1], 1});
-        auto norm = torch::linalg::vector_norm(
+        auto norm = torch::linalg_vector_norm(
           allAlphasInit[j], 2, 0, false, c10::nullopt);
         if(j == 0 or maxNorm.item<float>() < norm.item<float>())
           maxNorm = norm;

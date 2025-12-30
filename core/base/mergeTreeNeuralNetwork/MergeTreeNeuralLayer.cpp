@@ -403,7 +403,7 @@ void ttk::MergeTreeNeuralLayer::initInputBasisVectors(
                                        torch::Tensor &axes) {
       torch::Tensor w = torch::zeros({noVectors, originT.tensor.sizes()[0]});
       torch::nn::init::xavier_normal_(w);
-      axes = torch::linalg::pinv(w);
+      axes = torch::linalg_pinv(w);
     };
     initRandomAxes(origin, vSTensor);
     if(useGpu_)
@@ -755,7 +755,7 @@ void ttk::MergeTreeNeuralLayer::computeAlphas(
     r_data = r_data.cpu();
   }
   alphasOut
-    = std::get<0>(torch::linalg::lstsq(r_axes, r_data, c10::nullopt, driver));
+    = std::get<0>(torch::linalg_lstsq(r_axes, r_data, c10::nullopt, driver));
   if(!is_cpu)
     alphasOut = alphasOut.to(device);
 
