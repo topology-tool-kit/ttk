@@ -324,8 +324,7 @@ namespace ttk {
           options.pop();
         }
       }
-      this->printMsg("Simplified to "
-                       + std::to_string(numCriticalPoints)
+      this->printMsg("Simplified to " + std::to_string(numCriticalPoints)
                        + " critical point(s)",
                      1.0, tm.getElapsedTime(), this->threadNumber_);
 
