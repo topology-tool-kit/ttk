@@ -1,17 +1,8 @@
 name: 'Install dependencies for Unix'
-description: 'Install TTK optional dependencies on Ubuntu & macOS'
+description: 'Install ZFP optional dependencies'
 runs:
   using: "composite"
   steps:
-
-    - name: Install Spectra dependency
-      shell: bash
-      run: |
-        wget https://github.com/yixuan/spectra/archive/v1.0.1.tar.gz
-        tar xvf v1.0.1.tar.gz
-        mkdir build_spectra && cd build_spectra
-        cmake ../spectra-1.0.1
-        sudo cmake --build . --target install --parallel
 
     - name: Install ZFP dependency
       shell: bash

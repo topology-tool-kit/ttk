@@ -25,33 +25,100 @@
 #include <ttkRipsPersistenceDiagramModule.h>
 
 // VTK Includes
+#include <ttkMacros.h>
 #include <vtkUnstructuredGrid.h>
 
 // TTK Includes
 #include <RipsPersistenceDiagram.h>
 #include <ttkAlgorithm.h>
 
+/**
+ * @brief Converts a Rips Persistence Diagram in the
+ * ttk::rpd::MultidimensionalDiagram format to the VTK Unstructured Grid format.
+ *
+ * @param[out] vtu Output VTK Unstructured Grid
+ * @param[in] diagram ttk::rpd::MultidimensionalDiagram to be converted
+ * @param[in] SimplexMaximumDiameter Maximum diameter of simplices (to cap
+ * infinite pairs)
+ */
+TTKRIPSPERSISTENCEDIAGRAM_EXPORT void
+  DiagramToVTU(vtkUnstructuredGrid *vtu,
+               const ttk::rpd::MultidimensionalDiagram &diagram,
+               double SimplexMaximumDiameter);
+
+/**
+ * @brief Converts a vector of 1-dimensional persistent generators in the
+ * ttk::rpd::Generator format to the VTK Unstructured Grid format.
+ *
+ * @param[out] vtu Output VTK Unstructured Grid
+ * @param[in] inputPoints vtkPoints used to embed the generators
+ * @param[in] generators Vector of ttk::rpd::Generator to be converted
+ * @param[in] parametrize Whether to parametrize the generators
+ */
+TTKRIPSPERSISTENCEDIAGRAM_EXPORT void
+  GeneratorsToVTU(vtkUnstructuredGrid *vtu,
+                  vtkPoints *inputPoints,
+                  const std::vector<ttk::rpd::Generator> &generators,
+                  bool parametrize = true);
+
 class TTKRIPSPERSISTENCEDIAGRAM_EXPORT ttkRipsPersistenceDiagram
   : public ttkAlgorithm, // we inherit from the generic ttkAlgorithm class
     protected ttk::RipsPersistenceDiagram { // and we inherit from the base
                                             // class
 private:
-  int DiagramToVTU(
-    vtkUnstructuredGrid *vtu,
-    const std::vector<std::vector<ripser::pers_pair_t>> &diagram);
+  bool KeepAllDataArrays{true};
+  bool SelectFieldsWithRegexp{false};
+  std::string RegexpString{".*"};
+  std::vector<std::string> ScalarFields{};
 
 public:
   static ttkRipsPersistenceDiagram *New();
   vtkTypeMacro(ttkRipsPersistenceDiagram, ttkAlgorithm);
 
+  void SetScalarFields(const std::string &s) {
+    ScalarFields.push_back(s);
+    Modified();
+  }
+
+  void ClearScalarFields() {
+    ScalarFields.clear();
+    Modified();
+  }
+
+  void SetSimplexMaximumDiameter(const std::string &data) {
+    SimplexMaximumDiameter = stod(data);
+    Modified();
+  }
+  std::string GetSimplexMaximumDiameter() {
+    return std::to_string(SimplexMaximumDiameter);
+  }
+
+  vtkSetMacro(KeepAllDataArrays, bool);
+  vtkGetMacro(KeepAllDataArrays, bool);
+
+  vtkSetMacro(SelectFieldsWithRegexp, bool);
+  vtkGetMacro(SelectFieldsWithRegexp, bool);
+
+  vtkSetMacro(RegexpString, const std::string &);
+  vtkGetMacro(RegexpString, std::string);
+
+  ttkSetEnumMacro(BackEnd, BACKEND);
+  vtkGetEnumMacro(BackEnd, BACKEND);
+
   vtkSetMacro(SimplexMaximumDimension, int);
   vtkGetMacro(SimplexMaximumDimension, int);
 
-  vtkSetMacro(SimplexMaximumDiameter, double);
-  vtkGetMacro(SimplexMaximumDiameter, double);
+  vtkSetMacro(FieldOfCoefficients, int);
+  vtkGetMacro(FieldOfCoefficients, int);
 
-  vtkSetMacro(InputIsDistanceMatrix, int);
-  vtkGetMacro(InputIsDistanceMatrix, int);
+  vtkSetMacro(InputIsDistanceMatrix, bool);
+  vtkGetMacro(InputIsDistanceMatrix, bool);
+
+  vtkSetMacro(DelaunayRips, bool);
+  vtkGetMacro(DelaunayRips, bool);
+
+  vtkSetMacro(OutputGenerators, bool);
+  vtkGetMacro(OutputGenerators, bool);
 
 protected:
   ttkRipsPersistenceDiagram();

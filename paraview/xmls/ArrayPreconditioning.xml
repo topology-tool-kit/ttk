@@ -90,7 +90,7 @@
         label="Global Order Array"
         command="SetGlobalOrder"
         number_of_elements="1"
-        default_values="0"
+        default_values="1"
         panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>

@@ -68,6 +68,7 @@ private:
    */
   // Input options
   double oldEpsilonTree1;
+  int DiagramPairTypes = 0;
 
   // ----------------------
   // Data for visualization
@@ -432,6 +433,13 @@ public:
   double GetJoinSplitMixtureCoefficient() {
     return mixtureCoefficient_;
   }
+
+  void SetDiagramPairTypes(int diagramPairTypes) {
+    DiagramPairTypes = diagramPairTypes;
+    Modified();
+    resetDataVisualization();
+  }
+  vtkGetMacro(DiagramPairTypes, int);
 
   void SetEpsilon1UseFarthestSaddle(bool epsilon1UseFarthestSaddle) {
     epsilon1UseFarthestSaddle_ = epsilon1UseFarthestSaddle;

@@ -1,10 +1,20 @@
 #pragma once
 
 #include <TrackingFromPersistenceDiagrams.h>
+#include <numeric>
 #include <ttkAlgorithm.h>
 
 // VTK Module
 #include <ttkTrackingFromPersistenceDiagramsModule.h>
+#include <vtkCellData.h>
+#include <vtkDataArray.h>
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
+#include <vtkIntArray.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
 
 class vtkUnstructuredGrid;
@@ -76,6 +86,109 @@ public:
     vtkIntArray *componentIds,
     vtkIntArray *pointTypeScalars,
     const ttk::Debug &dbg);
+
+  template <class triangulationType>
+  static int buildMeshAlt(
+    const triangulationType *triangulation,
+    const std::vector<ttk::trackingTuple> &trackings,
+    const std::vector<std::vector<double>> &allTrackingsCosts,
+    const std::vector<std::vector<double>> &allTrackingsInstantPersistence,
+    const bool useGeometricSpacing,
+    const double spacing,
+    vtkPoints *points,
+    vtkUnstructuredGrid *outputMesh,
+    vtkIntArray *pointsCriticalType,
+    vtkIntArray *timeScalars,
+    vtkIntArray *lengthScalars,
+    vtkIntArray *globalVertexIds,
+    vtkIntArray *connectedComponentIds,
+    vtkDoubleArray *costs,
+    vtkDoubleArray *averagePersistence,
+    vtkDoubleArray *integratedPersistence,
+    vtkDoubleArray *maximalPersistence,
+    vtkDoubleArray *minimalPersistence,
+    vtkDoubleArray *instantPersistence,
+    unsigned int *sizes) {
+
+    int pointCpt = 0;
+    int edgeCpt = 0;
+    for(unsigned int i = 0; i < trackings.size(); i++) {
+      ttk::CriticalType currentType = ttk::CriticalType::Local_minimum;
+      if(i < sizes[0])
+        currentType = ttk::CriticalType::Local_maximum;
+      else if(i < sizes[1] && i >= sizes[0])
+        currentType = ttk::CriticalType::Saddle1;
+      else if(i < sizes[2] && i >= sizes[1])
+        currentType = ttk::CriticalType::Saddle2;
+      int startTime = std::get<0>(trackings[i]);
+      std::vector<ttk::SimplexId> chain = std::get<2>(trackings[i]);
+
+      float x = 0;
+      float y = 0;
+      float z = 0;
+      triangulation->getVertexPoint(chain[0], x, y, z);
+      if(useGeometricSpacing)
+        z += startTime * spacing;
+      points->InsertNextPoint(x, y, z);
+      instantPersistence->InsertTuple1(
+        pointCpt, allTrackingsInstantPersistence[i][0]);
+      double currentMaxPersistence
+        = *(std::max_element(allTrackingsInstantPersistence[i].begin(),
+                             allTrackingsInstantPersistence[i].end()));
+      double currentMinPersistence
+        = *(std::min_element(allTrackingsInstantPersistence[i].begin(),
+                             allTrackingsInstantPersistence[i].end()));
+      double currentIntegratedPersistence
+        = std::accumulate(allTrackingsInstantPersistence[i].begin(),
+                          allTrackingsInstantPersistence[i].end(), 0.0);
+      double currentAveragePersistence
+        = currentIntegratedPersistence / (double)chain.size();
+      globalVertexIds->InsertTuple1(pointCpt, (int)chain[0]);
+      pointsCriticalType->InsertTuple1(pointCpt, (int)currentType);
+      timeScalars->InsertTuple1(pointCpt, startTime);
+      vtkIdType edge[2];
+      for(unsigned int j = 1; j < chain.size(); j++) {
+        triangulation->getVertexPoint(chain[j], x, y, z);
+        if(useGeometricSpacing)
+          z += (j + startTime) * spacing;
+        edge[0] = pointCpt;
+        pointCpt++;
+        edge[1] = pointCpt;
+        points->InsertNextPoint(x, y, z);
+        globalVertexIds->InsertTuple1(pointCpt, (int)chain[j]);
+        outputMesh->InsertNextCell(VTK_LINE, 2, edge);
+        pointsCriticalType->InsertTuple1(pointCpt, (int)currentType);
+        timeScalars->InsertTuple1(pointCpt, startTime + j);
+        lengthScalars->InsertTuple1(edgeCpt, chain.size() - 1);
+        connectedComponentIds->InsertTuple1(edgeCpt, i);
+        costs->InsertTuple1(edgeCpt, allTrackingsCosts[i][j - 1]);
+        instantPersistence->InsertTuple1(
+          pointCpt, allTrackingsInstantPersistence[i][j]);
+        integratedPersistence->InsertTuple1(
+          edgeCpt, currentIntegratedPersistence);
+        maximalPersistence->InsertTuple1(edgeCpt, currentMaxPersistence);
+        minimalPersistence->InsertTuple1(edgeCpt, currentMinPersistence);
+        averagePersistence->InsertTuple1(edgeCpt, currentAveragePersistence);
+        edgeCpt++;
+      }
+      pointCpt++;
+    }
+
+    outputMesh->SetPoints(points);
+    outputMesh->GetCellData()->AddArray(lengthScalars);
+    outputMesh->GetCellData()->AddArray(connectedComponentIds);
+    outputMesh->GetCellData()->AddArray(averagePersistence);
+    outputMesh->GetCellData()->AddArray(integratedPersistence);
+    outputMesh->GetCellData()->AddArray(maximalPersistence);
+    outputMesh->GetCellData()->AddArray(minimalPersistence);
+    outputMesh->GetPointData()->AddArray(instantPersistence);
+    outputMesh->GetCellData()->AddArray(costs);
+    outputMesh->GetPointData()->AddArray(pointsCriticalType);
+    outputMesh->GetPointData()->AddArray(timeScalars);
+    outputMesh->GetPointData()->AddArray(globalVertexIds);
+
+    return 0;
+  }
 
 protected:
   ttkTrackingFromPersistenceDiagrams();

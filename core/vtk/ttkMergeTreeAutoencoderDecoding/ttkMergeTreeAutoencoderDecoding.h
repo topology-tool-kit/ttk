@@ -59,6 +59,9 @@ private:
    * Add all filter parameters only as private member variables and
    * initialize them here.
    */
+#ifdef TTK_ENABLE_TORCH
+  int DiagramPairTypes = 0;
+#endif
 
 public:
   /**

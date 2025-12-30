@@ -186,10 +186,10 @@ int ttkMergeTreeAutoencoder::runCompute(
   std::vector<ttk::ftm::MergeTree<float>> intermediateMTrees,
     intermediateMTrees2;
 
-  bool useSadMaxPairs = (mixtureCoefficient_ == 0);
+  bool useSecondPairsType = (mixtureCoefficient_ == 0);
   isPersistenceDiagram_ = ttk::ftm::constructTrees<float>(
     inputTrees, intermediateMTrees, treesNodes, treesArcs, treesSegmentation,
-    useSadMaxPairs);
+    useSecondPairsType, DiagramPairTypes);
   // If merge trees are provided in input and normalization is not asked
   convertToDiagram_
     = (not isPersistenceDiagram_ and not normalizedWasserstein_);
@@ -199,7 +199,7 @@ int ttkMergeTreeAutoencoder::runCompute(
       = (not isPersistenceDiagram_ ? inputTrees2 : inputTrees);
     ttk::ftm::constructTrees<float>(inputTrees2ToUse, intermediateMTrees2,
                                     treesNodes2, treesArcs2, treesSegmentation2,
-                                    !useSadMaxPairs);
+                                    !useSecondPairsType, DiagramPairTypes);
   }
   isPersistenceDiagram_ |= (not normalizedWasserstein_);
 
@@ -300,6 +300,11 @@ int ttkMergeTreeAutoencoder::runOutput(
   arrayActivateFunction->SetName("activationFunction");
   arrayActivateFunction->InsertNextTuple1(activationFunction_);
   output_coef->GetFieldData()->AddArray(arrayActivateFunction);
+
+  vtkNew<vtkIntArray> diagramPairTypesArray{};
+  diagramPairTypesArray->SetName("DiagramPairTypes");
+  diagramPairTypesArray->InsertNextTuple1(DiagramPairTypes);
+  output_coef->GetFieldData()->AddArray(diagramPairTypesArray);
 
   // ------------------------------------------
   // --- Axes Vectors

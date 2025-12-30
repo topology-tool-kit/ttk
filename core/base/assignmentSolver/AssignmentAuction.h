@@ -62,6 +62,10 @@ namespace ttk {
       epsilon = eps;
     }
 
+    inline void setDeltaLim(double delta) {
+      delta_lim = delta;
+    }
+
     inline void setEpsilonDiviserMultiplier(double div) {
       epsilonDiviserMultiplier = div;
     }
@@ -275,6 +279,7 @@ namespace ttk {
     initFirstRound();
     while(not stoppingCriterion(this->costMatrix)) {
       initBiddersAndGoods();
+
       runAuctionRound(this->costMatrix);
 
       dataType cost = getMatchingDistance(this->costMatrix);

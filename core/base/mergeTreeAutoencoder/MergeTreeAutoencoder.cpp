@@ -696,7 +696,7 @@ void ttk::MergeTreeAutoencoder::createCustomRecs() {
     torch::Tensor alphasWeight;
     if(initByTreesAlphas) {
       auto driver = "gelsd";
-      alphasWeight = std::get<0>(torch::linalg::lstsq(
+      alphasWeight = std::get<0>(torch::linalg_lstsq(
                                    allTreesAlphas[latLayer].transpose(0, 1),
                                    alphas, c10::nullopt, driver))
                        .transpose(0, 1);

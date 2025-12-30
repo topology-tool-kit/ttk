@@ -87,11 +87,29 @@ namespace ttk {
       return mergeTree;
     }
 
-    // Returns a branch decomposition tree
+    /**
+     * @brief Create a MergeTree (as a branch decomposition tree) object given a
+     * vtkUnstructuredGrid representing a persistence diagram (in the TTK
+     * format).
+     *
+     * @param[in] persistenceDiagram vtk object representing the persistence
+     * diagram.
+     * @param[in] useSecondPairsType boolean to choose which pair type to use
+     * depending on the value of diagramPairTypes, by default the choice is
+     * between min-saddle and saddle-max, true for the second type and false for
+     * the first type.
+     * @param[in] diagramPairTypes 0 to choose between min-saddle and
+     * saddle-max, 1 to choose between min-saddle and saddle-saddle, 2 to choose
+     * between saddle-saddle and saddle-max.
+     *
+     * @return a MergeTree object corresponding to the input persistence
+     * diagram.
+     */
     template <class dataType>
     MergeTree<dataType>
       makeBDTreeFromPDGrid(vtkUnstructuredGrid *persistenceDiagram,
-                           bool useSadMaxPairs = true) {
+                           bool useSecondPairsType = true,
+                           int diagramPairTypes = 0) {
       auto birthArray
         = persistenceDiagram->GetCellData()->GetArray(PersistenceBirthName);
       auto persArray
@@ -126,6 +144,18 @@ namespace ttk {
       // Init critical type enum values
       auto locMin = static_cast<int>(CriticalType::Local_minimum);
       auto locMax = static_cast<int>(CriticalType::Local_maximum);
+      auto locSad1 = static_cast<int>(CriticalType::Saddle1);
+      auto locSad2 = static_cast<int>(CriticalType::Saddle2);
+
+      // 0 : min-saddle ; 1 : saddle-saddle : 2 : saddle-max
+      int pairsType
+        = (useSecondPairsType
+               and (diagramPairTypes == 0 or diagramPairTypes == 2)
+             ? 2
+             : (not useSecondPairsType
+                    and (diagramPairTypes == 0 or diagramPairTypes == 1)
+                  ? 0
+                  : 1));
 
       // Get Min-Max pair index
       int minMaxPairIndex = -1;
@@ -151,8 +181,11 @@ namespace ttk {
         auto ct1 = criticalTypeArray->GetTuple1(pts[0]);
         auto ct2 = criticalTypeArray->GetTuple1(pts[1]);
         if((pairType == -1
-            or (useSadMaxPairs and ct1 != locMax and ct2 != locMax)
-            or (not useSadMaxPairs and ct1 != locMin and ct2 != locMin))
+            or (pairsType == 2 and ct1 != locMax and ct2 != locMax)
+            or (pairsType == 1
+                and not((ct1 == locSad1 and ct2 == locSad2)
+                        or (ct1 == locSad2 and ct2 == locSad1)))
+            or (pairsType == 0 and ct1 != locMin and ct2 != locMin))
            and i != minMaxPairIndex)
           continue;
         int const index1
@@ -218,7 +251,8 @@ namespace ttk {
       std::vector<vtkUnstructuredGrid *> &treesNodes,
       std::vector<vtkUnstructuredGrid *> &treesArcs,
       std::vector<vtkDataSet *> &treesSegmentation,
-      std::vector<bool> useSadMaxPairs) {
+      const std::vector<bool> &useSecondPairsTypeVec,
+      int diagramPairTypes = 0) {
       bool isPersistenceDiagram = false;
       const int numInputs = inputTrees.size();
       intermediateTrees.resize(numInputs);
@@ -242,7 +276,7 @@ namespace ttk {
           vtkUnstructuredGrid *persistenceDiagram
             = vtkUnstructuredGrid::SafeDownCast(inputTrees[i]->GetBlock(0));
           intermediateTrees[i] = makeBDTreeFromPDGrid<dataType>(
-            persistenceDiagram, useSadMaxPairs[i]);
+            persistenceDiagram, useSecondPairsTypeVec[i], diagramPairTypes);
           isPersistenceDiagram = true;
         }
       }
@@ -256,23 +290,27 @@ namespace ttk {
       std::vector<vtkUnstructuredGrid *> &treesNodes,
       std::vector<vtkUnstructuredGrid *> &treesArcs,
       std::vector<vtkDataSet *> &treesSegmentation,
-      bool useSadMaxPairs = true) {
-      std::vector<bool> const useSadMaxPairsVec(
-        inputTrees.size(), useSadMaxPairs);
+      bool useSecondPairsType = true,
+      int diagramPairTypes = 0) {
+      const std::vector<bool> useSecondPairsTypeVec(
+        inputTrees.size(), useSecondPairsType);
       return constructTrees(inputTrees, intermediateTrees, treesNodes,
-                            treesArcs, treesSegmentation, useSadMaxPairsVec);
+                            treesArcs, treesSegmentation, useSecondPairsTypeVec,
+                            diagramPairTypes);
     }
 
     template <class dataType>
     bool constructTrees(
       std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees,
       std::vector<MergeTree<dataType>> &intermediateTrees,
-      bool useSadMaxPairs = true) {
+      bool useSecondPairsType = true,
+      int diagramPairTypes = 0) {
       std::vector<vtkUnstructuredGrid *> treesNodes;
       std::vector<vtkUnstructuredGrid *> treesArcs;
       std::vector<vtkDataSet *> treesSegmentation;
       return constructTrees(inputTrees, intermediateTrees, treesNodes,
-                            treesArcs, treesSegmentation, useSadMaxPairs);
+                            treesArcs, treesSegmentation, useSecondPairsType,
+                            diagramPairTypes);
     }
   } // namespace ftm
 } // namespace ttk

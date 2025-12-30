@@ -1,0 +1,10 @@
+NAME
+  ttkRipsPersistenceGenerators
+SOURCES
+  ttkRipsPersistenceGenerators.cpp
+HEADERS
+  ttkRipsPersistenceGenerators.h
+DEPENDS
+  ripsPersistenceGenerators
+  ttkAlgorithm
+  ttkRipsPersistenceDiagram
