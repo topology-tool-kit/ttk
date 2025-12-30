@@ -324,8 +324,8 @@ namespace ttk {
           options.pop();
         }
       }
-      this->printMsg("Simplified to " 
-                       + std::to_string(numCriticalPoints)
+      this->printMsg("Simplified to "
+                       + std::to_string(numCriticalPoints) 
                        + " critical point(s)",
                      1.0, tm.getElapsedTime(), this->threadNumber_);
 
@@ -649,32 +649,31 @@ void ttk::VectorSimplification::getAscSaddlePairs(
   const auto dim = this->dcvf_.getDimensionality();
 
   auto saddle2ToMaxima
-    = dim == 3 ? getSaddle2ToAscPair(
-                   criticalSaddles,
-                   [&triangulation](
-                     const SimplexId a, const SimplexId i, SimplexId &r) {
-                     return triangulation.getTriangleStar(a, i, r);
-                   },
-                   [&triangulation](const SimplexId a) {
-                     return triangulation.getTriangleStarNumber(a);
-                   },
-                   [&triangulation](const SimplexId a) {
-                     return triangulation.isTriangleOnBoundary(a);
-                   },
-                   triangulation, static_cast<dataType>(0.0))
-               : getSaddle2ToAscPair(
-                   criticalSaddles,
-                   [&triangulation](
-                     const SimplexId a, const SimplexId i, SimplexId &r) {
-                     return triangulation.getEdgeStar(a, i, r);
-                   },
-                   [&triangulation](const SimplexId a) {
-                     return triangulation.getEdgeStarNumber(a);
-                   },
-                   [&triangulation](const SimplexId a) {
-                     return triangulation.isEdgeOnBoundary(a);
-                   },
-                   triangulation, static_cast<dataType>(0.0));
+    = dim == 3
+        ? getSaddle2ToAscPair(
+          criticalSaddles,
+          [&triangulation](const SimplexId a, const SimplexId i, SimplexId &r) {
+            return triangulation.getTriangleStar(a, i, r);
+          },
+          [&triangulation](const SimplexId a) {
+            return triangulation.getTriangleStarNumber(a);
+          },
+          [&triangulation](const SimplexId a) {
+            return triangulation.isTriangleOnBoundary(a);
+          },
+          triangulation, static_cast<dataType>(0.0))
+        : getSaddle2ToAscPair(
+          criticalSaddles,
+          [&triangulation](const SimplexId a, const SimplexId i, SimplexId &r) {
+            return triangulation.getEdgeStar(a, i, r);
+          },
+          [&triangulation](const SimplexId a) {
+            return triangulation.getEdgeStarNumber(a);
+          },
+          [&triangulation](const SimplexId a) {
+            return triangulation.isEdgeOnBoundary(a);
+          },
+          triangulation, static_cast<dataType>(0.0));
 
   for(size_t i = 0; i < saddle2ToMaxima.size(); ++i) {
     auto &maxs = saddle2ToMaxima[i];
