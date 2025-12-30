@@ -29,7 +29,18 @@
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
+/// \b Related \b publication \n
+/// "Localized Evaluation for Constructing Discrete Vector Fields" \n
+/// Tanner Finken, Julien Tierny, Joshua A. Levine \n
+/// IEEE VIS 2024.
+///
 /// \sa ttk::TopologicalSkeleton
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/discreteVectorFieldTopology/">Discrete
+///   Vector Field Topology example</a> \n
+///
 
 #pragma once
 

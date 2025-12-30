@@ -16,6 +16,15 @@
         Topological Skeleton is a useful topological abstraction of vector
         fields for data segmentation, feature extraction, etc.
 
+        Related publication:
+        'Localized Evaluation for Constructing Discrete Vector Fields'
+        Tanner Finken, Julien Tierny, Joshua A. Levine \n
+        IEEE VIS 2024.
+
+        Online examples:
+
+        https://topology-tool-kit.github.io/examples/discreteVectorFieldTopology/
+
       </Documentation>
       <InputProperty
         name="Input"

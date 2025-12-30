@@ -29,6 +29,12 @@
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
 /// \sa ttk::dcvf::DiscreteVectorField
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/discreteVectorFieldTopology/">Discrete
+///   Vector Field Topology example</a> \n
+///
 
 #pragma once
 

@@ -17,7 +17,17 @@
 /// \param Output Table giving the number of all simplified pairs
 /// as a function of weight(simplifying value) (vtkTable)
 ///
+/// \b Related \b publication \n
+/// "Localized Evaluation for Constructing Discrete Vector Fields" \n
+/// Tanner Finken, Julien Tierny, Joshua A. Levine \n
+/// IEEE VIS 2024.
 ///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/discreteVectorFieldTopology/">Discrete
+///   Vector Field Topology example</a> \n
+///
+
 
 #pragma once
 
