@@ -32,7 +32,8 @@
 /// "Topological Autoencoders++: Fast and Accurate Cycle-Aware Dimensionality
 /// Reduction" \n
 /// Mattéo Clémot, Julie Digne, Julien Tierny, \n
-/// arXiv preprint, 2025.
+/// IEEE Transactions on Visualization and Computer Graphics.
+/// Accepted, to be presented at IEEE VIS 2026.
 ///
 /// \sa DimensionReduction.cpp %for a usage example.
 
@@ -90,7 +91,9 @@ namespace ttk {
                                   int batchSize,
                                   bool batchNormalization,
                                   double regCoefficient,
-                                  bool inputIsImages);
+                                  bool inputIsImages,
+                                  bool preOptimize,
+                                  int preOptimizeEpochs);
 
     /**
      * @brief Computes the projection with an AutoEncoder
@@ -107,9 +110,6 @@ namespace ttk {
                 const std::vector<double> &inputMatrix,
                 size_t n);
 
-    void setLatentInitialization(
-      std::vector<std::vector<double>> const &latentInitialization);
-
   protected:
     const int NumberOfComponents;
     const int Epochs;
@@ -123,13 +123,14 @@ namespace ttk {
     const int BatchSize;
     const bool BatchNormalization;
     const double RegCoefficient;
+    const bool PreOptimize;
+    const int PreOptimizeEpochs;
 
   private:
     torch::DeviceType device{torch::kCPU};
     std::unique_ptr<DimensionReductionModel> model{nullptr};
     std::unique_ptr<torch::optim::Optimizer> torchOptimizer{nullptr};
     std::unique_ptr<TopologicalLoss> topologicalLossContainer{nullptr};
-    torch::Tensor latentInitialization_{};
 
     int initializeModel(int inputSize, int inputDimension);
     void initializeOptimizer();
@@ -140,7 +141,7 @@ namespace ttk {
     void optimize(const torch::Tensor &input) const;
     void optimizeSimple(const torch::Tensor &input) const;
 
-    inline void printLoss(int epoch, double loss) const;
+    inline void printLoss(int epoch, int maxEpoch, double loss) const;
 
 #endif
 

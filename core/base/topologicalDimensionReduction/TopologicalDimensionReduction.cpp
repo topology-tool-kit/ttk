@@ -19,12 +19,15 @@ ttk::TopologicalDimensionReduction::TopologicalDimensionReduction(
   int batchSize,
   bool batchNormalization,
   double regCoefficient,
-  bool inputIsImages)
+  bool inputIsImages,
+  bool preOptimize,
+  int preOptimizeEpochs)
   : NumberOfComponents(numberOfComponents), Epochs(epochs),
     LearningRate(learningRate), Optimizer(optimizer), Method(method),
     ModelType(modelType), InputIsImages(inputIsImages),
     Architecture(architecture), Activation(activation), BatchSize(batchSize),
-    BatchNormalization(batchNormalization), RegCoefficient(regCoefficient) {
+    BatchNormalization(batchNormalization), RegCoefficient(regCoefficient),
+    PreOptimize(preOptimize), PreOptimizeEpochs(preOptimizeEpochs) {
   // inherited from Debug: prefix will be printed at the beginning of every msg
   this->setDebugMsgPrefix("TopologicalDimensionReduction");
 
@@ -88,15 +91,18 @@ int ttk::TopologicalDimensionReduction::execute(
   printMsg("Initialization", 0., tm.getElapsedTime());
 
   const int inputSize = n;
-  const int inputDimension = inputMatrix.size() / n;
+  const int inputRawDimension = inputMatrix.size() / n;
+  const int inputDimension
+    = inputRawDimension - PreOptimize * NumberOfComponents;
   if(!InputIsImages)
     this->printMsg("input dimension: " + std::to_string(inputDimension), 0.0,
                    tm.getElapsedTime());
   else
-    this->printMsg("input dimension: " + std::to_string(inputDimension) + " = "
-                     + std::to_string((int)sqrt(inputDimension)) + " x "
-                     + std::to_string((int)sqrt(inputDimension)) + " images",
-                   .0, tm.getElapsedTime());
+    this->printMsg(
+      "input dimension: " + std::to_string(inputDimension) + " = "
+        + std::to_string(static_cast<int>(sqrt(inputDimension))) + " x "
+        + std::to_string(static_cast<int>(sqrt(inputDimension))) + " images",
+      .0, tm.getElapsedTime());
   this->printMsg("output dimension: " + std::to_string(NumberOfComponents), 0.0,
                  tm.getElapsedTime());
   this->printMsg(
@@ -110,20 +116,22 @@ int ttk::TopologicalDimensionReduction::execute(
     return 1;
   initializeOptimizer();
 
-  const torch::Tensor input
+  const torch::Tensor rawInput
     = torch::from_blob(const_cast<double *>(inputMatrix.data()),
-                       {inputSize, inputDimension}, torch::kFloat64)
+                       {inputSize, inputRawDimension}, torch::kFloat64)
         .to(torch::kFloat32)
         .to(device);
+  const torch::Tensor input
+    = rawInput.index({Slice(), Slice(None, inputDimension)});
 
   rpd::PointCloud points(inputSize, std::vector<double>(inputDimension));
   for(int i = 0; i < inputSize; ++i) {
     for(int j = 0; j < inputDimension; ++j)
-      points[i][j] = inputMatrix[inputDimension * i + j];
+      points[i][j] = inputMatrix[inputRawDimension * i + j];
   }
 
-  if(latentInitialization_.numel()) {
-    preOptimize(input, latentInitialization_);
+  if(PreOptimize) {
+    preOptimize(input, rawInput.index({Slice(), Slice(inputDimension, None)}));
     initializeOptimizer();
   }
 
@@ -148,18 +156,6 @@ int ttk::TopologicalDimensionReduction::execute(
   return 0;
 }
 
-void ttk::TopologicalDimensionReduction::setLatentInitialization(
-  std::vector<std::vector<double>> const &latentInitialization) {
-  std::vector<torch::Tensor> tensors;
-  for(auto const &column : latentInitialization)
-    tensors.push_back(torch::from_blob(const_cast<double *>(column.data()),
-                                       {static_cast<int>(column.size())},
-                                       torch::kFloat64)
-                        .to(torch::kFloat32)
-                        .to(device));
-  latentInitialization_ = torch::stack(tensors).transpose(0, 1);
-}
-
 void ttk::TopologicalDimensionReduction::optimizeSimple(
   const torch::Tensor &input) const {
   int epoch = 0;
@@ -180,7 +176,7 @@ void ttk::TopologicalDimensionReduction::optimizeSimple(
     loss.backward();
 
     // IO
-    printLoss(epoch, loss.item<double>());
+    printLoss(epoch, Epochs, loss.item<double>());
 
     return loss;
   };
@@ -207,7 +203,7 @@ void ttk::TopologicalDimensionReduction::optimize(
     loss.backward();
 
     // IO
-    printLoss(epoch, loss.item<double>());
+    printLoss(epoch, Epochs, loss.item<double>());
 
     return loss;
   };
@@ -232,21 +228,24 @@ void ttk::TopologicalDimensionReduction::preOptimize(
     loss.backward();
 
     // IO
-    printLoss(epoch, loss.item<double>());
+    printLoss(epoch, PreOptimizeEpochs, loss.item<double>());
 
     return loss;
   };
 
-  for(; epoch < Epochs; ++epoch)
+  for(; epoch < PreOptimizeEpochs; ++epoch)
     torchOptimizer->step(closure);
 }
 
 void ttk::TopologicalDimensionReduction::printLoss(int epoch,
+                                                   int maxEpoch,
                                                    double loss) const {
-  if(epoch % std::max(1, Epochs / 10) == 0)
+  if(epoch % std::max(1, maxEpoch / 10) == 0)
     printMsg(
-      "Loss at epoch " + std::to_string(epoch) + " : " + std::to_string(loss),
-      double(epoch) / Epochs, -1, -1, debug::LineMode::REPLACE);
+      "Loss at epoch " + std::to_string(epoch) + ": " + std::to_string(loss),
+      static_cast<double>(epoch) / maxEpoch, -1, -1, debug::LineMode::REPLACE);
+  else if(epoch == maxEpoch - 1)
+    printMsg("Final loss value: " + std::to_string(loss), 1.);
 }
 
 #endif
