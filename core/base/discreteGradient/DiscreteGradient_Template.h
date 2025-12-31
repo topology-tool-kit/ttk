@@ -98,8 +98,8 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
 
     } else if(this->BackEnd == BACKEND::CLASSIC_BACKEND) {
       this->processLowerStars(this->inputOffsets_, triangulation);
-      this->printMsg("Built gradient (homotopic expansion)",
-                     1.0, tm.getElapsedTime(), this->threadNumber_);
+      this->printMsg("Built gradient (homotopic expansion)", 1.0,
+                     tm.getElapsedTime(), this->threadNumber_);
 #ifdef TTK_ENABLE_MPI_TIME
       double elapsedTime
         = ttk::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
