@@ -93,12 +93,12 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation,
     } else if(this->BackEnd == BACKEND::STOCHASTIC_BACKEND) {
       this->processLowerStarsStochastic<dataType, triangulationType>(
         this->inputOffsets_, triangulation);
-      this->printMsg("Built discrete gradient (Stochastic algorithm)", 1.0,
+      this->printMsg("Built gradient (stochastic algorithm)", 1.0,
                      tm.getElapsedTime(), this->threadNumber_);
 
     } else if(this->BackEnd == BACKEND::CLASSIC_BACKEND) {
       this->processLowerStars(this->inputOffsets_, triangulation);
-      this->printMsg("Built discrete gradient (Homotopic expansion algorithm)",
+      this->printMsg("Built gradient (homotopic expansion)",
                      1.0, tm.getElapsedTime(), this->threadNumber_);
 #ifdef TTK_ENABLE_MPI_TIME
       double elapsedTime
