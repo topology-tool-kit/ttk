@@ -1,14 +1,13 @@
 #include <MergeTreeAxesAlgorithmUtils.h>
 #include <ttkMergeTreeAutoencoder.h>
-#include <ttkMergeTreeAutoencoderUtils.h>
+#include <ttkMergeTreeNeuralNetworkUtils.h>
 #include <ttkMergeTreeUtils.h>
 #include <ttkMergeTreeVisualization.h>
-
-#include <vtkInformation.h>
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
+#include <vtkInformation.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
@@ -237,279 +236,52 @@ int ttkMergeTreeAutoencoder::runOutput(
   // ------------------------------------------
   // --- Tracking information
   // ------------------------------------------
-  auto originsMatchingSize = originsMatchings_.size();
-  std::vector<std::vector<ttk::ftm::idNode>> originsMatchingVectorT(
-    originsMatchingSize),
-    invOriginsMatchingVectorT = originsMatchingVectorT;
-  for(unsigned int l = 0; l < originsMatchingVectorT.size(); ++l) {
-    auto &tree1 = (l == 0 ? origins_[0] : originsPrime_[l - 1]);
-    auto &tree2 = (l == 0 ? originsPrime_[0] : originsPrime_[l]);
-    getMatchingVector(tree1.mTree, tree2.mTree, originsMatchings_[l],
-                      originsMatchingVectorT[l]);
-    getInverseMatchingVector(tree1.mTree, tree2.mTree, originsMatchings_[l],
-                             invOriginsMatchingVectorT[l]);
-  }
+  std::vector<std::vector<ttk::ftm::idNode>> originsMatchingVectorT,
+    invOriginsMatchingVectorT;
+  std::vector<std::vector<std::vector<ttk::ftm::idNode>>>
+    invDataMatchingVectorT;
+  std::vector<std::vector<ttk::ftm::idNode>> invReconstMatchingVectorT;
+  ttk::wnn::makeMatchingVectors(
+    originsMatchings_, originsCopy_, originsPrimeCopy_, originsMatchingVectorT,
+    invOriginsMatchingVectorT, dataMatchings_, recs_, invDataMatchingVectorT,
+    reconstMatchings_, invReconstMatchingVectorT);
+
   std::vector<std::vector<ttk::ftm::idNode>> originsMatchingVector;
   std::vector<std::vector<double>> originsPersPercent, originsPersDiff;
   std::vector<double> originPersPercent, originPersDiff;
   std::vector<int> originPersistenceOrder;
-  ttk::wae::computeTrackingInformation(
-    origins_, originsPrime_, originsMatchingVectorT, invOriginsMatchingVectorT,
-    isPersistenceDiagram_, originsMatchingVector, originsPersPercent,
-    originsPersDiff, originPersPercent, originPersDiff, originPersistenceOrder);
-
-  std::vector<std::vector<std::vector<ttk::ftm::idNode>>>
-    invDataMatchingVectorT(dataMatchings_.size());
-  for(unsigned int l = 0; l < invDataMatchingVectorT.size(); ++l) {
-    invDataMatchingVectorT[l].resize(dataMatchings_[l].size());
-    for(unsigned int i = 0; i < invDataMatchingVectorT[l].size(); ++i)
-      getInverseMatchingVector(origins_[l].mTree, recs_[i][l].mTree,
-                               dataMatchings_[l][i],
-                               invDataMatchingVectorT[l][i]);
-  }
-  std::vector<std::vector<ttk::ftm::idNode>> invReconstMatchingVectorT(
-    reconstMatchings_.size());
-  for(unsigned int i = 0; i < invReconstMatchingVectorT.size(); ++i) {
-    auto l = recs_[i].size() - 1;
-    getInverseMatchingVector(recs_[i][0].mTree, recs_[i][l].mTree,
-                             reconstMatchings_[i],
-                             invReconstMatchingVectorT[i]);
-  }
+  ttk::wnn::computeTrackingInformation(
+    originsCopy_, originsPrimeCopy_, originsMatchingVectorT,
+    invOriginsMatchingVectorT, isPersistenceDiagram_, originsMatchingVector,
+    originsPersPercent, originsPersDiff, originPersPercent, originPersDiff,
+    originPersistenceOrder);
 
   // ------------------------------------------
   // --- Data
   // ------------------------------------------
-  output_data->SetNumberOfBlocks(1);
-  vtkSmartPointer<vtkMultiBlockDataSet> data
-    = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-  data->SetNumberOfBlocks(1);
-  vtkSmartPointer<vtkMultiBlockDataSet> dataSeg
-    = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-  dataSeg->SetNumberOfBlocks(recs_.size());
-  bool outputSegmentation = !treesSegmentation.empty() and treesSegmentation[0];
-  for(unsigned int l = 0; l < 1; ++l) {
-    vtkSmartPointer<vtkMultiBlockDataSet> out_layer_i
-      = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-    out_layer_i->SetNumberOfBlocks(recs_.size());
-    std::vector<ttk::ftm::MergeTree<float> *> trees(recs_.size());
-    for(unsigned int i = 0; i < recs_.size(); ++i)
-      trees[i] = &(recs_[i][l].mTree);
-
-    // Custom arrays
-    std::vector<std::vector<std::tuple<std::string, std::vector<int>>>>
-      customIntArrays(recs_.size());
-    std::vector<std::vector<std::tuple<std::string, std::vector<double>>>>
-      customDoubleArrays(recs_.size());
-    unsigned int lShift = 0;
-    ttk::wae::computeCustomArrays(
-      recs_, persCorrelationMatrix_, invDataMatchingVectorT,
-      invReconstMatchingVectorT, originsMatchingVector, originsMatchingVectorT,
-      originsPersPercent, originsPersDiff, originPersistenceOrder, l, lShift,
-      customIntArrays, customDoubleArrays);
-
-    // Create output
-    ttk::wae::makeManyOutput(trees, treesNodes, treesNodeCorr_, out_layer_i,
-                             customIntArrays, customDoubleArrays,
-                             mixtureCoefficient_, isPersistenceDiagram_,
-                             convertToDiagram_, this->debugLevel_);
-    if(outputSegmentation and l == 0) {
-      ttk::wae::makeManyOutput(
-        trees, treesNodes, treesNodeCorr_, treesSegmentation, dataSeg,
-        customIntArrays, customDoubleArrays, mixtureCoefficient_,
-        isPersistenceDiagram_, convertToDiagram_, this->debugLevel_);
-    }
-    data->SetBlock(l, out_layer_i);
-    std::stringstream ss;
-    ss << (l == 0 ? "Input" : "Layer") << l;
-    data->GetMetaData(l)->Set(vtkCompositeDataSet::NAME(), ss.str());
-  }
-  output_data->SetBlock(0, data);
-  unsigned int num = 0;
-  output_data->GetMetaData(num)->Set(
-    vtkCompositeDataSet::NAME(), "layersTrees");
-  if(outputSegmentation)
-    output_data->SetBlock(1, dataSeg);
-  vtkNew<vtkFloatArray> lossArray{};
-  lossArray->SetName("Loss");
-  lossArray->InsertNextTuple1(bestLoss_);
-  output_data->GetFieldData()->AddArray(lossArray);
+  ttk::wnn::makeDataOutput(
+    output_data, recs_, 1, treesSegmentation, persCorrelationMatrix_,
+    invDataMatchingVectorT, invReconstMatchingVectorT, originsMatchingVectorT,
+    originsMatchingVector, originsPersPercent, originsPersDiff,
+    originPersistenceOrder, treesNodes, treesNodeCorr_, bestLoss_,
+    mixtureCoefficient_, isPersistenceDiagram_, convertToDiagram_,
+    this->debugLevel_);
 
   // ------------------------------------------
   // --- Origins
   // ------------------------------------------
-  output_origins->SetNumberOfBlocks(2);
-  // Origins
-  vtkSmartPointer<vtkMultiBlockDataSet> origins
-    = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-  vtkSmartPointer<vtkMultiBlockDataSet> originsP
-    = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-  origins->SetNumberOfBlocks(noLayers_);
-  originsP->SetNumberOfBlocks(noLayers_);
-  std::vector<ttk::ftm::MergeTree<float> *> trees(noLayers_);
-  std::vector<std::vector<std::tuple<std::string, std::vector<int>>>>
-    customIntArrays(noLayers_);
-  std::vector<std::vector<std::tuple<std::string, std::vector<double>>>>
-    customDoubleArrays(noLayers_);
-  for(unsigned int l = 0; l < noLayers_; ++l) {
-    trees[l] = &(origins_[l].mTree);
-    if(l == 0) {
-      std::string name2{"OriginPersPercent"};
-      customDoubleArrays[l].emplace_back(
-        std::make_tuple(name2, originPersPercent));
-      std::string name3{"OriginPersDiff"};
-      customDoubleArrays[l].emplace_back(
-        std::make_tuple(name3, originPersDiff));
-      std::string nameOrder{"OriginPersOrder"};
-      customIntArrays[l].emplace_back(
-        std::make_tuple(nameOrder, originPersistenceOrder));
-    }
-  }
-  ttk::wae::makeManyOutput(trees, origins, customIntArrays, customDoubleArrays,
-                           mixtureCoefficient_, isPersistenceDiagram_,
-                           convertToDiagram_, this->debugLevel_);
-
-  customIntArrays.clear();
-  customIntArrays.resize(noLayers_);
-  customDoubleArrays.clear();
-  customDoubleArrays.resize(noLayers_);
-  for(unsigned int l = 0; l < noLayers_; ++l) {
-    trees[l] = &(originsPrime_[l].mTree);
-    if(l < originsMatchingVector.size()) {
-      std::vector<int> customArrayMatching,
-        originPersOrder(trees[l]->tree.getNumberOfNodes(), -1);
-      for(unsigned int i = 0; i < originsMatchingVector[l].size(); ++i) {
-        customArrayMatching.emplace_back(originsMatchingVector[l][i]);
-        if(originsMatchingVector[l][i] < originPersistenceOrder.size())
-          originPersOrder[i]
-            = originPersistenceOrder[originsMatchingVector[l][i]];
-      }
-      std::string name{"OriginTrueNodeId"};
-      customIntArrays[l].emplace_back(
-        std::make_tuple(name, customArrayMatching));
-      std::string nameOrder{"OriginPersOrder"};
-      customIntArrays[l].emplace_back(
-        std::make_tuple(nameOrder, originPersOrder));
-      std::string name2{"OriginPersPercent"};
-      customDoubleArrays[l].emplace_back(
-        std::make_tuple(name2, originsPersPercent[l]));
-      std::string name3{"OriginPersDiff"};
-      customDoubleArrays[l].emplace_back(
-        std::make_tuple(name3, originsPersDiff[l]));
-    }
-  }
-  ttk::wae::makeManyOutput(trees, originsP, customIntArrays, customDoubleArrays,
-                           mixtureCoefficient_, isPersistenceDiagram_,
-                           convertToDiagram_, this->debugLevel_);
-  output_origins->SetBlock(0, origins);
-  output_origins->SetBlock(1, originsP);
-  // for(unsigned int l = 0; l < 2; ++l) {
-  for(unsigned int l = 0; l < noLayers_; ++l) {
-    if(l >= 2)
-      break;
-    std::stringstream ss;
-    ss << (l == 0 ? "InputOrigin" : "LayerOrigin") << l;
-    auto originsMetaData = origins->GetMetaData(l);
-    if(originsMetaData)
-      originsMetaData->Set(vtkCompositeDataSet::NAME(), ss.str());
-    ss.str("");
-    ss << (l == 0 ? "InputOriginPrime" : "LayerOriginPrime") << l;
-    auto originsPMetaData = originsP->GetMetaData(l);
-    if(originsPMetaData)
-      originsPMetaData->Set(vtkCompositeDataSet::NAME(), ss.str());
-  }
-  num = 0;
-  output_origins->GetMetaData(num)->Set(
-    vtkCompositeDataSet::NAME(), "layersOrigins");
-  num = 1;
-  output_origins->GetMetaData(num)->Set(
-    vtkCompositeDataSet::NAME(), "layersOriginsPrime");
+  ttk::wnn::makeOriginsOutput(
+    output_origins, originsCopy_, originsPrimeCopy_, originPersPercent,
+    originPersDiff, originPersistenceOrder, originsMatchingVector,
+    originsPersPercent, originsPersDiff, mixtureCoefficient_,
+    isPersistenceDiagram_, convertToDiagram_, this->debugLevel_);
 
   // ------------------------------------------
   // --- Coefficients
   // ------------------------------------------
-  output_coef->SetNumberOfBlocks(allAlphas_[0].size());
-  for(unsigned int l = 0; l < allAlphas_[0].size(); ++l) {
-    vtkSmartPointer<vtkTable> coef_table = vtkSmartPointer<vtkTable>::New();
-    vtkNew<vtkIntArray> treeIDArray{};
-    treeIDArray->SetName("TreeID");
-    treeIDArray->SetNumberOfTuples(inputTrees.size());
-    for(unsigned int i = 0; i < inputTrees.size(); ++i)
-      treeIDArray->SetTuple1(i, i);
-    coef_table->AddColumn(treeIDArray);
-    auto noVec = allAlphas_[0][l].sizes()[0];
-    for(unsigned int v = 0; v < noVec; ++v) {
-      // Alphas
-      vtkNew<vtkFloatArray> tArray{};
-      std::string name = ttk::axa::getTableCoefficientName(noVec, v);
-      tArray->SetName(name.c_str());
-      tArray->SetNumberOfTuples(allAlphas_.size());
-      // Act Alphas
-      vtkNew<vtkFloatArray> actArray{};
-      std::string actName = "Act" + name;
-      actArray->SetName(actName.c_str());
-      actArray->SetNumberOfTuples(allAlphas_.size());
-      // Scaled Alphas
-      vtkNew<vtkFloatArray> tArrayNorm{};
-      std::string nameNorm = ttk::axa::getTableCoefficientNormName(noVec, v);
-      tArrayNorm->SetName(nameNorm.c_str());
-      tArrayNorm->SetNumberOfTuples(allAlphas_.size());
-      // Act Scaled Alphas
-      vtkNew<vtkFloatArray> actArrayNorm{};
-      std::string actNameNorm = "Act" + nameNorm;
-      actArrayNorm->SetName(actNameNorm.c_str());
-      actArrayNorm->SetNumberOfTuples(allAlphas_.size());
-      // Fill Arrays
-      for(unsigned int i = 0; i < allAlphas_.size(); ++i) {
-        tArray->SetTuple1(i, allAlphas_[i][l][v].item<float>());
-        actArray->SetTuple1(i, allActAlphas_[i][l][v].item<float>());
-        tArrayNorm->SetTuple1(i, allScaledAlphas_[i][l][v].item<float>());
-        actArrayNorm->SetTuple1(i, allActScaledAlphas_[i][l][v].item<float>());
-      }
-      coef_table->AddColumn(tArray);
-      coef_table->AddColumn(actArray);
-      coef_table->AddColumn(tArrayNorm);
-      coef_table->AddColumn(actArrayNorm);
-    }
-    if(!clusterAsgn_.empty()) {
-      vtkNew<vtkIntArray> clusterArray{};
-      clusterArray->SetName("ClusterAssignment");
-      clusterArray->SetNumberOfTuples(inputTrees.size());
-      for(unsigned int i = 0; i < clusterAsgn_.size(); ++i)
-        clusterArray->SetTuple1(i, clusterAsgn_[i]);
-      coef_table->AddColumn(clusterArray);
-    }
-    if(l == 0) {
-      vtkNew<vtkIntArray> treesNoNodesArray{};
-      treesNoNodesArray->SetNumberOfTuples(recs_.size());
-      treesNoNodesArray->SetName("treeNoNodes");
-      for(unsigned int i = 0; i < recs_.size(); ++i)
-        treesNoNodesArray->SetTuple1(
-          i, recs_[i][0].mTree.tree.getNumberOfNodes());
-      coef_table->AddColumn(treesNoNodesArray);
-    }
-    output_coef->SetBlock(l, coef_table);
-    std::stringstream ss;
-    ss << "Coef" << l;
-    output_coef->GetMetaData(l)->Set(vtkCompositeDataSet::NAME(), ss.str());
-  }
-
-  // Copy Field Data
-  // - aggregate input field data
-  for(unsigned int b = 0; b < inputTrees[0]->GetNumberOfBlocks(); ++b) {
-    vtkNew<vtkFieldData> fd{};
-    fd->CopyStructure(inputTrees[0]->GetBlock(b)->GetFieldData());
-    fd->SetNumberOfTuples(inputTrees.size());
-    for(size_t i = 0; i < inputTrees.size(); ++i) {
-      fd->SetTuple(i, 0, inputTrees[i]->GetBlock(b)->GetFieldData());
-    }
-
-    // - copy input field data to output row data
-    for(int i = 0; i < fd->GetNumberOfArrays(); ++i) {
-      auto array = fd->GetAbstractArray(i);
-      array->SetName(array->GetName());
-      vtkTable::SafeDownCast(output_coef->GetBlock(0))->AddColumn(array);
-    }
-  }
+  ttk::wnn::makeCoefficientsOutput(output_coef, allAlphas_, allScaledAlphas_,
+                                   allActAlphas_, allActScaledAlphas_,
+                                   clusterAsgn_, recs_, inputTrees);
 
   // Field Data Input Parameters
   std::vector<std::string> paramNames;
@@ -542,58 +314,62 @@ int ttkMergeTreeAutoencoder::runOutput(
   for(unsigned int l = 0; l < dataMatchingVectorT.size(); ++l) {
     dataMatchingVectorT[l].resize(dataMatchings_[l].size());
     for(unsigned int i = 0; i < dataMatchingVectorT[l].size(); ++i) {
-      auto &origin = (l == 0 ? origins_[0] : originsPrime_[l - 1]);
-      getMatchingVector(origin.mTree, recs_[i][l].mTree, dataMatchings_[l][i],
-                        dataMatchingVectorT[l][i]);
+      auto &origin = (l == 0 ? originsCopy_[0] : originsPrimeCopy_[l - 1]);
+      ttk::axa::getMatchingVector(origin.mTree, recs_[i][l].mTree,
+                                  dataMatchings_[l][i],
+                                  dataMatchingVectorT[l][i]);
     }
   }
   output_vectors->SetNumberOfBlocks(2);
   vtkSmartPointer<vtkMultiBlockDataSet> vectors
     = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-  vectors->SetNumberOfBlocks(vSTensor_.size());
+  vectors->SetNumberOfBlocks(noLayers_);
   vtkSmartPointer<vtkMultiBlockDataSet> vectorsPrime
     = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-  vectorsPrime->SetNumberOfBlocks(vSTensor_.size());
-  for(unsigned int l = 0; l < vSTensor_.size(); ++l) {
+  vectorsPrime->SetNumberOfBlocks(noLayers_);
+  for(unsigned int l = 0; l < noLayers_; ++l) {
     vtkSmartPointer<vtkTable> vectorsTable = vtkSmartPointer<vtkTable>::New();
     vtkSmartPointer<vtkTable> vectorsPrimeTable
       = vtkSmartPointer<vtkTable>::New();
-    for(unsigned int v = 0; v < vSTensor_[l].sizes()[1]; ++v) {
+    for(unsigned int v = 0; v < layers_[l].getVSTensor().sizes()[1]; ++v) {
       // Vs
       vtkNew<vtkFloatArray> vectorArray{};
-      std::string name
-        = ttk::axa::getTableVectorName(vSTensor_[l].sizes()[1], v, 0, 0, false);
+      std::string name = ttk::axa::getTableVectorName(
+        layers_[l].getVSTensor().sizes()[1], v, 0, 0, false);
       vectorArray->SetName(name.c_str());
-      vectorArray->SetNumberOfTuples(vSTensor_[l].sizes()[0]);
-      for(unsigned int i = 0; i < vSTensor_[l].sizes()[0]; ++i)
-        vectorArray->SetTuple1(i, vSTensor_[l][i][v].item<float>());
+      vectorArray->SetNumberOfTuples(layers_[l].getVSTensor().sizes()[0]);
+      for(unsigned int i = 0; i < layers_[l].getVSTensor().sizes()[0]; ++i)
+        vectorArray->SetTuple1(i, layers_[l].getVSTensor()[i][v].item<float>());
       vectorsTable->AddColumn(vectorArray);
       // Vs Prime
       vtkNew<vtkFloatArray> vectorPrimeArray{};
-      std::string name2
-        = ttk::axa::getTableVectorName(vSTensor_[l].sizes()[1], v, 0, 0, false);
+      std::string name2 = ttk::axa::getTableVectorName(
+        layers_[l].getVSTensor().sizes()[1], v, 0, 0, false);
       vectorPrimeArray->SetName(name2.c_str());
-      vectorPrimeArray->SetNumberOfTuples(vSPrimeTensor_[l].sizes()[0]);
-      for(unsigned int i = 0; i < vSPrimeTensor_[l].sizes()[0]; ++i)
-        vectorPrimeArray->SetTuple1(i, vSPrimeTensor_[l][i][v].item<float>());
+      vectorPrimeArray->SetNumberOfTuples(
+        layers_[l].getVSPrimeTensor().sizes()[0]);
+      for(unsigned int i = 0; i < layers_[l].getVSPrimeTensor().sizes()[0]; ++i)
+        vectorPrimeArray->SetTuple1(
+          i, layers_[l].getVSPrimeTensor()[i][v].item<float>());
       vectorsPrimeTable->AddColumn(vectorPrimeArray);
     }
     // Rev node corr
     vtkNew<vtkUnsignedIntArray> revNodeCorrArray{};
     revNodeCorrArray->SetName("revNodeCorr");
-    revNodeCorrArray->SetNumberOfTuples(vSTensor_[l].sizes()[0]);
+    revNodeCorrArray->SetNumberOfTuples(layers_[l].getVSTensor().sizes()[0]);
     std::vector<unsigned int> revNodeCorr;
-    getReverseTorchNodeCorr(origins_[l], revNodeCorr);
-    for(unsigned int i = 0; i < vSTensor_[l].sizes()[0]; ++i)
+    getReverseTorchNodeCorr(originsCopy_[l], revNodeCorr);
+    for(unsigned int i = 0; i < layers_[l].getVSTensor().sizes()[0]; ++i)
       revNodeCorrArray->SetTuple1(i, revNodeCorr[i]);
     vectorsTable->AddColumn(revNodeCorrArray);
     // Rev node corr prime
     vtkNew<vtkUnsignedIntArray> revNodeCorrPrimeArray{};
-    revNodeCorrPrimeArray->SetNumberOfTuples(vSPrimeTensor_[l].sizes()[0]);
+    revNodeCorrPrimeArray->SetNumberOfTuples(
+      layers_[l].getVSPrimeTensor().sizes()[0]);
     revNodeCorrPrimeArray->SetName("revNodeCorr");
     std::vector<unsigned int> revNodeCorrPrime;
-    getReverseTorchNodeCorr(originsPrime_[l], revNodeCorrPrime);
-    for(unsigned int i = 0; i < vSPrimeTensor_[l].sizes()[0]; ++i)
+    getReverseTorchNodeCorr(originsPrimeCopy_[l], revNodeCorrPrime);
+    for(unsigned int i = 0; i < layers_[l].getVSPrimeTensor().sizes()[0]; ++i)
       revNodeCorrPrimeArray->SetTuple1(i, revNodeCorrPrime[i]);
     vectorsPrimeTable->AddColumn(revNodeCorrPrimeArray);
     // Origins Matchings
@@ -632,7 +408,7 @@ int ttkMergeTreeAutoencoder::runOutput(
     if(l < dataMatchingVectorT.size() - 1)
       addDataMatchingArray(vectorsPrimeTable, dataMatchingVectorT[l + 1]);
     // Reconst Matchings
-    if(l == vSTensor_.size() - 1) {
+    if(l == noLayers_ - 1) {
       for(unsigned int i = 0; i < invReconstMatchingVectorT.size(); ++i) {
         vtkNew<vtkIntArray> matchingArray{};
         matchingArray->SetNumberOfTuples(invReconstMatchingVectorT[i].size());
@@ -658,7 +434,7 @@ int ttkMergeTreeAutoencoder::runOutput(
   }
   output_vectors->SetBlock(0, vectors);
   output_vectors->SetBlock(1, vectorsPrime);
-  num = 0;
+  unsigned int num = 0;
   output_vectors->GetMetaData(num)->Set(vtkCompositeDataSet::NAME(), "Vectors");
   num = 1;
   output_vectors->GetMetaData(num)->Set(
