@@ -28,7 +28,7 @@ namespace ttk {
      * @param[in] a input tensor.
      * @param[out] b copied output tensor.
      */
-    void copyTensor(torch::Tensor &a, torch::Tensor &b);
+    void copyTensor(const torch::Tensor &a, torch::Tensor &b);
 
     template <typename dataType>
     struct TorchMergeTree {
@@ -65,8 +65,8 @@ namespace ttk {
      * second tree.
      * @param[in] doubleReordering choose to also reorder first tree.
      */
-    void dataReorderingGivenMatching(mtu::TorchMergeTree<float> &tree,
-                                     mtu::TorchMergeTree<float> &tree2,
+    void dataReorderingGivenMatching(const mtu::TorchMergeTree<float> &tree,
+                                     const mtu::TorchMergeTree<float> &tree2,
                                      torch::Tensor &tree1ProjIndexer,
                                      torch::Tensor &tree2ReorderingIndexes,
                                      torch::Tensor &tree2ReorderedTensor,
@@ -89,8 +89,8 @@ namespace ttk {
      * @param[out] tree2DeltaProjTensor tensor of the projected pairs on the
      * diagonal of the first tree in the second tree.
      */
-    void dataReorderingGivenMatching(mtu::TorchMergeTree<float> &tree,
-                                     mtu::TorchMergeTree<float> &tree2,
+    void dataReorderingGivenMatching(const mtu::TorchMergeTree<float> &tree,
+                                     const mtu::TorchMergeTree<float> &tree2,
                                      torch::Tensor &tree1ProjIndexer,
                                      torch::Tensor &tree2ReorderingIndexes,
                                      torch::Tensor &tree2ReorderedTensor,
@@ -107,8 +107,8 @@ namespace ttk {
      * @param[in] doubleReordering choose to also reorder first tree.
      */
     void dataReorderingGivenMatching(
-      mtu::TorchMergeTree<float> &tree,
-      mtu::TorchMergeTree<float> &tree2,
+      const mtu::TorchMergeTree<float> &tree,
+      const mtu::TorchMergeTree<float> &tree2,
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matching,
       torch::Tensor &tree1ReorderedTensor,
       torch::Tensor &tree2ReorderedTensor,
@@ -123,8 +123,8 @@ namespace ttk {
      * @param[out] tree2ReorderedTensor reordered torch tensor of second tree.
      */
     void dataReorderingGivenMatching(
-      mtu::TorchMergeTree<float> &tree,
-      mtu::TorchMergeTree<float> &tree2,
+      const mtu::TorchMergeTree<float> &tree,
+      const mtu::TorchMergeTree<float> &tree2,
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matching,
       torch::Tensor &tree2ReorderedTensor);
 
@@ -196,7 +196,7 @@ namespace ttk {
      * @param[out] out output copied torch merge tree.
      */
     template <class dataType>
-    void copyTorchMergeTree(TorchMergeTree<dataType> &tmTree,
+    void copyTorchMergeTree(const TorchMergeTree<dataType> &tmTree,
                             TorchMergeTree<dataType> &out) {
       out.mTree = ftm::copyMergeTree<dataType>(tmTree.mTree);
       copyTensor(tmTree.tensor, out.tensor);
@@ -390,7 +390,6 @@ namespace ttk {
                                 bool normalized,
                                 ftm::MergeTree<dataType> &mTreeOut) {
       std::vector<unsigned int> &nodeCorr = tmt.nodeCorr;
-      torch::Tensor &tensor = tmt.tensor;
       std::vector<ftm::idNode> &parentsOri = tmt.parentsOri;
 
       mTreeOut = ttk::ftm::copyMergeTree<dataType>(tmt.mTree);
@@ -405,6 +404,9 @@ namespace ttk {
         return true;
 
       bool isJT = tmt.mTree.tree.template isJoinTree<dataType>();
+      torch::Tensor tensor = tmt.tensor;
+      if(!tensor.device().is_cpu())
+        tensor = tensor.cpu();
       std::vector<dataType> tensorVec(
         tensor.data_ptr<float>(), tensor.data_ptr<float>() + tensor.numel());
       std::vector<dataType> scalarsVector;
@@ -538,8 +540,8 @@ namespace ttk {
      */
     template <class dataType>
     void getTensorMatching(
-      TorchMergeTree<dataType> &a,
-      TorchMergeTree<dataType> &b,
+      const TorchMergeTree<dataType> &a,
+      const TorchMergeTree<dataType> &b,
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matching,
       std::vector<int> &tensorMatching) {
       tensorMatching.clear();
@@ -562,8 +564,8 @@ namespace ttk {
      */
     template <class dataType>
     void getInverseTensorMatching(
-      TorchMergeTree<dataType> &a,
-      TorchMergeTree<dataType> &b,
+      const TorchMergeTree<dataType> &a,
+      const TorchMergeTree<dataType> &b,
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matching,
       std::vector<int> &tensorMatching) {
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> invMatching(

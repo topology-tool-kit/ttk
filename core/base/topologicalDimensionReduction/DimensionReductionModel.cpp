@@ -1,4 +1,4 @@
-#include "DimensionReductionModel.h"
+#include <DimensionReductionModel.h>
 #include <regex>
 
 #ifdef TTK_ENABLE_TORCH

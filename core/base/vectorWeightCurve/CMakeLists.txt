@@ -1,0 +1,10 @@
+ttk_add_base_library(vectorWeightCurve
+  SOURCES
+    VectorWeightCurve.cpp
+  HEADERS
+    VectorWeightCurve.h
+  DEPENDS
+    persistenceDiagram
+    vectorSimplification
+    geometry
+    )

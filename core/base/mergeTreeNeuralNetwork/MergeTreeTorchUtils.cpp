@@ -6,7 +6,7 @@ using namespace ttk;
 #ifdef TTK_ENABLE_TORCH
 using namespace torch::indexing;
 
-void mtu::copyTensor(torch::Tensor &a, torch::Tensor &b) {
+void mtu::copyTensor(const torch::Tensor &a, torch::Tensor &b) {
   b = a.detach().clone();
   b.requires_grad_(a.requires_grad());
 }
@@ -19,8 +19,8 @@ void mtu::getDeltaProjTensor(torch::Tensor &diagTensor,
   deltaProjTensor = torch::cat({deltaProjTensor, deltaProjTensor}, 1);
 }
 
-void mtu::dataReorderingGivenMatching(mtu::TorchMergeTree<float> &tree,
-                                      mtu::TorchMergeTree<float> &tree2,
+void mtu::dataReorderingGivenMatching(const mtu::TorchMergeTree<float> &tree,
+                                      const mtu::TorchMergeTree<float> &tree2,
                                       torch::Tensor &tree1ProjIndexer,
                                       torch::Tensor &tree2ReorderingIndexes,
                                       torch::Tensor &tree2ReorderedTensor,
@@ -30,12 +30,16 @@ void mtu::dataReorderingGivenMatching(mtu::TorchMergeTree<float> &tree,
                                       bool doubleReordering) {
   // Reorder tree2 tensor
   torch::Tensor tree2DiagTensor = tree2.tensor.reshape({-1, 2});
-  tree2ReorderedTensor = torch::cat({tree2DiagTensor, torch::zeros({1, 2})});
+  auto zeros = torch::zeros(
+    {1, 2}, torch::TensorOptions().device(tree2DiagTensor.device()));
+  tree2ReorderedTensor = torch::cat({tree2DiagTensor, zeros});
   tree2ReorderedTensor = tree2ReorderedTensor.index({tree2ReorderingIndexes});
 
   // Create tree projection given matching
   torch::Tensor treeDiagTensor = tree.tensor.reshape({-1, 2});
   getDeltaProjTensor(treeDiagTensor, tree2DeltaProjTensor);
+  if(!tree2DeltaProjTensor.device().is_cpu())
+    tree1ProjIndexer = tree1ProjIndexer.to(tree2DeltaProjTensor.device());
   tree2DeltaProjTensor = tree2DeltaProjTensor * tree1ProjIndexer;
 
   // Double reordering
@@ -59,8 +63,8 @@ void mtu::dataReorderingGivenMatching(mtu::TorchMergeTree<float> &tree,
   tree2DeltaProjTensor = tree2DeltaProjTensor.reshape({-1, 1});
 }
 
-void mtu::dataReorderingGivenMatching(mtu::TorchMergeTree<float> &tree,
-                                      mtu::TorchMergeTree<float> &tree2,
+void mtu::dataReorderingGivenMatching(const mtu::TorchMergeTree<float> &tree,
+                                      const mtu::TorchMergeTree<float> &tree2,
                                       torch::Tensor &tree1ProjIndexer,
                                       torch::Tensor &tree2ReorderingIndexes,
                                       torch::Tensor &tree2ReorderedTensor,
@@ -75,8 +79,8 @@ void mtu::dataReorderingGivenMatching(mtu::TorchMergeTree<float> &tree,
 }
 
 void mtu::dataReorderingGivenMatching(
-  mtu::TorchMergeTree<float> &tree,
-  mtu::TorchMergeTree<float> &tree2,
+  const mtu::TorchMergeTree<float> &tree,
+  const mtu::TorchMergeTree<float> &tree2,
   std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matching,
   torch::Tensor &tree1ReorderedTensor,
   torch::Tensor &tree2ReorderedTensor,
@@ -108,8 +112,8 @@ void mtu::dataReorderingGivenMatching(
 }
 
 void mtu::dataReorderingGivenMatching(
-  mtu::TorchMergeTree<float> &tree,
-  mtu::TorchMergeTree<float> &tree2,
+  const mtu::TorchMergeTree<float> &tree,
+  const mtu::TorchMergeTree<float> &tree2,
   std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> &matching,
   torch::Tensor &tree2ReorderedTensor) {
   torch::Tensor tree1ReorderedTensor;
@@ -123,7 +127,8 @@ void mtu::meanBirthShift(torch::Tensor &diagTensor,
   torch::Tensor birthShiftValue = diagBaseTensor.index({Slice(), 0}).mean()
                                   - diagTensor.index({Slice(), 0}).mean();
   torch::Tensor shiftTensor
-    = torch::full({diagTensor.sizes()[0], 2}, birthShiftValue.item<float>());
+    = torch::full({diagTensor.sizes()[0], 2}, birthShiftValue.item<float>(),
+                  torch::TensorOptions().device(diagTensor.device()));
   diagTensor.index_put_({None}, diagTensor + shiftTensor);
 }
 
@@ -139,6 +144,8 @@ void mtu::meanBirthMaxPersShift(torch::Tensor &tensor,
     = (diagTensor.index({Slice(), 1}) - diagTensor.index({Slice(), 0})).max();
   torch::Tensor shiftTensor = (baseMaxPers - maxPers) / 2.0;
   shiftTensor = torch::stack({-shiftTensor, shiftTensor});
+  if(!diagTensor.device().is_cpu())
+    shiftTensor = shiftTensor.to(diagTensor.device());
   diagTensor.index_put_({None}, diagTensor + shiftTensor);
   // Shift to have same birth mean
   meanBirthShift(diagTensor, diagBaseTensor);
@@ -158,10 +165,11 @@ void mtu::belowDiagonalPointsShift(torch::Tensor &tensor,
     = (goodPoints.index({Slice(), 1}) - goodPoints.index({Slice(), 0}))
         .median();
   torch::Tensor shiftTensor
-    = (torch::full({badPoints.sizes()[0], 1}, pers.item<float>())
-       - badPoints.index({Slice(), 1}).reshape({-1, 1})
-       + badPoints.index({Slice(), 0}).reshape({-1, 1}))
-      / 2.0;
+    = torch::full({badPoints.sizes()[0], 1}, pers.item<float>(),
+                  torch::TensorOptions().device(badPoints.device()));
+  shiftTensor = (shiftTensor - badPoints.index({Slice(), 1}).reshape({-1, 1})
+                 + badPoints.index({Slice(), 0}).reshape({-1, 1}))
+                / 2.0;
   shiftTensor = torch::cat({-shiftTensor, shiftTensor}, 1);
   badPoints = badPoints + shiftTensor;
   // Update tensor
@@ -202,6 +210,8 @@ bool mtu::isThereMissingPairs(mtu::TorchMergeTree<float> &interpolation) {
                  - interTensor.reshape({-1, 2}).index({Slice(), 1}))
       > (maxPers * 0.001 / 100.0);
   torch::Tensor indexed = interTensor.reshape({-1, 2}).index({indexer});
-  return indexed.sizes()[0] > interpolation.mTree.tree.getRealNumberOfNodes();
+  bool isMissingPairs
+    = indexed.sizes()[0] > interpolation.mTree.tree.getRealNumberOfNodes();
+  return isMissingPairs;
 }
 #endif

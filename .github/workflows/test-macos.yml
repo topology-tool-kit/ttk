@@ -139,6 +139,7 @@ jobs:
       run: |
         cd ttk-data
         # remove buggy example
+        rm python/harmonicSkeleton.py
         # related issue: https://github.com/topology-tool-kit/ttk/issues/1055
         rm python/nestedTrackingFromOverlap.py
         # tmp removal of mpi example
