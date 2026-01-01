@@ -6,4 +6,5 @@ ttk_add_base_library(discreteGradient
     DiscreteGradient_Template.h
   DEPENDS
     triangulation
+    ftmTree
     )

@@ -165,6 +165,9 @@ public:
   vtkSetMacro(ReturnSaddleConnectors, bool);
   vtkGetMacro(ReturnSaddleConnectors, bool);
 
+  vtkSetMacro(DiscreteGradientBackend, int);
+  vtkGetMacro(DiscreteGradientBackend, int);
+
   vtkSetMacro(SaddleConnectorsPersistenceThreshold, double);
   vtkGetMacro(SaddleConnectorsPersistenceThreshold, double);
 
@@ -173,6 +176,9 @@ public:
 
   vtkSetMacro(ForceLoopFreeGradient, bool);
   vtkGetMacro(ForceLoopFreeGradient, bool);
+
+  vtkSetMacro(StochasticGradientSeed, unsigned int);
+  vtkGetMacro(StochasticGradientSeed, unsigned int);
 
 protected:
   template <typename scalarType, typename triangulationType>
@@ -194,5 +200,7 @@ protected:
 private:
   bool ForceInputOffsetScalarField{};
   int IterationThreshold{-1};
+  int DiscreteGradientBackend{0};
   OutputManifold segmentations_{};
+  unsigned int StochasticGradientSeed{0};
 };
