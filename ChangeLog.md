@@ -1,9 +1,11 @@
 ## TTK - ChangeLog
 =
 ### dev
-- Cycle-aware dimensionality reduction (TopoAE++)
+- Cycle-aware dimensionality reduction (TopoAE++, IEEE TVCG 2026)
 - Distributed computation of persistent homology! (IEEE TPDS 2025)
+- Discrete vector field topology! (IEEE VIS 2024)
 - New backend for TrackingFromFields (critical point based)
+- Stochastic discrete gradient (IEEE VIS 2012)
 - Fast planar Rips filtration persistence computation
 - Migration to ParaView 6
 - CI updates

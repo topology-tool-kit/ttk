@@ -15,7 +15,95 @@
 
 #ifdef TTK_ENABLE_TORCH
 namespace ttk {
-  namespace wae {
+  namespace wnn {
+
+    void makeMatchingVectors(
+      std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
+        &originsMatchings,
+      std::vector<mtu::TorchMergeTree<float>> &originsCopy,
+      std::vector<mtu::TorchMergeTree<float>> &originsPrimeCopy,
+      std::vector<std::vector<ttk::ftm::idNode>> &originsMatchingVectorT,
+      std::vector<std::vector<ttk::ftm::idNode>> &invOriginsMatchingVectorT,
+      std::vector<
+        std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>>
+        &dataMatchings,
+      std::vector<std::vector<mtu::TorchMergeTree<float>>> &recs,
+      std::vector<std::vector<std::vector<ttk::ftm::idNode>>>
+        &invDataMatchingVectorT,
+      std::vector<std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>>
+        &reconstMatchings,
+      std::vector<std::vector<ttk::ftm::idNode>> &invReconstMatchingVectorT);
+
+    void makeDataOutput(
+      vtkMultiBlockDataSet *output_data,
+      std::vector<std::vector<mtu::TorchMergeTree<float>>> &recs,
+      unsigned int recSize,
+      std::vector<vtkDataSet *> &treesSegmentation,
+      std::vector<std::vector<double>> &persCorrelationMatrix,
+      std::vector<std::vector<std::vector<ttk::ftm::idNode>>>
+        &invDataMatchingVectorT,
+      std::vector<std::vector<ttk::ftm::idNode>> &invReconstMatchingVectorT,
+      std::vector<std::vector<ttk::ftm::idNode>> &originsMatchingVectorT,
+      std::vector<std::vector<ttk::ftm::idNode>> &originsMatchingVector,
+      std::vector<std::vector<double>> &originsPersPercent,
+      std::vector<std::vector<double>> &originsPersDiff,
+      std::vector<int> &originPersistenceOrder,
+      std::vector<vtkUnstructuredGrid *> &treesNodes,
+      std::vector<std::vector<int>> &treesNodeCorr,
+      std::vector<unsigned int> classId,
+      float bestLoss,
+      double mixtureCoefficient,
+      bool isPersistenceDiagram,
+      bool convertToDiagram,
+      int debugLevel);
+
+    void makeDataOutput(
+      vtkMultiBlockDataSet *output_data,
+      std::vector<std::vector<mtu::TorchMergeTree<float>>> &recs,
+      unsigned int recSize,
+      std::vector<vtkDataSet *> &treesSegmentation,
+      std::vector<std::vector<double>> &persCorrelationMatrix,
+      std::vector<std::vector<std::vector<ttk::ftm::idNode>>>
+        &invDataMatchingVectorT,
+      std::vector<std::vector<ttk::ftm::idNode>> &invReconstMatchingVectorT,
+      std::vector<std::vector<ttk::ftm::idNode>> &originsMatchingVectorT,
+      std::vector<std::vector<ttk::ftm::idNode>> &originsMatchingVector,
+      std::vector<std::vector<double>> &originsPersPercent,
+      std::vector<std::vector<double>> &originsPersDiff,
+      std::vector<int> &originPersistenceOrder,
+      std::vector<vtkUnstructuredGrid *> &treesNodes,
+      std::vector<std::vector<int>> &treesNodeCorr,
+      float bestLoss,
+      double mixtureCoefficient,
+      bool isPersistenceDiagram,
+      bool convertToDiagram,
+      int debugLevel);
+
+    void makeOriginsOutput(
+      vtkMultiBlockDataSet *output_origins,
+      std::vector<mtu::TorchMergeTree<float>> &originsCopy,
+      std::vector<mtu::TorchMergeTree<float>> &originsPrimeCopy,
+      std::vector<double> &originPersPercent,
+      std::vector<double> &originPersDiff,
+      std::vector<int> &originPersistenceOrder,
+      std::vector<std::vector<ttk::ftm::idNode>> &originsMatchingVector,
+      std::vector<std::vector<double>> &originsPersPercent,
+      std::vector<std::vector<double>> &originsPersDiff,
+      double mixtureCoefficient,
+      bool isPersistenceDiagram,
+      bool convertToDiagram,
+      int debugLevel);
+
+    void makeCoefficientsOutput(
+      vtkMultiBlockDataSet *output_coef,
+      std::vector<std::vector<torch::Tensor>> &allAlphas,
+      std::vector<std::vector<torch::Tensor>> &allScaledAlphas,
+      std::vector<std::vector<torch::Tensor>> &allActAlphas,
+      std::vector<std::vector<torch::Tensor>> &allActScaledAlphas,
+      std::vector<unsigned int> &clusterAsgn,
+      std::vector<std::vector<mtu::TorchMergeTree<float>>> &recs,
+      std::vector<vtkSmartPointer<vtkMultiBlockDataSet>> &inputTrees);
+
     /**
      * @brief Proxy function to use ttkMergeTreeVisualization to create the vtk
      * objects of a merge tree.
@@ -249,6 +337,6 @@ namespace ttk {
         &customIntArrays,
       std::vector<std::vector<std::tuple<std::string, std::vector<double>>>>
         &customDoubleArrays);
-  } // namespace wae
+  } // namespace wnn
 } // namespace ttk
 #endif

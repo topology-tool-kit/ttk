@@ -66,8 +66,9 @@
 ///
 /// "Topological Autoencoders++: Fast and Accurate Cycle-Aware Dimensionality
 /// Reduction" \n
-/// Mattéo Clémot, Julie Digne, Julien Tierny, \n
-/// arXiv preprint, 2025.
+/// MattÃ©o ClÃ©mot, Julie Digne, Julien Tierny, \n
+/// IEEE Transactions on Visualization and Computer Graphics.
+/// Accepted, to be presented at IEEE VIS 2026.
 
 #pragma once
 
@@ -365,7 +366,7 @@ namespace ttk {
     bool ae_BatchNormalization{true};
     double ae_RegCoefficient{1e-2};
     bool ae_PreOptimize{false};
-    METHOD ae_PreOptimizeMethod{METHOD::PCA};
+    int ae_PreOptimizeEpochs{1000};
 
     // testing
     std::string ModulePath{"default"};

@@ -1,0 +1,9 @@
+ttk_add_base_library(topologicalSkeleton
+  SOURCES
+    TopologicalSkeleton.cpp
+  HEADERS
+    TopologicalSkeleton.h
+  DEPENDS
+    discreteVectorField
+    vectorSimplification
+    )

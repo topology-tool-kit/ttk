@@ -1,0 +1,10 @@
+NAME
+  ttkVectorWeightCurve
+SOURCES
+  ttkVectorWeightCurve.cpp
+HEADERS
+  ttkVectorWeightCurve.h
+DEPENDS
+  vectorWeightCurve
+  ttkAlgorithm
+  ttkPersistenceDiagram

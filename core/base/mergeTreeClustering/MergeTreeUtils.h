@@ -27,7 +27,7 @@ namespace ttk {
   // Normalized Wasserstein
   // --------------------
   template <class dataType>
-  dataType getMinMaxLocal(ftm::FTMTree_MT *tree,
+  dataType getMinMaxLocal(const ftm::FTMTree_MT *tree,
                           ftm::idNode nodeId,
                           bool getMin = true) {
     auto nodeIdParent = tree->getParentSafe(nodeId);
@@ -61,11 +61,11 @@ namespace ttk {
   }
 
   template <class dataType>
-  std::tuple<dataType, dataType> getNormalizedBirthDeath(ftm::FTMTree_MT *tree,
-                                                         ftm::idNode nodeId,
-                                                         dataType newMin = 0.0,
-                                                         dataType newMax
-                                                         = 1.0) {
+  std::tuple<dataType, dataType>
+    getNormalizedBirthDeath(const ftm::FTMTree_MT *tree,
+                            ftm::idNode nodeId,
+                            dataType newMin = 0.0,
+                            dataType newMax = 1.0) {
     auto birthDeath = tree->getBirthDeath<dataType>(nodeId);
     dataType birth = std::get<0>(birthDeath);
     dataType death = std::get<1>(birthDeath);
