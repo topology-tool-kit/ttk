@@ -411,8 +411,6 @@ namespace ttk::gph {
 #ifndef TTK_GPH_PARALLEL
     computeDPH(ph, MSA);
 #else
-    tbb::global_control gc(
-      tbb::global_control::max_allowed_parallelism, nThreads_);
     omp_set_num_threads(nThreads_);
 
     DisjointSets UF(N_c);

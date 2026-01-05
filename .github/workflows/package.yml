@@ -39,6 +39,7 @@ jobs:
           libeigen3-dev \
           libgraphviz-dev \
           libsqlite3-dev \
+          libtbb-dev \
           libgl1-mesa-dev \
           libwebsocketpp-dev \
           graphviz \
@@ -202,7 +203,7 @@ jobs:
         brew install --cask xquartz
         brew install mesa glew qt@5 ninja libomp 
         # TTK dependencies
-        brew install boost cgal eigen graphviz spectra sqlite zlib numpy qhull 
+        brew install boost cgal eigen graphviz spectra sqlite tbb zlib numpy qhull
 
     - name: Install and setup sccache
       uses: f3d-app/sccache-setup-action@v1
@@ -290,7 +291,7 @@ jobs:
         brew install --cask xquartz
         brew install mesa glew qt@5 ninja libomp
         # TTK dependencies
-        brew install boost cgal eigen graphviz spectra sqlite zlib numpy qhull 
+        brew install boost cgal eigen graphviz spectra sqlite tbb zlib numpy qhull
 
     - name: Install and setup sccache
       uses: f3d-app/sccache-setup-action@v1
