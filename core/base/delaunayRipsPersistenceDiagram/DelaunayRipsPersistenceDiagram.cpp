@@ -37,12 +37,6 @@ int ttk::DelaunayRipsPersistenceDiagram::execute(
     gph::tryDimensions(points, ph, getThreadNumber());
     ph[0].emplace_back(
       FiltratedSimplex{{-1}, 0.}, FiltratedSimplex{{-1}, inf}); // infinite pair
-    for(auto &diag : ph) {
-      for(auto &[b, d] : diag) {
-        b.first = {-1};
-        d.first = {-1};
-      }
-    }
   }
   return 0;
 #else

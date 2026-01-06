@@ -249,7 +249,7 @@ namespace ttk::gph {
     }
     for(FiltratedDSimplex<DYN_DIM> const &e : MSA)
       ph[0].emplace_back(
-        FiltratedSimplex{{}, 0.}, FiltratedSimplex{e.s, sqrt(e.d)});
+        FiltratedSimplex{{-1}, 0.}, FiltratedSimplex{e.s, sqrt(e.d)});
   }
 
   template <unsigned DIM>
@@ -265,7 +265,7 @@ namespace ttk::gph {
       recurse(ph, nextMSA);
     } else if constexpr(D == 1) { // this is the 0-dimensional homology
       for(FiltratedDSimplex<1> const &e : MSA)
-        ph[0].emplace_back(FiltratedSimplex{{}, 0.},
+        ph[0].emplace_back(FiltratedSimplex{{-1}, 0.},
                            FiltratedSimplex{{e.s[0], e.s[1]}, sqrt(e.d)});
     }
   }
