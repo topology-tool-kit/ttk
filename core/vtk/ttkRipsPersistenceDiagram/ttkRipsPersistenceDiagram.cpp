@@ -226,7 +226,7 @@ int ttkRipsPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   this->printMsg(
-    "Simplex maximum dimension: " + std::to_string(SimplexMaximumDimension),
+    "Homology maximum dimension: " + std::to_string(HomologyMaximumDimension),
     0.0, tm.getElapsedTime(), 1);
   this->printMsg(
     "Simplex maximum diameter: " + std::to_string(SimplexMaximumDiameter), 0.0,

@@ -41,7 +41,7 @@ int ttk::RipsPersistenceDiagram::execute(
   if(BackEnd == BACKEND::RIPSER || forceRipser) {
     if(isPrime(FieldOfCoefficients))
       ripser::ripser(points, ph, SimplexMaximumDiameter,
-                     SimplexMaximumDimension, InputIsDistanceMatrix, false,
+                     HomologyMaximumDimension, InputIsDistanceMatrix, false,
                      true, FieldOfCoefficients);
     else {
       printErr("The chosen p=" + std::to_string(FieldOfCoefficients)

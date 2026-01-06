@@ -74,7 +74,7 @@ public:
     SimplexMaximumDiameter = stod(data);
     Modified();
   }
-  std::string GetSimplexMaximumDiameter() {
+  std::string GetSimplexMaximumDiameter() const {
     return std::to_string(SimplexMaximumDiameter);
   }
 
@@ -90,8 +90,8 @@ public:
   ttkSetEnumMacro(BackEnd, BACKEND);
   vtkGetEnumMacro(BackEnd, BACKEND);
 
-  vtkSetMacro(SimplexMaximumDimension, int);
-  vtkGetMacro(SimplexMaximumDimension, int);
+  vtkSetMacro(HomologyMaximumDimension, int);
+  vtkGetMacro(HomologyMaximumDimension, int);
 
   vtkSetMacro(FieldOfCoefficients, int);
   vtkGetMacro(FieldOfCoefficients, int);

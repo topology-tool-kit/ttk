@@ -50,7 +50,7 @@ namespace ttk {
     /** BackEnd */
     BACKEND BackEnd{BACKEND::RIPSER};
     /** Max dimension of computed persistence diagram */
-    int SimplexMaximumDimension{1};
+    int HomologyMaximumDimension{1};
     /** Rips diameter threshold */
     double SimplexMaximumDiameter{rpd::inf};
     /** Field of coefficients */

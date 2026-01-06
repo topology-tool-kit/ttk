@@ -122,7 +122,7 @@
               panel_visibility="advanced" >
         <EnumerationDomain name="enum">
           <Entry value="0" text="Ripser"/>
-          <Entry value="1" text="Geometric (only in 2D)"/>
+          <Entry value="1" text="Geometric (2D only)"/>
         </EnumerationDomain>
         <Documentation>
           Backend for the computation of the Rips persistence diagram.
@@ -130,16 +130,16 @@
       </IntVectorProperty>
 
       <IntVectorProperty
-              name="SimplexMaximumDimension"
-              label="Simplex maximum dimension"
-              command="SetSimplexMaximumDimension"
+              name="HomologyMaximumDimension"
+              label="Homology maximum dimension"
+              command="SetHomologyMaximumDimension"
               number_of_elements="1"
               default_values="1">
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="BackEnd" values="0" />
         </Hints>
         <Documentation>
-          Simplex maximum dimension in the Rips complex.
+          Maximum dimension of homology to be considered.
         </Documentation>
       </IntVectorProperty>
 
@@ -173,7 +173,7 @@
 
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="BackEnd" />
-        <Property name="SimplexMaximumDimension" />
+        <Property name="HomologyMaximumDimension" />
         <Property name="SimplexMaximumDiameter" />
         <Property name="FieldOfCoefficients" />
       </PropertyGroup>
