@@ -41,11 +41,19 @@
 
 
       <!-- Surface extraction -->
-      <IntVectorProperty name="frameSurface" command="SetframeSurface" label="Surface: Frame index"
+
+      <IntVectorProperty name="onlyFrameSurface" command="SetonlyFrameSurface" label="Compute only frame Surface ?"
+                         number_of_elements="1" default_values="0" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+	  <IntVectorProperty name="frameSurface" command="SetframeSurface" label="Surface: Frame index"
                          number_of_elements="1" default_values="0">
         <Documentation>Frame index on which to display the surface vertices.</Documentation>
       </IntVectorProperty>
-    
+	  
+	  <IntVectorProperty name="maxSurfSize" command="SetmaxSurfSize" label="Max Surface Size in vertex"
+                         number_of_elements="1" default_values="10000">
+      </IntVectorProperty>
       <DoubleVectorProperty name="errSurf" command="SeterrSurf"
                             label="Surface: Threshold / β"
                             number_of_elements="1" default_values="0.0">
@@ -244,9 +252,12 @@
      </PropertyGroup>  
 
      <PropertyGroup panel_widget="Line" label="Surface extraction">
-       <Property name="frameSurface"/>
-       <Property name="surfaceMethod"/>
-       <Property name="errSurf"/>
+	   <Property name="surfaceMethod"/>
+	   <Property name="frameSurface"/>
+	   <Property name="onlyFrameSurface"/>
+	   <Property name="maxSurfSize"/>
+	   <Property name="errSurf"/>
+	   <Property name="persisThresh"/>
      </PropertyGroup>
 
      <PropertyGroup panel_widget="Line" label="Units">
@@ -277,7 +288,6 @@
      </PropertyGroup>
 
     
-      <!-- OUTPUTS (inchangés) -->
       <OutputPort name="Statistics"   index="0" id="port0"/>
       <OutputPort name="Trajectories" index="1" id="port1"/>
       <OutputPort name="Surfaces"     index="2" id="port2"/>

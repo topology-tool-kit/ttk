@@ -83,6 +83,7 @@ private:
   double spatialScale{1.0};
   double interFrame{1.0};
   bool convertDur{false};
+  bool onlyFrameSurface{false};
   double minVx{0.0};
   double maxVx{0.0};
   double extendTraj{false};
@@ -99,6 +100,7 @@ private:
   int minX{-1};
   double persisThresh{0.0};
   int surfaceMethod{0};
+  int maxSurfSize{10000};
 
 public:
   /**
@@ -137,6 +139,9 @@ public:
   vtkSetMacro(convertDur, bool);
   vtkGetMacro(convertDur, bool);
 
+  vtkSetMacro(onlyFrameSurface, bool);
+  vtkGetMacro(onlyFrameSurface, bool);
+  
   vtkSetMacro(minVx, double);
   vtkGetMacro(minVx, double);
 
@@ -169,6 +174,9 @@ public:
 
   vtkSetMacro(duraMin, int);
   vtkGetMacro(duraMin, int);
+
+  vtkSetMacro(maxSurfSize, int);
+  vtkGetMacro(maxSurfSize, int);
 
   vtkSetMacro(maxX, int);
   vtkGetMacro(maxX, int);

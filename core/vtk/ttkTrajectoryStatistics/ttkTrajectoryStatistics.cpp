@@ -252,6 +252,9 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   std::vector<ttk::SimplexId> saddleSeg(numTraj);
   this->setMinSeg(minSeg);
   this->setSaddleSeg(saddleSeg);
+  this->setErrSurf(errSurf);
+  this->setOnlyFrameSurface(onlyFrameSurface);
+  this->setMaxSurfSize(maxSurfSize);
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(inputDataSet);
   if(!triangulation) return 0;
@@ -268,7 +271,6 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
                       surfMin(numTraj), surfMax(numTraj), surfMean(numTraj);
   std::vector<std::vector<ttk::SimplexId>> allVertexDebris(numTraj);
   std::vector<std::vector<double>> gradientNorms;
-  std::vector<std::vector<double>> distance(finalTraj.size());
 
   if(!computeAllGradientMagnitudes(inputDataSet,
                                    fields,
@@ -290,10 +292,8 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
                         surfMean,
                         allVertexDebris,
                         frameSurface,
-                        errSurf,
                         gradientNorms,
                         finalTraj,
-						distance,
                         (TTK_TT *)triangulation->getData()
                         )));
   if (status != 1) return 0;

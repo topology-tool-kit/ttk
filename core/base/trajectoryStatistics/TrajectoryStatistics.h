@@ -79,6 +79,9 @@ namespace ttk {
 	inline void setPersisThresh(double m){ persistenceThreshold_ = m; }
 	inline void setMinSeg(std::vector<ttk::SimplexId> &m){ minSeg_ = &m; }
 	inline void setSaddleSeg(std::vector<ttk::SimplexId> &m){ saddleSeg_ = &m; }
+	inline void setErrSurf(double m){ errSurf_ = m;}
+	inline void setOnlyFrameSurface(bool v){ onlyFrameSurface_ = v;}
+	inline void setMaxSurfSize(int m){ maxSurfSize_ = m;}
 
     struct FuseRecord {
       int i, j;           
@@ -99,10 +102,8 @@ namespace ttk {
                 std::vector<double> &surfMoy,
                 std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
                 int frameSurf,
-                double errSurf,
                 std::vector<std::vector<double>> gradientNorms,
                 std::vector<std::vector<double>> &merge,
-  				std::vector<std::vector<double>> &distance,
                 const triangulationType *triangulation);
 
     
@@ -148,7 +149,6 @@ namespace ttk {
                 std::vector<double>              &surfMoy,
                 std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
                 int                                frameSurf,
-                double                             errSurf,
                 std::vector<std::vector<double>>  gradientNorms,
                 const triangulationType          *triangulation);
 
@@ -160,7 +160,6 @@ namespace ttk {
                 const dataType                         *frameScalars,
                 std::vector<char>                      &visited,
                 const double                           threshold,
-                double                                 errSurf,
                 double                                 maxVal,
                 std::vector<double>                    &gradientNorm,
                 const triangulationType                *triangulation
@@ -176,7 +175,6 @@ namespace ttk {
                 std::vector<double>              &surfMoy,
                 std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
                 int                                frameSurf,
-                double                             errSurf,
                 const triangulationType          *triangulation);
 
 	template <class dataType, class triangulationType>
@@ -187,8 +185,7 @@ namespace ttk {
                std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
                std::vector<double>              &surfMin,
                std::vector<double>              &surfMax,
-               std::vector<double>              &surfMoy,
-  			   std::vector<std::vector<double>> &distance
+               std::vector<double>              &surfMoy
 	); 
 
 
@@ -258,6 +255,7 @@ namespace ttk {
     double spatialScale_;
     double interFrame_;
     bool convertDur_;
+	bool onlyFrameSurface_;
     double minVx_;
 	double maxVx_;
 	int enableFilteringMinVx_;
@@ -276,6 +274,8 @@ namespace ttk {
 	double persistenceThreshold_;
 	std::vector<ttk::SimplexId> *minSeg_;
 	std::vector<ttk::SimplexId> *saddleSeg_;
+	double errSurf_;
+	int maxSurfSize_;
   }; // TrajectoryStatistics class
 
 } // namespace ttk
@@ -740,10 +740,8 @@ int ttk::TrajectoryStatistics::execute(
                 std::vector<double>             &surfMoy,
                 std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
                 int frameSurf,
-                double errSurf,
                 std::vector<std::vector<double>> gradientNorms,
                 std::vector<std::vector<double>> &finalTraj,
-  				std::vector<std::vector<double>> &distance,
                 const triangulationType *triangulation) {
 
     
@@ -775,13 +773,13 @@ int ttk::TrajectoryStatistics::execute(
         trajTime, trajVertexId,
         surfMin, surfMax, surfMoy,
         allVertexDebris,
-        frameSurf, errSurf, gradientNorms, triangulation);
+        frameSurf,gradientNorms, triangulation);
     } if (surfaceMethod_ == 1) {
       computeSurfacesRW<dataType, triangulationType>(
         trajTime, trajVertexId,
         surfMin, surfMax, surfMoy,
         allVertexDebris, 
-        frameSurf, errSurf, triangulation);
+        frameSurf,triangulation);
     } else if(surfaceMethod_ == 2) {
       computeSurfacesPersistence<dataType, triangulationType>(
         trajTime, trajVertexId,
@@ -794,7 +792,7 @@ int ttk::TrajectoryStatistics::execute(
 				triangulation,
 				finalTraj,
 				allVertexDebris,
-				surfMin, surfMax, surfMoy, distance);
+				surfMin, surfMax, surfMoy);
 
 	}
 
@@ -811,7 +809,6 @@ int ttk::TrajectoryStatistics::computeSurfacesBFS(
     std::vector<double>              &surfMoy,
     std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
     int                                frameSurf,
-    double                             errSurf,
     std::vector<std::vector<double>>  gradientNorms,
     const triangulationType          *triangulation) {
 
@@ -863,14 +860,12 @@ int ttk::TrajectoryStatistics::computeSurfacesBFS(
         std::fill(visited.begin(), visited.end(), 0);
         surfVertex.clear();
 
-		this->printMsg("frame = " + std::to_string(frame) + " frameSurf = " + std::to_string(frameSurf));
         bfsSegmentation(
           vid,                      // seed
           surfVertex,               // out vertices
           frameScalars,             // scalars at 'frame'
           visited,
           local_min,
-          errSurf,
           maxVal,
           gradientNorms[frame],
           triangulation
@@ -927,15 +922,14 @@ int ttk::TrajectoryStatistics::bfsSegmentation(
   const dataType                         *frameScalars,
   std::vector<char>                      &visited,
   const double                           local_min,
-  double                                 errSurf,
   double                                 maxVal,
   std::vector<double>                    &gradientNorm,
   const triangulationType                *triangulation
 ) {
   surfVertex.clear();
 
-  double coeff = (-1.0 * errSurf) / maxVal;
-  const double scalarThreshold = local_min + (coeff * local_min + errSurf);
+  double coeff = (-1.0 * errSurf_) / maxVal;
+  const double scalarThreshold = local_min + (coeff * local_min + errSurf_);
   const double kSigma = 1.5;
   const double eps = 1e-6;
 
@@ -1045,7 +1039,6 @@ int ttk::TrajectoryStatistics::computeSurfacesRW(
     std::vector<double>              &surfMoy,
     std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
     int                                frameSurf,
-    double                             errSurf,
     const triangulationType          *triangulation) {
 
   const auto *frameScalars = static_cast<dataType *>(inputData_[frameSurf]);
@@ -1103,12 +1096,12 @@ int ttk::TrajectoryStatistics::computeSurfacesRW(
     // 3) Random Walker
     std::vector<int> segmentation; // label for each vertex 
     this->printMsg("RandomWalker: seeds=" + std::to_string(seed.size())
-                   + ", beta(errSurf)=" + std::to_string(errSurf));
+                   + ", beta(errSurf)=" + std::to_string(errSurf_));
 
     // errSurf = beta
     const int rwStatus = randomWalkerSegment(
       seed, seedLabel, triangulation, frameScalars,
-      static_cast<double>(errSurf), segmentation);
+      static_cast<double>(errSurf_), segmentation);
 
     if(rwStatus != 0) {
       this->printMsg("randomWalkerSegment failed with code " + std::to_string(rwStatus));
@@ -1136,7 +1129,7 @@ int ttk::TrajectoryStatistics::computeSurfacesRW(
     }
   }
 #else
-  (void)errSurf; (void)trajTime; (void)trajVertexId; (void)frameSurf;
+   (void)trajTime; (void)trajVertexId; (void)frameSurf;
 #endif
 
   return 0;
@@ -1563,21 +1556,19 @@ int ttk::TrajectoryStatistics::computeMergeTree(
   std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
   std::vector<double>              &surfMin,
   std::vector<double>              &surfMax,
-  std::vector<double>              &surfMoy,
-  std::vector<std::vector<double>> &distance
+  std::vector<double>              &surfMoy
 ) {
 
   const ttk::SimplexId nPixels = triangulation->getNumberOfVertices();
-  const int nFrames = inputData_.size();
+  const int nFrames = (onlyFrameSurface_ == false) ? inputData_.size() : 1;
   std::vector<std::vector<double>> trajSurfaces(finalTraj.size());
   const auto nTraj = finalTraj.size();
   allVertexDebris.assign(nTraj, {});
-  distance.assign(nTraj, {});
-  std::vector<std::vector<double>> distanceFrame(nTraj);
 
   this->printMsg("Computing Merge Tree Segmentation");
 
   for(int frame = 0  ; frame < nFrames; frame++) {
+	frame = (onlyFrameSurface_ == false)  ? frame : frameSurf;
 	this->printMsg("Computing frame : " + std::to_string(frame));
     // -----------------------------------------------------------------------
     // 1) Persistence diagram : scalars + offsets (pattern TTK)
@@ -1815,17 +1806,17 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 	    // --- POST-TRAITEMENT ---
 		if(segId >= 0 && segId < (ttk::SimplexId)segmentId.size() && !segCleaned[segId] && segmentId[segId].size() > 8) 		 {
 	  	  cleanDarkSegmentInPlace<dataType, triangulationType>(
-	  	    segmentId[segId], scalars, triangulation, 64);
+	  	    segmentId[segId], scalars, triangulation, static_cast<int>(errSurf_));
 	  	  segCleaned[segId] = 1;
 	    }
+
+		if (segmentId[segId].size() > maxSurfSize_) continue;
 
 	    double surfVal = static_cast<double>(
 	  	computeSurfaceCellCount(segmentId[segId], triangulation));
 	    if(surfVal == 0) surfVal = 1;
 
 	    trajSurfaces[trajId].push_back(surfVal);
-	    distance[trajId].push_back(surfVal);
-	    distanceFrame[trajId].push_back(frame);
 
 	    if(frame == static_cast<int>(frameSurf)) {
 	  	  allVertexDebris[trajId] = segmentId[segId];
@@ -1883,10 +1874,6 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 }
 
 
-// ------------------------------------------------------------
-// Helper: compute Otsu threshold on a set of scalar values
-// Works for generic scalar types by discretizing into nbins.
-// ------------------------------------------------------------
 template <class dataType>
 dataType ttk::TrajectoryStatistics::otsuThresholdLocal(
 							       const std::vector<ttk::SimplexId> &verts,
