@@ -19,7 +19,7 @@ else()
   set(CPACK_RESOURCE_FILE_README ${PROJECT_BINARY_DIR}/Readme.txt)
 endif()
 set(CPACK_DEBIAN_PACKAGE_DEPENDS
-  "ttk-paraview (= 6.0.1), libboost-system-dev, libeigen3-dev, libgraphviz-dev, libsqlite3-dev, graphviz, python3-sklearn, zlib1g-dev, libqhull-dev, python3-dev, libgl1-mesa-dev")
+  "ttk-paraview (= 6.0.1), libboost-system-dev, libcgal-dev, libeigen3-dev, libgraphviz-dev, libsqlite3-dev, libtbb-dev, libwebsocketpp-dev, graphviz, python3-sklearn, zlib1g-dev, libqhull-dev, python3-dev, libgl1-mesa-dev")
 # autogenerate dependency information
 set (CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 # package will be installed under %ProgramFiles%\${CPACK_PACKAGE_INSTALL_DIRECTORY} on Windows
