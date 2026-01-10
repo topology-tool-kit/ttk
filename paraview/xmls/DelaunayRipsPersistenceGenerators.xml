@@ -2,7 +2,13 @@
     <ProxyGroup name="filters">
         <SourceProxy name="ttkDelaunayRipsPersistenceGenerators" class="ttkDelaunayRipsPersistenceGenerators" label="TTK DelaunayRipsPersistenceGenerators">
             <Documentation long_help="DelaunayRipsPersistenceGenerators Long" short_help="DelaunayRipsPersistenceGenerators Short">
-                TTK plugin for the computation of the persistence generators of Delaunay-Rips complexes.
+              TTK plugin for the computation of the persistence generators of Delaunay-Rips complexes.
+
+              Online examples:
+
+              - https://topology-tool-kit.github.io/examples/delaunayRipsPersi
+stence/
+
             </Documentation>
 
             <!-- INPUT DATA OBJECTS -->

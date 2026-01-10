@@ -16,6 +16,10 @@
                 (persistence of the pair, critical index of the extremum of the pair).
                 The diagonal of the diagram can be filtered out by considering its
                 PairIdentifier value (set at -1).
+
+                Online examples:
+
+                - https://topology-tool-kit.github.io/examples/delaunayRipsPersistence/
             </Documentation>
 
             <!-- INPUT DATA OBJECTS -->

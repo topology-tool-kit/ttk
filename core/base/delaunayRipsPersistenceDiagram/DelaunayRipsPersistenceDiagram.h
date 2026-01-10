@@ -12,6 +12,11 @@
 /// generators for point clouds in R2 and R3.
 ///
 /// \sa ttkDelaunayRipsPersistenceDiagram.cpp %for a usage example.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/delaunayRispPersistence/">DelaunayRips
+///   Persistence example</a> \n
 
 #pragma once
 

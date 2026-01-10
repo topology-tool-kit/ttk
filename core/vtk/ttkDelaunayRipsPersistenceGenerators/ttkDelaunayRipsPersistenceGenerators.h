@@ -21,6 +21,11 @@
 ///
 /// \sa ttk::DelaunayRipsPersistenceGenerators
 /// \sa ttkAlgorithm
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/delaunayRispPersistence/">DelaunayRips
+///   Persistence example</a> \n
 
 #pragma once
 
