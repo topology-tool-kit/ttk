@@ -161,7 +161,7 @@ void ttk::rpd::PairCellsWithOracle::eliminateBoundaryWithOracle(id_t t_id,
 }
 
 void ttk::rpd::PairCellsWithOracle::getGenerators(
-  std::vector<Generator> &generators) const {
+  std::vector<Generator1> &generators) const {
   for(unsigned i = 0; i < triangles_.size(); ++i) {
     EdgeSet boundary;
     for(id_t const &e_id : boundaries_[i])

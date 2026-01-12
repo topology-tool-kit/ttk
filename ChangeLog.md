@@ -4,6 +4,7 @@
 - Cycle-aware dimensionality reduction (TopoAE++, IEEE TVCG 2026)
 - Distributed computation of persistent homology! (IEEE TPDS 2025)
 - Discrete vector field topology! (IEEE VIS 2024)
+- Fast DelaunayRips persistence computation for point cloud data
 - New backend for TrackingFromFields (critical point based)
 - Stochastic discrete gradient (IEEE VIS 2012)
 - Fast planar Rips filtration persistence computation

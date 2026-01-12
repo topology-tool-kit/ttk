@@ -42,7 +42,7 @@ jobs:
         brew install --cask xquartz
         brew install ninja open-mpi libomp
         # TTK dependencies
-        brew install boost cgal eigen graphviz spectra sqlite numpy qhull
+        brew install boost cgal eigen graphviz spectra sqlite tbb numpy qhull
 
     - name: Run sccache-cache
       uses: mozilla-actions/sccache-action@v0.0.9
@@ -87,6 +87,7 @@ jobs:
           -DTTK_ENABLE_MPI=FALSE \
           -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE \
           -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE \
+          -DTTK_ENABLE_TBB=FALSE \
           -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 \
           $GITHUB_WORKSPACE
 

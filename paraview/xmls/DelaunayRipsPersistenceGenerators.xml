@@ -1,0 +1,139 @@
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="ttkDelaunayRipsPersistenceGenerators" class="ttkDelaunayRipsPersistenceGenerators" label="TTK DelaunayRipsPersistenceGenerators">
+            <Documentation long_help="DelaunayRipsPersistenceGenerators Long" short_help="DelaunayRipsPersistenceGenerators Short">
+              TTK plugin for the computation of the persistence generators of Delaunay-Rips complexes.
+
+              Online examples:
+
+              - https://topology-tool-kit.github.io/examples/delaunayRipsPersi
+stence/
+
+            </Documentation>
+
+            <!-- INPUT DATA OBJECTS -->
+            <InputProperty name="Input" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkTable" />
+                </DataTypeDomain>
+                <Documentation>Point cloud to process.</Documentation>
+            </InputProperty>
+
+            <IntVectorProperty
+                    name="SelectFieldsWithRegexp"
+                    label="Select Fields with a Regexp"
+                    command="SetSelectFieldsWithRegexp"
+                    number_of_elements="1"
+                    default_values="0">
+                <BooleanDomain name="bool"/>
+                <Documentation>
+                    Select input scalar fields matching a regular expression.
+                </Documentation>
+            </IntVectorProperty>
+
+            <StringVectorProperty command="SetScalarFields"
+                                  clean_command="ClearScalarFields"
+                                  label="Input Columns"
+                                  name="ScalarFields"
+                                  number_of_elements="0"
+                                  default_values="1"
+                                  number_of_elements_per_command="1"
+                                  repeat_command="1">
+                <ArrayListDomain name="array_list"
+                                 default_values="1">
+                    <RequiredProperties>
+                        <Property name="Input"
+                                  function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Hints>
+                    <NoDefault />
+                    <PropertyWidgetDecorator type="GenericDecorator"
+                                             mode="visibility"
+                                             property="SelectFieldsWithRegexp"
+                                             value="0" />
+                </Hints>
+                <Documentation>
+                    Select the scalar fields to process.
+                </Documentation>
+            </StringVectorProperty>
+
+            <StringVectorProperty
+                    name="Regexp"
+                    command="SetRegexpString"
+                    number_of_elements="1"
+                    default_values=".*" >
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator"
+                                             mode="visibility"
+                                             property="SelectFieldsWithRegexp"
+                                             value="1" />
+                </Hints>
+                <Documentation>
+                    This regexp will be used to filter the chosen fields. Only
+                    matching ones will be selected.
+                </Documentation>
+            </StringVectorProperty>
+
+            <!-- INPUT PARAMETER WIDGETS -->
+
+            <PropertyGroup panel_widget="Line" label="Input options">
+                <Property name="SelectFieldsWithRegexp" />
+                <Property name="ScalarFields" />
+                <Property name="Regexp" />
+            </PropertyGroup>
+
+            <!-- OUTPUT PARAMETER WIDGETS -->
+
+            <!-- DEBUG -->
+            ${DEBUG_WIDGETS}
+
+            <OutputPort name="Persistence Diagram" index="0" id="port0" />
+            <OutputPort name="Generators (dim 1)" index="1" id="port1" />
+            <OutputPort name="Generators (dim 2)" index="2" id="port2" />
+
+            <!-- MENU CATEGORY -->
+            <Hints>
+                <ShowInMenu category="TTK - High Dimension / Point Cloud Data" />
+            </Hints>
+        </SourceProxy>
+
+        <SourceProxy name="ttkDelaunayRipsPersistenceGeneratorsForVtkPointSet" class="ttkDelaunayRipsPersistenceGenerators" label="TTK DelaunayRipsPersistenceGenerators">
+            <Documentation long_help="DelaunayRipsPersistenceGenerators Long" short_help="DelaunayRipsPersistenceGenerators Short">
+                TTK plugin for the computation of the persistence generators of Delaunay-Rips complexes.
+            </Documentation>
+
+            <!-- INPUT DATA OBJECTS -->
+            <InputProperty name="Input" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkPointSet" />
+                </DataTypeDomain>
+                <Documentation>Point cloud to process.</Documentation>
+            </InputProperty>
+
+            <!-- INPUT PARAMETER WIDGETS -->
+
+            <!-- OUTPUT PARAMETER WIDGETS -->
+
+            <!-- DEBUG -->
+            ${DEBUG_WIDGETS}
+
+            <OutputPort name="Persistence Diagram" index="0" id="port0" />
+            <OutputPort name="Generators (dim 1)" index="1" id="port1" />
+            <OutputPort name="Generators (dim 2)" index="2" id="port2" />
+
+            <!-- MENU CATEGORY -->
+            <Hints>
+                <ShowInMenu show="0"/>
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>
