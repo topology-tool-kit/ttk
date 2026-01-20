@@ -71,6 +71,8 @@ namespace ttk {
 	inline void setDuraMin(int v) { duraMin_ = v; }
 	inline void setXOrigin(int v){ xOrigin_ = v; }
 	inline void setMinTimeOrigin(int v){ minTimeOrigin_ = v; }
+	inline void setMinYTimeOrigin(int v){ minYTimeOrigin_ = v; }
+	inline void setMaxYTimeOrigin(int v){ maxYTimeOrigin_ = v; }
 	inline void setMaxX(int v){ maxX_ = v; }
     inline void setMaxY(int v){ maxY_ = v; }
     inline void setMinY(int v){ minY_ = v; }
@@ -265,6 +267,8 @@ namespace ttk {
 	int duraMin_;
 	int xOrigin_;
 	int minTimeOrigin_;
+	int minYTimeOrigin_;
+	int maxYTimeOrigin_;
 	int minFrameDist_;
     int maxX_;
     int maxY_;
@@ -533,7 +537,9 @@ int ttk::TrajectoryStatistics::correctTrajectory(
   auto passTimeOrigin = [&](const std::vector<double> &c) -> bool{
 	if (enableFilteringTimeOrigin_ == 0) { return true; }
     const double ax     = c[0];
+	const double ay     = c[1];
     const double bx     = c[2];
+	const double by     = c[3];
     const double eps = 1e-8;
 
     // Trajectoire quasi horizontale en Y
@@ -542,8 +548,9 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     }
     
 	const double tCross = (xOrigin_ - bx) / ax;
+	const double yCross = ay*tCross + by;
 
-    return (tCross >= minTimeOrigin_);  	
+    return (tCross >= minTimeOrigin_ && yCross >= minYTimeOrigin_ && yCross <= maxYTimeOrigin_);  	
   };
 
 
@@ -1606,20 +1613,41 @@ int ttk::TrajectoryStatistics::computeMergeTree(
     // -----------------------------------------------------------------------
     // 2) Extraction des sommets critiques (dimension 0, pers >= seuil)
     // -----------------------------------------------------------------------
-    std::vector<ttk::SimplexId> criticalPoints;
-    criticalPoints.reserve(diagram.size() * 2);
+	double maxPers = 0.0;
 
-    for(const auto &pair : diagram) {
-      if(pair.dim != 0)
-        continue;
+	for(const auto &pair : diagram) {
+	  if(pair.dim != 0)
+		continue;
 
-      const auto pers = pair.persistence();
-      if(pers < this->persistenceThreshold_)
-        continue;
+	  const double pers = pair.persistence();
 
-      criticalPoints.push_back(pair.birth.id);
-      criticalPoints.push_back(pair.death.id);
-    }
+	  if(!std::isfinite(pers))
+		continue;
+
+	  if(pers > maxPers)
+		maxPers = pers;
+	}
+
+	const double threshold = maxPers * (this->persistenceThreshold_ / 100.0);
+
+	std::vector<ttk::SimplexId> criticalPoints;
+	criticalPoints.reserve(diagram.size() * 2);
+
+	for(const auto &pair : diagram) {
+	  if(pair.dim != 0)
+		continue;
+
+	  const double pers = pair.persistence();
+	  if(!std::isfinite(pers))
+		continue;
+
+	  if(pers < threshold)
+		continue;
+
+	  criticalPoints.push_back(pair.birth.id);
+	  criticalPoints.push_back(pair.death.id);
+	}
+
 
     // -----------------------------------------------------------------------
     // 3) TopologicalSimplification

@@ -242,6 +242,8 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   this->setDuraMin(duraMin);
   this->setXOrigin(xOrigin);
   this->setMinTimeOrigin(minTimeOrigin);
+  this->setMinYTimeOrigin(minYTimeOrigin);
+  this->setMaxYTimeOrigin(maxYTimeOrigin);
   this->setMaxX(maxX);
   this->setMaxY(maxY);
   this->setMinY(minY);
@@ -361,6 +363,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   auto colSurfMax  = makeDblCol("SurfaceMax",  numMerge);
   auto colSurfMean = makeDblCol("SurfaceMean", numMerge);
   auto colVolMean = makeDblCol("VolumeMean", numMerge);
+  auto colTrajId = makeIntCol("TrajId", numMerge);
   double scale_pixel_to_meter = 1/(spatialScale*1000);
 
   for(int i = 0; i < numMerge; ++i) {
@@ -372,6 +375,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
 	colSurfMin -> SetValue(i, surfMin[i]);
 	colSurfMax -> SetValue(i, surfMax[i]);
 	colSurfMean -> SetValue(i, surfMean[i]);
+	colTrajId -> SetValue(i, i);
 
 	double vol = 0.0;
 	if (surfMean[i] > 0.0 && surfMean[i]<100) {
@@ -381,6 +385,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
 	colVolMean->SetValue(i,vol);
   }
 
+  outputTable->AddColumn(colTrajId);
   outputTable->AddColumn(colStartF);
   outputTable->AddColumn(colEndF);
   outputTable->AddColumn(colDur);

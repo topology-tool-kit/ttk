@@ -201,6 +201,27 @@
         </Hints>
 	</IntVectorProperty>
 
+    <IntVectorProperty name="minYTimeOrigin" command="SetminYTimeOrigin" label="Min Y Time Origin"
+                            number_of_elements="1" default_values="0">
+        <Documentation>Minimum absolute X velocity required to accept a trajectory (after unit conversion).</Documentation>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="enableFilteringTimeOrigin"
+                                   value="1"/>
+        </Hints>
+	</IntVectorProperty>
+
+    <IntVectorProperty name="maxYTimeOrigin" command="SetmaxYTimeOrigin" label="Max Y Time Origin"
+                            number_of_elements="1" default_values="20000">
+        <Documentation>Minimum absolute X velocity required to accept a trajectory (after unit conversion).</Documentation>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="enableFilteringTimeOrigin"
+                                   value="1"/>
+        </Hints>
+	</IntVectorProperty>
       <!-- Initial Position -->
 
       <IntVectorProperty name="maxX" command="SetmaxX" label="Initial position: Max X"
@@ -277,6 +298,8 @@
 		<Property name="filtreY"/>
 		<Property name="xOrigin"/>
 		<Property name="minTimeOrigin"/>
+		<Property name="maxYTimeOrigin"/>
+		<Property name="minYTimeOrigin"/>
 		<Property name="duraMin"/>
      </PropertyGroup>
 

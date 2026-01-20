@@ -94,6 +94,8 @@ private:
   int duraMin{0};
   int xOrigin{0};
   int minTimeOrigin{0};
+  int maxYTimeOrigin{0};
+  int minYTimeOrigin{0};
   int maxX{-1};
   int maxY{-1};
   int minY{-1};
@@ -168,6 +170,12 @@ public:
 
   vtkSetMacro(minTimeOrigin, int);
   vtkGetMacro(minTimeOrigin, int);
+  
+  vtkSetMacro(minYTimeOrigin, int);
+  vtkGetMacro(minYTimeOrigin, int);
+
+  vtkSetMacro(maxYTimeOrigin, int);
+  vtkGetMacro(maxYTimeOrigin, int);
 
   vtkSetMacro(persisThresh, double);
   vtkGetMacro(persisThresh, double);
