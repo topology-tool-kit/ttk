@@ -215,17 +215,18 @@ int ttkMergeTreeClustering::runCompute(
   std::vector<FTMTree_MT *> intermediateTrees(numInputs),
     intermediateTrees2(numInputs2);
 
-  bool const useSadMaxPairs = (JoinSplitMixtureCoefficient == 0);
-  IsPersistenceDiagram
-    = constructTrees<dataType>(inputTrees, intermediateMTrees, treesNodes,
-                               treesArcs, treesSegmentation, useSadMaxPairs);
+  bool const useSecondPairsType = (JoinSplitMixtureCoefficient == 0);
+  IsPersistenceDiagram = constructTrees<dataType>(
+    inputTrees, intermediateMTrees, treesNodes, treesArcs, treesSegmentation,
+    useSecondPairsType, DiagramPairTypes);
   if(not IsPersistenceDiagram
      or (JoinSplitMixtureCoefficient != 0
          and JoinSplitMixtureCoefficient != 1)) {
     auto &inputTrees2ToUse
       = (not IsPersistenceDiagram ? inputTrees2 : inputTrees);
     constructTrees<dataType>(inputTrees2ToUse, intermediateMTrees2, treesNodes2,
-                             treesArcs2, treesSegmentation2, !useSadMaxPairs);
+                             treesArcs2, treesSegmentation2,
+                             !useSecondPairsType, DiagramPairTypes);
   }
 
   mergeTreeToFTMTree<dataType>(intermediateMTrees, intermediateTrees);

@@ -25,33 +25,79 @@
 #include <ttkRipsPersistenceDiagramModule.h>
 
 // VTK Includes
+#include <ttkMacros.h>
 #include <vtkUnstructuredGrid.h>
 
 // TTK Includes
 #include <RipsPersistenceDiagram.h>
 #include <ttkAlgorithm.h>
 
+/**
+ * @brief Converts a Rips Persistence Diagram in the
+ * ttk::rpd::MultidimensionalDiagram format to the VTK Unstructured Grid format.
+ *
+ * @param[out] vtu Output VTK Unstructured Grid
+ * @param[in] diagram ttk::rpd::MultidimensionalDiagram to be converted
+ * @param[in] SimplexMaximumDiameter Maximum diameter of simplices (to cap
+ * infinite pairs)
+ */
+TTKRIPSPERSISTENCEDIAGRAM_EXPORT void
+  DiagramToVTU(vtkUnstructuredGrid *vtu,
+               const ttk::rpd::MultidimensionalDiagram &diagram,
+               double SimplexMaximumDiameter);
+
 class TTKRIPSPERSISTENCEDIAGRAM_EXPORT ttkRipsPersistenceDiagram
   : public ttkAlgorithm, // we inherit from the generic ttkAlgorithm class
     protected ttk::RipsPersistenceDiagram { // and we inherit from the base
                                             // class
 private:
-  int DiagramToVTU(
-    vtkUnstructuredGrid *vtu,
-    const std::vector<std::vector<ripser::pers_pair_t>> &diagram);
+  bool KeepAllDataArrays{true};
+  bool SelectFieldsWithRegexp{false};
+  std::string RegexpString{".*"};
+  std::vector<std::string> ScalarFields{};
 
 public:
   static ttkRipsPersistenceDiagram *New();
   vtkTypeMacro(ttkRipsPersistenceDiagram, ttkAlgorithm);
 
-  vtkSetMacro(SimplexMaximumDimension, int);
-  vtkGetMacro(SimplexMaximumDimension, int);
+  void SetScalarFields(const std::string &s) {
+    ScalarFields.push_back(s);
+    Modified();
+  }
 
-  vtkSetMacro(SimplexMaximumDiameter, double);
-  vtkGetMacro(SimplexMaximumDiameter, double);
+  void ClearScalarFields() {
+    ScalarFields.clear();
+    Modified();
+  }
 
-  vtkSetMacro(InputIsDistanceMatrix, int);
-  vtkGetMacro(InputIsDistanceMatrix, int);
+  void SetSimplexMaximumDiameter(const std::string &data) {
+    SimplexMaximumDiameter = stod(data);
+    Modified();
+  }
+  std::string GetSimplexMaximumDiameter() const {
+    return std::to_string(SimplexMaximumDiameter);
+  }
+
+  vtkSetMacro(KeepAllDataArrays, bool);
+  vtkGetMacro(KeepAllDataArrays, bool);
+
+  vtkSetMacro(SelectFieldsWithRegexp, bool);
+  vtkGetMacro(SelectFieldsWithRegexp, bool);
+
+  vtkSetMacro(RegexpString, const std::string &);
+  vtkGetMacro(RegexpString, std::string);
+
+  ttkSetEnumMacro(BackEnd, BACKEND);
+  vtkGetEnumMacro(BackEnd, BACKEND);
+
+  vtkSetMacro(HomologyMaximumDimension, int);
+  vtkGetMacro(HomologyMaximumDimension, int);
+
+  vtkSetMacro(FieldOfCoefficients, int);
+  vtkGetMacro(FieldOfCoefficients, int);
+
+  vtkSetMacro(InputIsDistanceMatrix, bool);
+  vtkGetMacro(InputIsDistanceMatrix, bool);
 
 protected:
   ttkRipsPersistenceDiagram();

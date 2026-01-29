@@ -60,6 +60,8 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/2manifoldLearning/">
 ///   2-Manifold Learning example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cosmicWeb/">
+///   Cosmic Web example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/imageProcessing/">Image
 ///   Processing example</a> \n
@@ -163,6 +165,9 @@ public:
   vtkSetMacro(ReturnSaddleConnectors, bool);
   vtkGetMacro(ReturnSaddleConnectors, bool);
 
+  vtkSetMacro(DiscreteGradientBackend, int);
+  vtkGetMacro(DiscreteGradientBackend, int);
+
   vtkSetMacro(SaddleConnectorsPersistenceThreshold, double);
   vtkGetMacro(SaddleConnectorsPersistenceThreshold, double);
 
@@ -171,6 +176,9 @@ public:
 
   vtkSetMacro(ForceLoopFreeGradient, bool);
   vtkGetMacro(ForceLoopFreeGradient, bool);
+
+  vtkSetMacro(StochasticGradientSeed, unsigned int);
+  vtkGetMacro(StochasticGradientSeed, unsigned int);
 
 protected:
   template <typename scalarType, typename triangulationType>
@@ -192,8 +200,7 @@ protected:
 private:
   bool ForceInputOffsetScalarField{};
   int IterationThreshold{-1};
-  OutputCriticalPoints criticalPoints_{};
-  Output1Separatrices separatrices1_{};
-  Output2Separatrices separatrices2_{};
+  int DiscreteGradientBackend{0};
   OutputManifold segmentations_{};
+  unsigned int StochasticGradientSeed{0};
 };

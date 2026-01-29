@@ -151,6 +151,14 @@ namespace ttk {
       isPersistenceDiagram_ = isPD;
     }
 
+    void setJoinSplitMixtureCoefficient(const double mixtureCoefficient) {
+      mixtureCoefficient_ = mixtureCoefficient;
+    }
+
+    void setUseDoubleInput(const bool useDoubleInput) {
+      useDoubleInput_ = useDoubleInput;
+    }
+
     std::vector<std::vector<int>> getTreesNodeCorr() {
       return treesNodeCorr_;
     }
@@ -202,9 +210,9 @@ namespace ttk {
       treeNodeMerged.clear();
       treeNodeMerged.resize(tree->getNumberOfNodes());
 
+      // need to have the pairing (if merge by persistence)
       if(mergeByPersistence)
-        ftm::computePersistencePairs<dataType>(
-          tree); // need to have the pairing (if merge by persistence)
+        ftm::computePersistencePairs<dataType>(tree);
 
       // Compute epsilon value
       dataType maxValue = tree->getValue<dataType>(0);
@@ -352,15 +360,47 @@ namespace ttk {
       }
     }
 
+    void deletePersistenceDiagramsPairs(ftm::FTMTree_MT *tree,
+                                        std::vector<ftm::idNode> &nodes) {
+      std::vector<ftm::idSuperArc> arcs;
+      for(unsigned int i = 0; i < nodes.size(); ++i) {
+        ftm::idNode node = nodes[i];
+        if(!tree->isRoot(node))
+          arcs.emplace_back(tree->getNode(node)->getUpSuperArcId(0));
+        tree->getNode(node)->clearDownSuperArcs();
+        tree->getNode(node)->clearUpSuperArcs();
+        ftm::idNode const nodeOrigin = tree->getNode(node)->getOrigin();
+        if(tree->isNodeOriginDefined(node)
+           and tree->getNode(nodeOrigin)->getOrigin() == (int)node) {
+          if(!tree->isRoot(nodeOrigin))
+            arcs.emplace_back(tree->getNode(nodeOrigin)->getUpSuperArcId(0));
+          tree->getNode(nodeOrigin)->clearDownSuperArcs();
+          tree->getNode(nodeOrigin)->clearUpSuperArcs();
+        }
+      }
+      tree->getNode(tree->getRoot())->removeDownSuperArcs(arcs);
+    }
+
     template <class dataType>
     void keepMostImportantPairs(ftm::FTMTree_MT *tree, int n, bool useBD) {
       std::vector<std::tuple<ftm::idNode, ftm::idNode, dataType>> pairs;
       tree->getPersistencePairsFromTree(pairs, useBD);
       n = std::max(n, 2); // keep at least 2 pairs
-      int const index = std::max((int)(pairs.size() - n), 0);
-      dataType threshold = std::get<2>(pairs[index]) * (1.0 - 1e-6)
-                           / tree->getMaximumPersistence<dataType>() * 100.0;
-      persistenceThresholding<dataType>(tree, threshold);
+      unsigned int const index = std::max((int)(pairs.size() - n), 0);
+      if(isPersistenceDiagram_) {
+        std::vector<ftm::idNode> nodes(index);
+        for(unsigned int i = 0; i < index; ++i)
+          nodes[i] = std::get<0>(pairs[i]);
+        deletePersistenceDiagramsPairs(tree, nodes);
+      } else {
+        for(unsigned int i = 0; i < index; ++i) {
+          ftm::idNode node = std::get<0>(pairs[i]);
+          ftm::idNode nodeOrigin = std::get<1>(pairs[i]);
+          tree->deleteNode(node);
+          if(tree->getNode(nodeOrigin)->getOrigin() == (int)node)
+            tree->deleteNode(nodeOrigin);
+        }
+      }
     }
 
     template <class dataType>
@@ -376,6 +416,7 @@ namespace ttk {
       if(threshold >= secondMax)
         threshold = (1.0 - 1e-6) * secondMax;
 
+      std::vector<ftm::idNode> nodes;
       for(unsigned int i = 0; i < tree->getNumberOfNodes(); ++i) {
         if(tree->isRoot(i))
           continue;
@@ -387,16 +428,23 @@ namespace ttk {
         }
         if((nodePers == 0 or nodePers <= threshold
             or not tree->isNodeOriginDefined(i))) {
-          tree->deleteNode(i);
+          if(not isPersistenceDiagram_)
+            tree->deleteNode(i);
+          else
+            nodes.emplace_back(i);
           deletedNodes.push_back(i);
           ftm::idNode const nodeOrigin = tree->getNode(i)->getOrigin();
           if(tree->isNodeOriginDefined(i)
              and tree->getNode(nodeOrigin)->getOrigin() == (int)i) {
-            tree->deleteNode(nodeOrigin);
+            if(not isPersistenceDiagram_)
+              tree->deleteNode(nodeOrigin);
             deletedNodes.push_back(nodeOrigin);
           }
         }
       }
+
+      if(isPersistenceDiagram_)
+        deletePersistenceDiagramsPairs(tree, nodes);
     }
 
     template <class dataType>
@@ -448,15 +496,13 @@ namespace ttk {
       if(deleteInconsistentNodes) {
         // Manage inconsistent critical points
         // Critical points with same scalar value than parent
-        for(unsigned int i = 0; i < tree->getNumberOfNodes(); ++i)
-          if(!tree->isNodeAlone(i) and !tree->isRoot(i)
-             and tree->getValue<dataType>(tree->getParentSafe(i))
-                   == tree->getValue<dataType>(i)) {
-            /*printMsg("[preprocessTree] " + std::to_string(i)
-                     + " has same scalar value than parent (will be
-               deleted).");*/
-            tree->deleteNode(i);
-          }
+        if(not isPersistenceDiagram_)
+          for(unsigned int i = 0; i < tree->getNumberOfNodes(); ++i)
+            if(!tree->isNodeAlone(i) and !tree->isRoot(i)
+               and tree->getValue<dataType>(tree->getParentSafe(i))
+                     == tree->getValue<dataType>(i)) {
+              tree->deleteNode(i);
+            }
         // Valence 2 nodes
         for(unsigned int i = 0; i < tree->getNumberOfNodes(); ++i)
           if(tree->getNode(i)->getNumberOfUpSuperArcs() == 1
@@ -1128,7 +1174,7 @@ namespace ttk {
     }
 
     template <class dataType>
-    dataType deleteCost(ftm::FTMTree_MT *tree, ftm::idNode nodeId) {
+    dataType deleteCost(const ftm::FTMTree_MT *tree, ftm::idNode nodeId) {
       dataType cost = 0;
       dataType newMin = 0.0, newMax = 1.0;
       // Get birth/death
@@ -1151,14 +1197,14 @@ namespace ttk {
     }
 
     template <class dataType>
-    dataType insertCost(ftm::FTMTree_MT *tree, ftm::idNode nodeId) {
+    dataType insertCost(const ftm::FTMTree_MT *tree, ftm::idNode nodeId) {
       return deleteCost<dataType>(tree, nodeId);
     }
 
     template <class dataType>
-    dataType relabelCostOnly(ftm::FTMTree_MT *tree1,
+    dataType relabelCostOnly(const ftm::FTMTree_MT *tree1,
                              ftm::idNode nodeId1,
-                             ftm::FTMTree_MT *tree2,
+                             const ftm::FTMTree_MT *tree2,
                              ftm::idNode nodeId2) {
       dataType cost = 0;
       dataType newMin = 0.0, newMax = 1.0;
@@ -1187,9 +1233,9 @@ namespace ttk {
     }
 
     template <class dataType>
-    dataType relabelCost(ftm::FTMTree_MT *tree1,
+    dataType relabelCost(const ftm::FTMTree_MT *tree1,
                          ftm::idNode nodeId1,
-                         ftm::FTMTree_MT *tree2,
+                         const ftm::FTMTree_MT *tree2,
                          ftm::idNode nodeId2) {
       // Full merge case and only one persistence pair case
       if(tree1->getNode(nodeId1)->getOrigin() == (int)nodeId1

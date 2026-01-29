@@ -2,16 +2,6 @@
 #include <ttkMacros.h>
 #include <ttkTrackingFromPersistenceDiagrams.h>
 
-#include <vtkDataArray.h>
-#include <vtkDoubleArray.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkUnstructuredGrid.h>
-
 vtkStandardNewMacro(ttkTrackingFromPersistenceDiagrams);
 
 ttkTrackingFromPersistenceDiagrams::ttkTrackingFromPersistenceDiagrams() {
@@ -55,7 +45,6 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
   vtkIntArray *componentIds,
   vtkIntArray *pointTypeScalars,
   const ttk::Debug &dbg) {
-
   using ttk::CriticalType;
   int currentVertex = 0;
   for(size_t k = 0; k < trackings.size(); ++k) {

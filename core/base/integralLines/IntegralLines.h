@@ -870,7 +870,9 @@ int ttk::IntegralLines::getGlobalIdentifiers(
   ttk::SimplexId intervalSize;
   // Counts vertices and edges number (with and without ghosts)
 #ifdef TTK_ENABLE_OPENMP4
-#pragma omp parallel for reduction(+:outputVertexNumber,outputCellNumber,realCellNumber,realVertexNumber) schedule(static,1) private(intervalSize)
+#pragma omp parallel for reduction(+ : outputVertexNumber, outputCellNumber, \
+                                     realCellNumber, realVertexNumber)       \
+  schedule(static, 1) private(intervalSize)
 #endif
   for(int thread = 0; thread < threadNumber_; thread++) {
     std::list<std::array<ttk::intgl::IntegralLine,

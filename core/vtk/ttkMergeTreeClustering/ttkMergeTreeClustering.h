@@ -99,6 +99,7 @@ private:
   bool oldNW = NormalizedWasserstein;
   bool oldKS = KeepSubtree;
   double JoinSplitMixtureCoefficient = 0.5;
+  int DiagramPairTypes = 0;
   bool ComputeBarycenter = false;
   bool oldComputeBarycenter = ComputeBarycenter;
   unsigned int NumberOfBarycenters = 1;
@@ -347,6 +348,13 @@ public:
     resetDataVisualization();
   }
   vtkGetMacro(JoinSplitMixtureCoefficient, double);
+
+  void SetDiagramPairTypes(int diagramPairTypes) {
+    DiagramPairTypes = diagramPairTypes;
+    Modified();
+    resetDataVisualization();
+  }
+  vtkGetMacro(DiagramPairTypes, int);
 
   void SetComputeBarycenter(bool computeBarycenter) {
     ComputeBarycenter = computeBarycenter;

@@ -71,6 +71,7 @@ private:
    */
   // Input options
   double oldEpsilonTree1;
+  int DiagramPairTypes = 0;
   // Output options
 
   // ----------------------
@@ -168,6 +169,13 @@ public:
   double GetJoinSplitMixtureCoefficient() {
     return mixtureCoefficient_;
   }
+
+  void SetDiagramPairTypes(int diagramPairTypes) {
+    DiagramPairTypes = diagramPairTypes;
+    Modified();
+    resetDataVisualization();
+  }
+  vtkGetMacro(DiagramPairTypes, int);
 
   void SetKeepState(bool keepState) {
     keepState_ = keepState;

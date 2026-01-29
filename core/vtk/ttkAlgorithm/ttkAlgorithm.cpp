@@ -148,12 +148,14 @@ vtkDataArray *
       ->AddArray(newOrderArray);
   }
 #else
+
   switch(scalarArray->GetDataType()) {
     vtkTemplateMacro(ttk::preconditionOrderArray(
       nVertices, static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(scalarArray)),
       static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(newOrderArray)),
       this->threadNumber_));
   }
+
   inputData
     ->GetAttributesAsFieldData(
       this->GetInputArrayAssociation(scalarArrayIdx, inputData))
@@ -357,9 +359,21 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
     }
 
     default: {
+#ifdef TTK_ENABLE_MPI
+      if(!ttk::isRunningWithMPI()) {
+#endif
+        this->printMsg("Retrieved order array `"
+                         + std::string(orderArray->GetName())
+                         + "` for scalar array `"
+                         + std::string(scalarArray->GetName()) + "`.",
+                       ttk::debug::Priority::DETAIL);
+        return orderArray;
+#ifdef TTK_ENABLE_MPI
+      }
       return checkForGlobalAndComputeOrderArray(
         inputData, scalarArray, scalarArrayIdx, getGlobalOrder, orderArray,
         triangulation, enforceOrderArrayIdx);
+#endif
     }
   }
 }

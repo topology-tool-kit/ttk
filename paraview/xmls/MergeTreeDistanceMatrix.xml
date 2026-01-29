@@ -99,16 +99,33 @@ Online examples:
                   <BooleanDomain name="bool"/>
                 </IntVectorProperty>
                 
+                <IntVectorProperty
+                name="DiagramPairTypes"
+                label="Diagram Pair Types"
+                command="SetDiagramPairTypes"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="advanced">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Min-Saddle and Saddle-Max"/>
+                    <Entry value="1" text="Min-Saddle and Saddle-Saddle"/>
+                    <Entry value="2" text="Saddle-Saddle Saddle-Max"/>
+                </EnumerationDomain>
+                  <Documentation>
+                    The types of pairs to use when the input are persistence diagrams. This can be weigthed with the "Pair Type Mixture Coefficient" parameter (0 for only the second type of pairs and 1 for the first type of pairs).
+                  </Documentation>
+                </IntVectorProperty>
+                
                 <DoubleVectorProperty
                 name="MixtureCoefficient"
                 command="SetmixtureCoefficient_"
-                label="Mixture Coefficient"
+                label="Pair Type Mixture Coefficient"
                 number_of_elements="1"
                 default_values="0.5"
                 panel_visibility="advanced">
                   <Documentation>
                     If input are merge trees, this parameter allows to weight between the first input and the second input, typically join and split trees (0 for only the second input and 1 for only the first one).
-                    If input are persistence diagrams, this parameter allows to weight between min-sad and sad-max pairs (0 for only sad-max and 1 for only min-sad).
+                    If input are persistence diagrams, this parameter allows to weight between different types of pairs, determined by the "Diagram Pair Types" parameter (default is min-sad and sad-max pairs), 0 for only the second type and 1 for only the first type.
                   </Documentation>
                   <DoubleRangeDomain name="range" min="0" max="1" />
                 </DoubleVectorProperty>
@@ -129,6 +146,7 @@ Online examples:
                 
             <PropertyGroup panel_widget="Line" label="Input options">
               <Property name="UseFieldDataParameters"/>
+              <Property name="DiagramPairTypes"/>
               <Property name="MixtureCoefficient"/>
               <Property name="DistanceSquaredRoot"/>
             </PropertyGroup>

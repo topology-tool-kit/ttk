@@ -154,6 +154,22 @@ namespace ttk {
         }
       }
 
+      inline void removeDownSuperArcs(std::vector<idSuperArc> &idSa) {
+        if(idSa.empty())
+          return;
+        std::vector<bool> toDelete(
+          (*std::max_element(idSa.begin(), idSa.end())) + 1, false);
+        for(auto &id : idSa)
+          toDelete[id] = true;
+        vect_downSuperArcList_.erase(
+          std::remove_if(vect_downSuperArcList_.begin(),
+                         vect_downSuperArcList_.end(),
+                         [&toDelete](const idSuperArc &i) {
+                           return i < toDelete.size() and toDelete[i];
+                         }),
+          vect_downSuperArcList_.end());
+      }
+
       // Find and remove the arc
       inline void removeUpSuperArc(idSuperArc idSa) {
         for(idSuperArc i = 0; i < vect_upSuperArcList_.size(); ++i) {
