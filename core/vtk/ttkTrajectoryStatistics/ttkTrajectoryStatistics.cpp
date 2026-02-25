@@ -574,6 +574,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   
   auto mergeIdArr = makeIntCol("TrajId",   n);
   auto durArr     = makeIntCol("Duration",  n);
+  auto ejecArr    = makeDblCol("AngleEjection", n);
   
   for(vtkIdType i = 0; i < n; ++i) {
     const auto &coef = finalTraj[static_cast<size_t>(i)];
@@ -584,9 +585,12 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     const double y0 = evalY(coef, startF);
     const double x1 = evalX(coef, endF);
     const double y1 = evalY(coef, endF);
+	constexpr double pi = 3.14159265358979323846;
+	double ejection = atan(coef[1]/coef[0]) *180/pi;
   
     addSegment(mergePoints, mergeLines, i, x0, y0, startF, x1, y1, endF);
-  
+ 
+   	ejecArr->SetValue(i, ejection);	
     mergeIdArr->SetValue(i, static_cast<int>(i));
     durArr    ->SetValue(i, static_cast<int>(endF - startF));
   }
@@ -595,6 +599,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   outputTraj->SetCells(VTK_LINE, mergeLines);
   outputTraj->GetCellData()->AddArray(mergeIdArr);
   outputTraj->GetCellData()->AddArray(durArr);
+  outputTraj->GetCellData()->AddArray(ejecArr);
   
   this->printMsg("End TrajectoryStatistic");
 

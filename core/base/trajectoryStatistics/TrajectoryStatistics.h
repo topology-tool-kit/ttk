@@ -454,6 +454,12 @@ int ttk::TrajectoryStatistics::correctTrajectory(
 ){
   const int numTraj = static_cast<int>(trajTime.size());
 
+  // dimension image -> TODO automatiser 
+  const double x_min = 0;
+  const double x_max = 383;
+  const double y_min = 0;
+  const double y_max = 223;
+
   auto projX = [&](const std::vector<double> &c, int t) -> double { return c[0] * t + c[2]; };
   auto projY = [&](const std::vector<double> &c, int t) -> double { return c[1] * t + c[3]; };
 
@@ -551,6 +557,10 @@ int ttk::TrajectoryStatistics::correctTrajectory(
 	const double yCross = ay*tCross + by;
 
     return (tCross >= minTimeOrigin_ && yCross >= minYTimeOrigin_ && yCross <= maxYTimeOrigin_);  	
+  };
+
+  auto inFinalBox = [&](double x, double y) -> bool {
+    return (x >= x_min && x <= x_max && y >= y_min && y <= y_max);
   };
 
 
@@ -729,7 +739,34 @@ int ttk::TrajectoryStatistics::correctTrajectory(
       merge.push_back(lineCoef);
     }
   }
+  
 
+  for(auto &c : merge) {
+    // c = [ax, ay, bx, by, start, end]
+    if(c.size() < 6) {
+      continue;
+    }
+    const int start = static_cast<int>(std::lround(c[4]));
+    int end         = static_cast<int>(std::lround(c[5]));
+
+    if(end < start) {
+      c[5] = static_cast<double>(start);
+	  c[4] = static_cast<double>(end);
+      end = start;
+    }
+
+    while(end > start) {
+      const double xEnd = projX(c, end);
+      const double yEnd = projY(c, end);
+
+      if(inFinalBox(xEnd, yEnd)) {
+        break;
+      }
+      --end;
+    }
+
+    c[5] = static_cast<double>(end);
+  }
 
   return 1;
 }
