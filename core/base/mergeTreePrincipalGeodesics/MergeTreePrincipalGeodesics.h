@@ -66,7 +66,7 @@ namespace ttk {
       // msg
       this->setDebugMsgPrefix("MergeTreePrincipalGeodesics");
 #ifdef TTK_ENABLE_OPENMP
-      omp_set_nested(1);
+      omp_set_max_active_levels(100);
 #endif
     }
 
@@ -171,7 +171,8 @@ namespace ttk {
       if(extremityTree->getRealNumberOfNodes() != 0) {
         computeOneDistance(barycenter, extremity, matching, distance, true,
                            useDoubleInput, isFirstInput);
-        getMatchingVector(barycenter, extremity, matching, matchingVector);
+        ttk::axa::getMatchingVector(
+          barycenter, extremity, matching, matchingVector);
       } else
         matchingVector.resize(barycenterTree->getNumberOfNodes(),
                               std::numeric_limits<ftm::idNode>::max());
@@ -545,7 +546,7 @@ namespace ttk {
 
       // Get matching matrix
       std::vector<std::vector<ftm::idNode>> matchingMatrix;
-      getMatchingMatrix(barycenter, trees, matchings, matchingMatrix);
+      ttk::axa::getMatchingMatrix(barycenter, trees, matchings, matchingMatrix);
 
       // Update
       for(unsigned int i = 0; i < barycenter.tree.getNumberOfNodes(); ++i) {

@@ -1,33 +1,15 @@
 name: check_code
 
 on:
-  push:
-    # triggered on tag pushes with tags beginning with either "v" or "dev"
-    branch-ignore:
-      - '*'
-    tags:
-      - 'v*'
-      - 'dev*'
-      - 'ci*'
-      - 'check*'
-  pull_request:
-    # also triggered by pull requests on the "dev" & "mpi" branches
-    branches:
-      - 'dev'
-      - 'mpi'
-
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  workflow_call:
+  workflow_dispatch:
 
 env:
-  PV_TAG: v5.13.0-headless
+  PV_TAG: v6.0.1-headless
   PV_REPO: topology-tool-kit/ttk-paraview
 
 
 jobs:
-
 
   # ----------------------- #
   # Check source formatting #
@@ -118,8 +100,11 @@ jobs:
           doxygen \
           clang-tidy
 
-    - name: Install optional dependencies
-      uses: ./.github/actions/install-deps-unix
+    - name: Install optional Spectra dependency
+      uses: ./.github/actions/install-spectra-unix
+
+    - name: Install optional ZFP dependency
+      uses: ./.github/actions/install-zfp-unix
 
     - name: Fetch TTK-ParaView headless Debian package
       run: |
@@ -174,7 +159,7 @@ jobs:
   # Check compiler warnings #
   # ----------------------- #
   check-warnings:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         kamikaze: [KAMIKAZE=TRUE, KAMIKAZE=FALSE]
@@ -207,13 +192,16 @@ jobs:
           clang-tools \
           libomp-dev
 
-    - name: Install optional dependencies
-      uses: ./.github/actions/install-deps-unix
+    - name: Install optional Spectra dependency
+      uses: ./.github/actions/install-spectra-unix
+
+    - name: Install optional ZFP dependency
+      uses: ./.github/actions/install-zfp-unix
 
     - name: Fetch TTK-ParaView headless Debian package
       run: |
         wget -O ttk-paraview-headless.deb \
-          https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless-ubuntu-22.04.deb
+          https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless-ubuntu-24.04.deb
 
     - name: Install ParaView .deb
       run: |

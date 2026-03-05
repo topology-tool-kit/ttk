@@ -17,6 +17,10 @@ if (@TTK_ENABLE_QHULL@ AND @Qhull_FOUND@)
   find_dependency(Qhull REQUIRED)
 endif()
 
+if (@TTK_ENABLE_TBB@)
+  find_dependency(TBB REQUIRED)
+endif()
+
 if (@TTK_ENABLE_TORCH@)
   set(Torch_DIR "@Torch_DIR@" CACHE PATH "Use TTK Torch dir" FORCE)
   find_dependency(Torch REQUIRED @Torch_DIR@)
@@ -35,8 +39,12 @@ if (@TTK_ENABLE_SCIKIT_LEARN@ AND NOT @TTK_ENABLE_SHARED_BASE_LIBRARIES@)
   find_package(Python3 COMPONENTS Development NumPy)
 endif()
 
-if (@TTK_ENABLE_CGAL@ AND @CGAL_FOUND@)
+if (@TTK_ENABLE_CGAL@)
   find_dependency(CGAL REQUIRED)
+endif()
+
+if (@TTK_ENABLE_EIGEN@)
+  find_dependency(Eigen3 CONFIG REQUIRED)
 endif()
 
 # Include the actual targets for TTK Base

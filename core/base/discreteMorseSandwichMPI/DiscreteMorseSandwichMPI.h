@@ -12,6 +12,7 @@
 /// "Distributed Discrete Morse Sandwich: Efficient Computation
 //  of Persistence Diagrams for Massive Scalar Data" \n
 /// Eve Le Guillou, Pierre Fortin, Julien Tierny \n
+/// IEEE Transactions on Parallel and Distributed Systems, 2025. \n
 /// arXiv:2505.21266, 2025.
 ///
 ///
@@ -6334,7 +6335,7 @@ int ttk::DiscreteMorseSandwichMPI::computePersistencePairs(
     int minSadThreadNumber = std::max(1, static_cast<int>(threadNumber_ / 2));
     int maxSadThreadNumber = std::max(1, threadNumber_ - minSadThreadNumber);
     int taskNumber = std::min(2, threadNumber_);
-    omp_set_nested(1);
+    omp_set_max_active_levels(100);
     std::vector<PersistencePair> sadMaxPairs;
     MPI_Comm minSadComm;
     MPI_Comm_dup(ttk::MPIcomm_, &minSadComm);
@@ -6358,7 +6359,7 @@ int ttk::DiscreteMorseSandwichMPI::computePersistencePairs(
           ignoreBoundary, offsets, sadMaxComm, maxSadThreadNumber);
       }
     }
-    omp_set_nested(0);
+    omp_set_max_active_levels(1);
     MPI_Comm_free(&minSadComm);
     MPI_Comm_free(&sadMaxComm);
     pairs.insert(pairs.end(), sadMaxPairs.begin(), sadMaxPairs.end());

@@ -1,5 +1,5 @@
 #include <MergeTreeAutoencoderDecoding.h>
-#include <MergeTreeAutoencoderUtils.h>
+#include <MergeTreeNeuralNetwork.h>
 
 ttk::MergeTreeAutoencoderDecoding::MergeTreeAutoencoderDecoding() {
   // inherited from Debug: prefix will be printed at the beginning of every msg
@@ -37,21 +37,33 @@ void ttk::MergeTreeAutoencoderDecoding::execute(
                                    pt, nodeCorr, false);
     }
   }
-  mergeTreesToTorchTrees(originsTrees, origins_, normalizedWasserstein_,
+  mergeTreesToTorchTrees(originsTrees, originsCopy_, normalizedWasserstein_,
                          allRevNodeCorr, allRevNodeCorrSize);
-  mergeTreesToTorchTrees(originsPrimeTrees, originsPrime_,
+  mergeTreesToTorchTrees(originsPrimeTrees, originsPrimeCopy_,
                          normalizedWasserstein_, allRevNodeCorrPrime,
                          allRevNodeCorrPrimeSize);
+  layers_.resize(noLayers_);
+  for(unsigned int l = 0; l < layers_.size(); ++l) {
+    layers_[l].setOrigin(originsCopy_[l]);
+    layers_[l].setVSTensor(vSTensorCopy_[l]);
+    layers_[l].setOriginPrime(originsPrimeCopy_[l]);
+    layers_[l].setVSPrimeTensor(vSPrimeTensorCopy_[l]);
+    initOriginPrimeValuesByCopy_
+      = trackingLossWeight_ != 0
+        and l < (trackingLossDecoding_ ? noLayers_ : getLatentLayerIndex() + 1);
+    initOriginPrimeValuesByCopyRandomness_ = trackingLossInitRandomness_;
+    passLayerParameters(layers_[l]);
+  }
 
   // --- Execute
-  if(allAlphas_[0].size() != originsPrime_.size()) {
+  if(allAlphas_[0].size() != originsPrimeCopy_.size()) {
     customAlphas_.resize(allAlphas_.size());
     for(unsigned int i = 0; i < customAlphas_.size(); ++i)
       customAlphas_[i] = std::vector<float>(
         allAlphas_[i][0].data_ptr<float>(),
         allAlphas_[i][0].data_ptr<float>() + allAlphas_[i][0].numel());
     allAlphas_.clear();
-    createCustomRecs(origins_, originsPrime_);
+    createCustomRecs();
   } else {
     recs_.resize(allAlphas_.size());
     for(unsigned int i = 0; i < recs_.size(); ++i) {
@@ -59,21 +71,22 @@ void ttk::MergeTreeAutoencoderDecoding::execute(
       for(unsigned int l = 0; l < allAlphas_[i].size(); ++l) {
         torch::Tensor act
           = (activate_ ? activation(allAlphas_[i][l]) : allAlphas_[i][l]);
-        getMultiInterpolation(
-          originsPrime_[l], vSPrimeTensor_[l], act, recs_[i][l]);
+        layers_[l].getMultiInterpolation(layers_[l].getOriginPrime(),
+                                         layers_[l].getVSPrimeTensor(), act,
+                                         recs_[i][l]);
       }
     }
   }
 
   // --- Postprocessing
-  for(unsigned int l = 0; l < origins_.size(); ++l) {
-    postprocessingPipeline<float>(&(origins_[l].mTree.tree));
-    postprocessingPipeline<float>(&(originsPrime_[l].mTree.tree));
+  for(unsigned int l = 0; l < originsCopy_.size(); ++l) {
+    postprocessingPipeline<float>(&(originsCopy_[l].mTree.tree));
+    postprocessingPipeline<float>(&(originsPrimeCopy_[l].mTree.tree));
   }
   if(!recs_.empty()) {
     for(unsigned int j = 0; j < recs_[0].size(); ++j) {
       for(unsigned int i = 0; i < recs_.size(); ++i) {
-        wae::fixTreePrecisionScalars(recs_[i][j].mTree);
+        fixTreePrecisionScalars(recs_[i][j].mTree);
         postprocessingPipeline<float>(&(recs_[i][j].mTree.tree));
       }
     }

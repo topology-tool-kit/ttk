@@ -139,6 +139,7 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   tracker.setAssignmentMethod(assignmentMethod);
   tracker.setWeights(PX, PY, PZ, PF);
   tracker.setUsePersistenceForDistance(UsePersistenceForDistance);
+  tracker.setAssignmentPrecision(AssignmentPrecision);
 
   tracker.setThreadNumber(this->threadNumber_);
   tracker.setDebugLevel(this->debugLevel_);

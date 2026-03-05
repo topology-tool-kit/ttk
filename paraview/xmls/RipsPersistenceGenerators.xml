@@ -3,8 +3,6 @@
     <SourceProxy name="ttkRipsPersistenceGenerators" class="ttkRipsPersistenceGenerators" label="TTK RipsPersistenceGenerators">
       <Documentation long_help="RipsPersistenceGenerators Long" short_help="RipsPersistenceGenerators Short">
         TTK plugin for the computation of the persistence generators of Rips complexes.
-
-        <!-- TODO -->
       </Documentation>
 
       <!-- INPUT DATA OBJECTS -->
