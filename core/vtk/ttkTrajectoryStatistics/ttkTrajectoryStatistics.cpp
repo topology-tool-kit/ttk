@@ -180,7 +180,6 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     ++tIdx;
   }
   
-
   //scalar dataset
     
   vtkPointData *pd = inputDataSet->GetPointData();
@@ -223,7 +222,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   for(size_t i = 0; i < fields.size(); ++i)
     inputFields[i] = ttkUtils::GetVoidPointer(fields[i]);
   
-
+  
   this->setInputScalars(inputFields);
   this->setInstantPersistence(instantPersistance);
   this->setFiltreY(filtreY);
@@ -257,6 +256,9 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   this->setErrSurf(errSurf);
   this->setOnlyFrameSurface(onlyFrameSurface);
   this->setMaxSurfSize(maxSurfSize);
+  double *bounds = inputDataSet->GetBounds();
+  this->setBoundaryX(bounds[1]);
+  this->setBoundaryY(bounds[3]);
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(inputDataSet);
   if(!triangulation) return 0;
@@ -267,11 +269,16 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   std::vector<FuseRecord> fuseRecords;
 
   this->correctTrajectory(trajTime, trajX, trajY, finalTraj,newTraj, fuseRecords); 
-
   std::vector<int>  durations(numTraj);
   std::vector<double> VX(numTraj), VY(numTraj), 
                       surfMin(numTraj), surfMax(numTraj), surfMean(numTraj);
-  std::vector<std::vector<ttk::SimplexId>> allVertexDebris(numTraj);
+  std::vector<std::vector<ttk::SimplexId>> allVertexDebris(inputFields.size());
+  for (size_t frame = 0; frame < allVertexDebris.size(); frame ++){
+  	allVertexDebris[frame].assign(triangulation->getNumberOfVertices(), -1);
+  }
+  this->printMsg("taille = "+ std::to_string(allVertexDebris.size()) + " " + std::to_string(allVertexDebris[0].size()));
+
+
   std::vector<std::vector<double>> gradientNorms;
 
   if(!computeAllGradientMagnitudes(inputDataSet,
@@ -280,6 +287,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     this->printErr("Gradient Magnitudes fails");
     return 0;
   }
+
 
   int status = 0;
   ttkVtkTemplateMacro(fields[0]->GetDataType(), triangulation->getType(),
@@ -349,7 +357,6 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     line->GetPointIds()->SetId(1, p1);
     lines->InsertNextCell(line);
   };
-
   // ---------------------- VTK TABLE -------------------------------
 
   const int numMerge = static_cast<int>(finalTraj.size());
@@ -395,117 +402,95 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   outputTable->AddColumn(colSurfMax);
   outputTable->AddColumn(colSurfMean);
   outputTable->AddColumn(colVolMean);
-  
   // ------------------------- SURFACE POINT DATA -----------------------------
+  outputSurface->CopyStructure(inputDataSet);
 
-  vtkSmartPointer<vtkDataSet> surfOutput =
-    vtkSmartPointer<vtkDataSet>::Take(inputDataSet->NewInstance());
-  surfOutput->ShallowCopy(inputDataSet);
-  outputSurface->ShallowCopy(surfOutput);
-  
-  //  -1 = no surface , >=0 = finalId, -2 = double traj 
-  auto surfaceFinalId = vtkSmartPointer<vtkIntArray>::New();
-  surfaceFinalId->SetName("FinalTrajId"); 
-  const vtkIdType nPts = inputDataSet->GetNumberOfPoints();
-  surfaceFinalId->SetNumberOfTuples(nPts);
-  surfaceFinalId->FillComponent(0, -1);
-
-  auto criticalSurface = vtkSmartPointer<vtkDoubleArray>::New();
-  criticalSurface->SetName("isCritical");
-  criticalSurface->SetNumberOfTuples(nPts);
-  criticalSurface->FillComponent(0,-1);
-  
-  for(size_t i = 0; i < allVertexDebris.size(); ++i) {
-    const auto &trajSurface = allVertexDebris[i];
-    int finalId = i;
-//    if(i < newTraj.size() && newTraj[i].size() > 4 && static_cast<int>(newTraj[i][4]) != -1) {
-//      finalId = static_cast<int>(newTraj[i][4]);
-//    }
-
-  
-    for(const auto v : trajSurface) {
-      if(v < 0 || v >= nPts) continue;
- 	  auto *scalars = static_cast<double *>(inputFields[frameSurface]);
-      const int current = surfaceFinalId->GetValue(v);
-      if(current == -1) {
-        surfaceFinalId->SetValue(v, i);
-		criticalSurface->SetValue(v, static_cast<double>(scalars[saddleSeg[i]]) - static_cast<double>(scalars[minSeg[i]]));
-      } else {
-        surfaceFinalId->SetValue(v, -2);
-      }
-    }
+  const vtkIdType nPts = outputSurface->GetNumberOfPoints();
+  vtkIdType nCells = outputSurface->GetNumberOfCells();
+  if (nPts == 0) {
+    this->printErr("Input dataset has no points.");
+    return 0;
   }
-
-  vtkDataSet *ds = outputSurface; 
-  
-  vtkIdType nCells = ds->GetNumberOfCells();
-  
-  auto surfaceFinalIdCellProp = vtkSmartPointer<vtkIntArray>::New();
-  surfaceFinalIdCellProp->SetName("FinalTrajId"); 
-  surfaceFinalIdCellProp->SetNumberOfTuples(nPts);
-  surfaceFinalIdCellProp->FillComponent(0, -1);
-  
-  for(vtkIdType p = 0; p < nPts; ++p) {
-    surfaceFinalIdCellProp->SetValue(p, surfaceFinalId->GetValue(p));
-  }
-  
-    for(vtkIdType cId = 0; cId < nCells; ++cId) {
-    vtkCell *cell = ds->GetCell(cId);
-    if(!cell) continue;
-  
-    vtkIdList *ptIds = cell->GetPointIds();
-    if(!ptIds) continue;
-  
-    int chosen = -1;
-    bool conflict = false;
-  
-    const vtkIdType m = ptIds->GetNumberOfIds();
-    for(vtkIdType k = 0; k < m; ++k) {
-      const vtkIdType pId = ptIds->GetId(k);
-      const int v = surfaceFinalId->GetValue(pId);
-  
-      if(v == -1) continue;
-  
-      if(chosen == -1) {
-        chosen = v; 
-      } else if(v != chosen) {
-        conflict = true;
-        break;
-      }
-    }
-  
-    if(chosen == -1) {
-      continue; 
-    }
-  
-    const int writeVal = conflict ? -2 : chosen;
-  
-    for(vtkIdType k = 0; k < m; ++k) {
-      const vtkIdType pId = ptIds->GetId(k);
-  
-      const int cur = surfaceFinalIdCellProp->GetValue(pId);
-      if(cur == -1) {
-        surfaceFinalIdCellProp->SetValue(pId, writeVal);
-      } else if(cur != writeVal) {
-        surfaceFinalIdCellProp->SetValue(pId, -2);
-      }
-    }
-  }
-  
-  surfaceFinalId = surfaceFinalIdCellProp;
-  
-  outputSurface->GetPointData()->AddArray(surfaceFinalId);
-  outputSurface->GetPointData()->AddArray(criticalSurface);
+  auto pts = vtkSmartPointer<vtkIdList>::New();
  
+  for(size_t frame = 0; frame < allVertexDebris.size(); ++frame) {
+
+    if(static_cast<vtkIdType>(allVertexDebris[frame].size()) != nPts){
+      return 0;
+	}
+  
+    char name[32];
+    std::snprintf(name, sizeof(name), "%04zu", frame);
+  
+    auto col = makeIntCol(name, allVertexDebris[frame].size());
+    col->FillValue(-1);
+  
+    auto base = vtkSmartPointer<vtkIntArray>::New();
+    base->SetNumberOfTuples(nPts);
+    base->FillValue(-1);
+  
+    for(vtkIdType pid = 0; pid < nPts; ++pid) {
+      const int lab = allVertexDebris[frame][static_cast<size_t>(pid)];
+      base->SetValue(pid, lab);
+      col->SetValue(pid, lab);
+    }
+  
+    for(vtkIdType cid = 0; cid < nCells; ++cid) {
+      outputSurface->GetCellPoints(cid, pts);
+      const vtkIdType m = pts->GetNumberOfIds();
+  
+      int chosen = -1;
+      bool conflict = false;
+      bool hasLabeled = false;
+      bool hasUnlabeled = false;
+  
+      for(vtkIdType k = 0; k < m; ++k) {
+        const vtkIdType pid = pts->GetId(k);
+        const int lab = base->GetValue(pid);
+  
+        if(lab < 0) {
+          hasUnlabeled = true;
+          continue;
+        }
+  
+        hasLabeled = true;
+        if(chosen < 0) {
+          chosen = lab;
+        } else if(lab != chosen) {
+          conflict = true;
+          break;
+        }
+      }
+  
+      if(!(hasLabeled && hasUnlabeled)) {
+        continue;
+      }
+  
+      const int outLab = conflict ? -2 : chosen;
+      if(outLab < 0) {
+        continue; 
+      }
+  
+      for(vtkIdType k = 0; k < m; ++k) {
+        const vtkIdType pid = pts->GetId(k);
+        if(base->GetValue(pid) < 0) {
+          col->SetValue(pid, outLab);
+        }
+      }
+    }
+    outputSurface->GetPointData()->AddArray(col);
+  }
+
   // --------------------------- LINEAR REG && ADDED --------------------------
   
   const vtkIdType nInit  = static_cast<vtkIdType>(newTraj.size());
   const vtkIdType nLinks = static_cast<vtkIdType>(fuseRecords.size());
+
   nCells = nInit + nLinks;
   
-  auto pts   = vtkSmartPointer<vtkPoints>::New();
+  auto ppts   = vtkSmartPointer<vtkPoints>::New();
   auto lines = vtkSmartPointer<vtkCellArray>::New();
-  pts->SetNumberOfPoints(2 * nCells);
+  ppts->SetNumberOfPoints(2 * nCells);
   
   auto finalChainId = vtkSmartPointer<vtkIntArray>::New(); // chain id 
   finalChainId->SetName("FinalChainId");
@@ -529,7 +514,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     const double x1 = evalX(coef, endF);
     const double y1 = evalY(coef, endF);
   
-    addSegment(pts, lines, i, x0, y0, startF, x1, y1, endF);
+    addSegment(ppts, lines, i, x0, y0, startF, x1, y1, endF);
   
     finalChainId->SetValue(i, static_cast<int>(coef[4]));
     inputTrajId->SetValue(i, static_cast<int>(i));
@@ -550,7 +535,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     const double yStartJ = evalY(cj, startF);
   
     const vtkIdType segIdx = nInit + k;
-    addSegment(pts, lines, segIdx, xEndI, yEndI, endF, xStartJ, yStartJ, startF);
+    addSegment(ppts, lines, segIdx, xEndI, yEndI, endF, xStartJ, yStartJ, startF);
   
     finalChainId->SetValue(segIdx, static_cast<int>(ci[4]));
     inputTrajId->SetValue(segIdx, -1);  
@@ -558,12 +543,11 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   }
   
   
-  outputLinear->SetPoints(pts);
+  outputLinear->SetPoints(ppts);
   outputLinear->SetCells(VTK_LINE, lines);
   outputLinear->GetCellData()->AddArray(finalChainId);
   outputLinear->GetCellData()->AddArray(inputTrajId);
   outputLinear->GetCellData()->AddArray(segmentKind);
-  
   //--------------------------- TRAJECTORIES -----------------------
   
   const vtkIdType n = static_cast<vtkIdType>(finalTraj.size());

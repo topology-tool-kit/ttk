@@ -55,6 +55,9 @@ public:
 
   vtkTypeMacro(ttkTrackingFromFields, ttkAlgorithm);
 
+  vtkSetMacro(UsePersistenceForDistance, bool);
+  vtkGetMacro(UsePersistenceForDistance, bool);
+
   /// @brief Temporal sampling (take every N timestep).
   /// @{
   vtkSetMacro(Sampling, int);
@@ -191,6 +194,8 @@ private:
   double PE{0};
   double PS{0};
   double PF{0};
+
+  bool UsePersistenceForDistance{false};
 
   double RelativeDestructionCost{0.1};
   int AssignmentMethod{0};

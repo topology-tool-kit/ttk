@@ -84,6 +84,8 @@ namespace ttk {
 	inline void setErrSurf(double m){ errSurf_ = m;}
 	inline void setOnlyFrameSurface(bool v){ onlyFrameSurface_ = v;}
 	inline void setMaxSurfSize(int m){ maxSurfSize_ = m;}
+	inline void setBoundaryX(double m){boundaryX_ = m;}
+	inline void setBoundaryY(double m){boundaryY_ = m;}
 
     struct FuseRecord {
       int i, j;           
@@ -274,6 +276,8 @@ namespace ttk {
     int maxY_;
     int minY_;
     int minX_;
+	double boundaryY_;
+	double boundaryX_;
     int surfaceMethod_;
 	double persistenceThreshold_;
 	std::vector<ttk::SimplexId> *minSeg_;
@@ -811,7 +815,7 @@ int ttk::TrajectoryStatistics::execute(
         VX[i] = finalTraj[i][0]*conversion; // vx = ax 
         VY[i] = finalTraj[i][1]*conversion; // vy = ay
     }
-
+/*
     if(surfaceMethod_ == 0) {
       computeSurfacesBFS<dataType, triangulationType>(
         trajTime, trajVertexId,
@@ -830,7 +834,7 @@ int ttk::TrajectoryStatistics::execute(
         surfMin, surfMax, surfMoy,
         allVertexDebris,
         frameSurf, triangulation);
-    } else if (surfaceMethod_ == 3) {
+    } */  if (surfaceMethod_ == 3) {
 		computeMergeTree<dataType, triangulationType>(
 				frameSurf,
 				triangulation,
@@ -866,7 +870,6 @@ int ttk::TrajectoryStatistics::computeSurfacesBFS(
   if((int)surfMin.size() < numTraj) surfMin.resize(numTraj, 0.0);
   if((int)surfMax.size() < numTraj) surfMax.resize(numTraj, 0.0);
   if((int)surfMoy.size() < numTraj) surfMoy.resize(numTraj, 0.0);
-  if((int)allVertexDebris.size() < numTraj) allVertexDebris.resize(numTraj);
 
   double maxVal = std::numeric_limits<double>::lowest();
 #ifdef TTK_ENABLE_OPENMP
@@ -1607,7 +1610,6 @@ int ttk::TrajectoryStatistics::computeMergeTree(
   const int nFrames = (onlyFrameSurface_ == false) ? inputData_.size() : 1;
   std::vector<std::vector<double>> trajSurfaces(finalTraj.size());
   const auto nTraj = finalTraj.size();
-  allVertexDebris.assign(nTraj, {});
 
   this->printMsg("Computing Merge Tree Segmentation");
 
@@ -1849,16 +1851,16 @@ int ttk::TrajectoryStatistics::computeMergeTree(
         continue;
 
       const double x = ax * frame + bx;
-      if(x < 0 || x > 384)
+      if(x < 0 || x > boundaryX_+1) 
         continue;
 
       const double y = ay * frame + by;
-      if(y < 0 || y > 224)
+      if(y < 0 || y > boundaryY_+1)
         continue;
       const ttk::SimplexId xi = std::lround(x);
       const ttk::SimplexId yi = std::lround(y);
 
-      ttk::SimplexId vId = xi + yi * 384;
+      ttk::SimplexId vId = xi + yi * (boundaryX_ +1);
 
       if(vId < 0 || vId >= nPixels)
         continue;
@@ -1868,7 +1870,6 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 	  if(regionType[vId] == 0) {
 	    auto segId = segmentation[vId];
 
-	    // --- POST-TRAITEMENT ---
 		if(segId >= 0 && segId < (ttk::SimplexId)segmentId.size() && !segCleaned[segId] && segmentId[segId].size() > 8) 		 {
 	  	  cleanDarkSegmentInPlace<dataType, triangulationType>(
 	  	    segmentId[segId], scalars, triangulation, static_cast<int>(errSurf_));
@@ -1883,12 +1884,14 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 
 	    trajSurfaces[trajId].push_back(surfVal);
 
-	    if(frame == static_cast<int>(frameSurf)) {
-	  	  allVertexDebris[trajId] = segmentId[segId];
+		for (int i = 0; i<segmentId[segId].size(); i++){
+			int check = allVertexDebris[frame][segmentId[segId][i]];
+		  	if (check == -1 || check == trajId ) allVertexDebris[frame][segmentId[segId][i]] = trajId;
+			else allVertexDebris[frame][segmentId[segId][i]] = -2;
+		}
 
-	  	  (*saddleSeg_)[trajId]   = segMinVertex[segId];
-	  	  (*minSeg_)[trajId]      = segId;
-	    }
+	    (*saddleSeg_)[trajId]   = segMinVertex[segId];
+	  	(*minSeg_)[trajId]      = segId;
 	  }
 
     } 
