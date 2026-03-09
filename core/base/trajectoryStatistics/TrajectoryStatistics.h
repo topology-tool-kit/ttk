@@ -1610,15 +1610,14 @@ int ttk::TrajectoryStatistics::computeMergeTree(
   const int nFrames = (onlyFrameSurface_ == false) ? inputData_.size() : 1;
   std::vector<std::vector<double>> trajSurfaces(finalTraj.size());
   const auto nTraj = finalTraj.size();
-
   this->printMsg("Computing Merge Tree Segmentation");
-
+  std::vector<char> trajDouble(nTraj);
   for(int frame = 0  ; frame < nFrames; frame++) {
-	frame = (onlyFrameSurface_ == false)  ? frame : frameSurf;
+
+    std::fill(trajDouble.begin(), trajDouble.end(), 0);
+  	frame = (onlyFrameSurface_ == false)  ? frame : frameSurf;
 	this->printMsg("Computing frame : " + std::to_string(frame));
-    // -----------------------------------------------------------------------
-    // 1) Persistence diagram : scalars + offsets (pattern TTK)
-    // -----------------------------------------------------------------------
+    // Persistence diagram 
     auto *scalars = static_cast<dataType *>(inputData_[frame]);
 
     std::vector<ttk::SimplexId> pdOffsets(nPixels);
@@ -1649,22 +1648,14 @@ int ttk::TrajectoryStatistics::computeMergeTree(
       return -1;
     }
 
-    // -----------------------------------------------------------------------
-    // 2) Extraction des sommets critiques (dimension 0, pers >= seuil)
-    // -----------------------------------------------------------------------
+    // Critical Points tresh 
 	double maxPers = 0.0;
 
 	for(const auto &pair : diagram) {
-	  if(pair.dim != 0)
-		continue;
-
+	  if(pair.dim != 0) continue;
 	  const double pers = pair.persistence();
-
-	  if(!std::isfinite(pers))
-		continue;
-
-	  if(pers > maxPers)
-		maxPers = pers;
+	  if(!std::isfinite(pers)) continue;
+	  if(pers > maxPers) maxPers = pers;
 	}
 
 	const double threshold = maxPers * (this->persistenceThreshold_ / 100.0);
@@ -1673,24 +1664,15 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 	criticalPoints.reserve(diagram.size() * 2);
 
 	for(const auto &pair : diagram) {
-	  if(pair.dim != 0)
-		continue;
-
+	  if(pair.dim != 0) continue;
 	  const double pers = pair.persistence();
-	  if(!std::isfinite(pers))
-		continue;
-
-	  if(pers < threshold)
-		continue;
-
+	  if(!std::isfinite(pers)) continue;
+	  if(pers < threshold) continue;
 	  criticalPoints.push_back(pair.birth.id);
 	  criticalPoints.push_back(pair.death.id);
 	}
 
-
-    // -----------------------------------------------------------------------
-    // 3) TopologicalSimplification
-    // -----------------------------------------------------------------------
+    //TopologicalSimplification
     const dataType *inputScalars = scalars;
 
     std::vector<dataType> outScalars(nPixels);
@@ -1702,15 +1684,11 @@ int ttk::TrajectoryStatistics::computeMergeTree(
     ttk::TopologicalSimplification topoSimp;
     topoSimp.setThreadNumber(this->threadNumber_);
     topoSimp.setBackend(ttk::TopologicalSimplification::BACKEND::LTS);
-    topoSimp.preconditionTriangulation(
-      const_cast<triangulationType *>(triangulation));
+    topoSimp.preconditionTriangulation(const_cast<triangulationType *>(triangulation));
 
     const bool addPerturbation = true;
-    const ttk::SimplexId constraintNumber
-      = static_cast<ttk::SimplexId>(criticalPoints.size());
-
+    const ttk::SimplexId constraintNumber = static_cast<ttk::SimplexId>(criticalPoints.size());
     const ttk::DiagramType emptyDiagram;
-
     topoSimp.execute<dataType, triangulationType>(
       inputScalars,
       outScalars.data(),
@@ -1868,6 +1846,7 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 	  std::vector<char> segCleaned(segmentId.size(), 0);
 
 	  if(regionType[vId] == 0) {
+
 	    auto segId = segmentation[vId];
 
 		if(segId >= 0 && segId < (ttk::SimplexId)segmentId.size() && !segCleaned[segId] && segmentId[segId].size() > 8) 		 {
@@ -1883,18 +1862,30 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 	    if(surfVal == 0) surfVal = 1;
 
 	    trajSurfaces[trajId].push_back(surfVal);
-
+		
 		for (int i = 0; i<segmentId[segId].size(); i++){
-			int check = allVertexDebris[frame][segmentId[segId][i]];
-		  	if (check == -1 || check == trajId ) allVertexDebris[frame][segmentId[segId][i]] = trajId;
-			else allVertexDebris[frame][segmentId[segId][i]] = -2;
+			int v = segmentId[segId][i];
+			int check = allVertexDebris[frame][v];
+		  	if (check == -1 ) allVertexDebris[frame][v] = trajId;
+			else if (check != trajId ){
+				trajDouble[trajId] = 1;
+				if (check >=0)
+					trajDouble[check]=1;
+			}
 		}
 
 	    (*saddleSeg_)[trajId]   = segMinVertex[segId];
 	  	(*minSeg_)[trajId]      = segId;
 	  }
 
-    } 
+    }
+    for(int t = 0; t < trajDouble.size(); t++) {
+      if(!trajDouble[t]) continue;
+      for(int v = 0; v < nPixels; v++) {
+        if(allVertexDebris[frame][v] == t)
+          allVertexDebris[frame][v] = -2;
+      }
+    }	
   }   
 
 
