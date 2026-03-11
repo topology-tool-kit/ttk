@@ -41,7 +41,8 @@ void ttk::PersistenceDiagramDictionaryDecoding::computeAtomsCoordinates(
     std::array<size_t, 2> nInputs{nAtoms, 0};
     MatrixCalculator.setDos(true, true, true);
     MatrixCalculator.setThreadNumber(2);
-    const auto distMatrix = MatrixCalculator.execute(atoms, nInputs);
+    std::vector<int> temp(1);
+    const auto distMatrix = MatrixCalculator.execute(atoms, nInputs, temp);
     coords[0][0] = 0.;
     trueCoords[0][0] = 0.;
     coords[0][1] = 0.;
@@ -55,8 +56,9 @@ void ttk::PersistenceDiagramDictionaryDecoding::computeAtomsCoordinates(
     std::array<size_t, 2> nInputs{nAtoms, 0};
     MatrixCalculator.setDos(true, true, true);
     MatrixCalculator.setThreadNumber(3);
+    std::vector<int> temp(1);
     std::vector<std::vector<double>> distMatrix
-      = MatrixCalculator.execute(atoms, nInputs);
+      = MatrixCalculator.execute(atoms, nInputs, temp);
     coords[0][0] = 0.;
     trueCoords[0][0] = 0.;
     coords[0][1] = 0.;
@@ -83,8 +85,9 @@ void ttk::PersistenceDiagramDictionaryDecoding::computeAtomsCoordinates(
         std::array<size_t, 2> nInputs{nAtoms, 0};
         MatrixCalculator.setDos(true, true, true);
         MatrixCalculator.setThreadNumber(3);
+        std::vector<int> temp(1);
         std::vector<std::vector<double>> distMatrix
-          = MatrixCalculator.execute(atoms, nInputs);
+          = MatrixCalculator.execute(atoms, nInputs, temp);
         coords[0][0] = 0.;
         trueCoords[0][0] = 0.;
         coords[0][1] = 0.;
@@ -129,8 +132,9 @@ void ttk::PersistenceDiagramDictionaryDecoding::computeAtomsCoordinates(
         std::array<size_t, 2> nInputs{nAtoms, 0};
         MatrixCalculator.setDos(true, true, true);
         MatrixCalculator.setThreadNumber(4);
+        std::vector<int> temp(1);
         std::vector<std::vector<double>> distMatrix
-          = MatrixCalculator.execute(atoms, nInputs);
+          = MatrixCalculator.execute(atoms, nInputs, temp);
         int nRow = distMatrix.size();
         std::vector<double> matrixForProjector;
         for(int i = 0; i < nRow; ++i) {
@@ -139,13 +143,13 @@ void ttk::PersistenceDiagramDictionaryDecoding::computeAtomsCoordinates(
           }
         }
         std::vector<std::vector<double>> coordsAtom;
-        DimProjector.execute(coordsAtom, matrixForProjector, nRow, nRow);
+        DimProjector.execute(coordsAtom,  matrixForProjector, nRow, nRow);
 
         for(size_t i = 0; i < 3; ++i) {
           for(size_t j = 0; j < nAtoms; ++j) {
             if(i == 0) {
               trueCoords[j][0] = coordsAtom[0][j];
-            } else if(i == 1) {
+            } else if (i == 1) {
               trueCoords[j][1] = coordsAtom[1][j];
             } else {
               trueCoords[j][2] = coordsAtom[2][j];
@@ -182,8 +186,9 @@ void ttk::PersistenceDiagramDictionaryDecoding::computeAtomsCoordinates(
         std::array<size_t, 2> nInputs{3, 0};
         MatrixCalculator.setDos(true, true, true);
         MatrixCalculator.setThreadNumber(3);
+        std::vector<int> temp(1);
         std::vector<std::vector<double>> distMatrix
-          = MatrixCalculator.execute(dictDiagrams, nInputs);
+          = MatrixCalculator.execute(dictDiagrams, nInputs, temp);
         tempCoords[0][0] = 0.;
         tempTrueCoords[0][0] = 0.;
         tempCoords[0][1] = 0.;
@@ -204,14 +209,14 @@ void ttk::PersistenceDiagramDictionaryDecoding::computeAtomsCoordinates(
         tempTrueCoords[2][1] = distAdja * std::sin(alpha);
         for(int i = 0; i < 2; ++i) {
           for(size_t j = 0; j < nAtoms; ++j) {
-            double temp = 0.;
+            double lamb = 0.;
             for(int iAtom = 0; iAtom < 3; ++iAtom) {
               if(i == 0) {
-                temp += tempWeights[j][iAtom] * tempTrueCoords[iAtom][0];
-                trueCoords[j][0] = temp;
+                lamb += tempWeights[j][iAtom] * tempTrueCoords[iAtom][0];
+                trueCoords[j][0] = lamb;
               } else {
-                temp += tempWeights[j][iAtom] * tempTrueCoords[iAtom][1];
-                trueCoords[j][1] = temp;
+                lamb += tempWeights[j][iAtom] * tempTrueCoords[iAtom][1];
+                trueCoords[j][1] = lamb;
               }
             }
           }
@@ -227,8 +232,9 @@ void ttk::PersistenceDiagramDictionaryDecoding::computeAtomsCoordinates(
         std::array<size_t, 2> nInputs{nAtoms, 0};
         MatrixCalculator.setDos(true, true, true);
         MatrixCalculator.setThreadNumber(3);
+        std::vector<int> temp(1);
         std::vector<std::vector<double>> distMatrix
-          = MatrixCalculator.execute(atoms, nInputs);
+          = MatrixCalculator.execute(atoms, nInputs, temp);
         int nRow = distMatrix.size();
         std::vector<double> matrixForProjector;
         for(int i = 0; i < nRow; ++i) {
@@ -237,7 +243,7 @@ void ttk::PersistenceDiagramDictionaryDecoding::computeAtomsCoordinates(
           }
         }
         std::vector<std::vector<double>> coordsAtom;
-        DimProjector.execute(coordsAtom, matrixForProjector, nRow, nRow);
+        DimProjector.execute(coordsAtom,  matrixForProjector, nRow, nRow);
 
         for(size_t i = 0; i < 2; ++i) {
           for(size_t j = 0; j < nAtoms; ++j) {

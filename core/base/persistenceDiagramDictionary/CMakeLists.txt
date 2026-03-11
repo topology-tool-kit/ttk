@@ -1,14 +1,20 @@
 ttk_add_base_library(persistenceDiagramDictionary
   SOURCES
     PersistenceDiagramDictionary.cpp
+    PersistenceDiagramDictionaryBorderInitializer.cpp
+    PersistenceDiagramConstrainedOptimization.cpp
+    InitDictRandomly.cpp
   HEADERS
     PersistenceDiagramDictionary.h
+    PersistenceDiagramDictionaryBorderInitializer.h
+    PersistenceDiagramConstrainedOptimization.h
+    InitDictRandomly.h
   DEPENDS
     common
     persistenceDiagramAuction
-    constrainedGradientDescent
+    persistenceDiagramDistanceMatrix
     persistenceDiagramClustering
-    initDictPersistenceDiagram
+    
 )
 
 if(TTK_ENABLE_EIGEN)

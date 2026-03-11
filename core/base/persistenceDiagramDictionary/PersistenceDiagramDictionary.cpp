@@ -23,16 +23,6 @@ void PersistenceDiagramDictionary::execute(
 
   if(!ProgApproach_) {
     // Regular approach
-    for(size_t i = 0; i < intermediateDiagrams.size(); ++i) {
-      if(sortedForTest_) {
-        auto &diag = intermediateDiagrams[i];
-        std::sort(diag.begin(), diag.end(),
-                  [](const PersistencePair &t1, const PersistencePair &t2) {
-                    return (t1.death.sfValue - t1.birth.sfValue)
-                           > (t2.death.sfValue - t2.birth.sfValue);
-                  });
-      }
-    }
 
     bool doCompression = false;
     if(CompressionMode_) {
@@ -49,7 +39,7 @@ void PersistenceDiagramDictionary::execute(
     std::vector<std::vector<double>> histoVectorWeights(
       intermediateDiagrams.size());
     std::vector<ttk::DiagramType> histoDictDiagrams(numAtom);
-    this->maxLag2_ = 5;
+    this->MaxLag2_ = 5;
 
     Timer tm_init{};
     bool preWeightOpt = false;
@@ -61,10 +51,10 @@ void PersistenceDiagramDictionary::execute(
                    threadNumber_, debug::LineMode::NEW);
 
     controlAtomsSize(intermediateDiagrams, dictDiagrams);
-
+    
     method(intermediateDiagrams, dictDiagrams, vectorWeights, numAtom, lossTab,
-           allLosses, histoVectorWeights, histoDictDiagrams, preWeightOpt,
-           percent, doCompression);
+          allLosses, histoVectorWeights, histoDictDiagrams, 
+          preWeightOpt, percent, doCompression);
   } else {
     // Multi scale approach
     bool doCompression = false;
@@ -92,7 +82,7 @@ void PersistenceDiagramDictionary::execute(
     Timer tm_method{};
     for(size_t j = 0; j < 1; ++j) {
       double percentage = percentages[j];
-      this->maxLag2_ = 0;
+      this->MaxLag2_ = 0;
       this->printMsg("First step multi-scale approach:");
       for(size_t i = 0; i < intermediateDiagrams.size(); ++i) {
         auto &diag = intermediateDiagrams[i];
@@ -116,9 +106,9 @@ void PersistenceDiagramDictionary::execute(
       this->printMsg("Initialization computed ", 1, tm_init.getElapsedTime(),
                      threadNumber_, debug::LineMode::NEW);
 
-      method(dataTemp, dictDiagrams, vectorWeights, numAtom, lossTab, allLosses,
-             histoVectorWeights, histoDictDiagrams, preWeightOpt, percent,
-             doCompression);
+      method(dataTemp, dictDiagrams, vectorWeights, numAtom, lossTab, 
+            allLosses, histoVectorWeights,histoDictDiagrams, preWeightOpt,
+            percent, doCompression);
     }
 
     int counter = 0;
@@ -129,9 +119,9 @@ void PersistenceDiagramDictionary::execute(
       double percentage = percentages[j];
       double previousPerc = percentages[j - 1];
       if(j < percentages.size() - 1) {
-        this->maxLag2_ = 0;
+        this->MaxLag2_ = 0;
       } else {
-        this->maxLag2_ = 5;
+        this->MaxLag2_ = 5;
       }
       if(j < percentages.size() - 1) {
         this->printMsg("New step multi-scale approach:");
@@ -155,9 +145,9 @@ void PersistenceDiagramDictionary::execute(
       if(counter == 0) {
         continue;
       }
-      method(dataTemp, dictDiagrams, vectorWeights, numAtom, lossTab, allLosses,
-             histoVectorWeights, histoDictDiagrams, preWeightOpt, percent,
-             doCompression);
+      method(dataTemp, dictDiagrams, vectorWeights, numAtom, lossTab, 
+            allLosses, histoVectorWeights,histoDictDiagrams, preWeightOpt, 
+            percent, doCompression);
     }
 
     this->printMsg(
@@ -222,7 +212,7 @@ void PersistenceDiagramDictionary::method(
   std::vector<std::vector<ttk::MatchingType>> matchingsDatasMin(nDiags);
   std::vector<std::vector<ttk::MatchingType>> matchingsDatasSad(nDiags);
   std::vector<std::vector<ttk::MatchingType>> matchingsDatasMax(nDiags);
-  ConstrainedGradientDescent gradActor;
+  PersistenceDiagramConstrainedOptimization gradActor;
   double loss;
   int lag = 0;
   int lag2 = 0;
@@ -305,6 +295,7 @@ void PersistenceDiagramDictionary::method(
       loss += allLossesAtEpoch[p];
     }
 
+
     for(size_t p = 0; p < nDiags; ++p) {
       if(!ProgApproach_) {
         allLosses[p].push_back(allLossesAtEpoch[p]);
@@ -316,7 +307,7 @@ void PersistenceDiagramDictionary::method(
     lossTab.push_back(loss);
 
     printMsg(
-      " Epoch " + std::to_string(epoch) + ", loss = " + std::to_string(loss), 1,
+      " Epoch " + std::to_string(epoch) + ", loss = " + std::to_string(loss), 1, tm_it.getElapsedTime(),
       threadNumber_, ttk::debug::LineMode::REPLACE);
 
     if(preWeightOpt && OptimizeAtoms_) {
@@ -338,7 +329,7 @@ void PersistenceDiagramDictionary::method(
       = *std::min_element(lossTab.begin() + nbEpochPrevious, lossTab.end() - 1);
     if(loss <= mini) {
       for(size_t p = 0; p < dictDiagrams.size(); ++p) {
-        const auto atom = dictDiagrams[p];
+        const auto &atom = dictDiagrams[p];
         histoDictDiagrams[p] = atom;
 
         const auto &histoEpochAtom = histoAllEpochLife[p];
@@ -354,7 +345,7 @@ void PersistenceDiagramDictionary::method(
         bufferCheckAboveGlobal[p] = boolAboveGlobal;
       }
       for(size_t p = 0; p < nDiags; ++p) {
-        const auto weights = vectorWeights[p];
+        const auto &weights = vectorWeights[p];
         histoVectorWeights[p] = weights;
       }
       lag = 0;
@@ -373,15 +364,15 @@ void PersistenceDiagramDictionary::method(
            > 0.99)) {
       if(lossTab[epoch + nbEpochPrevious]
          < lossTab[epoch + nbEpochPrevious - 1]) {
-        if(lag2 == this->maxLag2_) {
+        if(lag2 == this->MaxLag2_) {
           this->printMsg("Loss not decreasing enough");
           if(StopCondition_) {
             for(size_t p = 0; p < dictDiagrams.size(); ++p) {
-              const auto atom = histoDictDiagrams[p];
+              const auto &atom = histoDictDiagrams[p];
               dictDiagrams[p] = atom;
             }
             for(size_t p = 0; p < nDiags; ++p) {
-              const auto weights = histoVectorWeights[p];
+              const auto &weights = histoVectorWeights[p];
               vectorWeights[p] = weights;
             }
             doOptimizeWeights = false;
@@ -400,11 +391,11 @@ void PersistenceDiagramDictionary::method(
 
       if(StopCondition_) {
         for(size_t p = 0; p < dictDiagrams.size(); ++p) {
-          const auto atom = histoDictDiagrams[p];
+          const auto &atom = histoDictDiagrams[p];
           dictDiagrams[p] = atom;
         }
         for(size_t p = 0; p < nDiags; ++p) {
-          const auto weights = histoVectorWeights[p];
+          const auto &weights = histoVectorWeights[p];
           vectorWeights[p] = weights;
         }
         this->printMsg("Minimum not passed");
@@ -423,7 +414,7 @@ void PersistenceDiagramDictionary::method(
         this->printMsg("Loss increasing too much, reducing step and recompute "
                        "Barycenters and matchings");
         for(size_t p = 0; p < dictDiagrams.size(); ++p) {
-          const auto atom = histoDictDiagrams[p];
+          const auto &atom = histoDictDiagrams[p];
           dictDiagrams[p] = atom;
 
           const auto &bufferHistoEpochAtom = bufferHistoAllEpochLife[p];
@@ -440,7 +431,7 @@ void PersistenceDiagramDictionary::method(
         }
 
         for(size_t p = 0; p < nDiags; ++p) {
-          const auto weights = histoVectorWeights[p];
+          const auto &weights = histoVectorWeights[p];
           vectorWeights[p] = weights;
         }
         gradActor.reduceStep();
@@ -722,8 +713,8 @@ void PersistenceDiagramDictionary::method(
                 continue;
               }
 
-              PersistencePair newPair{CriticalVertex{0, c1, pair[0], {}},
-                                      CriticalVertex{0, c2, pair[1], {}},
+              PersistencePair newPair{CriticalVertex{0, pair[0], 0, {}, c1},
+                                      CriticalVertex{0, pair[1], 0, {}, c2},
                                       idTemp, true};
               allTrueProj[atomIndex].push_back(proj);
               allTrueFeaturesToAdd[atomIndex].push_back(newPair);
@@ -731,22 +722,7 @@ void PersistenceDiagramDictionary::method(
             } else {
               bool ralph = true;
               size_t index = 0;
-              if(Fusion_) {
-                for(size_t n = 0; n < allTrueProj[atomIndex].size(); ++n) {
-                  auto &projStocked = allTrueProj[atomIndex][n];
-                  auto &projLocStocked = allTrueProj[atomIndex][n];
-                  double distance
-                    = sqrt(pow((pair[0] - projLocStocked[0]), 2)
-                           + pow((pair[1] - projLocStocked[1]), 2));
-                  if(proj == projStocked && distance < 1e-3) {
-                    ralph = false;
-                    index = n;
-                    break;
-                  }
-                }
-              }
               if(ralph) {
-
                 const CriticalType c1 = t.birth.type;
                 const CriticalType c2 = t.death.type;
                 const SimplexId idTemp = t.dim;
@@ -762,8 +738,8 @@ void PersistenceDiagramDictionary::method(
                   continue;
                 }
 
-                PersistencePair newPair{CriticalVertex{0, c1, pair[0], {}},
-                                        CriticalVertex{0, c2, pair[1], {}},
+                PersistencePair newPair{CriticalVertex{0, pair[0], 0, {}, c1},
+                                        CriticalVertex{0, pair[0], 0, {}, c2},
                                         idTemp, true};
                 allTrueProj[atomIndex].push_back(proj);
                 allTrueFeaturesToAdd[atomIndex].push_back(newPair);
@@ -850,7 +826,6 @@ void PersistenceDiagramDictionary::method(
             auto &boolDiag = checkDiag[i];
             auto &boolAboveGlobal = checkAboveGlobal[i];
             auto initSize = initSizes[i];
-            // size_t initAtomSize = atom.size() -histoEpochAtom.size();
             if(static_cast<int>(indicesAtomToDelete.size()) > 0) {
               for(int j = static_cast<int>(indicesAtomToDelete.size()) - 1;
                   j >= 0; j--) {
@@ -887,7 +862,7 @@ void PersistenceDiagramDictionary::method(
           }
         }
       }
-      // Deleting unallowed pairs:
+      // Ensuring to stay in the space of persistence diagrams:
       for(int i = 0; i < numAtom; ++i) {
         auto &atom = dictDiagrams[i];
         auto &globalPair = atom[0];
@@ -921,7 +896,7 @@ void PersistenceDiagramDictionary::method(
     allMatchingsAtoms.resize(nDiags);
   }
   printMsg(
-    " Epoch " + std::to_string(epoch) + ", loss = " + std::to_string(loss), 1,
+    " Epoch " + std::to_string(epoch) + ", loss = " + std::to_string(loss), 1.0,tm.getElapsedTime(),
     threadNumber_);
 
   printMsg("Loss returned "
@@ -930,14 +905,15 @@ void PersistenceDiagramDictionary::method(
            + " at Epoch "
            + std::to_string(
              std::min_element(lossTab.begin() + nbEpochPrevious, lossTab.end())
-             - lossTab.begin()));
+             - lossTab.begin()),1.0,tm.getElapsedTime(),
+             threadNumber_);
 
   for(size_t p = 0; p < dictDiagrams.size(); ++p) {
-    auto atom = histoDictDiagrams[p];
+    const auto &atom = histoDictDiagrams[p];
     dictDiagrams[p] = atom;
   }
   for(size_t p = 0; p < nDiags; ++p) {
-    auto weights = histoVectorWeights[p];
+    const auto &weights = histoVectorWeights[p];
     vectorWeights[p] = weights;
   }
 
@@ -986,7 +962,7 @@ double PersistenceDiagramDictionary::computeDistance(
   }
 
   PersistenceDiagramAuction auction(
-    this->Wasserstein, this->Alpha, this->Lambda, this->DeltaLim, true);
+    this->Wasserstein, 1.0, 1.0, 0.01, true);
   auction.BuildAuctionDiagrams(D1, D2_bis);
   double loss = auction.run(matching);
   return loss;
@@ -1039,7 +1015,6 @@ void PersistenceDiagramDictionary::computeGradientWeights(
       const SimplexId Id1 = std::get<0>(t);
       // Id in barycenter
       const SimplexId Id2 = std::get<1>(t);
-      // if(Id2 < 0) {
       if(Id2 < 0 || static_cast<int>(gradBuffersList.size()) <= Id2
          || static_cast<int>(dictDiagrams[i].size()) <= Id1) {
         continue;
@@ -1079,7 +1054,7 @@ void PersistenceDiagramDictionary::computeGradientWeights(
                               directions, dataAssigned, tracker2,
                               doOptimizeAtoms);
 
-  // Compute directions for sad diagram
+  // Compute directions for saddle diagram
   computeDirectionsGradWeight(matchingsAtoms, Barycenter, newData, matchingsSad,
                               indexBarySad, indexDataSad, pairToAddGradList,
                               directions, dataAssigned, tracker2,
@@ -1177,7 +1152,7 @@ void PersistenceDiagramDictionary::computeGradientAtoms(
                              pairToAddGradList, directions, checker, infoToAdd,
                              doDimReduct);
 
-  // Compute directions for sad diagram
+  // Compute directions for saddle diagram
   computeDirectionsGradAtoms(gradsAtoms, Barycenter, weights, newData,
                              matchingsSad, indexBarySad, indexDataSad,
                              pairToAddGradList, directions, checker, infoToAdd,
@@ -1214,7 +1189,7 @@ void PersistenceDiagramDictionary::setBidderDiagrams(
 
     for(size_t j = 0; j < diag.size(); j++) {
       // Add bidder to bidders
-      Bidder b(diag[j], j, this->Lambda);
+      Bidder b(diag[j], j, 1.0);
       b.setPositionInAuction(bidders.size());
       bidders.emplace_back(b);
       if(b.isDiagonal() || b.x_ == b.y_) {
@@ -1229,12 +1204,12 @@ int PersistenceDiagramDictionary::initDictionary(
   std::vector<ttk::DiagramType> &dictDiagrams,
   const std::vector<ttk::DiagramType> &datas,
   const std::vector<ttk::DiagramType> &inputAtoms,
-  const int nbAtom,
-  bool do_min,
-  bool do_sad,
-  bool do_max,
+  const int &nbAtom,
+  bool &do_min,
+  bool &do_sad,
+  bool &do_max,
   int seed,
-  double percent) {
+  double &percent) {
   switch(this->BackEnd) {
     case BACKEND::INPUT_ATOMS: {
       if(static_cast<int>(inputAtoms.size()) != nbAtom) {
@@ -1258,7 +1233,7 @@ int PersistenceDiagramDictionary::initDictionary(
     }
 
     case BACKEND::BORDER_INIT: {
-      ttk::InitDictPersistenceDiagram initializer;
+      ttk::PersistenceDiagramDictionaryBorderInitializer initializer;
       initializer.setThreadNumber(this->threadNumber_);
       initializer.execute(dictDiagrams, datas, nbAtom, do_min, do_sad, do_max);
       break;
@@ -1306,10 +1281,10 @@ int PersistenceDiagramDictionary::initDictionary(
           std::vector<std::vector<double>> histoVectorWeights(1);
           std::vector<ttk::DiagramType> histoDictDiagrams(dictTemp.size());
           bool doCompression = false;
-          this->method(dataAlone, dictTemp, weightsTemp,
-                       static_cast<int>(dictTemp.size()), lossTabTemp,
-                       allLossesTemp, histoVectorWeights, histoDictDiagrams,
-                       false, percent, doCompression);
+          this->method(
+            dataAlone, dictTemp, weightsTemp, static_cast<int>(dictTemp.size()),
+            lossTabTemp, allLossesTemp,  histoVectorWeights, histoDictDiagrams, 
+            false, percent, doCompression);
           double min_loss
             = *std::min_element(lossTabTemp.begin(), lossTabTemp.end());
           allEnergy[j] = min_loss;
@@ -1323,6 +1298,7 @@ int PersistenceDiagramDictionary::initDictionary(
     default:
       break;
   }
+  
   return 0;
 }
 
@@ -1401,6 +1377,7 @@ void PersistenceDiagramDictionary::gettingBidderDiagrams(
 
 double PersistenceDiagramDictionary::getMaxPers(const ttk::DiagramType &data) {
   double maxPers = 0.;
+
   for(size_t j = 0; j < data.size(); ++j) {
     auto &t = data[j];
     double pers = t.death.sfValue - t.birth.sfValue;
@@ -1432,9 +1409,9 @@ void PersistenceDiagramDictionary::controlAtomsSize(
   }
 
   if(static_cast<double>(dictSize)
-     > (1. / this->CompressionFactor) * static_cast<double>(globalSize)) {
+     > (1. / this->CompressionFactor_) * static_cast<double>(globalSize)) {
     double factor
-      = (1. / this->CompressionFactor)
+      = (1. / this->CompressionFactor_)
         * (static_cast<double>(globalSize) / static_cast<double>(dictSize));
     std::vector<std::vector<double>> tempDictPersistencePairs(m);
 
@@ -1496,7 +1473,6 @@ void PersistenceDiagramDictionary::computeDirectionsGradWeight(
     // Id in barycenter
     const SimplexId Id2 = std::get<1>(t);
     if(Id2 < 0) {
-
       if(Id1 < 0) {
         continue;
       } else {
@@ -1536,7 +1512,6 @@ void PersistenceDiagramDictionary::computeDirectionsGradWeight(
         direction[0] = birthDeathData - birthBarycenter;
         direction[1] = birthDeathData - deathBarycenter;
         dataAssigned[indexBaryCritType[Id2]] = {birthDeathData, birthDeathData};
-
       } else {
         const PersistencePair &t2 = newData[indexDataCritType[Id1]];
         const double birthData = t2.birth.sfValue;
@@ -1631,7 +1606,6 @@ void PersistenceDiagramDictionary::computeDirectionsGradAtoms(
           = birthBarycenter + (deathBarycenter - birthBarycenter) / 2.;
         direction[0] = birthDeathData - birthBarycenter;
         direction[1] = birthDeathData - deathBarycenter;
-
       } else {
         const PersistencePair &t2 = newData[indexDataCritType[Id1]];
         const double birthData = t2.birth.sfValue;
@@ -1684,7 +1658,6 @@ void PersistenceDiagramDictionary::computeAllDistances(
     if(this->do_min_) {
       auto &barycentermin = bidderBarycentersListMin[i];
       auto &datamin = bidderDiagramsMin[i];
-
       if(firstDistComputation) {
         allLossesAtEpoch[i]
           += computeDistance(datamin, barycentermin, matchingMin);
@@ -1696,11 +1669,9 @@ void PersistenceDiagramDictionary::computeAllDistances(
     if(this->do_max_) {
       auto &barycentermax = bidderBarycentersListMax[i];
       auto &datamax = bidderDiagramsMax[i];
-
       if(firstDistComputation) {
         allLossesAtEpoch[i]
           += computeDistance(datamax, barycentermax, matchingMax);
-
       } else {
         computeDistance(datamax, barycentermax, matchingMax);
       }
@@ -1708,11 +1679,9 @@ void PersistenceDiagramDictionary::computeAllDistances(
     if(this->do_sad_) {
       auto &barycentersListad = bidderBarycentersListSad[i];
       auto &datasad = bidderDiagramsSad[i];
-
       if(firstDistComputation) {
         allLossesAtEpoch[i]
           += computeDistance(datasad, barycentersListad, matchingSad);
-
       } else {
         computeDistance(datasad, barycentersListad, matchingSad);
       }

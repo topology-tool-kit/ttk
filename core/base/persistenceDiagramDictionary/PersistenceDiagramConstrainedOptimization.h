@@ -3,18 +3,15 @@
 #include <PersistenceDiagramUtils.h>
 #include <Wrapper.h>
 
-#include <algorithm>
-#include <array>
-#include <tuple>
 
 namespace ttk {
   using Matrix = std::vector<std::vector<double>>;
 
-  class ConstrainedGradientDescent : public Debug {
+  class PersistenceDiagramConstrainedOptimization : public Debug {
 
   public:
-    ConstrainedGradientDescent() {
-      this->setDebugMsgPrefix("ConstrainedGradientDescent");
+    PersistenceDiagramConstrainedOptimization() {
+      this->setDebugMsgPrefix("PersistenceDiagramConstrainedOptimization");
     };
 
     void executeWeightsProjected(std::vector<Matrix> &hessianList,
@@ -35,13 +32,9 @@ namespace ttk {
       std::vector<std::vector<std::array<double, 2>>> &pairToAddGradList,
       ttk::DiagramType &infoToAdd);
 
-    void setStep(double factEquiv);
+    void setStep(double &factEquiv);
     void reduceStep();
-    // void executeAtoms(std::vector<Diagram> &DictDiagrams);
 
-    // inline void setNbAtoms(const int nbAtoms) {
-    // NbAtoms = nbAtoms;
-    //}
 
   protected:
     void projectionOnSimplex(std::vector<double> &weights);
@@ -64,7 +57,7 @@ namespace ttk {
       std::vector<std::vector<std::array<double, 2>>> &pairToAddGradList,
       ttk::DiagramType &infoToAdd);
 
-    double stepAtom;
+    double stepAtom_;
   };
 
-} // namespace ttk
+}

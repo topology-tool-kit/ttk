@@ -9,9 +9,7 @@
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
 #include <vtkFloatArray.h>
-#include <vtkIntArray.h>
 #include <vtkMultiBlockDataSet.h>
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
@@ -172,8 +170,8 @@ int ttkPersistenceDiagramDictionary::RequestData(
   std::vector<double> lossTab;
   std::vector<std::vector<double>> allLosses(nDiags);
   this->execute(intermediateDiagrams, intermediateAtoms, dictDiagrams,
-                vectorWeights, seed, numAtom, lossTab, allLosses,
-                this->Percent_);
+                vectorWeights, seed, numAtom, lossTab, 
+                allLosses, this->Percent_);
   // zero-padd column name to keep Row Data columns ordered
   outputWeights->SetNumberOfRows(nDiags);
 

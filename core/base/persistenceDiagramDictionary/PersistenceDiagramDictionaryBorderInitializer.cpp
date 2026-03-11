@@ -1,11 +1,11 @@
-#include <InitDictPersistenceDiagram.h>
+#include <PersistenceDiagramDictionaryBorderInitializer.h>
 
 using namespace ttk;
 
-void InitDictPersistenceDiagram::execute(
+void PersistenceDiagramDictionaryBorderInitializer::execute(
   std::vector<ttk::DiagramType> &DictDiagrams,
   const std::vector<ttk::DiagramType> &datas,
-  const int nbAtoms,
+  const int &nbAtoms,
   bool do_min_,
   bool do_sad_,
   bool do_max_) {
@@ -16,7 +16,8 @@ void InitDictPersistenceDiagram::execute(
   std::array<size_t, 2> nInputs{nDiags, 0};
   MatrixCalculator.setDos(do_min_, do_sad_, do_max_);
   MatrixCalculator.setThreadNumber(this->threadNumber_);
-  Matrix distMatrix = MatrixCalculator.execute(datas, nInputs);
+  std::vector<int> temp(1);
+  Matrix distMatrix = MatrixCalculator.execute(datas, nInputs, temp);
   std::vector<double> allDistsSummed(nDiags);
   for(size_t i = 0; i < nDiags; ++i) {
     const auto &line = distMatrix[i];
@@ -50,7 +51,7 @@ void InitDictPersistenceDiagram::execute(
   }
 }
 
-int InitDictPersistenceDiagram::getNextIndex(
+int PersistenceDiagramDictionaryBorderInitializer::getNextIndex(
   const Matrix &distMatrix, const std::vector<int> &indices) const {
   std::vector<double> allSumCumul(distMatrix.size(), 0.);
   for(size_t k = 0; k < indices.size(); ++k) {

@@ -56,20 +56,6 @@ public:
     return Wasserstein == -1 ? "inf" : std::to_string(Wasserstein);
   }
 
-  void SetAntiAlpha(double data) {
-    data = 1 - data;
-    if(data > 0 && data <= 1) {
-      Alpha = data;
-    } else if(data > 1) {
-      Alpha = 1;
-    } else {
-      Alpha = 0.001;
-    }
-    Modified();
-  }
-
-  vtkGetMacro(Alpha, double);
-
   vtkSetMacro(Percent_, double);
   vtkGetMacro(Percent_, double);
 
@@ -81,9 +67,6 @@ public:
 
   vtkSetMacro(MaxEigenValue_, int);
   vtkGetMacro(MaxEigenValue_, int);
-
-  vtkSetMacro(Fusion_, int);
-  vtkGetMacro(Fusion_, int);
 
   vtkSetMacro(ProgBarycenter_, int);
   vtkGetMacro(ProgBarycenter_, int);
@@ -103,9 +86,6 @@ public:
   vtkSetMacro(DimReductMode_, int);
   vtkGetMacro(DimReductMode_, int);
 
-  vtkSetMacro(sortedForTest_, int);
-  vtkGetMacro(sortedForTest_, int);
-
   vtkSetMacro(CreationFeatures_, int);
   vtkGetMacro(CreationFeatures_, int);
 
@@ -115,17 +95,11 @@ public:
   vtkSetMacro(Seed_, int);
   vtkGetMacro(Seed_, int);
 
-  vtkSetMacro(DeltaLim, double);
-  vtkGetMacro(DeltaLim, double);
-
-  vtkSetMacro(Lambda, double);
-  vtkGetMacro(Lambda, double);
-
   ttkSetEnumMacro(BackEnd, BACKEND);
   vtkGetEnumMacro(BackEnd, BACKEND);
 
-  vtkSetMacro(CompressionFactor, double);
-  vtkGetMacro(CompressionFactor, double);
+  vtkSetMacro(CompressionFactor_, double);
+  vtkGetMacro(CompressionFactor_, double);
 
   void SetPairType(const int data) {
     switch(data) {
@@ -156,12 +130,6 @@ public:
     }
     return -1;
   }
-
-  vtkSetMacro(MaxNumberOfPairs, unsigned int);
-  vtkGetMacro(MaxNumberOfPairs, unsigned int);
-
-  vtkSetMacro(MinPersistence_, double);
-  vtkGetMacro(MinPersistence_, double);
 
 protected:
   ttkPersistenceDiagramDictionary();

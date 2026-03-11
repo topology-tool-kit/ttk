@@ -3,10 +3,6 @@
 #include <PersistenceDiagramUtils.h>
 #include <Wrapper.h>
 
-#include <algorithm>
-#include <array>
-#include <tuple>
-
 namespace ttk {
   using Matrix = std::vector<std::vector<double>>;
 

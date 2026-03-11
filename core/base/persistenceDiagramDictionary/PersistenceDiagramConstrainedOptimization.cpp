@@ -1,4 +1,4 @@
-#include <ConstrainedGradientDescent.h>
+#include <PersistenceDiagramConstrainedOptimization.h>
 #include <cmath>
 #include <csignal>
 
@@ -9,7 +9,7 @@
 
 using namespace ttk;
 
-void ConstrainedGradientDescent::executeWeightsProjected(
+void PersistenceDiagramConstrainedOptimization::executeWeightsProjected(
   std::vector<Matrix> &hessianList,
   std::vector<double> &weights,
   const std::vector<double> &grad,
@@ -18,7 +18,7 @@ void ConstrainedGradientDescent::executeWeightsProjected(
   projectionOnSimplex(weights);
 }
 
-void ConstrainedGradientDescent::executeAtoms(
+void PersistenceDiagramConstrainedOptimization::executeAtoms(
   std::vector<ttk::DiagramType> &DictDiagrams,
   const std::vector<std::vector<ttk::MatchingType>> &matchings,
   const ttk::DiagramType &Barycenter,
@@ -38,7 +38,7 @@ void ConstrainedGradientDescent::executeAtoms(
 
 // simple projection on simplex, aka where a vector has positive elements and
 // sum to 1.
-void ConstrainedGradientDescent::projectionOnSimplex(
+void PersistenceDiagramConstrainedOptimization::projectionOnSimplex(
   std::vector<double> &weights) {
 
   int n = weights.size();
@@ -64,7 +64,7 @@ void ConstrainedGradientDescent::projectionOnSimplex(
   weights[n - 1] = 1. - sum;
 }
 
-void ConstrainedGradientDescent::gradientDescentWeights(
+void PersistenceDiagramConstrainedOptimization::gradientDescentWeights(
   std::vector<Matrix> &hessianList,
   std::vector<double> &weights,
   const std::vector<double> &grad,
@@ -73,9 +73,7 @@ void ConstrainedGradientDescent::gradientDescentWeights(
   int n = weights.size();
   double stepWeight;
   double L = 0.;
-#ifndef TTK_ENABLE_EIGEN
-  maxEigenValue = false;
-#endif // TTK_ENABLE_EIGEN
+
   if(maxEigenValue) {
 #ifdef TTK_ENABLE_EIGEN
     for(size_t i = 0; i < hessianList.size(); ++i) {
@@ -114,11 +112,7 @@ void ConstrainedGradientDescent::gradientDescentWeights(
   }
 }
 
-// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-// METTRE TIMER POUR VOIR QUOI PARALELLISER
-// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-
-void ConstrainedGradientDescent::gradientDescentAtoms(
+void PersistenceDiagramConstrainedOptimization::gradientDescentAtoms(
   std::vector<ttk::DiagramType> &DictDiagrams,
   const std::vector<std::vector<ttk::MatchingType>> &matchings,
   const ttk::DiagramType &Barycenter,
@@ -188,14 +182,8 @@ void ConstrainedGradientDescent::gradientDescentAtoms(
           point[0] = birthDeathAtom;
           point[1] = birthDeathAtom;
           checker[Id2][i] = i;
-          if(checker[Id2].size() > matchings.size()) {
-            std::raise(SIGINT);
-          }
           tracker[Id2] = 1;
           trackerMatch[Id2][i] = Id1;
-          if(static_cast<SimplexId>(DictDiagrams[i].size()) <= Id1) {
-            std::cout << "ID1: " << Id1 << std::endl;
-          }
           trackerDiagonal[Id2][i] = 1;
           projectionsBuffer[Id2][i] = birthDeathAtom;
 
@@ -207,9 +195,6 @@ void ConstrainedGradientDescent::gradientDescentAtoms(
           point[0] = birthAtom;
           point[1] = deathAtom;
           checker[Id2][i] = i;
-          if(checker[Id2].size() > matchings.size()) {
-            std::raise(SIGINT);
-          }
           tracker[Id2] = 1;
           trackerMatch[Id2][i] = Id1;
           trackerDiagonal[Id2][i] = 0;
@@ -234,9 +219,7 @@ void ConstrainedGradientDescent::gradientDescentAtoms(
     tracker.push_back(1);
   }
 
-  // #ifdef TTK_ENABLE_OPENMP
-  // #pragma omp parallel for num_threads(threadNumber_)
-  // #endif // TTK_ENABLE_OPENMP
+
   for(size_t i = 0; i < gradBuffersList.size(); ++i) {
     if(tracker[i] == 0 || checkerAtomsExt[i] == 0) {
 
@@ -265,15 +248,15 @@ void ConstrainedGradientDescent::gradientDescentAtoms(
 
           auto &t = gradBuffersList[i][checker[i][p]];
 
-          t[1] = t[1] - (this->stepAtom) * gradsLists[i][checker[i][p]][1];
+          t[1] = t[1] - (this->stepAtom_) * gradsLists[i][checker[i][p]][1];
         } else if(pos[p] < 1e-7) {
           continue;
         } else {
 
           auto &t0 = gradBuffersList[i][checker[i][p]];
 
-          t0[0] = t0[0] - (this->stepAtom) * gradsLists[i][checker[i][p]][0];
-          t0[1] = t0[1] - (this->stepAtom) * gradsLists[i][checker[i][p]][1];
+          t0[0] = t0[0] - (this->stepAtom_) * gradsLists[i][checker[i][p]][0];
+          t0[1] = t0[1] - (this->stepAtom_) * gradsLists[i][checker[i][p]][1];
 
           if(t0[0] > t0[1]) {
             t0[1] = t0[0];
@@ -357,10 +340,10 @@ void ConstrainedGradientDescent::gradientDescentAtoms(
   }
 }
 
-void ConstrainedGradientDescent::setStep(double factEquiv) {
-  this->stepAtom = 1. / (2. * 2. * factEquiv);
+void PersistenceDiagramConstrainedOptimization::setStep(double &factEquiv) {
+  this->stepAtom_ = 1. / (2. * 2. * factEquiv);
 }
 
-void ConstrainedGradientDescent::reduceStep() {
-  this->stepAtom = this->stepAtom / 2.;
+void PersistenceDiagramConstrainedOptimization::reduceStep() {
+  this->stepAtom_ = this->stepAtom_ / 2.;
 }

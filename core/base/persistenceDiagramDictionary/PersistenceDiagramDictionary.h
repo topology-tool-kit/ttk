@@ -1,8 +1,7 @@
 /// \ingroup base
 /// \class ttk::PersistenceDiagramDictionary
 /// \author Keanu Sisouk <keanu.sisouk@lip6.fr>
-/// \author Pierre Guillou <pierre.guillou@lip6.fr>
-/// \date Mai 2023
+/// \date Februrary 2026
 ///
 /// \b Related \b publication \n
 /// "Wasserstein Dictionaries of Persistence Diagrams" \n
@@ -17,8 +16,8 @@
 #include <array>
 #include <limits>
 
-#include <ConstrainedGradientDescent.h>
-#include <InitDictPersistenceDiagram.h>
+#include <PersistenceDiagramConstrainedOptimization.h>
+#include <PersistenceDiagramDictionaryBorderInitializer.h>
 #include <InitDictRandomly.h>
 #include <PersistenceDiagramAuction.h>
 #include <PersistenceDiagramClustering.h>
@@ -74,10 +73,6 @@ namespace ttk {
       do_min_ = min;
       do_sad_ = sad;
       do_max_ = max;
-    }
-
-    inline void setMinPersistence_(const double data) {
-      MinPersistence_ = data;
     }
 
   protected:
@@ -162,12 +157,12 @@ namespace ttk {
     int initDictionary(std::vector<ttk::DiagramType> &dictDiagrams,
                        const std::vector<ttk::DiagramType> &datas,
                        const std::vector<ttk::DiagramType> &inputAtoms,
-                       const int nbAtom,
-                       bool do_min_,
-                       bool do_sad_,
-                       bool do_max_,
+                       const int &nbAtom,
+                       bool &do_min_,
+                       bool &do_sad_,
+                       bool &do_max_,
                        int seed,
-                       double percent);
+                       double &percent);
 
     void gettingBidderDiagrams(
       const std::vector<ttk::DiagramType> &intermediateDiagrams,
@@ -210,32 +205,20 @@ namespace ttk {
     double getMaxPers(const ttk::DiagramType &data);
 
     int Wasserstein{2};
-    double Alpha{1.0};
-    double DeltaLim{0.01};
-    // lambda : 0<=lambda<=1
-    // parametrizes the point used for the physical (critical) coordinates of
-    // the persistence paired lambda = 1 : extremum (min if pair min-sad, max if
-    // pair sad-max) lambda = 0 : saddle (bad stability) lambda = 1/2 : middle
-    // of the 2 critical points of the pair
-    double Lambda{1.0};
-    size_t MaxNumberOfPairs{20};
-    double MinPersistence_{0.1};
 
-    double CompressionFactor{1.5};
+    double CompressionFactor_{1.5};
     bool do_min_{true}, do_sad_{true}, do_max_{true};
 
-    int maxLag2_;
-
+    int MaxLag2_;
     int MaxEpoch_;
+
     bool MaxEigenValue_{true};
     bool OptimizeWeights_{true};
     bool OptimizeAtoms_{true};
 
     bool CreationFeatures_{true};
-    bool Fusion_{false};
     bool ProgBarycenter_{false};
 
-    bool sortedForTest_{false};
     bool ProgApproach_{false};
     bool StopCondition_{true};
 
