@@ -86,6 +86,15 @@ namespace ttk {
 	inline void setMaxSurfSize(int m){ maxSurfSize_ = m;}
 	inline void setBoundaryX(double m){boundaryX_ = m;}
 	inline void setBoundaryY(double m){boundaryY_ = m;}
+   
+   	struct LinearTrajectory {
+      double ax, bx, ay, by;
+      int startFrame, endFrame;
+      int finalChainId = -1;
+      double evalX(int t) const { return ax * t + bx; }
+      double evalY(int t) const { return ay * t + by; }
+    };
+
 
     struct FuseRecord {
       int i, j;           
@@ -107,7 +116,7 @@ namespace ttk {
                 std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
                 int frameSurf,
                 std::vector<std::vector<double>> gradientNorms,
-                std::vector<std::vector<double>> &merge,
+                std::vector<LinearTrajectory> &merge,
                 const triangulationType *triangulation);
 
     
@@ -115,8 +124,8 @@ namespace ttk {
         std::vector<std::vector<int>>    &trajTime,
         std::vector<std::vector<double>> &coordsX,
         std::vector<std::vector<double>> &coordsY,
-        std::vector<std::vector<double>> &merge,
-        std::vector<std::vector<double>> &newTraj,
+        std::vector<LinearTrajectory> &merge,
+        std::vector<LinearTrajectory> &newTraj,
         std::vector<FuseRecord> &fuseRecords
     );
 
@@ -129,14 +138,14 @@ namespace ttk {
         const std::vector<int> &T,   
         const std::vector<double> &X,  
         const std::vector<double> &Y, 
-        std::vector<double> &newTraj
+        LinearTrajectory &traj
     );
     #endif
 
 
 
     int computeMeanUnitDirectionLinear(
-      const std::vector<std::vector<double>> &newTraj,
+      const std::vector<LinearTrajectory> &newTraj,
       std::vector<double> &meanDx,
       std::vector<double> &meanDy,
       std::vector<double> &meanDz
@@ -185,7 +194,7 @@ namespace ttk {
 	int computeMergeTree(
                const ttk::SimplexId frameSurf,
                const triangulationType *triangulation,
-               std::vector<std::vector<double>> &finalTraj,
+               std::vector<LinearTrajectory> &finalTraj,
                std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
                std::vector<double>              &surfMin,
                std::vector<double>              &surfMax,
@@ -295,7 +304,7 @@ int ttk::TrajectoryStatistics::linearRegression(
   const std::vector<int> &T,   // times t_i
   const std::vector<double> &X,   // positions x_i
   const std::vector<double> &Y,   // positions y_i
-  std::vector<double> &newTraj
+  LinearTrajectory &traj
 ) {
   const int n = (int)T.size();
   Eigen::MatrixXd M(n, 2);
@@ -309,11 +318,11 @@ int ttk::TrajectoryStatistics::linearRegression(
   // (Mᵀ M) β = Mᵀ v  ⇒ β = [a; b]
   Eigen::Vector2d bxv = (M.transpose()*M).ldlt().solve(M.transpose()*vx);
   Eigen::Vector2d byv = (M.transpose()*M).ldlt().solve(M.transpose()*vy);
-  newTraj.push_back(bxv[0]); // ax 
-  newTraj.push_back(byv[0]); // ay ; 
-  newTraj.push_back(bxv[1]); // bx
-  newTraj.push_back(byv[1]); // by
-  newTraj.push_back(-1); //futurFinalId
+  traj.ax = bxv[0];
+  traj.bx = bxv[1];
+  traj.ay = byv[0];
+  traj.by = byv[1];
+  traj.finalChainId = -1;
 
   return 1;
 }
@@ -414,7 +423,7 @@ int ttk::TrajectoryStatistics::computeSurfaceCellCount(
  * coefficients (ax, ay) 
  */
 int ttk::TrajectoryStatistics::computeMeanUnitDirectionLinear(
-  const std::vector<std::vector<double>> &newTraj,
+  const std::vector<LinearTrajectory> &newTraj,
   std::vector<double> &meanDx,
   std::vector<double> &meanDy,
   std::vector<double> &meanDz
@@ -425,22 +434,14 @@ int ttk::TrajectoryStatistics::computeMeanUnitDirectionLinear(
   meanDz.assign(nTraj, 0.0);
 
   for(size_t i = 0; i < nTraj; ++i) {
-    const auto &coef = newTraj[i]; // [ax, ay, bx, by]
-    if(coef.size() < 2) continue;
-    double ax = coef[0];
-    double ay = coef[1];
-    // Parametric direction vector (dx,dy,dz) = (ax, ay, 1)
-    double dx = ax;
-    double dy = ay;
-    double dz = 1.0;
-    double mag = std::sqrt(dx*dx + dy*dy + dz*dz);
+    const auto &t = newTraj[i];
+    double mag = std::sqrt(t.ax *t.ax  + t.ay*t.ay + 1.0);
     if(mag > 0.0) {
-      meanDx[i] = dx / mag;
-      meanDy[i] = dy / mag;
-      meanDz[i] = dz / mag;
+      meanDx[i] = t.ax / mag;
+      meanDy[i] = t.ay / mag;
+      meanDz[i] = 1.0 / mag;
     }
   }
-
   return 1;
 }
 
@@ -452,20 +453,16 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     std::vector<std::vector<int>>    &trajTime,
     std::vector<std::vector<double>> &coordsX,
     std::vector<std::vector<double>> &coordsY,
-    std::vector<std::vector<double>> &merge, // output Final Trajectory
-    std::vector<std::vector<double>> &newTraj, // output linear Regression
+    std::vector<LinearTrajectory> &merge,
+    std::vector<LinearTrajectory> &newTraj,
     std::vector<FuseRecord> &fuseRecords
 ){
   const int numTraj = static_cast<int>(trajTime.size());
 
-  // dimension image -> TODO automatiser 
   const double x_min = 0;
-  const double x_max = 383;
+  const double x_max = boundaryX_;
   const double y_min = 0;
-  const double y_max = 223;
-
-  auto projX = [&](const std::vector<double> &c, int t) -> double { return c[0] * t + c[2]; };
-  auto projY = [&](const std::vector<double> &c, int t) -> double { return c[1] * t + c[3]; };
+  const double y_max = boundaryY_;
 
   auto dirDot = [&](int i, int j,
                     const std::vector<double> &meanDx,
@@ -474,46 +471,41 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     return meanDx[i] * meanDx[j] + meanDy[i] * meanDy[j] + meanDz[i] * meanDz[j];
   };
 
-  auto temporalOk = [&](int startFrame, int endFrame) -> bool {
-    return (startFrame - endFrame > minFrameDist_) && (startFrame - endFrame < maxFrameDist_);
+  auto temporalOk = [&](int sFrame, int eFrame) -> bool {
+    return (sFrame - eFrame > minFrameDist_) && (sFrame - eFrame < maxFrameDist_);
   };
 
-  auto dist2AtStartFrame = [&](const std::vector<double> &coefI,
-                               const std::vector<double> &coefJ,
-                               int startFrame) -> double {
-    const double xTh = projX(coefI, startFrame);
-    const double yTh = projY(coefI, startFrame);
-    const double zTh = static_cast<double>(startFrame);
-    const double xJ  = projX(coefJ, startFrame);
-    const double yJ  = projY(coefJ, startFrame);
-    const double zJ  = static_cast<double>(startFrame);
-    const double dx = xJ - xTh, dy = yJ - yTh, dz = zJ - zTh;
-    return dx * dx + dy * dy + dz * dz;
+  auto dist2AtStartFrame = [&](const LinearTrajectory &coefI,
+                               const LinearTrajectory &coefJ,
+                               int sFrame) -> double {
+    const double xTh = coefI.evalX(sFrame);
+    const double yTh = coefI.evalY(sFrame);
+    const double xJ  = coefJ.evalX(sFrame);
+    const double yJ  = coefJ.evalY(sFrame);
+    const double dx = xJ - xTh, dy = yJ - yTh;
+    return dx * dx + dy * dy;
   };
 
   auto resetContribChain = [&](const std::vector<FuseRecord> &chain) {
     for(const auto &fr : chain) {
-      newTraj[fr.i][4] = -1;
-      newTraj[fr.j][4] = -1;
+      newTraj[fr.i].finalChainId = -1;
+      newTraj[fr.j].finalChainId = -1;
     }
   };
 
-  auto violatesBBox = [&](const std::vector<double> &c) -> bool {
-    // c = [ax, ay, bx, by, start, end]
-    if(maxX_ != -1 && c[2] > maxX_) return true;
-    if(maxY_ != -1 && c[3] > maxY_) return true;
-    if(minY_ != -1 && c[3] < minY_) return true;
-    if(minX_ != -1 && c[2] < minX_) return true;
+  auto violatesBBox = [&](const LinearTrajectory &c) -> bool {
+    if(maxX_ != -1 && c.bx > maxX_) return true;
+    if(maxY_ != -1 && c.by > maxY_) return true;
+    if(minY_ != -1 && c.by < minY_) return true;
+    if(minX_ != -1 && c.bx < minX_) return true;
     return false;
   };
 
-  // Filtre sur l'inclinaison en Y : on travaille sur ny = composante Y d'un vecteur unité
   auto passInclinationYNy = [&](double ny) -> bool {
     if(enableFilteringCosY_ == 0) { return true; }
     return (-filtreY_ <= ny && ny <= filtreY_);
   };
 
-  // Filtre sur la vitesse en X, à partir de la pente ax
   auto passSpeedXAx = [&](double ax) -> bool {
     const double vx_abs = ax * spatialScale_ * (1.0 / interFrame_);
     return (enableFilteringMinVx_ == 0.0) ? true : (vx_abs >= minVx_ && vx_abs <= maxVx_);
@@ -529,38 +521,23 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     return passSpeedXAx(ax);
   };
 
-  // c = [ax, ay, bx, by, start, end]
-  auto passDirSpeed = [&](const std::vector<double> &c) -> bool {
-    const double mag = std::sqrt(c[0] * c[0] + c[1] * c[1] + 1.0);
-    const double ny  = c[1] / mag; 
-    const double ax  = c[0];
-    return passDirSpeedNyAx(ny, ax);
+  auto passDirSpeed = [&](const LinearTrajectory &c) -> bool {
+    const double mag = std::sqrt(c.ax * c.ax + c.ay * c.ay + 1.0);
+    const double ny  = c.ay / mag;
+    return passDirSpeedNyAx(ny, c.ax);
   };
 
-  auto passDura = [&](const std::vector<double> &c) -> bool {
-  	if (enableFilteringDuration_ == 0) { return true; }
-	const int start = c[4];
-	const int end = c[5];
-	return (duraMin_ <= std::abs(end - start));
+  auto passDura = [&](const LinearTrajectory &c) -> bool {
+    if (enableFilteringDuration_ == 0) { return true; }
+    return (duraMin_ <= std::abs(c.endFrame - c.startFrame));
   };
 
-  auto passTimeOrigin = [&](const std::vector<double> &c) -> bool{
-	if (enableFilteringTimeOrigin_ == 0) { return true; }
-    const double ax     = c[0];
-	const double ay     = c[1];
-    const double bx     = c[2];
-	const double by     = c[3];
-    const double eps = 1e-8;
-
-    // Trajectoire quasi horizontale en Y
-    if(std::abs(ax) < eps) {
-      return true;
-    }
-    
-	const double tCross = (xOrigin_ - bx) / ax;
-	const double yCross = ay*tCross + by;
-
-    return (tCross >= minTimeOrigin_ && yCross >= minYTimeOrigin_ && yCross <= maxYTimeOrigin_);  	
+  auto passTimeOrigin = [&](const LinearTrajectory &c) -> bool {
+    if (enableFilteringTimeOrigin_ == 0) return true; 
+    if(std::abs(c.ax) < 1e-8) return true;
+    const double tCross = (xOrigin_ - c.bx) / c.ax;
+    const double yCross = c.ay * tCross + c.by;
+    return (tCross >= minTimeOrigin_ && yCross >= minYTimeOrigin_ && yCross <= maxYTimeOrigin_);
   };
 
   auto inFinalBox = [&](double x, double y) -> bool {
@@ -568,39 +545,37 @@ int ttk::TrajectoryStatistics::correctTrajectory(
   };
 
 
-  auto buildSamplesForChain = [&](const std::vector<FuseRecord> &finalTraj,
+  auto buildSamplesForChain = [&](const std::vector<FuseRecord> &chain,
                                   std::vector<int> &T, std::vector<double> &X, std::vector<double> &Y) {
-    int capacity = static_cast<int>(finalTraj.size()) * 2 + 2;
+    int capacity = static_cast<int>(chain.size()) * 2 + 2;
     T.reserve(capacity); X.reserve(capacity); Y.reserve(capacity);
-
-    for(const auto &r : finalTraj) {
+    for(const auto &r : chain) {
       std::vector<int> T2{trajTime[r.i].front(), r.endFrame};
       const auto &cI = newTraj[r.i];
       for(const int t : T2) {
-        X.push_back(projX(cI, t));
-        Y.push_back(projY(cI, t));
+        X.push_back(cI.evalX(t));
+        Y.push_back(cI.evalY(t));
         T.push_back(t);
       }
     }
-    const FuseRecord &r = finalTraj.back();
+    const FuseRecord &r = chain.back();
     const auto &cJ = newTraj[r.j];
-    X.push_back(projX(cJ, r.startFrame));
-    X.push_back(projX(cJ, trajTime[r.j].back()));
-    Y.push_back(projY(cJ, r.startFrame));
-    Y.push_back(projY(cJ, trajTime[r.j].back()));
+    X.push_back(cJ.evalX(r.startFrame));
+    X.push_back(cJ.evalX(trajTime[r.j].back()));
+    Y.push_back(cJ.evalY(r.startFrame));
+    Y.push_back(cJ.evalY(trajTime[r.j].back()));
     T.push_back(r.startFrame);
     T.push_back(trajTime[r.j].back());
   };
 
-  auto fitLineCoefForChain = [&](const std::vector<FuseRecord> &finalTraj) -> std::vector<double> {
+  auto fitLineCoefForChain = [&](const std::vector<FuseRecord> &chain) -> LinearTrajectory {
     std::vector<int>    T;
     std::vector<double> X, Y;
-    buildSamplesForChain(finalTraj, T, X, Y);
-
-    std::vector<double> lineCoef;
-    linearRegression(T, X, Y, lineCoef); // lineCoef = [ax, ay, bx, by, futurFinalId=-1]
-    lineCoef[4] = trajTime[finalTraj[0].i].front();               // start
-    lineCoef.push_back(trajTime[finalTraj.back().j].back());      // end
+    buildSamplesForChain(chain, T, X, Y);
+    LinearTrajectory lineCoef;
+    linearRegression(T, X, Y, lineCoef);
+    lineCoef.startFrame = trajTime[chain[0].i].front();
+    lineCoef.endFrame   = trajTime[chain.back().j].back();
     return lineCoef;
   };
 
@@ -663,12 +638,12 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     if(used[idx1]) continue;
 
     auto &r1 = fuseRecords[idx1];
-    const int finalId = static_cast<int>(merge.size()); 
+	const int finalId = static_cast<int>(merge.size());
 
-    std::vector<FuseRecord> finalTraj{r1};
-    r1.finalContrib = finalId;
-    newTraj[r1.i][4] = finalId;
-    newTraj[r1.j][4] = finalId;
+    std::vector<FuseRecord> chain{r1};   
+   	r1.finalContrib = finalId;
+    newTraj[r1.i].finalChainId = finalId;
+    newTraj[r1.j].finalChainId = finalId;
     used[idx1] = true;
 
     // prepend
@@ -678,11 +653,11 @@ int ttk::TrajectoryStatistics::correctTrajectory(
       for(size_t idx2 = 0; idx2 < fuseRecords.size(); ++idx2) {
         if(used[idx2]) continue;
         auto &r2 = fuseRecords[idx2];
-        if(r2.j == finalTraj.front().i) {
-          finalTraj.insert(finalTraj.begin(), r2);
+        if(r2.j == chain.front().i) {
+          chain.insert(chain.begin(), r2);
           r2.finalContrib = finalId;
-          newTraj[r2.i][4] = finalId;
-          newTraj[r2.j][4] = finalId;
+          newTraj[r2.i].finalChainId = finalId;
+          newTraj[r2.j].finalChainId = finalId;
           used[idx2] = true;
           prepended = true;
           break;
@@ -697,11 +672,11 @@ int ttk::TrajectoryStatistics::correctTrajectory(
       for(size_t idx2 = 0; idx2 < fuseRecords.size(); ++idx2) {
         if(used[idx2]) continue;
         auto &r2 = fuseRecords[idx2];
-        if(finalTraj.back().j == r2.i) {
-          finalTraj.push_back(r2);
+        if(chain.back().j == r2.i) {
+          chain.push_back(r2);
           r2.finalContrib = finalId;
-          newTraj[r2.i][4] = finalId;
-          newTraj[r2.j][4] = finalId;
+          newTraj[r2.i].finalChainId = finalId;
+          newTraj[r2.j].finalChainId = finalId;
           used[idx2] = true;
           extended = true;
           break;
@@ -709,16 +684,16 @@ int ttk::TrajectoryStatistics::correctTrajectory(
       }
     }
 
-    std::vector<double> lineCoef = fitLineCoefForChain(finalTraj);
+    LinearTrajectory lineCoef = fitLineCoefForChain(chain);
 
     if(passDirSpeed(lineCoef) && passTimeOrigin(lineCoef) && passDura(lineCoef)) {
       if(violatesBBox(lineCoef)) {
-        resetContribChain(finalTraj);
+        resetContribChain(chain);
       } else {
         merge.push_back(lineCoef);
       }
     } else {
-      resetContribChain(finalTraj);
+      resetContribChain(chain);
     }
   }
 
@@ -726,42 +701,38 @@ int ttk::TrajectoryStatistics::correctTrajectory(
   for(int i = 0; i < numTraj; ++i) {
     if(usedAsStart[i] || usedAsEnd[i] || trajTime[i].empty()) continue;
 
-    const double nyOrphan = meanDy[i];      
-    const double axOrphan = newTraj[i][0]; 
+    const double nyOrphan = meanDy[i];
+    const double axOrphan = newTraj[i].ax;
     if(passDirSpeedNyAx(nyOrphan, axOrphan)) {
 
-      std::vector<double> lineCoef = newTraj[i];
-      lineCoef[4] = trajTime[i].front();
-      lineCoef.push_back(trajTime[i].back());
+      LinearTrajectory lineCoef = newTraj[i];
+      lineCoef.startFrame = trajTime[i].front();
+      lineCoef.endFrame   = trajTime[i].back();
 
       if(violatesBBox(lineCoef)) {
         continue;
       }
-	  if(!passTimeOrigin(lineCoef) || !passDura(lineCoef)) { continue ; }
+      if(!passTimeOrigin(lineCoef) || !passDura(lineCoef)) { continue; }
 
-      newTraj[i][4] = static_cast<double>(merge.size());
+      newTraj[i].finalChainId = static_cast<int>(merge.size());
       merge.push_back(lineCoef);
     }
   }
   
 
   for(auto &c : merge) {
-    // c = [ax, ay, bx, by, start, end]
-    if(c.size() < 6) {
-      continue;
-    }
-    const int start = static_cast<int>(std::lround(c[4]));
-    int end         = static_cast<int>(std::lround(c[5]));
+    int start = c.startFrame;
+    int end   = c.endFrame;
 
     if(end < start) {
-      c[5] = static_cast<double>(start);
-	  c[4] = static_cast<double>(end);
-      end = start;
+      std::swap(c.startFrame, c.endFrame);
+      end = c.endFrame;
+      start = c.startFrame;
     }
 
     while(end > start) {
-      const double xEnd = projX(c, end);
-      const double yEnd = projY(c, end);
+      const double xEnd = c.evalX(end);
+      const double yEnd = c.evalY(end);
 
       if(inFinalBox(xEnd, yEnd)) {
         break;
@@ -769,7 +740,7 @@ int ttk::TrajectoryStatistics::correctTrajectory(
       --end;
     }
 
-    c[5] = static_cast<double>(end);
+    c.endFrame = end;
   }
 
   return 1;
@@ -789,9 +760,8 @@ int ttk::TrajectoryStatistics::execute(
                 std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
                 int frameSurf,
                 std::vector<std::vector<double>> gradientNorms,
-                std::vector<std::vector<double>> &finalTraj,
+                std::vector<LinearTrajectory> &finalTraj,
                 const triangulationType *triangulation) {
-
     
     const int numMerge = finalTraj.size();
 
@@ -800,20 +770,17 @@ int ttk::TrajectoryStatistics::execute(
     #endif
     
     for(int i = 0; i < numMerge; ++i) {
-        if (convertDur_)
-            durations[i] = (finalTraj[i][5] - finalTraj[i][4])*interFrame_;
-        else 
-            durations[i] = finalTraj[i][5] - finalTraj[i][4];
+        if (convertDur_) durations[i] = (finalTraj[i].endFrame - finalTraj[i].startFrame)*interFrame_;
+        else durations[i] = finalTraj[i].endFrame - finalTraj[i].startFrame;
     } 
-   
-
-    double conversion = spatialScale_*(1/interFrame_); // spatialScale_ en m
+    
+	double conversion = spatialScale_*(1/interFrame_);
     #ifdef TTK_ENABLE_OPENMP
     #pragma omp parallel for num_threads(this->threadNumber_)
     #endif
     for(int i = 0; i < numMerge; ++i) {
-        VX[i] = finalTraj[i][0]*conversion; // vx = ax 
-        VY[i] = finalTraj[i][1]*conversion; // vy = ay
+        VX[i] = finalTraj[i].ax * conversion;
+        VY[i] = finalTraj[i].ay * conversion;
     }
 /*
     if(surfaceMethod_ == 0) {
@@ -1599,7 +1566,7 @@ template <class dataType, class triangulationType>
 int ttk::TrajectoryStatistics::computeMergeTree(
   const ttk::SimplexId frameSurf,
   const triangulationType *triangulation,
-  std::vector<std::vector<double>> &finalTraj,
+  std::vector<LinearTrajectory> &finalTraj,
   std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
   std::vector<double>              &surfMin,
   std::vector<double>              &surfMax,
@@ -1818,26 +1785,16 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 
     for(size_t trajId = 0; trajId < nTraj; ++trajId) {
       const auto &traj = finalTraj[trajId];
-      const double ax = traj[0];
-      const double ay = traj[1];
-      const double bx = traj[2];
-      const double by = traj[3];
-      const int    startF = static_cast<int>(traj[4]);
-      const int    endF   = static_cast<int>(traj[5]);
+      if(frame < traj.startFrame || frame > traj.endFrame) continue;
 
-      if(frame < startF || frame > endF)
-        continue;
+      const double x = traj.evalX(frame);
+      if(x < 0 || x > boundaryX_+1) continue;
 
-      const double x = ax * frame + bx;
-      if(x < 0 || x > boundaryX_+1) 
-        continue;
+      const double y = traj.evalY(frame);
+      if(y < 0 || y > boundaryY_+1) continue;
 
-      const double y = ay * frame + by;
-      if(y < 0 || y > boundaryY_+1)
-        continue;
       const ttk::SimplexId xi = std::lround(x);
       const ttk::SimplexId yi = std::lround(y);
-
       ttk::SimplexId vId = xi + yi * (boundaryX_ +1);
 
       if(vId < 0 || vId >= nPixels)
