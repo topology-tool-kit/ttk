@@ -562,7 +562,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   
   for(vtkIdType i = 0; i < n; ++i) {
     const auto &coef = finalTraj[static_cast<size_t>(i)];
-    const double startF = extendTraj ? -5000.0 : static_cast<double>(coef[4]);
+    const double startF = extendTraj ? 0.0 : static_cast<double>(coef[4]);
     const double endF   = static_cast<double>(coef[5]);
   
     const double x0 = evalX(coef, startF);
