@@ -1849,7 +1849,7 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 
 	    auto segId = segmentation[vId];
 
-		if(segId >= 0 && segId < (ttk::SimplexId)segmentId.size() && !segCleaned[segId] && segmentId[segId].size() > 8) 		 {
+		if(segId >= 0 && segId < (ttk::SimplexId)segmentId.size() && !segCleaned[segId] && segmentId[segId].size() > 8 && errSurf_ != 0) 		 {
 	  	  cleanDarkSegmentInPlace<dataType, triangulationType>(
 	  	    segmentId[segId], scalars, triangulation, static_cast<int>(errSurf_));
 	  	  segCleaned[segId] = 1;
