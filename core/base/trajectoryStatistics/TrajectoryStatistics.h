@@ -93,6 +93,15 @@ namespace ttk {
       int finalChainId = -1;
       double evalX(int t) const { return ax * t + bx; }
       double evalY(int t) const { return ay * t + by; }
+
+	  std::vector<std::pair<int, ttk::SimplexId>> criticalPoints;
+
+      ttk::SimplexId getOriginalVertex(int frame) const {
+        for(const auto &cp : criticalPoints) {
+          if(cp.first == frame) return cp.second;
+        }
+        return -1;
+      }	  
     };
 
 
@@ -122,6 +131,7 @@ namespace ttk {
     
     int correctTrajectory(
         std::vector<std::vector<int>>    &trajTime,
+        std::vector<std::vector<int>>    &trajVertexId,
         std::vector<std::vector<double>> &coordsX,
         std::vector<std::vector<double>> &coordsY,
         std::vector<LinearTrajectory> &merge,
@@ -451,6 +461,7 @@ int ttk::TrajectoryStatistics::computeMeanUnitDirectionLinear(
  */
 int ttk::TrajectoryStatistics::correctTrajectory(
     std::vector<std::vector<int>>    &trajTime,
+    std::vector<std::vector<int>>    &trajVertexId,
     std::vector<std::vector<double>> &coordsX,
     std::vector<std::vector<double>> &coordsY,
     std::vector<LinearTrajectory> &merge,
@@ -690,6 +701,24 @@ int ttk::TrajectoryStatistics::correctTrajectory(
       if(violatesBBox(lineCoef)) {
         resetContribChain(chain);
       } else {
+        { // add initials criticalPoints 
+          const int firstTraj = chain[0].i;
+          for(size_t k = 0; k < trajTime[firstTraj].size(); ++k) {
+            lineCoef.criticalPoints.emplace_back(
+              trajTime[firstTraj][k],
+              static_cast<ttk::SimplexId>(trajVertexId[firstTraj][k])
+            );
+          }
+          for(const auto &rec : chain) {
+            const int tj = rec.j;
+            for(size_t k = 0; k < trajTime[tj].size(); ++k) {
+              lineCoef.criticalPoints.emplace_back(
+                trajTime[tj][k],
+                static_cast<ttk::SimplexId>(trajVertexId[tj][k])
+              );
+            }
+          }
+		}
         merge.push_back(lineCoef);
       }
     } else {
@@ -713,7 +742,13 @@ int ttk::TrajectoryStatistics::correctTrajectory(
         continue;
       }
       if(!passTimeOrigin(lineCoef) || !passDura(lineCoef)) { continue; }
-
+      lineCoef.criticalPoints.reserve(trajTime[i].size());
+      for(size_t k = 0; k < trajTime[i].size(); ++k) {
+        lineCoef.criticalPoints.emplace_back(
+          trajTime[i][k],
+          static_cast<ttk::SimplexId>(trajVertexId[i][k])
+        );
+      }
       newTraj[i].finalChainId = static_cast<int>(merge.size());
       merge.push_back(lineCoef);
     }
@@ -1715,7 +1750,6 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 
     std::vector<ttk::SimplexId> orderJoin(order);
 
-    // Inversion de l'ordre pour le Join Tree (parallélisée)
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
     for(ttk::SimplexId i = 0; i < nPixels; ++i) {
@@ -1785,21 +1819,30 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 
     for(size_t trajId = 0; trajId < nTraj; ++trajId) {
       const auto &traj = finalTraj[trajId];
-      if(frame < traj.startFrame || frame > traj.endFrame) continue;
 
-      const double x = traj.evalX(frame);
-      if(x < 0 || x > boundaryX_+1) continue;
+      if(frame < traj.startFrame || frame > traj.endFrame)
+        continue;
 
-      const double y = traj.evalY(frame);
-      if(y < 0 || y > boundaryY_+1) continue;
+      ttk::SimplexId vId = -1;
+	  vId = traj.getOriginalVertex(frame);
+      if(vId<0) {
+        // Fused chain: linear trajectory intersection
+        const double x = traj.evalX(frame);
+        if(x < 0 || x > boundaryX_+1)
+          continue;
 
-      const ttk::SimplexId xi = std::lround(x);
-      const ttk::SimplexId yi = std::lround(y);
-      ttk::SimplexId vId = xi + yi * (boundaryX_ +1);
+        const double y = traj.evalY(frame);
+        if(y < 0 || y > boundaryY_+1)
+          continue;
+
+        const ttk::SimplexId xi = std::lround(x);
+        const ttk::SimplexId yi = std::lround(y);
+        vId = xi + yi * (boundaryX_ + 1);
+      }
 
       if(vId < 0 || vId >= nPixels)
         continue;
-	  
+
 	  std::vector<char> segCleaned(segmentId.size(), 0);
 
 	  if(regionType[vId] == 0) {
@@ -1848,7 +1891,7 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 
 
   // -------------------------------------------------------------------------
-  // 6) Statistiques surfMin, surfMax, surfMoy par trajectoire (parallélisée)
+  // 6) Statistiques 
   // -------------------------------------------------------------------------
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
@@ -1989,8 +2032,6 @@ void ttk::TrajectoryStatistics::cleanDarkSegmentInPlace(
     }
   }
 
-  // If Otsu kept almost nothing, don't destroy the segment:
-  // fall back to keep N darkest (robust fallback)
   const size_t segSize = segmentVerts.size();
   const size_t minKeep = std::max<size_t>(2, (size_t)std::ceil(0.10 * (double)segSize)); // 10%
   if(kept.size() < minKeep && segSize >= 2) {

@@ -264,11 +264,11 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   if(!triangulation) return 0;
   this->preconditionTriangulation(triangulation);
 
-  std::vector<LinearTrajectory> linearTraj(numTraj);
-  std::vector<LinearTrajectory> finalTraj;
-  std::vector<FuseRecord> fuseRecords;
+  std::vector<ttk::TrajectoryStatistics::LinearTrajectory> linearTraj(numTraj);
+  std::vector<ttk::TrajectoryStatistics::LinearTrajectory> finalTraj;
+  std::vector<ttk::TrajectoryStatistics::FuseRecord> fuseRecords;
 
-  this->correctTrajectory(trajTime, trajX, trajY, finalTraj,linearTraj, fuseRecords); 
+  this->correctTrajectory(trajTime, trajVertexId, trajX, trajY, finalTraj,linearTraj, fuseRecords); 
   std::vector<int>  durations(numTraj);
   std::vector<double> VX(numTraj), VY(numTraj), 
                       surfMin(numTraj), surfMax(numTraj), surfMean(numTraj);
@@ -505,14 +505,12 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   segmentKind->SetNumberOfTuples(nCells);
   
   for(vtkIdType i = 0; i < nInit; ++i) {
-    const LinearTrajectory &traj = linearTraj[i];
-
-	const double x0 = traj.evalX(traj.startFrame);
-    const double y0 = traj.evalY(traj.startFrame);
-    const double x1 = traj.evalX(traj.endFrame);
-    const double y1 = traj.evalY(traj.endFrame);
-  
-    addSegment(ppts, lines, i, x0, y0, traj.startFrame, x1, y1, traj.endFrame);
+	const auto &traj = linearTraj[static_cast<size_t>(i)];
+	const int startF = trajTime[static_cast<size_t>(i)].front();
+    const int endF   = trajTime[static_cast<size_t>(i)].back();
+    addSegment(ppts, lines, i,
+               traj.evalX(startF), traj.evalY(startF), startF,
+               traj.evalX(endF),   traj.evalY(endF),   endF);
   
     finalChainId->SetValue(i, traj.finalChainId);
     inputTrajId->SetValue(i, static_cast<int>(i));
@@ -523,21 +521,15 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     const auto &f = fuseRecords[static_cast<size_t>(k)];
     const LinearTrajectory &ci = linearTraj[f.i];
     const LinearTrajectory &cj = linearTraj[f.j];
-  
-    const int startF = f.startFrame;
-    const int endF   = f.endFrame;
-  
-    const double xEndI = ci.evalX(endF);
-    const double yEndI = ci.evalY(endF);
-    const double xStartJ = cj.evalX( startF);
-    const double yStartJ = cj.evalY( startF);
-  
-    const vtkIdType segIdx = nInit + k;
-    addSegment(ppts, lines, segIdx, xEndI, yEndI, endF, xStartJ, yStartJ, startF);
-  
+    
+	const vtkIdType segIdx = nInit + k;
+    addSegment(ppts, lines, segIdx,
+               ci.evalX(f.endFrame),   ci.evalY(f.endFrame),   f.endFrame,
+               cj.evalX(f.startFrame), cj.evalY(f.startFrame), f.startFrame);
+
     finalChainId->SetValue(segIdx, ci.finalChainId);
-    inputTrajId->SetValue(segIdx, -1);  
-    segmentKind->SetValue(segIdx, 1);   
+    inputTrajId->SetValue(segIdx, -1);
+    segmentKind->SetValue(segIdx, 1);
   }
   
   
@@ -559,18 +551,16 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   auto ejecArr    = makeDblCol("AngleEjection", n);
   
   for(vtkIdType i = 0; i < n; ++i) {
-    const LinearTrajectory traj = finalTraj[i];
-    const double startF = extendTraj ? 0.0 : traj.startFrame;
-    const double endF   = traj.endFrame;
-  
-    const double x0 = traj.evalX(startF);
-    const double y0 = traj.evalY(startF);
-    const double x1 = traj.evalX(traj.endFrame);
-    const double y1 = traj.evalY(traj.endFrame);
+    const ttk::TrajectoryStatistics::LinearTrajectory traj = finalTraj[i];
+    const double startF = extendTraj ? 0.0 : static_cast<double>(traj.startFrame);
+    const double endF   = static_cast<double>(traj.endFrame);
+
 	constexpr double pi = 3.14159265358979323846;
 	double ejection = atan(traj.ay/traj.ax) *180/pi;
   
-    addSegment(mergePoints, mergeLines, i, x0, y0, startF, x1, y1,traj.endFrame);
+    addSegment(mergePoints, mergeLines, i,
+               traj.evalX(startF), traj.evalY(startF), startF,
+               traj.evalX(endF),   traj.evalY(endF),   endF);
  
    	ejecArr->SetValue(i, ejection);	
     mergeIdArr->SetValue(i, static_cast<int>(i));
