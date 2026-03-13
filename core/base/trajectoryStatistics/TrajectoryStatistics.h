@@ -613,23 +613,28 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     double bestDot   = similarityThreshold;
     double bestDist2 = std::numeric_limits<double>::infinity();
     int    bestJ     = -1;
+	double bestTime = maxFrameDist_; 
 
     for(int j = 0; j < numTraj; ++j) {
       if(usedAsEnd[j] || j == i || trajTime[j].empty()) continue;
 
       const int startFrame = trajTime[j].front();
-      if(!temporalOk(startFrame, endFrame)) continue;
-
-      const double dot = dirDot(i, j, meanDx, meanDy, meanDz);
-      if(dot < bestDot) continue;
 
       const double dist2 = dist2AtStartFrame(newTraj[i], newTraj[j], startFrame);
       if(dist2 > maxLinkDist2) continue;
+
+      const double dot = dirDot(i, j, meanDx, meanDy, meanDz);
+	  this->printMsg("dot = " + std::to_string(dot));
+      if(dot < bestDot) continue;
+
+	  if(!temporalOk(startFrame, endFrame)) continue;
+	  if (std::abs(endFrame-startFrame) > bestTime) continue;
 
       if(dist2 < bestDist2) {
         bestDot   = dot;
         bestDist2 = dist2;
         bestJ     = j;
+		bestTime = endFrame - startFrame;
       }
     }
 
