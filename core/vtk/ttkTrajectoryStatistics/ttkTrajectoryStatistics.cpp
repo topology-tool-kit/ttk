@@ -258,6 +258,8 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   this->setMaxSurfSize(maxSurfSize);
   double *bounds = inputDataSet->GetBounds();
   this->setBoundaryX(bounds[1]);
+  this->setBoundaryXMin_(bounds[0]);
+  this->setBoundaryYMin_(bounds[2]);
   this->setBoundaryY(bounds[3]);
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(inputDataSet);

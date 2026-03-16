@@ -85,6 +85,9 @@ namespace ttk {
 	inline void setOnlyFrameSurface(bool v){ onlyFrameSurface_ = v;}
 	inline void setMaxSurfSize(int m){ maxSurfSize_ = m;}
 	inline void setBoundaryX(double m){boundaryX_ = m;}
+	inline void setBoundaryXMin_(double m){boundaryXMin_ = m;}
+	inline void setBoundaryYMin_(double m){boundaryYMin_ = m;}
+
 	inline void setBoundaryY(double m){boundaryY_ = m;}
    
    	struct LinearTrajectory {
@@ -296,6 +299,8 @@ namespace ttk {
     int minY_;
     int minX_;
 	double boundaryY_;
+	double boundaryYMin_;
+	double boundaryXMin_;
 	double boundaryX_;
     int surfaceMethod_;
 	double persistenceThreshold_;
@@ -470,9 +475,9 @@ int ttk::TrajectoryStatistics::correctTrajectory(
 ){
   const int numTraj = static_cast<int>(trajTime.size());
 
-  const double x_min = 0;
+  const double x_min = boundaryXMin_;
   const double x_max = boundaryX_;
-  const double y_min = 0;
+  const double y_min = boundaryYMin_;
   const double y_max = boundaryY_;
 
   auto dirDot = [&](int i, int j,
@@ -1833,16 +1838,16 @@ int ttk::TrajectoryStatistics::computeMergeTree(
       if(vId<0) {
         // Fused chain: linear trajectory intersection
         const double x = traj.evalX(frame);
-        if(x < 0 || x > boundaryX_+1)
+        if(x < boundaryXMin_ || x > boundaryX_+1)
           continue;
 
         const double y = traj.evalY(frame);
-        if(y < 0 || y > boundaryY_+1)
+        if(y < boundaryYMin_ || y > boundaryY_+1)
           continue;
 
         const ttk::SimplexId xi = std::lround(x);
         const ttk::SimplexId yi = std::lround(y);
-        vId = xi + yi * (boundaryX_ + 1);
+        vId = xi + yi * (boundaryX_ - boundaryXMin_ + 1);
       }
 
       if(vId < 0 || vId >= nPixels)
