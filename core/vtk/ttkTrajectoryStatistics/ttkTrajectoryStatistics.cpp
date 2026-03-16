@@ -551,24 +551,39 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   auto mergeIdArr = makeIntCol("TrajId",   n);
   auto durArr     = makeIntCol("Duration",  n);
   auto ejecArr    = makeDblCol("AngleEjection", n);
-  
   for(vtkIdType i = 0; i < n; ++i) {
     const ttk::TrajectoryStatistics::LinearTrajectory traj = finalTraj[i];
-    const double startF = extendTraj ? 0.0 : static_cast<double>(traj.startFrame);
-    const double endF   = static_cast<double>(traj.endFrame);
+    double startF = extendTraj ? 0.0 : static_cast<double>(traj.startFrame);
+    double endF   = static_cast<double>(traj.endFrame);
+    constexpr double pi = 3.14159265358979323846;
+    double ejection = atan(traj.ay/traj.ax) *180/pi;
 
-	constexpr double pi = 3.14159265358979323846;
-	double ejection = atan(traj.ay/traj.ax) *180/pi;
-  
+    // Avance startF tant que le point est hors boundary
+    while(startF < endF) {
+      const double x = traj.evalX(startF);
+      const double y = traj.evalY(startF);
+      if(x >= bounds[0] && x <= bounds[1] && y >= bounds[2] && y <= bounds[3])
+        break;
+      startF += 1.0;
+    }
+
+    // Recule endF tant que le point est hors boundary
+    while(endF > startF) {
+      const double x = traj.evalX(endF);
+      const double y = traj.evalY(endF);
+      if(x >= bounds[0] && x <= bounds[1] && y >= bounds[2] && y <= bounds[3])
+        break;
+      endF -= 1.0;
+    }
+
     addSegment(mergePoints, mergeLines, i,
                traj.evalX(startF), traj.evalY(startF), startF,
                traj.evalX(endF),   traj.evalY(endF),   endF);
- 
-   	ejecArr->SetValue(i, ejection);	
+
+    ejecArr->SetValue(i, ejection);
     mergeIdArr->SetValue(i, static_cast<int>(i));
-    durArr    ->SetValue(i, static_cast<int>(traj.endFrame- startF));
-  }
-  
+    durArr    ->SetValue(i, static_cast<int>(traj.endFrame - startF));
+  } 
   outputTraj->SetPoints(mergePoints);
   outputTraj->SetCells(VTK_LINE, mergeLines);
   outputTraj->GetCellData()->AddArray(mergeIdArr);
