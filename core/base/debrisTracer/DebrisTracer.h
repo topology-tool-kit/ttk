@@ -1,9 +1,7 @@
-/// TODO 1: Provide your information
-///
 /// \ingroup base
 /// \class ttk::DebrisTracer
-/// \author Your Name Here <your.email@address.here>
-/// \date The Date Here.
+/// \author Théophane Loloum <theophane.loloum@gmail.com> 
+/// \date March 2026
 ///
 /// This module defines the %DebrisTracer class that linearizes, chains, and
 /// extracts surface statistics from tracked debris trajectories.

@@ -1,72 +1,31 @@
-/// TODO 4: Provide your information and **update** the documentation (in
-/// particular regarding the order convention if input arrays need to be
-/// specified with the standard VTK call SetInputArrayToProcess()).
-///
 /// \ingroup vtk
 /// \class ttkDebrisTracer
-/// \author Your Name Here <your.email@address.here>
-/// \date The Date Here.
+/// \author Théophane Loloum <theophane.loloum@gmail.com> 
+/// \date March 2026
 ///
-/// \brief TTK VTK-filter that wraps the ttk::DebrisTracer module.
+/// \brief TTK VTK-filter that takes an input tracking mesh and an input time-varying data 
+/// set (represented by a list of scalar fields) and which computes linearizes, chains, and
+/// surface statistics from tracked debris trajectories..
 ///
-/// This VTK filter uses the ttk::DebrisTracer module to compute an averaging of
-/// the data values of an input point data array defined on the input
-/// vtkDataSet.
+/// \param Input vtkUnstructuredGrid tracking mesh, i.e. ouput of TTKTrackingFromFields 
+///	filter
 ///
-/// \param Input vtkDataSet.
-/// \param Output vtkDataSet.
-///
-/// This filter can be used as any other VTK filter (for instance, by using the
-/// sequence of calls SetInputData(), Update(), GetOutputDataObject()).
-///
-/// The input data array needs to be specified via the standard VTK call
-/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
-/// \param idx 0 (FIXED: the first array the algorithm requires)
-/// \param port 0 (FIXED: first port)
-/// \param connection 0 (FIXED: first connection)
-/// \param fieldAssociation 0 (FIXED: point data)
-/// \param arrayName (DYNAMIC: string identifier of the input array)
-///
-/// See the corresponding standalone program for a usage example:
-///   - standalone/DebrisTracer/main.cpp
-///
-/// See the related ParaView example state files for usage examples within a
-/// VTK pipeline.
+/// \param Input time-dependent scalar field, either 2D or 3D, regular
+/// grid or triangulation (vtkDataSet); time steps are obtained by
+/// GetPointData()->GetArray(i) in increasing time order.
+/// 
+/// \param Output vtkTable : statistics on tracked object
+/// \param Output vtkUnstructuredGrid : linearizes and fuses trajectories
+/// \param Output time-dependent scalar field, pointDatai associated with a TrajId 
+/// if belonging to a surface or -1
 ///
 /// \sa ttk::DebrisTracer
 /// \sa ttkAlgorithm
 
 #pragma once
 
-// VTK Module
 #include <ttkDebrisTracerModule.h>
-
-// VTK Includes
 #include <ttkAlgorithm.h>
-
-/* Note on including VTK modules
- *
- * Each VTK module that you include a header from needs to be specified in this
- * module's vtk.module file, either in the DEPENDS or PRIVATE_DEPENDS (if the
- * header is included in the cpp file only) sections.
- *
- * In order to find the corresponding module, check its location within the VTK
- * source code. The VTK module name is composed of the path to the header. You
- * can also find the module name within the vtk.module file located in the same
- * directory as the header file.
- *
- * For example, vtkSphereSource.h is located in directory VTK/Filters/Sources/,
- * so its corresponding VTK module is called VTK::FiltersSources. In this case,
- * the vtk.module file would need to be extended to
- *
- * NAME
- *   ttkDebrisTracer
- * DEPENDS
- *   ttkAlgorithm
- *   VTK::FiltersSources
- */
-
-// TTK Base Includes
 #include <DebrisTracer.h>
 
 class TTKDEBRISTRACER_EXPORT ttkDebrisTracer

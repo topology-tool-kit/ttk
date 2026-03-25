@@ -1,16 +1,11 @@
-
 #include <ttkDebrisTracer.h>
-
 #include <vtkInformation.h>
 
 #include <vtkDataArray.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkCharArray.h>
 #include <vtkTable.h> 
 #include <vtkPointData.h>
 #include <vtkCellData.h>
-#include <vtkSmartPointer.h>
-#include <vtkIntArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkGradientFilter.h>
 #include <vtkLine.h>
@@ -18,9 +13,6 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
-#include <algorithm> // std::sort, std::unique
-#include <vector> 
-#include <map>
 
 // A VTK macro that enables the instantiation of this class via ::New()
 vtkStandardNewMacro(ttkDebrisTracer);
