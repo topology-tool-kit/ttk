@@ -77,7 +77,7 @@ private:
   int frameSurface{0}; 
   double errSurf{0.0};
   double filtreY{1.0};
-  double maxRadus{40.0};
+  double maxRadius{40.0};
   double cosCol{0.96};
   int maxFrameDist{20};
   double spatialScale{1.0};
@@ -86,11 +86,11 @@ private:
   bool onlyFrameSurface{false};
   double minVx{0.0};
   double maxVx{0.0};
-  double extendTraj{false};
-  int enableFilteringMinVx{0};
-  int enableFilteringCosY{0};
-  int enableFilteringTimeOrigin{0};
-  int enableFilteringDuration{0};
+  bool extendTraj{false};
+  bool enableFilteringMinVx{false};
+  bool enableFilteringCosY{false};
+  bool enableFilteringTimeOrigin{false};
+  bool enableFilteringDuration{false};
   int duraMin{0};
   int xOrigin{0};
   int minTimeOrigin{0};
@@ -126,8 +126,8 @@ public:
   vtkSetMacro(cosCol, double);
   vtkGetMacro(cosCol, double);
 
-  vtkSetMacro(maxRadus, double);
-  vtkGetMacro(maxRadus, double);
+  vtkSetMacro(maxRadius, double);
+  vtkGetMacro(maxRadius, double);
     
   vtkSetMacro(maxFrameDist, int);
   vtkGetMacro(maxFrameDist, int);
@@ -153,17 +153,17 @@ public:
   vtkSetMacro(extendTraj, bool);
   vtkGetMacro(extendTraj, bool);
 
-  vtkSetMacro(enableFilteringMinVx, int);
-  vtkGetMacro(enableFilteringMinVx, int);
+  vtkSetMacro(enableFilteringMinVx, bool);
+  vtkGetMacro(enableFilteringMinVx, bool);
 
-  vtkSetMacro(enableFilteringCosY, int);
-  vtkGetMacro(enableFilteringCosY, int);
+  vtkSetMacro(enableFilteringCosY, bool);
+  vtkGetMacro(enableFilteringCosY, bool);
 
-  vtkSetMacro(enableFilteringTimeOrigin, int);
-  vtkGetMacro(enableFilteringTimeOrigin, int);
+  vtkSetMacro(enableFilteringTimeOrigin, bool);
+  vtkGetMacro(enableFilteringTimeOrigin, bool);
 
-  vtkSetMacro(enableFilteringDuration, int);
-  vtkGetMacro(enableFilteringDuration, int);
+  vtkSetMacro(enableFilteringDuration, bool);
+  vtkGetMacro(enableFilteringDuration, bool);
 
   vtkSetMacro(xOrigin, int);
   vtkGetMacro(xOrigin, int);
@@ -220,3 +220,4 @@ protected:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 };
+

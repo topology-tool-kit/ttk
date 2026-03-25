@@ -27,7 +27,7 @@
         <Documentation>Minimum cosine similarity between average directions to allow linking two trajectories.</Documentation>
       </DoubleVectorProperty>
     
-      <DoubleVectorProperty name="maxRadus" command="SetmaxRadus" label="Chaining: Max 3D distance²"
+      <DoubleVectorProperty name="maxRadius" command="SetmaxRadius" label="Chaining: Max 3D distance²"
                             number_of_elements="1" default_values="40.0">
         <Documentation>Maximum squared distance (x,y,t) at the linking frame between the predicted end and the start point.</Documentation>
       </DoubleVectorProperty>
@@ -268,7 +268,7 @@
       
      <PropertyGroup panel_widget="Line" label="Fusion / chaining">
        <Property name="cosCol"/>
-       <Property name="maxRadus"/>
+       <Property name="maxRadius"/>
        <Property name="maxFrameDist"/>
      </PropertyGroup>  
 
@@ -324,4 +324,5 @@
  
  </ProxyGroup>
 </ServerManagerConfiguration>
+
 

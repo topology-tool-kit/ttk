@@ -62,12 +62,6 @@ int ttkTrajectoryStatistics::FillOutputPortInformation(int port, vtkInformation 
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
   }
-  /*
-  if (port == 5) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-    return 1;
-  }
-  */
   return 0;
 }
 
@@ -98,7 +92,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
             inputGrid->GetPointData()->GetArray("VertexGlobalId"));
   vtkIntArray *compLength = vtkIntArray::SafeDownCast(
             inputGrid->GetCellData()->GetArray("ComponentLength"));
-  vtkDoubleArray *persistanceArray = vtkDoubleArray::SafeDownCast(
+  vtkDoubleArray *persistenceArray = vtkDoubleArray::SafeDownCast(
             inputGrid->GetPointData()->GetArray("InstantPersistence"));
 
   if (!compIdArray || !timeArray || !vertexGlobalIdArray || !compLength){
@@ -118,8 +112,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   
   // Outputs per trajectory
   std::vector<std::vector<int>>           trajTime(numTraj);
-  std::vector<std::vector<vtkIdType>>     cellsPerTraj(numTraj);
-  std::vector<std::vector<double>>        trajX(numTraj), trajY(numTraj), instantPersistance(numTraj);
+  std::vector<std::vector<double>>        trajX(numTraj), trajY(numTraj), instantPersistence(numTraj);
   std::vector<std::vector<int>>           trajVertexId(numTraj); // VertexGlobalId
   
   vtkNew<vtkIdList> cellPointIds;
@@ -145,36 +138,34 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   size_t tIdx = 0;
   for(const auto &kv : cellsByTraj) {
     const auto &cellIds = kv.second;
-    cellsPerTraj[tIdx] = cellIds;
-  
     std::vector<vtkIdType> pointIds;
     collectUniqueSortedPointIds(cellIds, pointIds);
   
-    auto &TT   = trajTime[tIdx];
-    auto &VID  = trajVertexId[tIdx];
-    auto &IP   = instantPersistance[tIdx];
-    auto &XX   = trajX[tIdx];
-    auto &YY   = trajY[tIdx];
-  
-    TT.reserve(pointIds.size());
-    VID.reserve(pointIds.size());
-    IP.reserve(pointIds.size());
-    XX.reserve(pointIds.size());
-    YY.reserve(pointIds.size());
-  
+    auto &timeSteps   = trajTime[tIdx];
+    auto &vertexIds   = trajVertexId[tIdx];
+    auto &persistence = instantPersistence[tIdx];
+    auto &coordsX     = trajX[tIdx];
+    auto &coordsY     = trajY[tIdx];
+
+    timeSteps.reserve(pointIds.size());
+    vertexIds.reserve(pointIds.size());
+    persistence.reserve(pointIds.size());
+    coordsX.reserve(pointIds.size());
+    coordsY.reserve(pointIds.size());
+
     double xyz[3];
     for(const vtkIdType pId : pointIds) {
       const int    t   = timeArray->GetValue(pId);
-      const double per = persistanceArray->GetValue(pId);
+      const double per = persistenceArray->GetValue(pId);
       const int    gid = vertexGlobalIdArray->GetValue(pId);
-  
-      TT.push_back(t);
-      VID.push_back(gid);
-      IP.push_back(per);
-  
+
+      timeSteps.push_back(t);
+      vertexIds.push_back(gid);
+      persistence.push_back(per);
+
       inputGrid->GetPoint(pId, xyz);
-      XX.push_back(xyz[0]);
-      YY.push_back(xyz[1]);
+      coordsX.push_back(xyz[0]);
+      coordsY.push_back(xyz[1]);
     }
   
     ++tIdx;
@@ -224,20 +215,22 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   
   
   this->setInputScalars(inputFields);
-  this->setInstantPersistence(instantPersistance);
+  this->setInstantPersistence(instantPersistence);
   this->setFiltreY(filtreY);
   this->setCosCol(cosCol);
-  this->setMaxRadius(maxRadus);
+  this->setMaxRadius(maxRadius);
   this->setMaxFrameDist(maxFrameDist);
-  this->setSpatialScale(1/(spatialScale*1000));
-  this->setInterFrame(interFrame*std::pow(10.0,-6.0));
+  // spatialScale is in mm/px → convert to m/px: 1 / (scale_mm * 1000)
+  this->setSpatialScale(1.0 / (spatialScale * 1000.0));
+  // interFrame is in microseconds → convert to seconds: value * 1e-6
+  this->setInterFrame(interFrame * 1e-6);
   this->setConvertDur(convertDur);
   this->setMinVx(minVx);
   this->setMaxVx(maxVx);
   this->setEnableFilteringMinVx(enableFilteringMinVx);
   this->setEnableFilteringTimeOrigin(enableFilteringTimeOrigin);
   this->setEnableFilteringCosY(enableFilteringCosY);
-  this->SetEnableFilteringDuration(enableFilteringDuration);
+  this->setEnableFilteringDuration(enableFilteringDuration);
   this->setDuraMin(duraMin);
   this->setXOrigin(xOrigin);
   this->setMinTimeOrigin(minTimeOrigin);
@@ -282,8 +275,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   for (size_t frame = 0; frame < allVertexDebris.size(); frame ++){
   	allVertexDebris[frame].assign(triangulation->getNumberOfVertices(), -1);
   }
-  
-  this->printMsg("Correct ", 1.0, timer.getElapsedTime(), threadNumber_);
+
   std::vector<std::vector<double>> gradientNorms;
 
   if(!computeAllGradientMagnitudes(inputDataSet,
@@ -326,10 +318,6 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   vtkUnstructuredGrid *outputLinear = vtkUnstructuredGrid::GetData(outputVector, 3);
   if(!outputLinear) { this->printErr("Null output Linear."); return 0; }
   
-/*
-  vtkUnstructuredGrid *outputInitial = vtkUnstructuredGrid::GetData(outputVector, 5);
-  if(!outputSegmentsLabeled) { this->printErr("Null output "); return 0; }
-*/
   auto makeIntCol = [&](const char *name, vtkIdType n) {
     auto arr = vtkSmartPointer<vtkIntArray>::New();
     arr->SetName(name);
@@ -344,8 +332,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     return arr;
   };
 
-  auto evalX = [](const std::vector<double> &c, int t) { return c[0] * t + c[2]; };
-  auto evalY = [](const std::vector<double> &c, int t) { return c[1] * t + c[3]; };
+  constexpr double pi = 3.14159265358979323846;
 
   auto addSegment = [&](vtkPoints *pts, vtkCellArray *lines, vtkIdType segIdx,
                         double x0, double y0, double t0,
@@ -389,9 +376,10 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
 	colTrajId -> SetValue(i, i);
 
 	double vol = 0.0;
-	if (surfMean[i] > 0.0 && surfMean[i]<100) {
-		constexpr double pi = 3.14159265358979323846;
-		vol = std::pow(surfMean[i]*std::pow(scale_pixel_to_meter, 2), 1.5) / (6.0 * std::sqrt(pi));
+	if (surfMean[i] > 0.0 && surfMean[i] < 100) {
+		// Volume from surface: V = S^(3/2) / (6*sqrt(pi)) assuming spherical shape
+		const double surfaceInMeters = surfMean[i] * std::pow(scale_pixel_to_meter, 2);
+		vol = std::pow(surfaceInMeters, 1.5) / (6.0 * std::sqrt(pi));
 	}
 	colVolMean->SetValue(i,vol);
   }
@@ -410,7 +398,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   outputSurface->CopyStructure(inputDataSet);
 
   const vtkIdType nPts = outputSurface->GetNumberOfPoints();
-  vtkIdType nCells = outputSurface->GetNumberOfCells();
+  const vtkIdType nCells = outputSurface->GetNumberOfCells();
   if (nPts == 0) {
     this->printErr("Input dataset has no points.");
     return 0;
@@ -489,24 +477,23 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   
   const vtkIdType nInit  = static_cast<vtkIdType>(linearTraj.size());
   const vtkIdType nLinks = static_cast<vtkIdType>(fuseRecords.size());
+  const vtkIdType nLinearSegments = nInit + nLinks;
 
-  nCells = nInit + nLinks;
-  
   auto ppts   = vtkSmartPointer<vtkPoints>::New();
   auto lines = vtkSmartPointer<vtkCellArray>::New();
-  ppts->SetNumberOfPoints(2 * nCells);
-  
-  auto finalChainId = vtkSmartPointer<vtkIntArray>::New(); // chain id 
+  ppts->SetNumberOfPoints(2 * nLinearSegments);
+
+  auto finalChainId = vtkSmartPointer<vtkIntArray>::New();
   finalChainId->SetName("FinalChainId");
-  finalChainId->SetNumberOfTuples(nCells);
-  
-  auto inputTrajId = vtkSmartPointer<vtkIntArray>::New();  // input traj id for initial segments; -1 for links
+  finalChainId->SetNumberOfTuples(nLinearSegments);
+
+  auto inputTrajId = vtkSmartPointer<vtkIntArray>::New();
   inputTrajId->SetName("InputTrajId");
-  inputTrajId->SetNumberOfTuples(nCells);
-  
+  inputTrajId->SetNumberOfTuples(nLinearSegments);
+
   auto segmentKind = vtkSmartPointer<vtkIntArray>::New();  // 0 = initial segment, 1 = fusion link
   segmentKind->SetName("SegmentKind");
-  segmentKind->SetNumberOfTuples(nCells);
+  segmentKind->SetNumberOfTuples(nLinearSegments);
   
   for(vtkIdType i = 0; i < nInit; ++i) {
 	const auto &traj = linearTraj[static_cast<size_t>(i)];
@@ -609,13 +596,13 @@ int ttkTrajectoryStatistics::computeAllGradientMagnitudes(
 
   const size_t nFields = inputScalarFields.size();
   if(nFields == 0) {
-    this->printErr("pas de scalar fields fournis.");
+    this->printErr("No scalar fields provided.");
     return 0;
   }
 
   vtkIdType nPts = inputDataSet->GetNumberOfPoints();
   if(nPts <= 0) {
-    this->printErr("maillage vide (nPts <= 0).");
+    this->printErr("Empty mesh (nPts <= 0).");
     return 0;
   }
 
@@ -628,7 +615,7 @@ int ttkTrajectoryStatistics::computeAllGradientMagnitudes(
   for(size_t f = 0; f < nFields; f++) {
     vtkDataArray *currScalar = inputScalarFields[f];
     if(!currScalar || !currScalar->GetName()) {
-      this->printErr("scalar array invalide en frame " + std::to_string(f));
+      this->printErr("Invalid scalar array at frame " + std::to_string(f));
       return 0;
     }
     const char *scalarName = currScalar->GetName();
@@ -647,9 +634,7 @@ int ttkTrajectoryStatistics::computeAllGradientMagnitudes(
 
     vtkDataArray *gradArray = gradOutput->GetPointData()->GetArray("Gradients");
     if(!gradArray) {
-      this->printErr(
-            "recup gradArray echec"
-      );
+      this->printErr("Failed to retrieve gradient array");
       return 0;
     }
 
@@ -663,4 +648,6 @@ int ttkTrajectoryStatistics::computeAllGradientMagnitudes(
 
   return 1;
 }
+
+
 

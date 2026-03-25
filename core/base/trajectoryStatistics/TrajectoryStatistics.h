@@ -22,20 +22,13 @@
 #include <Triangulation.h>
 #include <PersistenceDiagram.h>
 #include <TopologicalSimplification.h>
-//  #include <FTMTreePP.h>
 #include <ExTreeM.h>
-// #include <OrderDisambiguation.h>
 #include <PathCompression.h>
 #ifdef TTK_ENABLE_EIGEN
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <Eigen/Cholesky>
 #include <Eigen/IterativeLinearSolvers>
-// #include <vector>
-// #include <algorithm>
-// #include <cmath>
-// #include <limits>
-
 #endif
 
 
@@ -48,26 +41,25 @@ namespace ttk {
     int preconditionTriangulation(
       ttk::AbstractTriangulation *triangulation) const {
       triangulation->preconditionVertexNeighbors();
-      triangulation->preconditionVertexStars();
-      return triangulation->preconditionVertexNeighbors();
+      return triangulation->preconditionVertexStars();
     }
 
 
-    inline void setInputScalars(std::vector<void *> &is) { inputData_ = is; }
+    inline void setInputScalars(std::vector<void *> &inputScalars) { inputData_ = inputScalars; }
     inline void setInstantPersistence(const std::vector<std::vector<double>> &P) { instantPers_ = P; }
     inline void setFiltreY(double v) { filtreY_ = v; }
     inline void setCosCol(double v) { cosCol_ = v; }
-    inline void setMaxRadius(double v) { maxRadus_ = v; }
+    inline void setMaxRadius(double v) { maxRadius_ = v; }
     inline void setMaxFrameDist(int v) { maxFrameDist_ = v; minFrameDist_ = -v;}
     inline void setSpatialScale(double v) { spatialScale_ = v; }
     inline void setInterFrame(double v) { interFrame_ = v; }
     inline void setConvertDur(bool v) { convertDur_ = v; }
     inline void setMinVx(double v) { minVx_ = v; }
     inline void setMaxVx(double v) { maxVx_ = v; }
-	inline void setEnableFilteringMinVx(int v) { enableFilteringMinVx_ = v;}
-	inline void setEnableFilteringTimeOrigin(int v) { enableFilteringTimeOrigin_ = v; }
-	inline void SetEnableFilteringDuration(int v) { enableFilteringDuration_ = v; }
-	inline void setEnableFilteringCosY(int v) { enableFilteringCosY_ = v; }
+	inline void setEnableFilteringMinVx(bool v) { enableFilteringMinVx_ = v;}
+	inline void setEnableFilteringTimeOrigin(bool v) { enableFilteringTimeOrigin_ = v; }
+	inline void setEnableFilteringDuration(bool v) { enableFilteringDuration_ = v; }
+	inline void setEnableFilteringCosY(bool v) { enableFilteringCosY_ = v; }
 	inline void setDuraMin(int v) { duraMin_ = v; }
 	inline void setXOrigin(int v){ xOrigin_ = v; }
 	inline void setMinTimeOrigin(int v){ minTimeOrigin_ = v; }
@@ -77,11 +69,11 @@ namespace ttk {
     inline void setMaxY(int v){ maxY_ = v; }
     inline void setMinY(int v){ minY_ = v; }
     inline void setMinX(int v){ minX_ = v; }
-    inline void setSurfaceMethod(int m){ surfaceMethod_ = m; }
-	inline void setPersisThresh(double m){ persistenceThreshold_ = m; }
-	inline void setMinSeg(std::vector<ttk::SimplexId> &m){ minSeg_ = &m; }
-	inline void setSaddleSeg(std::vector<ttk::SimplexId> &m){ saddleSeg_ = &m; }
-	inline void setErrSurf(double m){ errSurf_ = m;}
+    inline void setSurfaceMethod(int v){ surfaceMethod_ = v; }
+	inline void setPersisThresh(double v){ persistenceThreshold_ = v; }
+	inline void setMinSeg(std::vector<ttk::SimplexId> &v){ minSeg_ = &v; }
+	inline void setSaddleSeg(std::vector<ttk::SimplexId> &v){ saddleSeg_ = &v; }
+	inline void setErrSurf(double v){ errSurf_ = v;}
 	inline void setOnlyFrameSurface(bool v){ onlyFrameSurface_ = v;}
 	inline void setMaxSurfSize(int m){ maxSurfSize_ = m;}
 	inline void setBoundaryX(double m){boundaryX_ = m;}
@@ -124,10 +116,10 @@ namespace ttk {
                 std::vector<double> &VY,
                 std::vector<double> &surfMin,
                 std::vector<double> &surfMax,
-                std::vector<double> &surfMoy,
+                std::vector<double> &surfMean,
                 std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
                 int frameSurf,
-                std::vector<std::vector<double>> gradientNorms,
+                const std::vector<std::vector<double>> &gradientNorms,
                 std::vector<LinearTrajectory> &merge,
                 const triangulationType *triangulation);
 
@@ -172,10 +164,10 @@ namespace ttk {
                 std::vector<std::vector<int>>    &trajVertexId,
                 std::vector<double>              &surfMin,
                 std::vector<double>              &surfMax,
-                std::vector<double>              &surfMoy,
+                std::vector<double>              &surfMean,
                 std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
                 int                                frameSurf,
-                std::vector<std::vector<double>>  gradientNorms,
+                const std::vector<std::vector<double>>  &gradientNorms,
                 const triangulationType          *triangulation);
 
 
@@ -198,7 +190,7 @@ namespace ttk {
                 std::vector<std::vector<int>>    &trajVertexId,
                 std::vector<double>              &surfMin,
                 std::vector<double>              &surfMax,
-                std::vector<double>              &surfMoy,
+                std::vector<double>              &surfMean,
                 std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
                 int                                frameSurf,
                 const triangulationType          *triangulation);
@@ -211,7 +203,7 @@ namespace ttk {
                std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
                std::vector<double>              &surfMin,
                std::vector<double>              &surfMax,
-               std::vector<double>              &surfMoy
+               std::vector<double>              &surfMean
 	); 
 
 
@@ -243,7 +235,7 @@ namespace ttk {
       std::vector<std::vector<int>>    &trajVertexId,
       std::vector<double>              &surfMin,
       std::vector<double>              &surfMax,
-      std::vector<double>              &surfMoy,
+      std::vector<double>              &surfMean,
       std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
       int                                frameSurf,
       const triangulationType          *triangulation
@@ -276,7 +268,7 @@ namespace ttk {
 
     double filtreY_;
     double cosCol_;
-    double maxRadus_;
+    double maxRadius_;
     int maxFrameDist_;
     double spatialScale_;
     double interFrame_;
@@ -284,10 +276,10 @@ namespace ttk {
 	bool onlyFrameSurface_;
     double minVx_;
 	double maxVx_;
-	int enableFilteringMinVx_;
-	int enableFilteringTimeOrigin_;
-	int enableFilteringCosY_;
-	int enableFilteringDuration_;
+	bool enableFilteringMinVx_;
+	bool enableFilteringTimeOrigin_;
+	bool enableFilteringCosY_;
+	bool enableFilteringDuration_;
 	int duraMin_;
 	int xOrigin_;
 	int minTimeOrigin_;
@@ -321,7 +313,7 @@ int ttk::TrajectoryStatistics::linearRegression(
   const std::vector<double> &Y,   // positions y_i
   LinearTrajectory &traj
 ) {
-  const int n = (int)T.size();
+  const int n = static_cast<int>(T.size());
   Eigen::MatrixXd M(n, 2);
   Eigen::VectorXd vx(n), vy(n);
   for(int i = 0; i < n; ++i) {
@@ -518,17 +510,17 @@ int ttk::TrajectoryStatistics::correctTrajectory(
   };
 
   auto passInclinationYNy = [&](double ny) -> bool {
-    if(enableFilteringCosY_ == 0) { return true; }
+    if(!enableFilteringCosY_) { return true; }
     return (-filtreY_ <= ny && ny <= filtreY_);
   };
 
   auto passSpeedXAx = [&](double ax) -> bool {
     const double vx_abs = ax * spatialScale_ * (1.0 / interFrame_);
-    return (enableFilteringMinVx_ == 0.0) ? true : (vx_abs >= minVx_ && vx_abs <= maxVx_);
+    return (!enableFilteringMinVx_) ? true : (vx_abs >= minVx_ && vx_abs <= maxVx_);
   };
 
   auto passDirSpeedNyAx = [&](double ny, double ax) -> bool {
-    if(enableFilteringMinVx_ == 0.0 && filtreY_ == 1.0) {
+    if(!enableFilteringMinVx_ && !enableFilteringCosY_) {
       return true;
     }
     if(!passInclinationYNy(ny)) {
@@ -544,12 +536,12 @@ int ttk::TrajectoryStatistics::correctTrajectory(
   };
 
   auto passDura = [&](const LinearTrajectory &c) -> bool {
-    if (enableFilteringDuration_ == 0) { return true; }
+    if (!enableFilteringDuration_) { return true; }
     return (duraMin_ <= std::abs(c.endFrame - c.startFrame));
   };
 
   auto passTimeOrigin = [&](const LinearTrajectory &c) -> bool {
-    if (enableFilteringTimeOrigin_ == 0) return true; 
+    if (!enableFilteringTimeOrigin_) return true; 
     if(std::abs(c.ax) < 1e-8) return true;
     const double tCross = (xOrigin_ - c.bx) / c.ax;
     const double yCross = c.ay * tCross + c.by;
@@ -608,7 +600,7 @@ int ttk::TrajectoryStatistics::correctTrajectory(
   std::vector<char> usedAsStart(numTraj, false), usedAsEnd(numTraj, false);
 
   const double similarityThreshold = cosCol_;
-  const double maxLinkDist2        = maxRadus_;
+  const double maxLinkDist2        = maxRadius_;
 
   for(int i = 0; i < numTraj; ++i) {
     if(usedAsStart[i] || trajTime[i].empty()) continue;
@@ -800,10 +792,10 @@ int ttk::TrajectoryStatistics::execute(
                 std::vector<double>             &VY,
                 std::vector<double>             &surfMin,
                 std::vector<double>             &surfMax,
-                std::vector<double>             &surfMoy,
+                std::vector<double>             &surfMean,
                 std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
                 int frameSurf,
-                std::vector<std::vector<double>> gradientNorms,
+                const std::vector<std::vector<double>> &gradientNorms,
                 std::vector<LinearTrajectory> &finalTraj,
                 const triangulationType *triangulation) {
     
@@ -826,32 +818,13 @@ int ttk::TrajectoryStatistics::execute(
         VX[i] = finalTraj[i].ax * conversion;
         VY[i] = finalTraj[i].ay * conversion;
     }
-/*
-    if(surfaceMethod_ == 0) {
-      computeSurfacesBFS<dataType, triangulationType>(
-        trajTime, trajVertexId,
-        surfMin, surfMax, surfMoy,
-        allVertexDebris,
-        frameSurf,gradientNorms, triangulation);
-    } if (surfaceMethod_ == 1) {
-      computeSurfacesRW<dataType, triangulationType>(
-        trajTime, trajVertexId,
-        surfMin, surfMax, surfMoy,
-        allVertexDebris, 
-        frameSurf,triangulation);
-    } else if(surfaceMethod_ == 2) {
-      computeSurfacesPersistence<dataType, triangulationType>(
-        trajTime, trajVertexId,
-        surfMin, surfMax, surfMoy,
-        allVertexDebris,
-        frameSurf, triangulation);
-    } */  if (surfaceMethod_ == 3) {
+    if (surfaceMethod_ == 3) {
 		computeMergeTree<dataType, triangulationType>(
 				frameSurf,
 				triangulation,
 				finalTraj,
 				allVertexDebris,
-				surfMin, surfMax, surfMoy);
+				surfMin, surfMax, surfMean);
 
 	}
 
@@ -865,22 +838,21 @@ int ttk::TrajectoryStatistics::computeSurfacesBFS(
     std::vector<std::vector<int>>    &trajVertexId,
     std::vector<double>              &surfMin,
     std::vector<double>              &surfMax,
-    std::vector<double>              &surfMoy,
+    std::vector<double>              &surfMean,
     std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
     int                                frameSurf,
-    std::vector<std::vector<double>>  gradientNorms,
+    const std::vector<std::vector<double>>  &gradientNorms,
     const triangulationType          *triangulation) {
 
   // SURFACE (BFS)
 
   const size_t numFrames = inputData_.size();
-  const int    nPts      = triangulation->getNumberOfVertices();
-  const int    numTraj   = static_cast<int>(trajTime.size());
   const ttk::SimplexId numVertices = triangulation->getNumberOfVertices();
+  const int    numTraj   = static_cast<int>(trajTime.size());
 
-  if((int)surfMin.size() < numTraj) surfMin.resize(numTraj, 0.0);
-  if((int)surfMax.size() < numTraj) surfMax.resize(numTraj, 0.0);
-  if((int)surfMoy.size() < numTraj) surfMoy.resize(numTraj, 0.0);
+  if(static_cast<int>(surfMin.size()) < numTraj) surfMin.resize(numTraj, 0.0);
+  if(static_cast<int>(surfMax.size()) < numTraj) surfMax.resize(numTraj, 0.0);
+  if(static_cast<int>(surfMean.size()) < numTraj) surfMean.resize(numTraj, 0.0);
 
   double maxVal = std::numeric_limits<double>::lowest();
 #ifdef TTK_ENABLE_OPENMP
@@ -888,7 +860,7 @@ int ttk::TrajectoryStatistics::computeSurfacesBFS(
 #endif
   for(size_t v = 0; v < numFrames; ++v) {
     auto *scalars = static_cast<dataType *>(inputData_[v]);
-    const double localMax = *std::max_element(scalars, scalars + nPts);
+    const double localMax = *std::max_element(scalars, scalars + numVertices);
     if(localMax > maxVal) maxVal = localMax;
   }
 
@@ -953,11 +925,11 @@ int ttk::TrajectoryStatistics::computeSurfacesBFS(
         surfMin[i] = static_cast<double>(minVal);
         surfMax[i] = static_cast<double>(maxValS);
         const double mean = static_cast<double>(sum) / static_cast<double>(count);
-        surfMoy[i] = (mean == 0.0 ? 0.25 : mean); // conserve ta règle spéciale
+        surfMean[i] = (mean == 0.0 ? 0.25 : mean);
       } else {
         surfMin[i] = 0.0;
         surfMax[i] = 0.0;
-        surfMoy[i] = 0.25;
+        surfMean[i] = 0.25;
       }
     }
 #ifdef TTK_ENABLE_OPENMP
@@ -1094,7 +1066,7 @@ int ttk::TrajectoryStatistics::computeSurfacesRW(
     std::vector<std::vector<int>>    &trajVertexId,
     std::vector<double>              &surfMin,
     std::vector<double>              &surfMax,
-    std::vector<double>              &surfMoy,
+    std::vector<double>              &surfMean,
     std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
     int                                frameSurf,
     const triangulationType          *triangulation) {
@@ -1102,10 +1074,10 @@ int ttk::TrajectoryStatistics::computeSurfacesRW(
   const auto *frameScalars = static_cast<dataType *>(inputData_[frameSurf]);
   const int numTraj = static_cast<int>(trajTime.size());
 
-  if((int)surfMin.size() < numTraj) surfMin.resize(numTraj, 0.0);
-  if((int)surfMax.size() < numTraj) surfMax.resize(numTraj, 0.0);
-  if((int)surfMoy.size() < numTraj) surfMoy.resize(numTraj, 0.0);
-  if((int)allVertexDebris.size() < numTraj) allVertexDebris.resize(numTraj);
+  if(static_cast<int>(surfMin.size()) < numTraj) surfMin.resize(numTraj, 0.0);
+  if(static_cast<int>(surfMax.size()) < numTraj) surfMax.resize(numTraj, 0.0);
+  if(static_cast<int>(surfMean.size()) < numTraj) surfMean.resize(numTraj, 0.0);
+  if(static_cast<int>(allVertexDebris.size()) < numTraj) allVertexDebris.resize(numTraj);
 
   // 1)seeds background 
   for(int i = 0; i < numTraj; i++) {
@@ -1124,7 +1096,7 @@ int ttk::TrajectoryStatistics::computeSurfacesRW(
     std::vector<int>            seedLabel; seedLabel.reserve(1024);
 
     const auto nVerts = triangulation->getNumberOfVertices();
-    std::vector<char> isSeed(nVerts, 0); // déduplication
+    std::vector<char> isSeed(nVerts, 0); // deduplication
 
     // 2.a) BACKGROUND seeds (label 0)
     for(int i = 0; i < numTraj; i++) {
@@ -1182,7 +1154,7 @@ int ttk::TrajectoryStatistics::computeSurfacesRW(
         const double val = static_cast<double>(surfCells);
         surfMin[i] = val;
         surfMax[i] = val;
-        surfMoy[i] = val;
+        surfMean[i] = val;
       }
     }
   }
@@ -1199,15 +1171,15 @@ int ttk::TrajectoryStatistics::computeSurfacesRW(
 #ifdef TTK_ENABLE_EIGEN
 template<class dataType>
 int ttk::TrajectoryStatistics::randomWalkerSegment(
-  const std::vector<ttk::SimplexId> &seed,        // ids des sommets "marqués"
-  const std::vector<int> &seedLabel,              // label de chaque graine (0..K-1)
-  const ttk::AbstractTriangulation *triangulation, 
-  const dataType *intensities,                    // intensité par sommet
-  const double beta,                              // paramètre des poids
-  std::vector<int> &segmentation                  // [OUT] label par sommet
+  const std::vector<ttk::SimplexId> &seed,        // marked vertex ids
+  const std::vector<int> &seedLabel,              // label per seed (0..K-1)
+  const ttk::AbstractTriangulation *triangulation,
+  const dataType *intensities,                    // per-vertex intensity
+  const double beta,                              // weight parameter
+  std::vector<int> &segmentation                  // [OUT] label per vertex
 ) {
 
-  this->printMsg("RandomWalker: début de la fonction");
+  this->printMsg("RandomWalker: starting");
 
   if(!triangulation) {
     this->printMsg("ERROR : randomWalkerSegment: null triangulation.");
@@ -1224,8 +1196,8 @@ int ttk::TrajectoryStatistics::randomWalkerSegment(
     return -3;
   }
 
-  // --- 0) Préparation ---
-  this->printMsg("RandomWalker: préparation des structures de données");
+  // --- 0) Preparation ---
+  this->printMsg("RandomWalker: preparing data structures");
   segmentation.assign(nVerts, -1);
 
   std::vector<int> vertexLabel(nVerts, -1);
@@ -1257,12 +1229,12 @@ int ttk::TrajectoryStatistics::randomWalkerSegment(
   if(nU == 0) {
     for(ttk::SimplexId v = 0; v < nVerts; ++v)
       segmentation[v] = vertexLabel[v];
-    this->printMsg("RandomWalker: aucun nœud inconnu (tout est graine)");
+    this->printMsg("RandomWalker: no unknown nodes (all are seeds)");
     return 0;
   }
 
-  // --- 1) Assemblage ---
-  this->printMsg("RandomWalker: assemblage du Laplacien restreint et des RHS");
+  // --- 1) Assembly ---
+  this->printMsg("RandomWalker: assembling restricted Laplacian and RHS");
 
   using T = double;
   using Triplet = Eigen::Triplet<T>;
@@ -1270,8 +1242,7 @@ int ttk::TrajectoryStatistics::randomWalkerSegment(
   std::vector<Triplet> L_triplets;
 
 #ifdef TTK_ENABLE_OPENMP
-  int nThreads = 1;
-  nThreads = omp_get_max_threads();
+  const int nThreads = omp_get_max_threads();
   std::vector<std::vector<Triplet>> L_triplets_tls(static_cast<size_t>(nThreads));
 
   #pragma omp parallel for schedule(static)
@@ -1348,8 +1319,8 @@ int ttk::TrajectoryStatistics::randomWalkerSegment(
   L_U.setFromTriplets(L_triplets.begin(), L_triplets.end());
   L_U.makeCompressed();
 
-  // --- 2) Factorisation ---
-  this->printMsg("RandomWalker: factorisation du Laplacien");
+  // --- 2) Factorization ---
+  this->printMsg("RandomWalker: factorizing Laplacian");
 
   Eigen::SimplicialLLT<Eigen::SparseMatrix<T>> llt;
   llt.compute(L_U);
@@ -1368,8 +1339,8 @@ int ttk::TrajectoryStatistics::randomWalkerSegment(
     }
   }
 
-  // --- 3) Résolution ---
-  this->printMsg("RandomWalker: résolution des systèmes linéaires");
+  // --- 3) Solve ---
+  this->printMsg("RandomWalker: solving linear systems");
 
   std::vector<Eigen::VectorXd> X(K, Eigen::VectorXd::Zero(nU));
   for(int s = 0; s < K; ++s) {
@@ -1390,8 +1361,8 @@ int ttk::TrajectoryStatistics::randomWalkerSegment(
     }
   }
 
-  // --- 4) Attribution ---
-  this->printMsg("RandomWalker: attribution des labels");
+  // --- 4) Label assignment ---
+  this->printMsg("RandomWalker: assigning labels");
 
 #ifdef TTK_ENABLE_OPENMP
   #pragma omp parallel for schedule(static)
@@ -1431,7 +1402,7 @@ int ttk::TrajectoryStatistics::randomWalkerSegment(
   }
 #endif
 
-  this->printMsg("RandomWalker: terminé avec succès");
+  this->printMsg("RandomWalker: completed successfully");
   return 0;
 }
 
@@ -1443,7 +1414,7 @@ int ttk::TrajectoryStatistics::computeSurfacesPersistence(
   std::vector<std::vector<int>>                 &trajVertexId,
   std::vector<double>                           &surfMin,
   std::vector<double>                           &surfMax,
-  std::vector<double>                           &surfMoy,
+  std::vector<double>                           &surfMean,
   std::vector<std::vector<ttk::SimplexId>>      &allVertexDebris,
   int                                            frameSurf,
   const triangulationType                       *triangulation) {
@@ -1470,10 +1441,10 @@ int ttk::TrajectoryStatistics::computeSurfacesPersistence(
     = static_cast<ttk::SimplexId>(triangulation->getNumberOfVertices());
 
   struct Seed {
-    int traj;               // index de trajectoire
-    ttk::SimplexId v;       // sommet graine
-    dataType fcrit;         // valeur au critique
-    double pers;            // persistance instantanée (>= 0)
+    int traj;               // trajectory index
+    ttk::SimplexId v;       // seed vertex
+    dataType fcrit;         // critical value
+    double pers;            // instant persistence (>= 0)
   };
   std::vector<Seed> seeds;
   seeds.reserve(trajTime.size());
@@ -1505,35 +1476,35 @@ int ttk::TrajectoryStatistics::computeSurfacesPersistence(
   const size_t S = seeds.size();
   if(S == 0) {
     for(int i = 0; i < numTraj; ++i) {
-      surfMin[i] = surfMax[i] = surfMoy[i] = 0.0;
+      surfMin[i] = surfMax[i] = surfMean[i] = 0.0;
     }
     this->printMsg("Surface (Persistence/minima) — no seeds at this frame");
     return 0;
   }
 
-  //priorité / ties 
+  // priority / tie-breaking
   std::vector<int> seedOrder(S);
   std::iota(seedOrder.begin(), seedOrder.end(), 0);
   std::stable_sort(seedOrder.begin(), seedOrder.end(),
                    [&](int a, int b){
                      if(seeds[a].fcrit != seeds[b].fcrit)
-                       return seeds[a].fcrit < seeds[b].fcrit; // minima → plus bas d'abord
+                       return seeds[a].fcrit < seeds[b].fcrit; // minima first (lowest value)
                      return seeds[a].traj < seeds[b].traj;
                    });
-  std::vector<int> seedPrio(S, 0); // plus petit = plus prioritaire
+  std::vector<int> seedPrio(S, 0); // lower value = higher priority
   for(size_t rank = 0; rank < S; ++rank)
     seedPrio[seedOrder[rank]] = static_cast<int>(rank);
 
-  //Selle associé à chaque seed
+  // saddle associated with each seed
   std::vector<dataType> upper(S);
   for(size_t s = 0; s < S; ++s)
     upper[s] = static_cast<dataType>(seeds[s].fcrit + seeds[s].pers);
 
   struct QItem {
-    dataType f;             // valeur du sommet candidat
-    ttk::SimplexId v;       // sommet
-    int s;                  // index du seed associé
-    int prio;               // priorité du seed associé (plus petit gagne)
+    dataType f;             // scalar value of candidate vertex
+    ttk::SimplexId v;       // vertex id
+    int s;                  // associated seed index
+    int prio;               // seed priority (lower wins)
     bool operator<(QItem const &o) const {
       if(f != o.f) return f > o.f;          
       if(prio != o.prio) return prio > o.prio;
@@ -1558,7 +1529,7 @@ int ttk::TrajectoryStatistics::computeSurfacesPersistence(
     if(v0 < 0 || v0 >= nVerts) continue;
 
     if(label[v0] == -1) 
-      label[v0] = seeds[s].traj; // minimum surface = juste la seed
+      label[v0] = seeds[s].traj; // minimum surface = seed only
 
     const int nnei = triangulation->getVertexNeighborNumber(v0);
     for(int ln = 0; ln < nnei; ++ln) {
@@ -1573,12 +1544,12 @@ int ttk::TrajectoryStatistics::computeSurfacesPersistence(
     const auto v  = it.v;
     const int s   = it.s;
 
-    if(label[v] != -1) continue;          // déjà pris par un autre + prioritaire
-    if(frameScalars[v] > upper[s]) continue;  // hors bande de la graine s (normalement pas possible)
+    if(label[v] != -1) continue;          // already claimed by a higher-priority seed
+    if(frameScalars[v] > upper[s]) continue;  // outside the band of seed s
 
     label[v] = seeds[s].traj;
 
-    // propage aux voisins
+    // propagate to neighbors
     const int nnei = triangulation->getVertexNeighborNumber(v);
     for(int ln = 0; ln < nnei; ++ln) {
       ttk::SimplexId vj{-1};
@@ -1598,7 +1569,7 @@ int ttk::TrajectoryStatistics::computeSurfacesPersistence(
     const double surf = static_cast<double>(
       computeSurfaceCellCount(allVertexDebris[i], triangulation)
     );
-    surfMin[i] = surfMax[i] = surfMoy[i] = surf;
+    surfMin[i] = surfMax[i] = surfMean[i] = surf;
   }
 
   this->printMsg("Surface (Persistence/minima, multi-source) — OK");
@@ -1614,11 +1585,11 @@ int ttk::TrajectoryStatistics::computeMergeTree(
   std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
   std::vector<double>              &surfMin,
   std::vector<double>              &surfMax,
-  std::vector<double>              &surfMoy
+  std::vector<double>              &surfMean
 ) {
 
   const ttk::SimplexId nPixels = triangulation->getNumberOfVertices();
-  const int nFrames = (onlyFrameSurface_ == false) ? inputData_.size() : 1;
+  const int nFrames = (!onlyFrameSurface_) ? inputData_.size() : 1;
   std::vector<std::vector<double>> trajSurfaces(finalTraj.size());
   const auto nTraj = finalTraj.size();
   this->printMsg("Computing Merge Tree Segmentation");
@@ -1626,7 +1597,7 @@ int ttk::TrajectoryStatistics::computeMergeTree(
   for(int frame = 0  ; frame < nFrames; frame++) {
 
     std::fill(trajDouble.begin(), trajDouble.end(), 0);
-  	frame = (onlyFrameSurface_ == false)  ? frame : frameSurf;
+  	frame = (!onlyFrameSurface_)  ? frame : frameSurf;
 	this->printMsg("Computing frame : " + std::to_string(frame));
     // Persistence diagram 
     auto *scalars = static_cast<dataType *>(inputData_[frame]);
@@ -1683,14 +1654,11 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 	  criticalPoints.push_back(pair.death.id);
 	}
 
-    //TopologicalSimplification
-    const dataType *inputScalars = scalars;
-
+    // Topological Simplification
     std::vector<dataType> outScalars(nPixels);
-    std::copy(inputScalars, inputScalars + nPixels, outScalars.begin());
+    std::copy(scalars, scalars + nPixels, outScalars.begin());
 
-    std::vector<ttk::SimplexId> inputOffsets = pdOffsets;
-    std::vector<ttk::SimplexId> offsets      = inputOffsets;
+    std::vector<ttk::SimplexId> offsets = pdOffsets;
 
     ttk::TopologicalSimplification topoSimp;
     topoSimp.setThreadNumber(this->threadNumber_);
@@ -1701,10 +1669,10 @@ int ttk::TrajectoryStatistics::computeMergeTree(
     const ttk::SimplexId constraintNumber = static_cast<ttk::SimplexId>(criticalPoints.size());
     const ttk::DiagramType emptyDiagram;
     topoSimp.execute<dataType, triangulationType>(
-      inputScalars,
+      scalars,
       outScalars.data(),
       criticalPoints.empty() ? nullptr : criticalPoints.data(),
-      inputOffsets.data(),
+      pdOffsets.data(),
       offsets.data(),
       constraintNumber,
       addPerturbation,
@@ -1759,6 +1727,7 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 
     std::vector<ttk::SimplexId> orderJoin(order);
 
+    // Invert order for the Join Tree
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
     for(ttk::SimplexId i = 0; i < nPixels; ++i) {
@@ -1788,7 +1757,7 @@ int ttk::TrajectoryStatistics::computeMergeTree(
     }
 
     // -----------------------------------------------------------------------
-    // 5) Association aux trajectoires
+    // 5) Association to trajectories
     // -----------------------------------------------------------------------
 
 
@@ -1826,6 +1795,8 @@ int ttk::TrajectoryStatistics::computeMergeTree(
       segMinVertex[s] = bestV;
     }
 
+    std::vector<char> segCleaned(segmentId.size(), 0);
+
     for(size_t trajId = 0; trajId < nTraj; ++trajId) {
       const auto &traj = finalTraj[trajId];
 
@@ -1851,8 +1822,6 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 
       if(vId < 0 || vId >= nPixels)
         continue;
-
-	  std::vector<char> segCleaned(segmentId.size(), 0);
 
 	  if(regionType[vId] == 0) {
 
@@ -1900,7 +1869,7 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 
 
   // -------------------------------------------------------------------------
-  // 6) Statistiques 
+  // 6) Per-trajectory surface statistics (surfMin, surfMax, surfMean)
   // -------------------------------------------------------------------------
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
@@ -1930,11 +1899,11 @@ int ttk::TrajectoryStatistics::computeMergeTree(
       surfMin[trajId] = minVal;
       surfMax[trajId] = maxVal;
       const double mean = sum / static_cast<double>(count);
-      surfMoy[trajId]   = mean;
+      surfMean[trajId]   = mean;
     } else {
       surfMin[trajId] = 0.0;
       surfMax[trajId] = 0.0;
-      surfMoy[trajId] = 0.0;
+      surfMean[trajId] = 0.0;
     }
   }
 
@@ -2108,4 +2077,6 @@ void ttk::TrajectoryStatistics::cleanDarkSegmentInPlace(
 
   segmentVerts.swap(bestCC);
 }
+
+
 
