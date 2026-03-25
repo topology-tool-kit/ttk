@@ -55,7 +55,7 @@
                          number_of_elements="1" default_values="10000">
       </IntVectorProperty>
       <DoubleVectorProperty name="errSurf" command="SeterrSurf"
-                            label="Surface: Threshold / β"
+                            label="Minimum bins Otsu Threshold"
                             number_of_elements="1" default_values="0.0">
         <Documentation>Surface parameter: threshold for BFS or β for Random Walker (controls region growth strength).</Documentation>
       </DoubleVectorProperty>

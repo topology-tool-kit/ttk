@@ -18,9 +18,6 @@
 #include <PathCompression.h>
 #ifdef TTK_ENABLE_EIGEN
 #include <Eigen/Dense>
-#include <Eigen/Sparse>
-#include <Eigen/Cholesky>
-#include <Eigen/IterativeLinearSolvers>
 #endif
 
 
@@ -57,7 +54,6 @@ namespace ttk {
 	inline void setMinTimeOrigin(int v){ minTimeOrigin_ = v; }
 	inline void setMinYTimeOrigin(int v){ minYTimeOrigin_ = v; }
 	inline void setMaxYTimeOrigin(int v){ maxYTimeOrigin_ = v; }
-    inline void setSurfaceMethod(int v){ surfaceMethod_ = v; }
 	inline void setPersisThresh(double v){ persistenceThreshold_ = v; }
 	inline void setMinSeg(std::vector<ttk::SimplexId> &v){ minSeg_ = &v; }
 	inline void setSaddleSeg(std::vector<ttk::SimplexId> &v){ saddleSeg_ = &v; }
@@ -107,7 +103,6 @@ namespace ttk {
                 std::vector<double> &surfMean,
                 std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
                 int frameSurf,
-                const std::vector<std::vector<double>> &gradientNorms,
                 std::vector<LinearTrajectory> &merge,
                 const triangulationType *triangulation);
 
@@ -145,44 +140,6 @@ namespace ttk {
     );
 
 
-
-    template <class dataType, class triangulationType>
-    int computeSurfacesBFS(
-                std::vector<std::vector<int>>    &trajTime,
-                std::vector<std::vector<int>>    &trajVertexId,
-                std::vector<double>              &surfMin,
-                std::vector<double>              &surfMax,
-                std::vector<double>              &surfMean,
-                std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
-                int                                frameSurf,
-                const std::vector<std::vector<double>>  &gradientNorms,
-                const triangulationType          *triangulation);
-
-
-    template <class dataType, class triangulationType>
-    int bfsSegmentation(
-                ttk::SimplexId                         vertexId,
-                std::vector<ttk::SimplexId>            &surfVertex,
-                const dataType                         *frameScalars,
-                std::vector<char>                      &visited,
-                const double                           threshold,
-                double                                 maxVal,
-                std::vector<double>                    &gradientNorm,
-                const triangulationType                *triangulation
-    );
-
-
-    template <class dataType, class triangulationType>
-    int computeSurfacesRW(
-                std::vector<std::vector<int>>    &trajTime,
-                std::vector<std::vector<int>>    &trajVertexId,
-                std::vector<double>              &surfMin,
-                std::vector<double>              &surfMax,
-                std::vector<double>              &surfMean,
-                std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
-                int                                frameSurf,
-                const triangulationType          *triangulation);
-
 	template <class dataType, class triangulationType>
 	int computeMergeTree(
                const ttk::SimplexId frameSurf,
@@ -194,41 +151,6 @@ namespace ttk {
                std::vector<double>              &surfMean
 	); 
 
-
-    template<class dataType, class triangulationType>
-    void collectNearMaxInSquare(
-                           const triangulationType *tri,
-                           const dataType *scalars,
-                           const ttk::SimplexId centerId,
-                           int square_size,
-                           std::vector<ttk::SimplexId> &outIds
-    );
-
-    #ifdef TTK_ENABLE_EIGEN
-    template<class dataType>
-    int randomWalkerSegment(
-      const std::vector<ttk::SimplexId> &seed,        
-      const std::vector<int> &seedLabel,              
-      const ttk::AbstractTriangulation *triangulation,      
-      const dataType *intensities,                    
-      const double beta,                              
-      std::vector<int> &segmentation                   
-    );
-    #endif
-
-
-    template <class dataType, class triangulationType>
-    int computeSurfacesPersistence(
-      std::vector<std::vector<int>>    &trajTime,
-      std::vector<std::vector<int>>    &trajVertexId,
-      std::vector<double>              &surfMin,
-      std::vector<double>              &surfMax,
-      std::vector<double>              &surfMean,
-      std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
-      int                                frameSurf,
-      const triangulationType          *triangulation
-    );
-    
 
     int computeSurfaceCellCount(const std::vector<ttk::SimplexId> &surfVertices,
                             const ttk::AbstractTriangulation *triangulation
@@ -278,7 +200,6 @@ namespace ttk {
 	double boundaryYMin_;
 	double boundaryXMin_;
 	double boundaryX_;
-    int surfaceMethod_;
 	double persistenceThreshold_;
 	std::vector<ttk::SimplexId> *minSeg_;
 	std::vector<ttk::SimplexId> *saddleSeg_;
@@ -318,73 +239,6 @@ int ttk::DebrisTracer::linearRegression(
   return 1;
 }
 #endif
-
-
-/**
- * Collect vertices in a square window around a centerId whose
- * scalar value is within [0.95 * max_in_window, max_in_window].*
- */
-template<class dataType, class triangulationType>
-void ttk::DebrisTracer::collectNearMaxInSquare(
-                           const triangulationType *tri,
-                           const dataType *scalars,
-                           const ttk::SimplexId centerId,
-                           int square_size,
-                           std::vector<ttk::SimplexId> &outIds
-) {
-  if(tri == nullptr || scalars == nullptr || square_size < 1)
-    return;
-
-  const auto nVerts = tri->getNumberOfVertices();
-  if(nVerts <= 0 || centerId < 0 || centerId >= nVerts)
-    return;
-
-  float cxF=0.f, cyF=0.f, czF=0.f;
-  tri->getVertexPoint(centerId, cxF, cyF, czF);
-  const long long cx = llround(static_cast<double>(cxF));
-  const long long cy = llround(static_cast<double>(cyF));
-
-  const long long half = square_size / 2;
-
-  ttk::SimplexId maxId = -1;
-  double maxVal = -std::numeric_limits<double>::infinity();
-
-  for(ttk::SimplexId v = 0; v < nVerts; ++v) {
-    float xF=0.f, yF=0.f, zF=0.f;
-    tri->getVertexPoint(v, xF, yF, zF);
-    const long long ix = llround(static_cast<double>(xF));
-    const long long iy = llround(static_cast<double>(yF));
-
-    if(std::llabs(ix - cx) > half || std::llabs(iy - cy) > half)
-      continue;
-
-    const double s = scalars[static_cast<size_t>(v)];
-    if(s > maxVal) {
-      maxVal = s;
-      maxId = v;
-    }
-  }
-
-  if(maxId < 0)
-    return; 
-
-  const double threshold = maxVal * 0.95;
-
-  for(ttk::SimplexId v = 0; v < nVerts; ++v) {
-    float xF=0.f, yF=0.f, zF=0.f;
-    tri->getVertexPoint(v, xF, yF, zF);
-    const long long ix = llround(static_cast<double>(xF));
-    const long long iy = llround(static_cast<double>(yF));
-
-    if(std::llabs(ix - cx) > half || std::llabs(iy - cy) > half)
-      continue;
-
-    const double s = scalars[static_cast<size_t>(v)];
-    if(s >= threshold) {
-      outIds.push_back(v); 
-    }
-  }
-}
 
 
 /**
@@ -784,7 +638,6 @@ int ttk::DebrisTracer::execute(
                 std::vector<double>             &surfMean,
                 std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
                 int frameSurf,
-                const std::vector<std::vector<double>> &gradientNorms,
                 std::vector<LinearTrajectory> &finalTraj,
                 const triangulationType *triangulation) {
 
@@ -810,766 +663,20 @@ int ttk::DebrisTracer::execute(
         VX[i] = finalTraj[i].ax * conversion;
         VY[i] = finalTraj[i].ay * conversion;
     }
-    if (surfaceMethod_ == 3) {
-		computeMergeTree<dataType, triangulationType>(
-				frameSurf,
-				triangulation,
-				finalTraj,
-				allVertexDebris,
-				surfMin, surfMax, surfMean);
+	computeMergeTree<dataType, triangulationType>(
+			frameSurf,
+			triangulation,
+			finalTraj,
+			allVertexDebris,
+			surfMin, surfMax, surfMean);
 
-	}
 
     this->printMsg("Statistics complete", 1.0, timer.getElapsedTime(),
                    this->threadNumber_);
     return 1;
 }
 
-
-template <class dataType, class triangulationType>
-int ttk::DebrisTracer::computeSurfacesBFS(
-    std::vector<std::vector<int>>    &trajTime,
-    std::vector<std::vector<int>>    &trajVertexId,
-    std::vector<double>              &surfMin,
-    std::vector<double>              &surfMax,
-    std::vector<double>              &surfMean,
-    std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
-    int                                frameSurf,
-    const std::vector<std::vector<double>>  &gradientNorms,
-    const triangulationType          *triangulation) {
-
-  // SURFACE (BFS)
-
-  const size_t numFrames = inputData_.size();
-  const ttk::SimplexId numVertices = triangulation->getNumberOfVertices();
-  const int    numTraj   = static_cast<int>(trajTime.size());
-
-  if(static_cast<int>(surfMin.size()) < numTraj) surfMin.resize(numTraj, 0.0);
-  if(static_cast<int>(surfMax.size()) < numTraj) surfMax.resize(numTraj, 0.0);
-  if(static_cast<int>(surfMean.size()) < numTraj) surfMean.resize(numTraj, 0.0);
-
-  double maxVal = std::numeric_limits<double>::lowest();
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_) reduction(max : maxVal)
-#endif
-  for(size_t v = 0; v < numFrames; ++v) {
-    auto *scalars = static_cast<dataType *>(inputData_[v]);
-    const double localMax = *std::max_element(scalars, scalars + numVertices);
-    if(localMax > maxVal) maxVal = localMax;
-  }
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(this->threadNumber_)
-  {
-    std::vector<char>              visited(numVertices);
-    std::vector<ttk::SimplexId>    surfVertex;
-#pragma omp for schedule(dynamic)
-    for(int i = 0; i < numTraj; ++i) {
-#else
-    std::vector<char>              visited(numVertices);
-    std::vector<ttk::SimplexId>    surfVertex;
-    for(int i = 0; i < numTraj; ++i) {
-#endif
-
-      const int trajSize = static_cast<int>(trajVertexId[i].size());
-      std::vector<int> trajSurfaces(trajSize, 0);
-
-      for(int j = 0; j < trajSize; ++j) {
-        const int frame          = trajTime[i][j];
-        const ttk::SimplexId vid = static_cast<ttk::SimplexId>(trajVertexId[i][j]);
-
-        auto *frameScalars = static_cast<dataType *>(inputData_[frame]);
-        const double local_min = frameScalars[vid];
-
-        std::fill(visited.begin(), visited.end(), 0);
-        surfVertex.clear();
-
-        bfsSegmentation(
-          vid,                      // seed
-          surfVertex,               // out vertices
-          frameScalars,             // scalars at 'frame'
-          visited,
-          local_min,
-          maxVal,
-          gradientNorms[frame],
-          triangulation
-        );
-
-        if(surfVertex.size() > 100) { surfVertex.clear(); }
-        if(frame == frameSurf) { allVertexDebris[i] = surfVertex; }
-
-        trajSurfaces[j] = computeSurfaceCellCount(surfVertex, triangulation);
-      }
-
-      int    minVal = std::numeric_limits<int>::max();
-      int    maxValS = 0;
-      long   sum = 0;
-      int    count = 0;
-
-      for(const int s : trajSurfaces) {
-        if(s > 0) {
-          if(s < minVal) minVal = s;
-          if(s > maxValS) maxValS = s;
-          sum += s;
-          ++count;
-        }
-      }
-
-      if(count > 0) {
-        surfMin[i] = static_cast<double>(minVal);
-        surfMax[i] = static_cast<double>(maxValS);
-        const double mean = static_cast<double>(sum) / static_cast<double>(count);
-        surfMean[i] = (mean == 0.0 ? 0.25 : mean);
-      } else {
-        surfMin[i] = 0.0;
-        surfMax[i] = 0.0;
-        surfMean[i] = 0.25;
-      }
-    }
-#ifdef TTK_ENABLE_OPENMP
-  }
-#endif
-
-  return 0;
-}
             
-
-
-/**
- * Region grow (BFS) from a seed vertex using a scalar interval
- * and a local gradient consistency test
-*/
-template <class dataType, class triangulationType>
-int ttk::DebrisTracer::bfsSegmentation(
-  ttk::SimplexId                         startId,
-  std::vector<ttk::SimplexId>            &surfVertex,
-  const dataType                         *frameScalars,
-  std::vector<char>                      &visited,
-  const double                           local_min,
-  double                                 maxVal,
-  std::vector<double>                    &gradientNorm,
-  const triangulationType                *triangulation
-) {
-  surfVertex.clear();
-
-  double coeff = (-1.0 * errSurf_) / maxVal;
-  const double scalarThreshold = local_min + (coeff * local_min + errSurf_);
-  const double kSigma = 1.5;
-  const double eps = 1e-6;
-
-  std::vector<ttk::SimplexId> stack;
-  stack.reserve(128);
-  stack.push_back(startId);
-
-  const size_t nPts = gradientNorm.size();
-  std::vector<char> inSurf(nPts, 0);
-
-  bool anyAdded = false;
-
-  while(!stack.empty()) {
-    const ttk::SimplexId vId = stack.back();
-    stack.pop_back();
-
-    if(visited[vId]) continue;
-    visited[vId] = 1;
-
-    // critical point always in 
-    if(vId == startId) {
-      surfVertex.push_back(vId);
-      inSurf[vId] = 1;
-      anyAdded = true;
-      const int nNbrs0 = triangulation->getVertexNeighborNumber(vId);
-      for(int j = 0; j < nNbrs0; ++j) {
-        ttk::SimplexId nbr0{-1};
-        triangulation->getVertexNeighbor(vId, j, nbr0);
-        if(!visited[nbr0]) stack.push_back(nbr0);
-      }
-      continue;
-    }
-
-    const double val = static_cast<double>(frameScalars[vId]);
-    if(val >= local_min && val <= scalarThreshold) {
-      surfVertex.push_back(vId);
-      inSurf[vId] = 1;
-      anyAdded = true;
-      const int nNbrs = triangulation->getVertexNeighborNumber(vId);
-      for(int j = 0; j < nNbrs; ++j) {
-        ttk::SimplexId nbr{-1};
-        triangulation->getVertexNeighbor(vId, j, nbr);
-        if(!visited[nbr]) stack.push_back(nbr);
-      }
-      continue;
-    }
-
-    const int nNbrs = triangulation->getVertexNeighborNumber(vId);
-    double sumGrad = 0.0;
-    std::vector<ttk::SimplexId> acceptedNbrs;
-    acceptedNbrs.reserve(nNbrs);
-
-    for(int j = 0; j < nNbrs; ++j) {
-      ttk::SimplexId nbr{-1};
-      triangulation->getVertexNeighbor(vId, j, nbr);
-      if(inSurf[nbr]) {
-        sumGrad += gradientNorm[nbr];
-        acceptedNbrs.push_back(nbr);
-      }
-    }
-
-    const size_t count = acceptedNbrs.size();
-    if(count < 1) {
-      continue;
-    }
-
-    const double meanGrad = sumGrad / static_cast<double>(count);
-    double var = 0.0;
-    for(const auto &nbr : acceptedNbrs) {
-      double diff = gradientNorm[nbr] - meanGrad;
-      var += diff * diff;
-    }
-    const double sigmaGrad = std::sqrt(var / static_cast<double>(count));
-    const double currGrad = gradientNorm[vId];
-    const double delta = std::abs(currGrad - meanGrad);
-
-    bool gradAccepted = false;
-    if(sigmaGrad > eps) {
-      if(delta <= kSigma * sigmaGrad) gradAccepted = true;
-    } else {
-      // sigmaGrad ≈ 0 : homogeneous neighbor
-      if(delta <= eps) gradAccepted = true;
-    }
-
-    if(gradAccepted) {
-      surfVertex.push_back(vId);
-      inSurf[vId] = 1;
-      anyAdded = true;
-      for(int j = 0; j < nNbrs; ++j) {
-        ttk::SimplexId nbr{-1};
-        triangulation->getVertexNeighbor(vId, j, nbr);
-        if(!visited[nbr]) stack.push_back(nbr);
-      }
-    }
-  }
-
-  return anyAdded ? 1 : 0;
-}
-
-
-template <class dataType, class triangulationType>
-int ttk::DebrisTracer::computeSurfacesRW(
-    std::vector<std::vector<int>>    &trajTime,
-    std::vector<std::vector<int>>    &trajVertexId,
-    std::vector<double>              &surfMin,
-    std::vector<double>              &surfMax,
-    std::vector<double>              &surfMean,
-    std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
-    int                                frameSurf,
-    const triangulationType          *triangulation) {
-
-  const auto *frameScalars = static_cast<dataType *>(inputData_[frameSurf]);
-  const int numTraj = static_cast<int>(trajTime.size());
-
-  if(static_cast<int>(surfMin.size()) < numTraj) surfMin.resize(numTraj, 0.0);
-  if(static_cast<int>(surfMax.size()) < numTraj) surfMax.resize(numTraj, 0.0);
-  if(static_cast<int>(surfMean.size()) < numTraj) surfMean.resize(numTraj, 0.0);
-  if(static_cast<int>(allVertexDebris.size()) < numTraj) allVertexDebris.resize(numTraj);
-
-  // 1)seeds background 
-  for(int i = 0; i < numTraj; i++) {
-    for(size_t j = 0; j < trajVertexId[i].size(); j++) {
-      if(trajTime[i][j] == frameSurf) {
-        const ttk::SimplexId vid = static_cast<ttk::SimplexId>(trajVertexId[i][j]);
-        collectNearMaxInSquare(triangulation, frameScalars, vid, 30, allVertexDebris[i]);
-      }
-    }
-  }
-
-#ifdef TTK_ENABLE_EIGEN
-  // 2) seeds + labels (0 = background, i+1 = foreground trajectory i)
-  {
-    std::vector<ttk::SimplexId> seed;     seed.reserve(1024);
-    std::vector<int>            seedLabel; seedLabel.reserve(1024);
-
-    const auto nVerts = triangulation->getNumberOfVertices();
-    std::vector<char> isSeed(nVerts, 0); // deduplication
-
-    // 2.a) BACKGROUND seeds (label 0)
-    for(int i = 0; i < numTraj; i++) {
-      for(const auto v : allVertexDebris[i]) {
-        if(v >= 0 && v < nVerts && !isSeed[v]) {
-          seed.push_back(v);
-          seedLabel.push_back(0);
-          isSeed[v] = 1;
-        }
-      }
-    }
-
-    // 2.b) FOREGROUND seeds
-    for(int i = 0; i < numTraj; i++) {
-      for(size_t j = 0; j < trajVertexId[i].size(); j++) {
-        if(trajTime[i][j] == frameSurf) {
-          const auto v = static_cast<ttk::SimplexId>(trajVertexId[i][j]);
-          if(v >= 0 && v < nVerts && !isSeed[v]) {
-            seed.push_back(v);
-            seedLabel.push_back(i + 1);
-            isSeed[v] = 1;
-          }
-        }
-      }
-    }
-
-    // 3) Random Walker
-    std::vector<int> segmentation; // label for each vertex 
-    this->printMsg("RandomWalker: seeds=" + std::to_string(seed.size())
-                   + ", beta(errSurf)=" + std::to_string(errSurf_));
-
-    // errSurf = beta
-    const int rwStatus = randomWalkerSegment(
-      seed, seedLabel, triangulation, frameScalars,
-      static_cast<double>(errSurf_), segmentation);
-
-    if(rwStatus != 0) {
-      this->printMsg("randomWalkerSegment failed with code " + std::to_string(rwStatus));
-    } else {
-      for(int i = 0; i < numTraj; i++) {
-        allVertexDebris[i].clear();
-      }
-      for(ttk::SimplexId v = 0; v < static_cast<ttk::SimplexId>(segmentation.size()); v++) {
-        const int lab = segmentation[v];
-        if(lab > 0) { // lab = i+1
-          const int trajIdx = lab - 1;
-          if(trajIdx >= 0 && trajIdx < numTraj) {
-            allVertexDebris[trajIdx].push_back(v);
-          }
-        }
-      }
-
-      for(int i = 0; i < numTraj; ++i) {
-        const int surfCells = computeSurfaceCellCount(allVertexDebris[i], triangulation);
-        const double val = static_cast<double>(surfCells);
-        surfMin[i] = val;
-        surfMax[i] = val;
-        surfMean[i] = val;
-      }
-    }
-  }
-#else
-   (void)trajTime; (void)trajVertexId; (void)frameSurf;
-#endif
-
-  return 0;
-}
-
-/**
- * Multi-label Random Walker segmentation from seeds
-*/ 
-#ifdef TTK_ENABLE_EIGEN
-template<class dataType>
-int ttk::DebrisTracer::randomWalkerSegment(
-  const std::vector<ttk::SimplexId> &seed,        // marked vertex ids
-  const std::vector<int> &seedLabel,              // label per seed (0..K-1)
-  const ttk::AbstractTriangulation *triangulation,
-  const dataType *intensities,                    // per-vertex intensity
-  const double beta,                              // weight parameter
-  std::vector<int> &segmentation                  // [OUT] label per vertex
-) {
-
-  this->printMsg("RandomWalker: starting");
-
-  if(!triangulation) {
-    this->printMsg("ERROR : randomWalkerSegment: null triangulation.");
-    return -1;
-  }
-  if(seed.size() != seedLabel.size()) {
-    this->printMsg("ERROR : randomWalkerSegment: seed and seedLabel size mismatch.");
-    return -2;
-  }
-
-  const auto nVerts = triangulation->getNumberOfVertices();
-  if(nVerts <= 0) {
-    this->printMsg("ERROR : randomWalkerSegment: empty triangulation.");
-    return -3;
-  }
-
-  // --- 0) Preparation ---
-  this->printMsg("RandomWalker: preparing data structures");
-  segmentation.assign(nVerts, -1);
-
-  std::vector<int> vertexLabel(nVerts, -1);
-  int K = 0;
-  for(size_t k = 0; k < seed.size(); ++k) {
-    const auto v = seed[k];
-    if(v < 0 || v >= nVerts) {
-      this->printMsg("ERROR : randomWalkerSegment: seed vertex out of range.");
-      return -4;
-    }
-    vertexLabel[v] = seedLabel[k];
-    K = std::max(K, seedLabel[k] + 1);
-  }
-  if(K <= 0) {
-    this->printMsg("ERROR : randomWalkerSegment: no labels found in seeds.");
-    return -5;
-  }
-
-  std::vector<ttk::SimplexId> uIndex(nVerts, -1);
-  std::vector<ttk::SimplexId> uVerts;
-  uVerts.reserve(nVerts);
-  for(ttk::SimplexId v = 0; v < nVerts; ++v) {
-    if(vertexLabel[v] < 0) {
-      uIndex[v] = static_cast<ttk::SimplexId>(uVerts.size());
-      uVerts.push_back(v);
-    }
-  }
-  const ttk::SimplexId nU = static_cast<ttk::SimplexId>(uVerts.size());
-  if(nU == 0) {
-    for(ttk::SimplexId v = 0; v < nVerts; ++v)
-      segmentation[v] = vertexLabel[v];
-    this->printMsg("RandomWalker: no unknown nodes (all are seeds)");
-    return 0;
-  }
-
-  // --- 1) Assembly ---
-  this->printMsg("RandomWalker: assembling restricted Laplacian and RHS");
-
-  using T = double;
-  using Triplet = Eigen::Triplet<T>;
-  std::vector<Eigen::VectorXd> rhs(K, Eigen::VectorXd::Zero(nU));
-  std::vector<Triplet> L_triplets;
-
-#ifdef TTK_ENABLE_OPENMP
-  const int nThreads = omp_get_max_threads();
-  std::vector<std::vector<Triplet>> L_triplets_tls(static_cast<size_t>(nThreads));
-
-  #pragma omp parallel for schedule(static)
-  for(ttk::SimplexId ui = 0; ui < nU; ++ui) {
-    const auto vi = uVerts[ui];
-    T diag = 0.0;
-    const int tid =
-    #ifdef _OPENMP
-      omp_get_thread_num();
-    #else
-      0;
-    #endif
-    auto &localTriplets = L_triplets_tls[static_cast<size_t>(tid)];
-
-    const auto nNeigh = triangulation->getVertexNeighborNumber(vi);
-    for(int ln = 0; ln < nNeigh; ++ln) {
-      ttk::SimplexId vj{};
-      triangulation->getVertexNeighbor(vi, ln, vj);
-
-      const T gi = static_cast<T>(intensities[vi]);
-      const T gj = static_cast<T>(intensities[vj]);
-      const T diff = gi - gj;
-      const T wij = std::exp(-beta * diff * diff);
-
-      diag += wij;
-      const auto uj = uIndex[vj];
-      if(uj >= 0) {
-        localTriplets.emplace_back(ui, uj, -wij);
-      } else {
-        const int lab = vertexLabel[vj];
-        if(lab >= 0) {
-          rhs[lab](ui) += wij;
-        }
-      }
-    }
-    localTriplets.emplace_back(ui, ui, diag);
-  }
-
-  for(auto &vec : L_triplets_tls) {
-    L_triplets.insert(L_triplets.end(),
-                      std::make_move_iterator(vec.begin()),
-                      std::make_move_iterator(vec.end()));
-  }
-#else
-  for(ttk::SimplexId ui = 0; ui < nU; ++ui) {
-    const auto vi = uVerts[ui];
-    T diag = 0.0;
-    const auto nNeigh = triangulation->getVertexNeighborNumber(vi);
-    for(int ln = 0; ln < nNeigh; ++ln) {
-      ttk::SimplexId vj{};
-      triangulation->getVertexNeighbor(vi, ln, vj);
-
-      const T gi = static_cast<T>(intensities[vi]);
-      const T gj = static_cast<T>(intensities[vj]);
-      const T diff = gi - gj;
-      const T wij = std::exp(-beta * diff * diff);
-
-      diag += wij;
-      const auto uj = uIndex[vj];
-      if(uj >= 0) {
-        L_triplets.emplace_back(ui, uj, -wij);
-      } else {
-        const int lab = vertexLabel[vj];
-        if(lab >= 0) {
-          rhs[lab](ui) += wij;
-        }
-      }
-    }
-    L_triplets.emplace_back(ui, ui, diag);
-  }
-#endif
-
-  Eigen::SparseMatrix<T> L_U(nU, nU);
-  L_U.setFromTriplets(L_triplets.begin(), L_triplets.end());
-  L_U.makeCompressed();
-
-  // --- 2) Factorization ---
-  this->printMsg("RandomWalker: factorizing Laplacian");
-
-  Eigen::SimplicialLLT<Eigen::SparseMatrix<T>> llt;
-  llt.compute(L_U);
-  const bool useDirect = (llt.info() == Eigen::Success);
-
-  Eigen::ConjugateGradient<Eigen::SparseMatrix<T>, Eigen::Lower | Eigen::Upper,
-                           Eigen::DiagonalPreconditioner<T>>
-    cg;
-  if(!useDirect) {
-    cg.setMaxIterations(std::max<ttk::SimplexId>(2000, 5 * nU));
-    cg.setTolerance(1e-10);
-    cg.compute(L_U);
-    if(cg.info() != Eigen::Success) {
-      this->printMsg("ERROR : randomWalkerSegment: solver setup failed.");
-      return -6;
-    }
-  }
-
-  // --- 3) Solve ---
-  this->printMsg("RandomWalker: solving linear systems");
-
-  std::vector<Eigen::VectorXd> X(K, Eigen::VectorXd::Zero(nU));
-  for(int s = 0; s < K; ++s) {
-    if(useDirect) {
-      X[s] = llt.solve(rhs[s]);
-      if(llt.info() != Eigen::Success) {
-        this->printMsg("ERROR : randomWalkerSegment: LLT solve failed for label "
-                       + std::to_string(s));
-        return -7;
-      }
-    } else {
-      X[s] = cg.solve(rhs[s]);
-      if(cg.info() != Eigen::Success) {
-        this->printMsg("ERROR : randomWalkerSegment: CG solve failed for label "
-                       + std::to_string(s));
-        return -8;
-      }
-    }
-  }
-
-  // --- 4) Label assignment ---
-  this->printMsg("RandomWalker: assigning labels");
-
-#ifdef TTK_ENABLE_OPENMP
-  #pragma omp parallel for schedule(static)
-  for(long long k = 0; k < static_cast<long long>(seed.size()); ++k) {
-    const auto v = seed[static_cast<size_t>(k)];
-    segmentation[v] = vertexLabel[v];
-  }
-
-  #pragma omp parallel for schedule(static)
-  for(ttk::SimplexId ui = 0; ui < nU; ++ui) {
-    int bestLab = 0;
-    T bestVal = X[0](ui);
-    for(int s = 1; s < K; ++s) {
-      const T val = X[s](ui);
-      if(val > bestVal) {
-        bestVal = val;
-        bestLab = s;
-      }
-    }
-    segmentation[uVerts[ui]] = bestLab;
-  }
-#else
-  for(const auto v : seed) {
-    segmentation[v] = vertexLabel[v];
-  }
-  for(ttk::SimplexId ui = 0; ui < nU; ++ui) {
-    int bestLab = 0;
-    T bestVal = X[0](ui);
-    for(int s = 1; s < K; ++s) {
-      const T val = X[s](ui);
-      if(val > bestVal) {
-        bestVal = val;
-        bestLab = s;
-      }
-    }
-    segmentation[uVerts[ui]] = bestLab;
-  }
-#endif
-
-  this->printMsg("RandomWalker: completed successfully");
-  return 0;
-}
-
-#endif
-
-template <class dataType, class triangulationType>
-int ttk::DebrisTracer::computeSurfacesPersistence(
-  std::vector<std::vector<int>>                 &trajTime,
-  std::vector<std::vector<int>>                 &trajVertexId,
-  std::vector<double>                           &surfMin,
-  std::vector<double>                           &surfMax,
-  std::vector<double>                           &surfMean,
-  std::vector<std::vector<ttk::SimplexId>>      &allVertexDebris,
-  int                                            frameSurf,
-  const triangulationType                       *triangulation) {
-
-  this->printMsg("Surface (Persistence/minima, multi-source) — frame "
-                 + std::to_string(frameSurf));
-
-  if(frameSurf < 0 || frameSurf >= static_cast<int>(inputData_.size())) {
-    this->printMsg("computeSurfacesPersistence: invalid frameSurf");
-    return -1;
-  }
-  if(!triangulation) {
-    this->printMsg("computeSurfacesPersistence: null triangulation");
-    return -2;
-  }
-  if(instantPers_.empty()) {
-    this->printMsg("computeSurfacesPersistence: instantPers_ is empty");
-    return -3;
-  }
-
-  const auto *frameScalars
-    = static_cast<const dataType *>(inputData_[frameSurf]);
-  const ttk::SimplexId nVerts
-    = static_cast<ttk::SimplexId>(triangulation->getNumberOfVertices());
-
-  struct Seed {
-    int traj;               // trajectory index
-    ttk::SimplexId v;       // seed vertex
-    dataType fcrit;         // critical value
-    double pers;            // instant persistence (>= 0)
-  };
-  std::vector<Seed> seeds;
-  seeds.reserve(trajTime.size());
-
-  const int numTraj = static_cast<int>(trajTime.size());
-  for(int i = 0; i < numTraj; ++i) {
-    if(static_cast<size_t>(i) < allVertexDebris.size())
-      allVertexDebris[i].clear();
-
-    const auto &T = trajTime[i];
-    const auto &V = trajVertexId[i];
-    const auto &P = (i < static_cast<int>(instantPers_.size()))
-                      ? instantPers_[i] : std::vector<double>{};
-
-    for(size_t k = 0; k < T.size(); ++k) {
-      if(T[k] == frameSurf) {
-        const auto v = static_cast<ttk::SimplexId>(V[k]);
-        if(v >= 0 && v < nVerts) {
-          const dataType fcrit = frameScalars[v];
-          double pers = (k < P.size() ? P[k] : 0.0);
-          if(pers < 0.0) pers = 0.0;
-          seeds.push_back({i, v, fcrit, pers});
-        }
-        break;
-      }
-    }
-  }
-
-  const size_t S = seeds.size();
-  if(S == 0) {
-    for(int i = 0; i < numTraj; ++i) {
-      surfMin[i] = surfMax[i] = surfMean[i] = 0.0;
-    }
-    this->printMsg("Surface (Persistence/minima) — no seeds at this frame");
-    return 0;
-  }
-
-  // priority / tie-breaking
-  std::vector<int> seedOrder(S);
-  std::iota(seedOrder.begin(), seedOrder.end(), 0);
-  std::stable_sort(seedOrder.begin(), seedOrder.end(),
-                   [&](int a, int b){
-                     if(seeds[a].fcrit != seeds[b].fcrit)
-                       return seeds[a].fcrit < seeds[b].fcrit; // minima first (lowest value)
-                     return seeds[a].traj < seeds[b].traj;
-                   });
-  std::vector<int> seedPrio(S, 0); // lower value = higher priority
-  for(size_t rank = 0; rank < S; ++rank)
-    seedPrio[seedOrder[rank]] = static_cast<int>(rank);
-
-  // saddle associated with each seed
-  std::vector<dataType> upper(S);
-  for(size_t s = 0; s < S; ++s)
-    upper[s] = static_cast<dataType>(seeds[s].fcrit + seeds[s].pers);
-
-  struct QItem {
-    dataType f;             // scalar value of candidate vertex
-    ttk::SimplexId v;       // vertex id
-    int s;                  // associated seed index
-    int prio;               // seed priority (lower wins)
-    bool operator<(QItem const &o) const {
-      if(f != o.f) return f > o.f;          
-      if(prio != o.prio) return prio > o.prio;
-      return v > o.v;                       
-    }
-  };
-
-  std::priority_queue<QItem> pq;
-  std::vector<int> label(nVerts, -1);
-
-  auto pushNeighbor = [&](ttk::SimplexId vj, int sIdx) {
-    if(vj < 0 || vj >= nVerts) return;
-    if(label[vj] != -1) return;
-    const dataType fv = frameScalars[vj];
-    if(fv <= upper[sIdx]) {
-      pq.push(QItem{fv, vj, sIdx, seedPrio[sIdx]});
-    }
-  };
-
-  for(size_t s = 0; s < S; ++s) {
-    const auto v0 = seeds[s].v;
-    if(v0 < 0 || v0 >= nVerts) continue;
-
-    if(label[v0] == -1) 
-      label[v0] = seeds[s].traj; // minimum surface = seed only
-
-    const int nnei = triangulation->getVertexNeighborNumber(v0);
-    for(int ln = 0; ln < nnei; ++ln) {
-      ttk::SimplexId vj{-1};
-      triangulation->getVertexNeighbor(v0, ln, vj);
-      pushNeighbor(vj, static_cast<int>(s));
-    }
-  }
-
-  while(!pq.empty()) {
-    const auto it = pq.top(); pq.pop();
-    const auto v  = it.v;
-    const int s   = it.s;
-
-    if(label[v] != -1) continue;          // already claimed by a higher-priority seed
-    if(frameScalars[v] > upper[s]) continue;  // outside the band of seed s
-
-    label[v] = seeds[s].traj;
-
-    // propagate to neighbors
-    const int nnei = triangulation->getVertexNeighborNumber(v);
-    for(int ln = 0; ln < nnei; ++ln) {
-      ttk::SimplexId vj{-1};
-      triangulation->getVertexNeighbor(v, ln, vj);
-      pushNeighbor(vj, s);
-    }
-  }
-
-  for(ttk::SimplexId v = 0; v < nVerts; ++v) {
-    const int lab = label[v];
-    if(lab >= 0 && lab < numTraj) {
-      allVertexDebris[lab].push_back(v);
-    }
-  }
-
-  for(int i = 0; i < numTraj; ++i) {
-    const double surf = static_cast<double>(
-      computeSurfaceCellCount(allVertexDebris[i], triangulation)
-    );
-    surfMin[i] = surfMax[i] = surfMean[i] = surf;
-  }
-
-  this->printMsg("Surface (Persistence/minima, multi-source) — OK");
-  return 0;
-}
-
 
 template <class dataType, class triangulationType>
 int ttk::DebrisTracer::computeMergeTree(
@@ -1597,7 +704,6 @@ int ttk::DebrisTracer::computeMergeTree(
   	frame = (!onlyFrameSurface_)  ? frame : frameSurf;
 	this->printMsg("Processing frame " + std::to_string(frame) + "/"
                    + std::to_string(nFrames - 1));
-    // Persistence diagram
     auto *scalars = static_cast<dataType *>(inputData_[frame]);
 
     std::vector<ttk::SimplexId> pdOffsets(nPixels);
@@ -1620,7 +726,7 @@ int ttk::DebrisTracer::computeMergeTree(
     const int statusPD = persistenceDiagram.execute(
       diagram,
       scalars,
-      0, // H0
+      0, 
       pdOffsets.data(),
       const_cast<triangulationType *>(triangulation));
 
@@ -1679,9 +785,7 @@ int ttk::DebrisTracer::computeMergeTree(
       *const_cast<triangulationType *>(triangulation),
       emptyDiagram);
 
-    // -----------------------------------------------------------------------
-    // 4) Merge tree via ExTreeM
-    // -----------------------------------------------------------------------
+    // Merge tree (ttk::ExTreeM)
 
     std::vector<ttk::SimplexId> order(nPixels);
     ttk::preconditionOrderArray<dataType>(
@@ -1727,7 +831,6 @@ int ttk::DebrisTracer::computeMergeTree(
 
     std::vector<ttk::SimplexId> orderJoin(order);
 
-    // Invert order for the Join Tree
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
     for(ttk::SimplexId i = 0; i < nPixels; ++i) {
@@ -1756,11 +859,7 @@ int ttk::DebrisTracer::computeMergeTree(
       return -1;
     }
 
-    // -----------------------------------------------------------------------
-    // 5) Association to trajectories
-    // -----------------------------------------------------------------------
-
-
+    //  Association to trajectories
     std::vector<std::vector<ttk::SimplexId>> segmentId(
       *std::max_element(segmentation.begin(), segmentation.end()) + 1);
 
@@ -1806,7 +905,6 @@ int ttk::DebrisTracer::computeMergeTree(
       ttk::SimplexId vId = -1;
 	  vId = traj.getOriginalVertex(frame);
       if(vId<0) {
-        // Fused chain: linear trajectory intersection
         const double x = traj.evalX(frame);
         if(x < boundaryXMin_ || x > boundaryX_+1)
           continue;
@@ -1868,11 +966,7 @@ int ttk::DebrisTracer::computeMergeTree(
                    frameTimer.getElapsedTime(), this->threadNumber_);
   }
 
-
-
-  // -------------------------------------------------------------------------
-  // 6) Per-trajectory surface statistics (surfMin, surfMax, surfMean)
-  // -------------------------------------------------------------------------
+  // Per-trajectory surface statistics (surfMin, surfMax, surfMean)
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
   for(size_t trajId = 0; trajId < finalTraj.size(); ++trajId) {
@@ -1985,11 +1079,6 @@ dataType ttk::DebrisTracer::otsuThresholdLocal(
   return static_cast<dataType>(t);
 }
 
-// ------------------------------------------------------------
-// - compute local Otsu threshold T on this segment
-// - keep only vertices with scalars[v] <= T (dark part)
-// - keep only the largest connected component among kept vertices
-// ------------------------------------------------------------
 template <typename dataType, typename triangulationType>
 void ttk::DebrisTracer::cleanDarkSegmentInPlace(
 								   std::vector<ttk::SimplexId> &segmentVerts,
@@ -1999,10 +1088,7 @@ void ttk::DebrisTracer::cleanDarkSegmentInPlace(
   if(segmentVerts.size() < 2)
     return;
 
-  // 1) Local adaptive threshold
   const dataType T = otsuThresholdLocal<dataType>(segmentVerts, scalars, otsuBins);
-
-  // 2) Keep only dark vertices (<= T)
   std::vector<char> inSeg(triangulation->getNumberOfVertices(), 0);
   std::vector<ttk::SimplexId> kept;
   kept.reserve(segmentVerts.size());
@@ -2015,8 +1101,7 @@ void ttk::DebrisTracer::cleanDarkSegmentInPlace(
   }
 
   const size_t segSize = segmentVerts.size();
-  const size_t minKeep = std::max<size_t>(2, (size_t)std::ceil(0.10 * (double)segSize)); // 10%
-  if(kept.size() < minKeep && segSize >= 2) {
+  const size_t minKeep = std::max<size_t>(2, (size_t)std::ceil(0.10 * (double)segSize));   if(kept.size() < minKeep && segSize >= 2) {
   
     for(const auto v : kept) inSeg[v] = 0;
     kept.clear();
@@ -2049,7 +1134,6 @@ void ttk::DebrisTracer::cleanDarkSegmentInPlace(
     if(visited[seed])
       continue;
 
-    // BFS
     std::vector<ttk::SimplexId> cc;
     cc.reserve(128);
 

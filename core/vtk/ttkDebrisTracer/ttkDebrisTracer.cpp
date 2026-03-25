@@ -7,7 +7,6 @@
 #include <vtkPointData.h>
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
-#include <vtkGradientFilter.h>
 #include <vtkLine.h>
 #include <Timer.h>
 #include <ttkMacros.h>
@@ -232,7 +231,6 @@ int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
   this->setMinTimeOrigin(minTimeOrigin);
   this->setMinYTimeOrigin(minYTimeOrigin);
   this->setMaxYTimeOrigin(maxYTimeOrigin);
-  this->setSurfaceMethod(surfaceMethod);
   this->setPersisThresh(persisThresh);
   std::vector<ttk::SimplexId> minSeg(numTraj);
   std::vector<ttk::SimplexId> saddleSeg(numTraj);
@@ -268,21 +266,6 @@ int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
   	allVertexDebris[frame].assign(triangulation->getNumberOfVertices(), -1);
   }
 
-  std::vector<std::vector<double>> gradientNorms;
-  {
-    ttk::Timer gradTimer;
-    this->printMsg("Computing gradient magnitudes ("
-                   + std::to_string(fields.size()) + " fields)");
-    if(!computeAllGradientMagnitudes(inputDataSet,
-                                     fields,
-                                     gradientNorms)) {
-      this->printErr("Gradient Magnitudes fails");
-      return 0;
-    }
-    this->printMsg("Gradient magnitudes complete", 1.0,
-                   gradTimer.getElapsedTime(), this->threadNumber_);
-  }
-
   int status = 0;
   ttkVtkTemplateMacro(fields[0]->GetDataType(), triangulation->getType(),
       (status = this->execute<VTK_TT, TTK_TT>(
@@ -296,7 +279,6 @@ int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
                         surfMean,
                         allVertexDebris,
                         frameSurface,
-                        gradientNorms,
                         finalTraj,
                         (TTK_TT *)triangulation->getData()
                         )));
@@ -584,70 +566,4 @@ int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
 
   return 1;
 }
-
-int ttkDebrisTracer::computeAllGradientMagnitudes(
-  vtkDataSet *inputDataSet,
-  const std::vector<vtkDataArray *> &inputScalarFields,
-  std::vector<std::vector<double>> &gradientNorms
-) {
-  if(!inputDataSet) {
-    this->printErr("inputDataSet is nullptr.");
-    return 0;
-  }
-
-  const size_t nFields = inputScalarFields.size();
-  if(nFields == 0) {
-    this->printErr("No scalar fields provided.");
-    return 0;
-  }
-
-  vtkIdType nPts = inputDataSet->GetNumberOfPoints();
-  if(nPts <= 0) {
-    this->printErr("Empty mesh (nPts <= 0).");
-    return 0;
-  }
-
-  gradientNorms.clear();
-  gradientNorms.resize(nFields);
-  for(size_t f = 0; f < nFields; ++f) {
-    gradientNorms[f].assign(static_cast<size_t>(nPts), 0.0);
-  }
-
-  for(size_t f = 0; f < nFields; f++) {
-    vtkDataArray *currScalar = inputScalarFields[f];
-    if(!currScalar || !currScalar->GetName()) {
-      this->printErr("Invalid scalar array at frame " + std::to_string(f));
-      return 0;
-    }
-    const char *scalarName = currScalar->GetName();
-
-    vtkSmartPointer<vtkGradientFilter> gradFilter = vtkSmartPointer<vtkGradientFilter>::New();
-    gradFilter->SetInputData(inputDataSet);
-    gradFilter->SetInputScalars(vtkDataObject::FIELD_ASSOCIATION_POINTS, scalarName);
-
-
-    gradFilter->Update();
-
-    vtkDataSet *gradOutput = gradFilter->GetOutput();
-    if (!gradOutput){
-        this->printErr("grad output missing");
-    }
-
-    vtkDataArray *gradArray = gradOutput->GetPointData()->GetArray("Gradients");
-    if(!gradArray) {
-      this->printErr("Failed to retrieve gradient array");
-      return 0;
-    }
-
-    for(vtkIdType pid = 0; pid < nPts; ++pid) {
-      double gx = gradArray->GetComponent(pid, 0);
-      double gy = gradArray->GetComponent(pid, 1);
-      double gz = gradArray->GetComponent(pid, 2);
-      gradientNorms[f][static_cast<size_t>(pid)] = std::sqrt(gx * gx + gy * gy + gz * gz);
-    }
-  }
-
-  return 1;
-}
-
 

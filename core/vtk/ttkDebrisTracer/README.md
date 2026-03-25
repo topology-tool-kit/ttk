@@ -48,13 +48,13 @@ Controls how independent trajectories are **linked** into longer **chains**.
 Extracts, on a selected frame, **surface regions** around each trajectory point and aggregates statistics.
 
 - **Surface: Frame index** (`frameSurface`)  
-  The frame at which surfaces are displayed (and compute for RandomWalker method).
+  The frame at which surfaces are displayed.
 
-- **Surface: Threshold / β** (`errSurf`)  
-  Parameter controlling region growth: used as **threshold** for BFS (recommended 15% of scalar fields max value)  or **β** (recommended in [0.001-0.007]) for Random-Walker edge weights.
-
-- **Surface: Method** (`surfaceMethod`, advanced)  
-  Choose **BFS**, **Random-Walker**, or **Persistence-based** region extraction.
+- **Segment cleanup threshold** (`errSurf`)
+  Minimum number of Otsu bins for dark-segment cleanup (0 = disabled).- **Surface: Method** (`surfaceMethod`, advanced) 
+ 
+- **Persistence Threshold (%)** (`persisThresh`)
+  Persistence simplification threshold as a percentage of maximum persistence.
 
 ### Units
 Unit conversion and duration reporting. 
