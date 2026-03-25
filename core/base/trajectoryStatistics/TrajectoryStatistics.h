@@ -818,6 +818,26 @@ int ttk::TrajectoryStatistics::execute(
         VX[i] = finalTraj[i].ax * conversion;
         VY[i] = finalTraj[i].ay * conversion;
     }
+/*
+    if(surfaceMethod_ == 0) {
+      computeSurfacesBFS<dataType, triangulationType>(
+        trajTime, trajVertexId,
+        surfMin, surfMax, surfMean,
+        allVertexDebris,
+        frameSurf,gradientNorms, triangulation);
+    } if (surfaceMethod_ == 1) {
+      computeSurfacesRW<dataType, triangulationType>(
+        trajTime, trajVertexId,
+        surfMin, surfMax, surfMean,
+        allVertexDebris, 
+        frameSurf,triangulation);
+    } else if(surfaceMethod_ == 2) {
+      computeSurfacesPersistence<dataType, triangulationType>(
+        trajTime, trajVertexId,
+        surfMin, surfMax, surfMean,
+        allVertexDebris,
+        frameSurf, triangulation);
+    } */ 
     if (surfaceMethod_ == 3) {
 		computeMergeTree<dataType, triangulationType>(
 				frameSurf,
