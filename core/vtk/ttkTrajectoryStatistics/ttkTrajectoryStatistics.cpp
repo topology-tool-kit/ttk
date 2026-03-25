@@ -14,7 +14,7 @@
 #include <vtkDoubleArray.h>
 #include <vtkGradientFilter.h>
 #include <vtkLine.h>
-
+#include <Timer.h>
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
@@ -270,6 +270,10 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   std::vector<ttk::TrajectoryStatistics::LinearTrajectory> finalTraj;
   std::vector<ttk::TrajectoryStatistics::FuseRecord> fuseRecords;
 
+
+  ttk::Timer timer;
+  timer.reStart();
+
   this->correctTrajectory(trajTime, trajVertexId, trajX, trajY, finalTraj,linearTraj, fuseRecords); 
   std::vector<int>  durations(numTraj);
   std::vector<double> VX(numTraj), VY(numTraj), 
@@ -278,9 +282,8 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   for (size_t frame = 0; frame < allVertexDebris.size(); frame ++){
   	allVertexDebris[frame].assign(triangulation->getNumberOfVertices(), -1);
   }
-  this->printMsg("taille = "+ std::to_string(allVertexDebris.size()) + " " + std::to_string(allVertexDebris[0].size()));
-
-
+  
+  this->printMsg("Correct ", 1.0, timer.getElapsedTime(), threadNumber_);
   std::vector<std::vector<double>> gradientNorms;
 
   if(!computeAllGradientMagnitudes(inputDataSet,
@@ -289,7 +292,6 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     this->printErr("Gradient Magnitudes fails");
     return 0;
   }
-
 
   int status = 0;
   ttkVtkTemplateMacro(fields[0]->GetDataType(), triangulation->getType(),
@@ -311,7 +313,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   if (status != 1) return 0;
 
   // OUTPUT 
-  
+  this->printMsg("MergeTree", 1.0, timer.getElapsedTime(), threadNumber_);
   vtkTable *outputTable = vtkTable::GetData(outputVector, 0);
   if(!outputTable) { this->printErr("output vtkTable"); return 0; }
   

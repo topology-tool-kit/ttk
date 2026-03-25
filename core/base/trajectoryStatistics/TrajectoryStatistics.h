@@ -629,7 +629,6 @@ int ttk::TrajectoryStatistics::correctTrajectory(
       if(dist2 > maxLinkDist2) continue;
 
       const double dot = dirDot(i, j, meanDx, meanDy, meanDz);
-	  this->printMsg("dot = " + std::to_string(dot));
       if(dot < bestDot) continue;
 
 	  if(!temporalOk(startFrame, endFrame)) continue;
