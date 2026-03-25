@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
-    <SourceProxy name="ttkTrajectoryStatistics" class="ttkTrajectoryStatistics" label="TTK Trajectory Statistics">
+    <SourceProxy name="ttkDebrisTracer" class="ttkDebrisTracer" label="TTK DebrisTracer">
       <Documentation short_help="Post-process tracked trajectories and surfaces"
                      long_help="Compute per-trajectory stats, extract surfaces, and fuse compatible trajectory segments into longer chains."/>
     
@@ -170,22 +170,22 @@
      
       <IntVectorProperty name="xOrigin" command="SetxOrigin" label="X Origin"
                             number_of_elements="1" default_values="0">
-        <Documentation>Minimum absolute X velocity required to accept a trajectory (after unit conversion).</Documentation>
+        <Documentation>X coordinate of the reference vertical line used by the time-origin filter.</Documentation>
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
-                                   property="enableFilteringDuration"
+                                   property="enableFilteringTimeOrigin"
                                    value="1"/>
         </Hints>
 	</IntVectorProperty>
 
    <IntVectorProperty name="duraMin" command="SetduraMin" label="Duration min"
                             number_of_elements="1" default_values="0">
-        <Documentation>Minimum absolute X velocity required to accept a trajectory (after unit conversion).</Documentation>
+        <Documentation>Minimum trajectory duration (in frames) to keep.</Documentation>
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
-                                   property="SetenableFilteringDuration"
+                                   property="enableFilteringDuration"
                                    value="1"/>
         </Hints>
 	</IntVectorProperty>
@@ -222,31 +222,6 @@
                                    value="1"/>
         </Hints>
 	</IntVectorProperty>
-      <!-- Initial Position -->
-
-      <IntVectorProperty name="maxX" command="SetmaxX" label="Initial position: Max X"
-                         number_of_elements="1" default_values="-1">
-        <Documentation>Upper bound on the X coordinate of the trajectory at its first frame.
-        Use -1 to disable the filter.</Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty name="maxY" command="SetmaxY" label="Initial position: Max Y"
-                         number_of_elements="1" default_values="-1">
-        <Documentation>Upper bound on the Y coordinate of the trajectory at its first frame.
-        Use -1 to disable the filter.</Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty name="minY" command="SetminY" label="Initial position: Min Y"
-                         number_of_elements="1" default_values="-1">
-        <Documentation>Lower bound on the Y coordinate of the trajectory at its first frame.
-        Use -1 to disable the filter.</Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty name="minX" command="SetminX" label="Initial position: Min X"
-                         number_of_elements="1" default_values="-1">
-        <Documentation>Lower bound on the X coordinate of the trajectory at its first frame.
-        Use -1 to disable the filter.</Documentation>
-      </IntVectorProperty>
    
 
 
@@ -303,12 +278,6 @@
 		<Property name="duraMin"/>
      </PropertyGroup>
 
-     <PropertyGroup panel_widget="Line" label="Initial position">
-       <Property name="minX"/>
-       <Property name="maxX"/>
-       <Property name="minY"/>
-       <Property name="maxY"/>
-     </PropertyGroup>
 
     
       <OutputPort name="Statistics"   index="0" id="port0"/>
@@ -324,5 +293,4 @@
  
  </ProxyGroup>
 </ServerManagerConfiguration>
-
 

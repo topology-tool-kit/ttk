@@ -1,18 +1,12 @@
 /// TODO 1: Provide your information
 ///
 /// \ingroup base
-/// \class ttk::TrajectoryStatistics
+/// \class ttk::DebrisTracer
 /// \author Your Name Here <your.email@address.here>
 /// \date The Date Here.
 ///
-/// This module defines the %TrajectoryStatistics class that computes for each vertex of a
-/// triangulation the average scalar value of itself and its direct neighbors.
-///
-/// \b Related \b publication: \n
-/// 'TrajectoryStatistics'
-/// Jonas Lukasczyk and Julien Tierny.
-/// TTK Publications.
-/// 2021.
+/// This module defines the %DebrisTracer class that linearizes, chains, and
+/// extracts surface statistics from tracked debris trajectories.
 ///
 
 #pragma once
@@ -33,10 +27,10 @@
 
 
 namespace ttk {
-  class TrajectoryStatistics : virtual public Debug {
+  class DebrisTracer : virtual public Debug {
 
   public:
-    TrajectoryStatistics();
+    DebrisTracer();
 
     int preconditionTriangulation(
       ttk::AbstractTriangulation *triangulation) const {
@@ -65,10 +59,6 @@ namespace ttk {
 	inline void setMinTimeOrigin(int v){ minTimeOrigin_ = v; }
 	inline void setMinYTimeOrigin(int v){ minYTimeOrigin_ = v; }
 	inline void setMaxYTimeOrigin(int v){ maxYTimeOrigin_ = v; }
-	inline void setMaxX(int v){ maxX_ = v; }
-    inline void setMaxY(int v){ maxY_ = v; }
-    inline void setMinY(int v){ minY_ = v; }
-    inline void setMinX(int v){ minX_ = v; }
     inline void setSurfaceMethod(int v){ surfaceMethod_ = v; }
 	inline void setPersisThresh(double v){ persistenceThreshold_ = v; }
 	inline void setMinSeg(std::vector<ttk::SimplexId> &v){ minSeg_ = &v; }
@@ -286,10 +276,6 @@ namespace ttk {
 	int minYTimeOrigin_;
 	int maxYTimeOrigin_;
 	int minFrameDist_;
-    int maxX_;
-    int maxY_;
-    int minY_;
-    int minX_;
 	double boundaryY_;
 	double boundaryYMin_;
 	double boundaryXMin_;
@@ -300,14 +286,14 @@ namespace ttk {
 	std::vector<ttk::SimplexId> *saddleSeg_;
 	double errSurf_;
 	int maxSurfSize_;
-  }; // TrajectoryStatistics class
+  }; // DebrisTracer class
 
 } // namespace ttk
 
 
 
 #ifdef TTK_ENABLE_EIGEN
-int ttk::TrajectoryStatistics::linearRegression(
+int ttk::DebrisTracer::linearRegression(
   const std::vector<int> &T,   // times t_i
   const std::vector<double> &X,   // positions x_i
   const std::vector<double> &Y,   // positions y_i
@@ -341,7 +327,7 @@ int ttk::TrajectoryStatistics::linearRegression(
  * scalar value is within [0.95 * max_in_window, max_in_window].*
  */
 template<class dataType, class triangulationType>
-void ttk::TrajectoryStatistics::collectNearMaxInSquare(
+void ttk::DebrisTracer::collectNearMaxInSquare(
                            const triangulationType *tri,
                            const dataType *scalars,
                            const ttk::SimplexId centerId,
@@ -407,7 +393,7 @@ void ttk::TrajectoryStatistics::collectNearMaxInSquare(
  * Count the number of unique VTK cell ids incident to the given
  * vertex set (via vertex-star traversal). 
  */
-int ttk::TrajectoryStatistics::computeSurfaceCellCount(
+int ttk::DebrisTracer::computeSurfaceCellCount(
                             const std::vector<ttk::SimplexId> &surfVertices,
                             const ttk::AbstractTriangulation *triangulation) {
   std::unordered_set<ttk::SimplexId> cellIds;
@@ -429,7 +415,7 @@ int ttk::TrajectoryStatistics::computeSurfaceCellCount(
  * Compute per-trajectory unit direction vectors from linear
  * coefficients (ax, ay) 
  */
-int ttk::TrajectoryStatistics::computeMeanUnitDirectionLinear(
+int ttk::DebrisTracer::computeMeanUnitDirectionLinear(
   const std::vector<LinearTrajectory> &newTraj,
   std::vector<double> &meanDx,
   std::vector<double> &meanDy,
@@ -456,7 +442,7 @@ int ttk::TrajectoryStatistics::computeMeanUnitDirectionLinear(
  * Fuse and linearize trajectories into longer segments under
  * direction, temporal-gap and spatial-distance constraints.
  */
-int ttk::TrajectoryStatistics::correctTrajectory(
+int ttk::DebrisTracer::correctTrajectory(
     std::vector<std::vector<int>>    &trajTime,
     std::vector<std::vector<int>>    &trajVertexId,
     std::vector<std::vector<double>> &coordsX,
@@ -465,7 +451,10 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     std::vector<LinearTrajectory> &newTraj,
     std::vector<FuseRecord> &fuseRecords
 ){
+  ttk::Timer timer;
   const int numTraj = static_cast<int>(trajTime.size());
+  this->printMsg("Linearization and chaining (" + std::to_string(numTraj)
+                 + " input trajectories)");
 
   const double x_min = boundaryXMin_;
   const double x_max = boundaryX_;
@@ -502,11 +491,10 @@ int ttk::TrajectoryStatistics::correctTrajectory(
   };
 
   auto violatesBBox = [&](const LinearTrajectory &c) -> bool {
-    if(maxX_ != -1 && c.bx > maxX_) return true;
-    if(maxY_ != -1 && c.by > maxY_) return true;
-    if(minY_ != -1 && c.by < minY_) return true;
-    if(minX_ != -1 && c.bx < minX_) return true;
-    return false;
+    if(!enableFilteringTimeOrigin_) return false;
+    const double autoMinX = xOrigin_ - 0.3 * boundaryX_;
+    const double autoMaxX = xOrigin_ + 0.3 * boundaryX_;
+    return (c.bx < autoMinX || c.bx > autoMaxX || c.by > boundaryY_ || c.by < boundaryXMin_);
   };
 
   auto passInclinationYNy = [&](double ny) -> bool {
@@ -779,12 +767,15 @@ int ttk::TrajectoryStatistics::correctTrajectory(
     c.endFrame = end;
   }
 
+  this->printMsg("Linearization and chaining (" + std::to_string(merge.size())
+                 + " output chains)", 1.0, timer.getElapsedTime(),
+                 this->threadNumber_);
   return 1;
 }
 
 
 template <class dataType, class triangulationType>
-int ttk::TrajectoryStatistics::execute(
+int ttk::DebrisTracer::execute(
                 std::vector<std::vector<int>>    &trajTime,
                 std::vector<std::vector<int>>    &trajVertexId,
                 std::vector<int>                &durations,
@@ -798,7 +789,10 @@ int ttk::TrajectoryStatistics::execute(
                 const std::vector<std::vector<double>> &gradientNorms,
                 std::vector<LinearTrajectory> &finalTraj,
                 const triangulationType *triangulation) {
-    
+
+    ttk::Timer timer;
+    this->printMsg("Computing statistics for "
+                   + std::to_string(finalTraj.size()) + " trajectories");
     const int numMerge = finalTraj.size();
 
     #ifdef TTK_ENABLE_OPENMP
@@ -818,26 +812,6 @@ int ttk::TrajectoryStatistics::execute(
         VX[i] = finalTraj[i].ax * conversion;
         VY[i] = finalTraj[i].ay * conversion;
     }
-/*
-    if(surfaceMethod_ == 0) {
-      computeSurfacesBFS<dataType, triangulationType>(
-        trajTime, trajVertexId,
-        surfMin, surfMax, surfMean,
-        allVertexDebris,
-        frameSurf,gradientNorms, triangulation);
-    } if (surfaceMethod_ == 1) {
-      computeSurfacesRW<dataType, triangulationType>(
-        trajTime, trajVertexId,
-        surfMin, surfMax, surfMean,
-        allVertexDebris, 
-        frameSurf,triangulation);
-    } else if(surfaceMethod_ == 2) {
-      computeSurfacesPersistence<dataType, triangulationType>(
-        trajTime, trajVertexId,
-        surfMin, surfMax, surfMean,
-        allVertexDebris,
-        frameSurf, triangulation);
-    } */ 
     if (surfaceMethod_ == 3) {
 		computeMergeTree<dataType, triangulationType>(
 				frameSurf,
@@ -848,12 +822,14 @@ int ttk::TrajectoryStatistics::execute(
 
 	}
 
+    this->printMsg("Statistics complete", 1.0, timer.getElapsedTime(),
+                   this->threadNumber_);
     return 1;
 }
 
 
 template <class dataType, class triangulationType>
-int ttk::TrajectoryStatistics::computeSurfacesBFS(
+int ttk::DebrisTracer::computeSurfacesBFS(
     std::vector<std::vector<int>>    &trajTime,
     std::vector<std::vector<int>>    &trajVertexId,
     std::vector<double>              &surfMin,
@@ -966,7 +942,7 @@ int ttk::TrajectoryStatistics::computeSurfacesBFS(
  * and a local gradient consistency test
 */
 template <class dataType, class triangulationType>
-int ttk::TrajectoryStatistics::bfsSegmentation(
+int ttk::DebrisTracer::bfsSegmentation(
   ttk::SimplexId                         startId,
   std::vector<ttk::SimplexId>            &surfVertex,
   const dataType                         *frameScalars,
@@ -1081,7 +1057,7 @@ int ttk::TrajectoryStatistics::bfsSegmentation(
 
 
 template <class dataType, class triangulationType>
-int ttk::TrajectoryStatistics::computeSurfacesRW(
+int ttk::DebrisTracer::computeSurfacesRW(
     std::vector<std::vector<int>>    &trajTime,
     std::vector<std::vector<int>>    &trajVertexId,
     std::vector<double>              &surfMin,
@@ -1190,7 +1166,7 @@ int ttk::TrajectoryStatistics::computeSurfacesRW(
 */ 
 #ifdef TTK_ENABLE_EIGEN
 template<class dataType>
-int ttk::TrajectoryStatistics::randomWalkerSegment(
+int ttk::DebrisTracer::randomWalkerSegment(
   const std::vector<ttk::SimplexId> &seed,        // marked vertex ids
   const std::vector<int> &seedLabel,              // label per seed (0..K-1)
   const ttk::AbstractTriangulation *triangulation,
@@ -1429,7 +1405,7 @@ int ttk::TrajectoryStatistics::randomWalkerSegment(
 #endif
 
 template <class dataType, class triangulationType>
-int ttk::TrajectoryStatistics::computeSurfacesPersistence(
+int ttk::DebrisTracer::computeSurfacesPersistence(
   std::vector<std::vector<int>>                 &trajTime,
   std::vector<std::vector<int>>                 &trajVertexId,
   std::vector<double>                           &surfMin,
@@ -1598,7 +1574,7 @@ int ttk::TrajectoryStatistics::computeSurfacesPersistence(
 
 
 template <class dataType, class triangulationType>
-int ttk::TrajectoryStatistics::computeMergeTree(
+int ttk::DebrisTracer::computeMergeTree(
   const ttk::SimplexId frameSurf,
   const triangulationType *triangulation,
   std::vector<LinearTrajectory> &finalTraj,
@@ -1608,18 +1584,22 @@ int ttk::TrajectoryStatistics::computeMergeTree(
   std::vector<double>              &surfMean
 ) {
 
+  ttk::Timer globalTimer;
   const ttk::SimplexId nPixels = triangulation->getNumberOfVertices();
   const int nFrames = (!onlyFrameSurface_) ? inputData_.size() : 1;
   std::vector<std::vector<double>> trajSurfaces(finalTraj.size());
   const auto nTraj = finalTraj.size();
-  this->printMsg("Computing Merge Tree Segmentation");
+  this->printMsg("Merge-tree surface segmentation (" + std::to_string(nFrames)
+                 + " frame(s), " + std::to_string(nPixels) + " vertices)");
   std::vector<char> trajDouble(nTraj);
   for(int frame = 0  ; frame < nFrames; frame++) {
 
+    ttk::Timer frameTimer;
     std::fill(trajDouble.begin(), trajDouble.end(), 0);
   	frame = (!onlyFrameSurface_)  ? frame : frameSurf;
-	this->printMsg("Computing frame : " + std::to_string(frame));
-    // Persistence diagram 
+	this->printMsg("Processing frame " + std::to_string(frame) + "/"
+                   + std::to_string(nFrames - 1));
+    // Persistence diagram
     auto *scalars = static_cast<dataType *>(inputData_[frame]);
 
     std::vector<ttk::SimplexId> pdOffsets(nPixels);
@@ -1631,6 +1611,7 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 
     ttk::PersistenceDiagram persistenceDiagram;
     persistenceDiagram.setThreadNumber(this->threadNumber_);
+    persistenceDiagram.setDebugLevel(0);
     persistenceDiagram.setBackend(
       ttk::PersistenceDiagram::BACKEND::DISCRETE_MORSE_SANDWICH);
     persistenceDiagram.preconditionTriangulation(
@@ -1682,6 +1663,7 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 
     ttk::TopologicalSimplification topoSimp;
     topoSimp.setThreadNumber(this->threadNumber_);
+    topoSimp.setDebugLevel(0);
     topoSimp.setBackend(ttk::TopologicalSimplification::BACKEND::LTS);
     topoSimp.preconditionTriangulation(const_cast<triangulationType *>(triangulation));
 
@@ -1715,7 +1697,7 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 
     ttk::PathCompression pathComp;
     pathComp.setThreadNumber(this->threadNumber_);
-    pathComp.setDebugLevel(this->debugLevel_);
+    pathComp.setDebugLevel(0);
     pathComp.setComputeSegmentation(true, true, false);
 
     ttk::PathCompression::OutputSegmentation om{
@@ -1743,7 +1725,7 @@ int ttk::TrajectoryStatistics::computeMergeTree(
 
     ttk::ExTreeM exTreeM;
     exTreeM.setThreadNumber(this->threadNumber_);
-    exTreeM.setDebugLevel(this->debugLevel_);
+    exTreeM.setDebugLevel(0);
 
     std::vector<ttk::SimplexId> orderJoin(order);
 
@@ -1883,8 +1865,10 @@ int ttk::TrajectoryStatistics::computeMergeTree(
         if(allVertexDebris[frame][v] == t)
           allVertexDebris[frame][v] = -2;
       }
-    }	
-  }   
+    }
+    this->printMsg("Frame " + std::to_string(frame) + " done", 1.0,
+                   frameTimer.getElapsedTime(), this->threadNumber_);
+  }
 
 
 
@@ -1927,12 +1911,14 @@ int ttk::TrajectoryStatistics::computeMergeTree(
     }
   }
 
+  this->printMsg("Merge-tree surface segmentation complete", 1.0,
+                 globalTimer.getElapsedTime(), this->threadNumber_);
   return 0;
 }
 
 
 template <class dataType>
-dataType ttk::TrajectoryStatistics::otsuThresholdLocal(
+dataType ttk::DebrisTracer::otsuThresholdLocal(
 							       const std::vector<ttk::SimplexId> &verts,
                                    const dataType *scalars,
                                    const int nbins) {
@@ -2007,7 +1993,7 @@ dataType ttk::TrajectoryStatistics::otsuThresholdLocal(
 // - keep only the largest connected component among kept vertices
 // ------------------------------------------------------------
 template <typename dataType, typename triangulationType>
-void ttk::TrajectoryStatistics::cleanDarkSegmentInPlace(
+void ttk::DebrisTracer::cleanDarkSegmentInPlace(
 								   std::vector<ttk::SimplexId> &segmentVerts,
                                    const dataType *scalars,
                                    const triangulationType *triangulation,
@@ -2097,6 +2083,3 @@ void ttk::TrajectoryStatistics::cleanDarkSegmentInPlace(
 
   segmentVerts.swap(bestCC);
 }
-
-
-

@@ -1,5 +1,5 @@
 
-#include <ttkTrajectoryStatistics.h>
+#include <ttkDebrisTracer.h>
 
 #include <vtkInformation.h>
 
@@ -23,17 +23,17 @@
 #include <map>
 
 // A VTK macro that enables the instantiation of this class via ::New()
-vtkStandardNewMacro(ttkTrajectoryStatistics);
+vtkStandardNewMacro(ttkDebrisTracer);
 
 
-ttkTrajectoryStatistics::ttkTrajectoryStatistics() {
-  this->setDebugMsgPrefix("TrajectoryStatistics");
+ttkDebrisTracer::ttkDebrisTracer() {
+  this->setDebugMsgPrefix("DebrisTracer");
   this->SetNumberOfInputPorts(2);
   this->SetNumberOfOutputPorts(4);
 }
 
 
-int ttkTrajectoryStatistics::FillInputPortInformation(int port, vtkInformation *info) {
+int ttkDebrisTracer::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
     return 1;
@@ -45,7 +45,7 @@ int ttkTrajectoryStatistics::FillInputPortInformation(int port, vtkInformation *
   return 0;
 }
 
-int ttkTrajectoryStatistics::FillOutputPortInformation(int port, vtkInformation *info) {
+int ttkDebrisTracer::FillOutputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
     return 1;
@@ -66,7 +66,7 @@ int ttkTrajectoryStatistics::FillOutputPortInformation(int port, vtkInformation 
 }
 
 
-int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
+int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
                                vtkInformationVector **inputVector,
                                vtkInformationVector *outputVector) {
 
@@ -81,7 +81,11 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
   }
 
-    
+  ttk::Timer globalTimer;
+  this->printMsg(ttk::debug::Separator::L1);
+  this->printMsg("Starting DebrisTracer pipeline");
+  this->printMsg(ttk::debug::Separator::L2);
+
   //trackingFromFields data
   
   vtkIntArray *compIdArray = vtkIntArray::SafeDownCast(
@@ -236,10 +240,6 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   this->setMinTimeOrigin(minTimeOrigin);
   this->setMinYTimeOrigin(minYTimeOrigin);
   this->setMaxYTimeOrigin(maxYTimeOrigin);
-  this->setMaxX(maxX);
-  this->setMaxY(maxY);
-  this->setMinY(minY);
-  this->setMinX(minX);
   this->setSurfaceMethod(surfaceMethod);
   this->setPersisThresh(persisThresh);
   std::vector<ttk::SimplexId> minSeg(numTraj);
@@ -259,9 +259,9 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   if(!triangulation) return 0;
   this->preconditionTriangulation(triangulation);
 
-  std::vector<ttk::TrajectoryStatistics::LinearTrajectory> linearTraj(numTraj);
-  std::vector<ttk::TrajectoryStatistics::LinearTrajectory> finalTraj;
-  std::vector<ttk::TrajectoryStatistics::FuseRecord> fuseRecords;
+  std::vector<ttk::DebrisTracer::LinearTrajectory> linearTraj(numTraj);
+  std::vector<ttk::DebrisTracer::LinearTrajectory> finalTraj;
+  std::vector<ttk::DebrisTracer::FuseRecord> fuseRecords;
 
 
   ttk::Timer timer;
@@ -277,12 +277,18 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   std::vector<std::vector<double>> gradientNorms;
-
-  if(!computeAllGradientMagnitudes(inputDataSet,
-                                   fields,
-                                   gradientNorms)) {
-    this->printErr("Gradient Magnitudes fails");
-    return 0;
+  {
+    ttk::Timer gradTimer;
+    this->printMsg("Computing gradient magnitudes ("
+                   + std::to_string(fields.size()) + " fields)");
+    if(!computeAllGradientMagnitudes(inputDataSet,
+                                     fields,
+                                     gradientNorms)) {
+      this->printErr("Gradient Magnitudes fails");
+      return 0;
+    }
+    this->printMsg("Gradient magnitudes complete", 1.0,
+                   gradTimer.getElapsedTime(), this->threadNumber_);
   }
 
   int status = 0;
@@ -541,7 +547,7 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   auto durArr     = makeIntCol("Duration",  n);
   auto ejecArr    = makeDblCol("AngleEjection", n);
   for(vtkIdType i = 0; i < n; ++i) {
-    const ttk::TrajectoryStatistics::LinearTrajectory traj = finalTraj[i];
+    const ttk::DebrisTracer::LinearTrajectory traj = finalTraj[i];
     double startF = extendTraj ? 0.0 : static_cast<double>(traj.startFrame);
     double endF   = static_cast<double>(traj.endFrame);
     constexpr double pi = 3.14159265358979323846;
@@ -579,12 +585,15 @@ int ttkTrajectoryStatistics::RequestData(vtkInformation *ttkNotUsed(request),
   outputTraj->GetCellData()->AddArray(durArr);
   outputTraj->GetCellData()->AddArray(ejecArr);
   
-  this->printMsg("End TrajectoryStatistic");
+  this->printMsg(ttk::debug::Separator::L2);
+  this->printMsg("DebrisTracer pipeline complete", 1.0,
+                 globalTimer.getElapsedTime(), this->threadNumber_);
+  this->printMsg(ttk::debug::Separator::L1);
 
   return 1;
 }
 
-int ttkTrajectoryStatistics::computeAllGradientMagnitudes(
+int ttkDebrisTracer::computeAllGradientMagnitudes(
   vtkDataSet *inputDataSet,
   const std::vector<vtkDataArray *> &inputScalarFields,
   std::vector<std::vector<double>> &gradientNorms
@@ -648,6 +657,5 @@ int ttkTrajectoryStatistics::computeAllGradientMagnitudes(
 
   return 1;
 }
-
 
 

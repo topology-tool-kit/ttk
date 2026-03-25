@@ -1,8 +1,8 @@
-# TTK Trajectory Statistics — README
+# TTK DebrisTracer — README
 
 ## Overview
 
-**TTK Trajectory Statistics** post-processes trajectories extracted from time-varying scalar fields to:
+**TTK DebrisTracer** post-processes trajectories extracted from time-varying scalar fields to:
 - **linearize** each trajectory segment,
 - **fuse/chain** compatible trajectories into longer **merged chains** using direction, time-gap, and distance constraints,
 - **extract surface regions** on a selected frame (BFS / Random-Walker) and attach them back to trajectories,

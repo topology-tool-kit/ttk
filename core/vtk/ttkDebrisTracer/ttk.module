@@ -1,0 +1,9 @@
+NAME
+  ttkDebrisTracer
+SOURCES
+  ttkDebrisTracer.cpp
+HEADERS
+  ttkDebrisTracer.h
+DEPENDS
+  debrisTracer
+  ttkAlgorithm

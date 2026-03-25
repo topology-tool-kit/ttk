@@ -6,7 +6,7 @@
 
 // TTK Includes
 #include <CommandLineParser.h>
-#include <ttkTrajectoryStatistics.h>
+#include <ttkDebrisTracer.h>
 
 // VTK Includes
 #include <vtkCellData.h>
@@ -56,17 +56,17 @@ int main(int argc, char **argv) {
   // Command line output messages.
   // ---------------------------------------------------------------------------
   ttk::Debug msg;
-  msg.setDebugMsgPrefix("TrajectoryStatistics");
+  msg.setDebugMsgPrefix("DebrisTracer");
 
   // ---------------------------------------------------------------------------
-  // Initialize ttkTrajectoryStatistics module (adjust parameters)
+  // Initialize ttkDebrisTracer module (adjust parameters)
   // ---------------------------------------------------------------------------
-  auto trajectoryStatistics = vtkSmartPointer<ttkTrajectoryStatistics>::New();
+  auto debrisTracer = vtkSmartPointer<ttkDebrisTracer>::New();
 
   // ---------------------------------------------------------------------------
   // TODO 14: Pass custom arguments and options to the module
   // ---------------------------------------------------------------------------
-  // trajectoryStatistics->SetOutputArrayName(outputArrayName);
+  // debrisTracer->SetOutputArrayName(outputArrayName);
 
   // ---------------------------------------------------------------------------
   // Read input vtkDataObjects (optionally: print available arrays)
@@ -108,8 +108,8 @@ int main(int argc, char **argv) {
         return 1;
       }
     } else {
-      // feed input object to ttkTrajectoryStatistics filter
-      trajectoryStatistics->SetInputDataObject(i, reader->GetOutput());
+      // feed input object to ttkDebrisTracer filter
+      debrisTracer->SetInputDataObject(i, reader->GetOutput());
 
       // default arrays
       if(!defaultArray) {
@@ -133,19 +133,19 @@ int main(int argc, char **argv) {
       inputArrayNames.emplace_back(defaultArray->GetName());
   }
   for(size_t i = 0; i < inputArrayNames.size(); i++)
-    trajectoryStatistics->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
+    debrisTracer->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
 
   // ---------------------------------------------------------------------------
-  // Execute ttkTrajectoryStatistics filter
+  // Execute ttkDebrisTracer filter
   // ---------------------------------------------------------------------------
-  trajectoryStatistics->Update();
+  debrisTracer->Update();
 
   // ---------------------------------------------------------------------------
   // If output prefix is specified then write all output objects to disk
   // ---------------------------------------------------------------------------
   if(!outputPathPrefix.empty()) {
-    for(int i = 0; i < trajectoryStatistics->GetNumberOfOutputPorts(); i++) {
-      auto output = trajectoryStatistics->GetOutputDataObject(i);
+    for(int i = 0; i < debrisTracer->GetNumberOfOutputPorts(); i++) {
+      auto output = debrisTracer->GetOutputDataObject(i);
       auto writer = vtkSmartPointer<vtkXMLWriter>::Take(
         vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType()));
 

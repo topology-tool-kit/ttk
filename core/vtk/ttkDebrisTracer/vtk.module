@@ -1,5 +1,5 @@
 NAME
-  ttkTrajectoryStatistics
+  ttkDebrisTracer
 DEPENDS
   ttkAlgorithm
   VTK::FiltersGeneral

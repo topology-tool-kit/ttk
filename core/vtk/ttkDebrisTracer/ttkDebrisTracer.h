@@ -3,13 +3,13 @@
 /// specified with the standard VTK call SetInputArrayToProcess()).
 ///
 /// \ingroup vtk
-/// \class ttkTrajectoryStatistics
+/// \class ttkDebrisTracer
 /// \author Your Name Here <your.email@address.here>
 /// \date The Date Here.
 ///
-/// \brief TTK VTK-filter that wraps the ttk::TrajectoryStatistics module.
+/// \brief TTK VTK-filter that wraps the ttk::DebrisTracer module.
 ///
-/// This VTK filter uses the ttk::TrajectoryStatistics module to compute an averaging of
+/// This VTK filter uses the ttk::DebrisTracer module to compute an averaging of
 /// the data values of an input point data array defined on the input
 /// vtkDataSet.
 ///
@@ -28,18 +28,18 @@
 /// \param arrayName (DYNAMIC: string identifier of the input array)
 ///
 /// See the corresponding standalone program for a usage example:
-///   - standalone/TrajectoryStatistics/main.cpp
+///   - standalone/DebrisTracer/main.cpp
 ///
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
-/// \sa ttk::TrajectoryStatistics
+/// \sa ttk::DebrisTracer
 /// \sa ttkAlgorithm
 
 #pragma once
 
 // VTK Module
-#include <ttkTrajectoryStatisticsModule.h>
+#include <ttkDebrisTracerModule.h>
 
 // VTK Includes
 #include <ttkAlgorithm.h>
@@ -60,18 +60,18 @@
  * the vtk.module file would need to be extended to
  *
  * NAME
- *   ttkTrajectoryStatistics
+ *   ttkDebrisTracer
  * DEPENDS
  *   ttkAlgorithm
  *   VTK::FiltersSources
  */
 
 // TTK Base Includes
-#include <TrajectoryStatistics.h>
+#include <DebrisTracer.h>
 
-class TTKTRAJECTORYSTATISTICS_EXPORT ttkTrajectoryStatistics
+class TTKDEBRISTRACER_EXPORT ttkDebrisTracer
   : public ttkAlgorithm  ,
-    protected ttk::TrajectoryStatistics 
+    protected ttk::DebrisTracer 
 {
 private:
   int frameSurface{0}; 
@@ -96,10 +96,6 @@ private:
   int minTimeOrigin{0};
   int maxYTimeOrigin{0};
   int minYTimeOrigin{0};
-  int maxX{-1};
-  int maxY{-1};
-  int minY{-1};
-  int minX{-1};
   double persisThresh{0.0};
   int surfaceMethod{0};
   int maxSurfSize{10000};
@@ -111,8 +107,8 @@ public:
    */
 
 
-  static ttkTrajectoryStatistics *New();
-  vtkTypeMacro(ttkTrajectoryStatistics, ttkAlgorithm);
+  static ttkDebrisTracer *New();
+  vtkTypeMacro(ttkDebrisTracer, ttkAlgorithm);
 
   vtkSetMacro(frameSurface, int);
   vtkGetMacro(frameSurface, int);
@@ -186,23 +182,12 @@ public:
   vtkSetMacro(maxSurfSize, int);
   vtkGetMacro(maxSurfSize, int);
 
-  vtkSetMacro(maxX, int);
-  vtkGetMacro(maxX, int);
-  vtkSetMacro(maxY, int);
-  vtkGetMacro(maxY, int);
-  vtkSetMacro(minY, int);
-  vtkGetMacro(minY, int);
-  vtkSetMacro(minX, int);
-  vtkGetMacro(minX, int);
-
-
-
   vtkSetMacro(surfaceMethod, int);
   vtkGetMacro(surfaceMethod, int);
 protected:
 
-  ttkTrajectoryStatistics();
-  ~ttkTrajectoryStatistics() override = default;
+  ttkDebrisTracer();
+  ~ttkDebrisTracer() override = default;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
 
@@ -220,4 +205,3 @@ protected:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 };
-

@@ -1,9 +1,0 @@
-NAME
-  ttkTrajectoryStatistics
-SOURCES
-  ttkTrajectoryStatistics.cpp
-HEADERS
-  ttkTrajectoryStatistics.h
-DEPENDS
-  trajectoryStatistics
-  ttkAlgorithm
