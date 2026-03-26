@@ -93,8 +93,7 @@ namespace ttk {
 
 
     template <class dataType, class triangulationType>
-    int execute(std::vector<std::vector<int>> &trajTime,         
-                std::vector<std::vector<int>>    &trajVertexId,   
+    int execute(         
                 std::vector<int> &durations,           
                 std::vector<double> &VX,
                 std::vector<double> &VY,
@@ -628,8 +627,6 @@ int ttk::DebrisTracer::correctTrajectory(
 
 template <class dataType, class triangulationType>
 int ttk::DebrisTracer::execute(
-                std::vector<std::vector<int>>    &trajTime,
-                std::vector<std::vector<int>>    &trajVertexId,
                 std::vector<int>                &durations,
                 std::vector<double>             &VX,
                 std::vector<double>             &VY,
@@ -931,7 +928,7 @@ int ttk::DebrisTracer::computeMergeTree(
 	  	  segCleaned[segId] = 1;
 	    }
 
-		if (segmentId[segId].size() > maxSurfSize_) continue;
+		if (static_cast<int>(segmentId[segId].size()) > maxSurfSize_) continue;
 
 	    double surfVal = static_cast<double>(
 	  	computeSurfaceCellCount(segmentId[segId], triangulation));
@@ -939,11 +936,11 @@ int ttk::DebrisTracer::computeMergeTree(
 
 	    trajSurfaces[trajId].push_back(surfVal);
 		
-		for (int i = 0; i<segmentId[segId].size(); i++){
+		for (size_t i = 0; i<segmentId[segId].size(); i++){
 			int v = segmentId[segId][i];
 			int check = allVertexDebris[frame][v];
 		  	if (check == -1 ) allVertexDebris[frame][v] = trajId;
-			else if (check != trajId ){
+			else if (check != static_cast<int>(trajId) ){
 				trajDouble[trajId] = 1;
 				if (check >=0)
 					trajDouble[check]=1;
@@ -955,7 +952,7 @@ int ttk::DebrisTracer::computeMergeTree(
 	  }
 
     }
-    for(int t = 0; t < trajDouble.size(); t++) {
+    for(int t = 0; t < static_cast<int>(trajDouble.size()); t++) {
       if(!trajDouble[t]) continue;
       for(int v = 0; v < nPixels; v++) {
         if(allVertexDebris[frame][v] == t)

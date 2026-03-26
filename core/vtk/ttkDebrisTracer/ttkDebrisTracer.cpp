@@ -269,8 +269,6 @@ int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
   int status = 0;
   ttkVtkTemplateMacro(fields[0]->GetDataType(), triangulation->getType(),
       (status = this->execute<VTK_TT, TTK_TT>(
-                        trajTime, 
-                        trajVertexId,
                         durations,
                         VX,
                         VY,
@@ -524,7 +522,6 @@ int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
     const ttk::DebrisTracer::LinearTrajectory traj = finalTraj[i];
     double startF = extendTraj ? 0.0 : static_cast<double>(traj.startFrame);
     double endF   = static_cast<double>(traj.endFrame);
-    constexpr double pi = 3.14159265358979323846;
     double ejection = atan(traj.ay/traj.ax) *180/pi;
 
     // Avance startF tant que le point est hors boundary
