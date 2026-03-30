@@ -216,7 +216,7 @@ int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
   this->setInstantPersistence(instantPersistence);
   this->setFiltreY(filtreY*pi/180);
   this->setCosCol(std::cos(cosCol*pi/180));
-  this->setMaxRadius(maxRadius*maxRadius);
+  this->setMaxRadius(maxRadius);
   this->setMaxFrameDist(maxFrameDist);
   // spatialScale is in mm/px → convert to m/px: 1 / (scale_mm * 1000)
   this->setSpatialScale(1.0 / (spatialScale * 1000.0));
