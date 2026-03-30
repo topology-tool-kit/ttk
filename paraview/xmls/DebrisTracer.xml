@@ -24,20 +24,18 @@
       <!-- Fusion / chaining -->
       <DoubleVectorProperty name="cosCol" command="SetcosCol" label="θmax (°)"
                             number_of_elements="1" default_values="20">
-        <Documentation>Maximum allowed angle between two trajectory to concatenate</Documentation>
+        <Documentation>Maximum angular deviation (in degrees) between two trajectory segments allowed for chaining.</Documentation>
       </DoubleVectorProperty>
     
       <DoubleVectorProperty name="maxRadius" command="SetmaxRadius" label="dmax (pixel)"
                             number_of_elements="1" default_values="15">
-        <Documentation>Maximum distance (pixel) at the linking frame between the predicted end and the start point.</Documentation>
+        <Documentation>Maximum spatial distance (in pixels) between the extrapolated end of segment i and the start of segment j at the linking frame.</Documentation>
       </DoubleVectorProperty>
     
       <IntVectorProperty name="maxFrameDist" command="SetmaxFrameDist" label="δmax (Frame)"
                          number_of_elements="1" default_values="30">
-        <Documentation>Upper and Lower bound on the frame difference between end(i) and start(j) for a valid link.</Documentation>
+        <Documentation>Maximum temporal gap (in frames) between the end of segment i and the start of segment j for a valid chain link.</Documentation>
       </IntVectorProperty>
-
-  
 
 
       <!-- Surface extraction -->
@@ -45,55 +43,50 @@
       <IntVectorProperty name="onlyFrameSurface" command="SetonlyFrameSurface" label="Compute only frame Surface ?"
                          number_of_elements="1" default_values="0" panel_visibility="advanced">
         <BooleanDomain name="bool"/>
+		<Documentation> If enabled, surface computation is restricted to the selected frame index only. </Documentation>
       </IntVectorProperty>
+
 	  <IntVectorProperty name="frameSurface" command="SetframeSurface" label="Surface: Frame index"
-                         number_of_elements="1" default_values="0">
-        <Documentation>Frame index on which to display the surface vertices.</Documentation>
+                         number_of_elements="1" default_values="0" panel_visibility="advanced">
+        <Documentation>Index of the frame on which debris surfaces are extracted and displayed.</Documentation>
       </IntVectorProperty>
 	  
 	  <IntVectorProperty name="maxSurfSize" command="SetmaxSurfSize" label="Max Surface Size in vertex"
-                         number_of_elements="1" default_values="10000">
-      </IntVectorProperty>
+		  				 number_of_elements="1" default_values="10000">
+						 <Documentation>Segmentations larger than this vertex count are discarded as likely noise or background artifacts.</Documentation>
+	  </IntVectorProperty>
+
       <DoubleVectorProperty name="errSurf" command="SeterrSurf"
                             label="Minimum bins Otsu Threshold"
-                            number_of_elements="1" default_values="0.0">
-        <Documentation>Surface parameter: threshold for BFS or β for Random Walker (controls region growth strength).</Documentation>
-      </DoubleVectorProperty>
+                            number_of_elements="1" default_values="0.0" panel_visibility="advanced">
+        <Documentation>Number of histogram bins used for local Otsu thresholding during surface cleaning; set to 0 to disable.</Documentation>
+	 </DoubleVectorProperty>
+
       <DoubleVectorProperty name="persisThresh" command="SetpersisThresh"
                             label="Persistence Threshold (MergeTree)"
                             number_of_elements="1" default_values="0.0">
-        <Documentation></Documentation>
+        <Documentation>Persistence threshold for the MergeTree surface method; arcs below this value are pruned.</Documentation>
       </DoubleVectorProperty>
 
-      <IntVectorProperty name="surfaceMethod" command="SetsurfaceMethod" label="Surface: Method"
-                         number_of_elements="1" default_values="0" panel_visibility="advanced">
-        <EnumerationDomain name="enum">
-          <Entry value="0" text="BFS (region grow)"/>
-          <Entry value="1" text="Random Walker (multilabel)"/>
-		  <Entry value="2" text="Persistence-based"/>
-		  <Entry value="3" text="MergeTree"/>
-        </EnumerationDomain>
-        <Documentation>Choose how surfaces are extracted on the selected frame.</Documentation>
-      </IntVectorProperty>
     
 
 
 
       <!-- Units -->
-      <DoubleVectorProperty name="spatialScale" command="SetspatialScale" label="Units: Spatial scale (px→mm)"
+      <DoubleVectorProperty name="spatialScale" command="SetspatialScale" label="Spatial scale (px/mm)"
                             number_of_elements="1" default_values="1.0">
-        <Documentation>Spatial conversion factor (millimeters per pixel). Used for velocity thresholds.</Documentation>
+        <Documentation>Physical size of one millimeter in pixels; used to convert pixel displacements to physical velocities.</Documentation>
       </DoubleVectorProperty>
     
       <DoubleVectorProperty name="interFrame" command="SetinterFrame" label="Units: Inter-frame time (μs)"
                             number_of_elements="1" default_values="1.0">
-        <Documentation>Time between two consecutive frames, in microseconds. Used for velocity computation.</Documentation>
+        <Documentation>Time elapsed between two consecutive frames in microseconds; used together with spatial scale for velocity computation.</Documentation>
       </DoubleVectorProperty>
     
       <IntVectorProperty name="convertDur" command="SetconvertDur" label="Units: Durations in seconds"
                          number_of_elements="1" default_values="0" panel_visibility="advanced">
         <BooleanDomain name="bool"/>
-        <Documentation>When enabled, durations are reported in seconds (otherwise in frames).</Documentation>
+        <Documentation>If enabled, trajectory durations in the output table are expressed in seconds instead of frames.</Documentation>
       </IntVectorProperty>
 
 
@@ -102,40 +95,40 @@
       <!-- Directional filtering -->
       <IntVectorProperty name="enableFilteringMinVx"
                          command="SetenableFilteringMinVx"
-                         label="Vx filtering ?"
+                         label="Enable axial velocity filter"
                          number_of_elements="1" default_values="0">
         <BooleanDomain name="bool"/>
-        <Documentation>Enable to show and activate directional filtering parameters.</Documentation>
+        <Documentation>Enable filtering by horizontal velocity; exposes the Min/Max Vx parameters.</Documentation>
       </IntVectorProperty>
 
 	  <IntVectorProperty name="enableFilteringCosY"
                          command="SetenableFilteringCosY"
-                         label="Cos Y filtering ?"
+                         label="Enable ejection angle filter"
                          number_of_elements="1" default_values="0">
         <BooleanDomain name="bool"/>
-        <Documentation>Enable to show and activate directional filtering parameters.</Documentation>
+        <Documentation>Enable filtering by ejection angle; exposes the Max ejection angle parameter.</Documentation>
 	</IntVectorProperty>    
 
 	<IntVectorProperty name="enableFilteringTimeOrigin"
                          command="SetenableFilteringTimeOrigin"
-                         label="Time for x0 filtering ?"
+                         label="Enable impact origin filter"
                          number_of_elements="1" default_values="0">
         <BooleanDomain name="bool"/>
-        <Documentation>Enable to show and activate directional filtering parameters.</Documentation>
+        <Documentation>Enable filtering by spatial origin; keeps only trajectories whose back-extrapolation passes through the defined impact zone.</Documentation>
 	</IntVectorProperty>    
 
 
 	<IntVectorProperty name="enableFilteringDuration"
                          command="SetenableFilteringDuration"
-                         label="Duration Filtering ?"
+                         label="Enable minimum duration filter"
                          number_of_elements="1" default_values="0">
         <BooleanDomain name="bool"/>
-        <Documentation>Enable to show and activate directional filtering parameters.</Documentation>
+        <Documentation>Enable filtering by minimum trajectory duration; exposes the Min duration parameter.</Documentation>
 	</IntVectorProperty>   
 
-      <DoubleVectorProperty name="minVx" command="SetminVx" label="Filter: Min |Vx| (mm/s)"
+      <DoubleVectorProperty name="minVx" command="SetminVx" label="Min Vx (mm/s)"
                             number_of_elements="1" default_values="0.0">
-        <Documentation>Minimum absolute X velocity required to accept a trajectory (after unit conversion).</Documentation>
+        <Documentation>Minimum accepted horizontal velocity magnitude (m/s) after unit conversion; trajectories below this value are rejected.</Documentation>
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
@@ -144,9 +137,9 @@
         </Hints>
       </DoubleVectorProperty>
 
-      <DoubleVectorProperty name="maxVx" command="SetmaxVx" label="Filter: Max |Vx| (mm/s)"
+      <DoubleVectorProperty name="maxVx" command="SetmaxVx" label="Max Vx (mm/s)"
                             number_of_elements="1" default_values="0.0">
-        <Documentation>Minimum absolute X velocity required to accept a trajectory (after unit conversion).</Documentation>
+        <Documentation>Maximum accepted horizontal velocity magnitude (m/s) after unit conversion; trajectories above this value are rejected.</Documentation>
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
@@ -159,7 +152,7 @@
       <DoubleVectorProperty name="filtreY" command="SetfiltreY"
                             label="Θmax (°)"
                             number_of_elements="1" default_values="80">
-							<Documentation> Absolute maximum angle allowed between the trajectory and the horizontal axis 
+							<Documentation> Maximum accepted ejection angle (in degrees) relative to the horizontal axis; trajectories more vertical than this are rejected. 
 							</Documentation>
 							<Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
@@ -171,7 +164,7 @@
      
       <IntVectorProperty name="xOrigin" command="SetxOrigin" label="X Origin"
                             number_of_elements="1" default_values="0">
-        <Documentation>X coordinate of the reference vertical line used by the time-origin filter.</Documentation>
+        <Documentation>X coordinate (in pixels) representing the impact point, used by the origin filter.</Documentation>
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
@@ -180,9 +173,9 @@
         </Hints>
 	</IntVectorProperty>
 
-   <IntVectorProperty name="duraMin" command="SetduraMin" label="Duration min"
+   <IntVectorProperty name="duraMin" command="SetduraMin" label="Min duration (frames)"
                             number_of_elements="1" default_values="0">
-        <Documentation>Minimum trajectory duration (in frames) to keep.</Documentation>
+        <Documentation>Minimum trajectory duration (in frames) required to keep a trajectory.</Documentation>
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
@@ -191,9 +184,9 @@
         </Hints>
 	</IntVectorProperty>
 
-    <IntVectorProperty name="minTimeOrigin" command="SetminTimeOrigin" label="Min Time Origin"
+    <IntVectorProperty name="minTimeOrigin" command="SetminTimeOrigin" label="Earliest origin frame"
                             number_of_elements="1" default_values="0">
-        <Documentation>Minimum absolute X velocity required to accept a trajectory (after unit conversion).</Documentation>
+        <Documentation>Earliest frame at which a trajectory's back-extrapolated origin is considered valid.</Documentation>
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
@@ -202,9 +195,9 @@
         </Hints>
 	</IntVectorProperty>
 
-    <IntVectorProperty name="minYTimeOrigin" command="SetminYTimeOrigin" label="Min Y Time Origin"
+    <IntVectorProperty name="minYTimeOrigin" command="SetminYTimeOrigin" label="Impact zone Y min (px)"
                             number_of_elements="1" default_values="0">
-        <Documentation>Minimum absolute X velocity required to accept a trajectory (after unit conversion).</Documentation>
+        <Documentation>Lower Y bound (in pixels) of the accepted impact zone used by the origin filter.</Documentation>
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
@@ -213,9 +206,9 @@
         </Hints>
 	</IntVectorProperty>
 
-    <IntVectorProperty name="maxYTimeOrigin" command="SetmaxYTimeOrigin" label="Max Y Time Origin"
+    <IntVectorProperty name="maxYTimeOrigin" command="SetmaxYTimeOrigin" label="Impact zone Y max (px)"
                             number_of_elements="1" default_values="20000">
-        <Documentation>Minimum absolute X velocity required to accept a trajectory (after unit conversion).</Documentation>
+        <Documentation>Upper Y bound (in pixels) of the accepted impact zone used by the origin filter.</Documentation>
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
@@ -233,28 +226,27 @@
       </DoubleVectorProperty>
 -->
       
-      <IntVectorProperty name="extendTraj" command="SetextendTraj" label="Extend merged chains to t=0"
-                         number_of_elements="1" default_values="0" panel_visibility="advanced">
+      <IntVectorProperty name="extendTraj" command="SetextendTraj" label="Extend lines to t=0"
+                         number_of_elements="1" default_values="0">
         <BooleanDomain name="bool"/>
-        <Documentation>When enabled, merged trajectories are drawn starting from frame 0 instead of their first frame.</Documentation>
+        <Documentation>When enabled, trajectories lines are drawn starting from frame 0 instead of their first frame of detection.</Documentation>
       </IntVectorProperty>
     
       <!-- DEBUG WIDGETS -->
       ${DEBUG_WIDGETS}
       
-     <PropertyGroup panel_widget="Line" label="Fusion / chaining">
+     <PropertyGroup panel_widget="Line" label="Concatenation criteria">
        <Property name="cosCol"/>
        <Property name="maxRadius"/>
        <Property name="maxFrameDist"/>
      </PropertyGroup>  
 
-     <PropertyGroup panel_widget="Line" label="Surface extraction">
-	   <Property name="surfaceMethod"/>
-	   <Property name="frameSurface"/>
-	   <Property name="onlyFrameSurface"/>
-	   <Property name="maxSurfSize"/>
-	   <Property name="errSurf"/>
+     <PropertyGroup panel_widget="Line" label="Debris mass estimation">
 	   <Property name="persisThresh"/>
+	   <Property name="errSurf"/>
+	   <Property name="maxSurfSize"/>
+	   <Property name="onlyFrameSurface"/>
+	   <Property name="frameSurface"/>
      </PropertyGroup>
 
      <PropertyGroup panel_widget="Line" label="Units">
@@ -264,7 +256,7 @@
 
      </PropertyGroup>
 
-     <PropertyGroup panel_widget="Line" label="Filtering">
+     <PropertyGroup panel_widget="Line" label="Filtering non physical trajectory">
 		<Property name="enableFilteringMinVx"/>
 		<Property name="enableFilteringCosY"/>
 		<Property name="enableFilteringTimeOrigin"/>
