@@ -350,7 +350,7 @@ int ttk::DebrisTracer::correctTrajectory(
 
   auto passInclinationYNy = [&](double ny) -> bool {
     if(!enableFilteringCosY_) { return true; }
-    return (-filtreY_ <= ny && ny <= filtreY_);
+    return (std::abs(ny) <= filtreY_);
   };
 
   auto passSpeedXAx = [&](double ax) -> bool {
@@ -359,9 +359,6 @@ int ttk::DebrisTracer::correctTrajectory(
   };
 
   auto passDirSpeedNyAx = [&](double ny, double ax) -> bool {
-    if(!enableFilteringMinVx_ && !enableFilteringCosY_) {
-      return true;
-    }
     if(!passInclinationYNy(ny)) {
       return false;
     }
@@ -369,8 +366,8 @@ int ttk::DebrisTracer::correctTrajectory(
   };
 
   auto passDirSpeed = [&](const LinearTrajectory &c) -> bool {
-    const double mag = std::sqrt(c.ax * c.ax + c.ay * c.ay + 1.0);
-    const double ny  = c.ay / mag;
+    if(std::abs(c.ax) < 1e-10) return true;
+	const double ny  = std::atan(c.ay / std::abs(c.ax));
     return passDirSpeedNyAx(ny, c.ax);
   };
 
@@ -569,29 +566,23 @@ int ttk::DebrisTracer::correctTrajectory(
 
   for(int i = 0; i < numTraj; ++i) {
     if(usedAsStart[i] || usedAsEnd[i] || trajTime[i].empty()) continue;
+    LinearTrajectory lineCoef = newTraj[i];
+    lineCoef.startFrame = trajTime[i].front();
+    lineCoef.endFrame   = trajTime[i].back();
 
-    const double nyOrphan = meanDy[i];
-    const double axOrphan = newTraj[i].ax;
-    if(passDirSpeedNyAx(nyOrphan, axOrphan)) {
-
-      LinearTrajectory lineCoef = newTraj[i];
-      lineCoef.startFrame = trajTime[i].front();
-      lineCoef.endFrame   = trajTime[i].back();
-
-      if(violatesBBox(lineCoef)) {
-        continue;
-      }
-      if(!passTimeOrigin(lineCoef) || !passDura(lineCoef)) { continue; }
-      lineCoef.criticalPoints.reserve(trajTime[i].size());
-      for(size_t k = 0; k < trajTime[i].size(); ++k) {
-        lineCoef.criticalPoints.emplace_back(
-          trajTime[i][k],
-          static_cast<ttk::SimplexId>(trajVertexId[i][k])
-        );
-      }
-      newTraj[i].finalChainId = static_cast<int>(merge.size());
-      merge.push_back(lineCoef);
+    if(violatesBBox(lineCoef)) {
+    	continue;
     }
+    if(!passTimeOrigin(lineCoef) || !passDura(lineCoef) || !passDirSpeed(lineCoef)) { continue; }
+    lineCoef.criticalPoints.reserve(trajTime[i].size());
+    for(size_t k = 0; k < trajTime[i].size(); ++k) {
+    	lineCoef.criticalPoints.emplace_back(
+        	trajTime[i][k],
+        	static_cast<ttk::SimplexId>(trajVertexId[i][k])
+    	);
+    }
+    newTraj[i].finalChainId = static_cast<int>(merge.size());
+    merge.push_back(lineCoef);
   }
   
 

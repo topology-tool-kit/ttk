@@ -209,11 +209,14 @@ int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
     inputFields[i] = ttkUtils::GetVoidPointer(fields[i]);
   
   
+  constexpr double pi = 3.14159265358979323846;
+
+
   this->setInputScalars(inputFields);
   this->setInstantPersistence(instantPersistence);
-  this->setFiltreY(filtreY);
-  this->setCosCol(cosCol);
-  this->setMaxRadius(maxRadius);
+  this->setFiltreY(filtreY*pi/180);
+  this->setCosCol(std::cos(cosCol*pi/180));
+  this->setMaxRadius(maxRadius*maxRadius);
   this->setMaxFrameDist(maxFrameDist);
   // spatialScale is in mm/px → convert to m/px: 1 / (scale_mm * 1000)
   this->setSpatialScale(1.0 / (spatialScale * 1000.0));
@@ -310,7 +313,6 @@ int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
     return arr;
   };
 
-  constexpr double pi = 3.14159265358979323846;
 
   auto addSegment = [&](vtkPoints *pts, vtkCellArray *lines, vtkIdType segIdx,
                         double x0, double y0, double t0,

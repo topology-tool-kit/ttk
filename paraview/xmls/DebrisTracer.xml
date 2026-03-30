@@ -22,18 +22,18 @@
  
 
       <!-- Fusion / chaining -->
-      <DoubleVectorProperty name="cosCol" command="SetcosCol" label="Chaining: Min cosine similarity"
-                            number_of_elements="1" default_values="0.96">
-        <Documentation>Minimum cosine similarity between average directions to allow linking two trajectories.</Documentation>
+      <DoubleVectorProperty name="cosCol" command="SetcosCol" label="θmax (°)"
+                            number_of_elements="1" default_values="20">
+        <Documentation>Maximum allowed angle between two trajectory to concatenate</Documentation>
       </DoubleVectorProperty>
     
-      <DoubleVectorProperty name="maxRadius" command="SetmaxRadius" label="Chaining: Max 3D distance²"
-                            number_of_elements="1" default_values="40.0">
-        <Documentation>Maximum squared distance (x,y,t) at the linking frame between the predicted end and the start point.</Documentation>
+      <DoubleVectorProperty name="maxRadius" command="SetmaxRadius" label="dmax (pixel)"
+                            number_of_elements="1" default_values="15">
+        <Documentation>Maximum distance (pixel) at the linking frame between the predicted end and the start point.</Documentation>
       </DoubleVectorProperty>
     
-      <IntVectorProperty name="maxFrameDist" command="SetmaxFrameDist" label="Chaining: frame gap"
-                         number_of_elements="1" default_values="20">
+      <IntVectorProperty name="maxFrameDist" command="SetmaxFrameDist" label="δmax (Frame)"
+                         number_of_elements="1" default_values="30">
         <Documentation>Upper and Lower bound on the frame difference between end(i) and start(j) for a valid link.</Documentation>
       </IntVectorProperty>
 
@@ -157,10 +157,11 @@
 
 
       <DoubleVectorProperty name="filtreY" command="SetfiltreY"
-                            label="Direction: Y cosine max"
-                            number_of_elements="1" default_values="1.0">
-        <Documentation> Interval ([-value; value]) on the normalized Y direction (cosine) for trajectory acceptance.</Documentation>
-        <Hints>
+                            label="Θmax (°)"
+                            number_of_elements="1" default_values="80">
+							<Documentation> Absolute maximum angle allowed between the trajectory and the horizontal axis 
+							</Documentation>
+							<Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
                                    property="enableFilteringCosY"
