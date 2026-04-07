@@ -11,6 +11,7 @@
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIdTypeArray.h>
+#include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
@@ -70,9 +71,10 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
   OutputCriticalPoints criticalPoints_{};
   Output1Separatrices separatrices1_{};
   Output2Separatrices separatrices2_{};
-  const int ret = this->execute(
-    criticalPoints_, separatrices1_, separatrices2_, segmentations_, scalars,
-    inputScalars->GetMTime(), inputOffsets, triangulation);
+  const int ret
+    = this->execute(criticalPoints_, separatrices1_, separatrices2_,
+                    segmentations_, scalars, inputScalars->GetMTime(),
+                    inputOffsets, triangulation, StochasticGradientSeed);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret != 0) {
@@ -508,7 +510,37 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
   this->setSaddleConnectorsPersistenceThreshold(
     SaddleConnectorsPersistenceThreshold);
 
+  const auto imageDataInput = vtkImageData::SafeDownCast(input);
+
+  if(DiscreteGradientBackend == 0) {
+    this->setDiscreteGradientBackend(
+      DiscreteGradient::BACKEND::CLASSIC_BACKEND);
+  }
+  if(DiscreteGradientBackend == 1 && !imageDataInput) {
+    this->setDiscreteGradientBackend(
+      DiscreteGradient::BACKEND::CLASSIC_BACKEND);
+    this->printWrn("The stochastic gradient (IEEE TVCG 2012) can only");
+    this->printWrn("be used on vtkImageData (.vti).");
+    this->printWrn("Defaulting to homotopic expansion (IEEE PAMI 2011)");
+  }
+  if(DiscreteGradientBackend == 1 && imageDataInput) {
+    this->setDiscreteGradientBackend(
+      DiscreteGradient::BACKEND::STOCHASTIC_BACKEND);
+  }
+
   int ret{};
+
+  /*
+
+  WARNING :
+
+  When this->ReturnSaddleConnectors == false, the discrete gradient is stored in
+  the cache associated with the triangulation. If the user creates another
+  MorseSmaleComplex object and execute the filter with
+  this->ReturnSaddleConnectors==false, the output will be the gradient in the
+  cache which may not be calculated with the same parameters (backend or seed).
+
+  */
 
   ttkVtkTemplateMacro(
     inputScalars->GetDataType(), triangulation->getType(),

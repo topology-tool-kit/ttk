@@ -47,7 +47,7 @@ namespace ttk::rpd {
 
     void getDiagram(MultidimensionalDiagram &diagrams) const;
     void getDiagramAndGenerators(MultidimensionalDiagram &diagrams,
-                                 std::vector<Generator> &generators) const;
+                                 std::vector<Generator1> &generators) const;
 
     void getCascades(std::vector<Cascade> &cascades, EdgeSets3 &critical) const;
     void getCascades(EdgeSets4 &critical) const;

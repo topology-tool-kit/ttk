@@ -26,10 +26,15 @@ namespace ttk::rpd {
                         MultidimensionalDiagram const &oracle,
                         bool distanceMatrix = false,
                         bool parallelSort = false);
+    PairCellsWithOracle(float *data,
+                        int n,
+                        int dim,
+                        MultidimensionalDiagram const &oracle,
+                        bool parallelSort = false);
 
     void run();
 
-    void getGenerators(std::vector<Generator> &generators) const;
+    void getGenerators(std::vector<Generator1> &generators) const;
 
     void getCascades(std::vector<Cascade> &cascades, EdgeSets3 &critical) const;
     void getCascades(EdgeSets4 &critical) const;

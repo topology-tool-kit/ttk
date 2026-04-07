@@ -389,7 +389,7 @@ int ttkMergeTreePrincipalGeodesics::runOutput(
 
   // Tree matching
   std::vector<std::vector<ttk::ftm::idNode>> matchingMatrix;
-  getMatchingMatrix(
+  ttk::axa::getMatchingMatrix(
     barycenter_, intermediateDTrees, baryMatchings_, matchingMatrix);
   if(not normalizedWasserstein_)
     for(unsigned int j = 0; j < inputTrees.size(); ++j)

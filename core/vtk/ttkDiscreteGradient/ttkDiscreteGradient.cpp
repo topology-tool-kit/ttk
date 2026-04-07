@@ -4,6 +4,7 @@
 
 #include <vtkCellData.h>
 #include <vtkIdTypeArray.h>
+#include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkIntArray.h>
 #include <vtkLine.h>
@@ -289,9 +290,28 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
     ttkUtils::GetVoidPointer(inputScalars), inputScalars->GetMTime());
   this->setInputOffsets(
     static_cast<SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)));
-  ttkTemplateMacro(triangulation->getType(),
-                   (ret = this->buildGradient<TTK_TT>(
-                      *static_cast<TTK_TT *>(triangulation->getData()), true)));
+
+  const auto imageDataInput = vtkImageData::SafeDownCast(input);
+
+  if(Backend == 0) {
+    this->setBackend(BACKEND::CLASSIC_BACKEND);
+  }
+  if(Backend == 1 && !imageDataInput) {
+    this->setBackend(BACKEND::CLASSIC_BACKEND);
+    this->printWrn("The stochastic gradient (IEEE TVCG 2012) can only");
+    this->printWrn("be used on vtkImageData (.vti).");
+    this->printWrn("Defaulting to homotopic expansion (IEE PAMI 2011)");
+  }
+  if(Backend == 1 && imageDataInput) {
+    this->setBackend(BACKEND::STOCHASTIC_BACKEND);
+  }
+  this->setSeed(StochasticGradientSeed);
+
+  ttkVtkTemplateMacro(
+    inputScalars->GetDataType(), triangulation->getType(),
+    (ret = this->buildGradient<VTK_TT, TTK_TT>(
+       *static_cast<TTK_TT *>(triangulation->getData()), true, nullptr)));
+
   if(ret != 0) {
     this->printErr("DiscreteGradient.buildGradient() error code: "
                    + std::to_string(ret));

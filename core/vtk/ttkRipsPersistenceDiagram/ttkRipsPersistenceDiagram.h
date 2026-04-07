@@ -46,21 +46,6 @@ TTKRIPSPERSISTENCEDIAGRAM_EXPORT void
                const ttk::rpd::MultidimensionalDiagram &diagram,
                double SimplexMaximumDiameter);
 
-/**
- * @brief Converts a vector of 1-dimensional persistent generators in the
- * ttk::rpd::Generator format to the VTK Unstructured Grid format.
- *
- * @param[out] vtu Output VTK Unstructured Grid
- * @param[in] inputPoints vtkPoints used to embed the generators
- * @param[in] generators Vector of ttk::rpd::Generator to be converted
- * @param[in] parametrize Whether to parametrize the generators
- */
-TTKRIPSPERSISTENCEDIAGRAM_EXPORT void
-  GeneratorsToVTU(vtkUnstructuredGrid *vtu,
-                  vtkPoints *inputPoints,
-                  const std::vector<ttk::rpd::Generator> &generators,
-                  bool parametrize = true);
-
 class TTKRIPSPERSISTENCEDIAGRAM_EXPORT ttkRipsPersistenceDiagram
   : public ttkAlgorithm, // we inherit from the generic ttkAlgorithm class
     protected ttk::RipsPersistenceDiagram { // and we inherit from the base
@@ -89,7 +74,7 @@ public:
     SimplexMaximumDiameter = stod(data);
     Modified();
   }
-  std::string GetSimplexMaximumDiameter() {
+  std::string GetSimplexMaximumDiameter() const {
     return std::to_string(SimplexMaximumDiameter);
   }
 
@@ -105,20 +90,14 @@ public:
   ttkSetEnumMacro(BackEnd, BACKEND);
   vtkGetEnumMacro(BackEnd, BACKEND);
 
-  vtkSetMacro(SimplexMaximumDimension, int);
-  vtkGetMacro(SimplexMaximumDimension, int);
+  vtkSetMacro(HomologyMaximumDimension, int);
+  vtkGetMacro(HomologyMaximumDimension, int);
 
   vtkSetMacro(FieldOfCoefficients, int);
   vtkGetMacro(FieldOfCoefficients, int);
 
   vtkSetMacro(InputIsDistanceMatrix, bool);
   vtkGetMacro(InputIsDistanceMatrix, bool);
-
-  vtkSetMacro(DelaunayRips, bool);
-  vtkGetMacro(DelaunayRips, bool);
-
-  vtkSetMacro(OutputGenerators, bool);
-  vtkGetMacro(OutputGenerators, bool);
 
 protected:
   ttkRipsPersistenceDiagram();

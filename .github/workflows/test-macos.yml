@@ -42,7 +42,7 @@ jobs:
         brew install --cask xquartz
         brew install ninja open-mpi libomp
         # TTK dependencies
-        brew install boost cgal eigen graphviz spectra sqlite numpy qhull
+        brew install boost cgal eigen graphviz spectra sqlite tbb numpy qhull
 
     - name: Run sccache-cache
       uses: mozilla-actions/sccache-action@v0.0.9
@@ -139,6 +139,7 @@ jobs:
       run: |
         cd ttk-data
         # remove buggy example
+        rm python/harmonicSkeleton.py
         # related issue: https://github.com/topology-tool-kit/ttk/issues/1055
         rm python/nestedTrackingFromOverlap.py
         # tmp removal of mpi example

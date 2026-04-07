@@ -205,8 +205,8 @@ namespace ttk {
 
     template <class dataType>
     dataType forestAssignmentProblem(
-      ftm::FTMTree_MT *ttkNotUsed(tree1),
-      ftm::FTMTree_MT *ttkNotUsed(tree2),
+      const ftm::FTMTree_MT *ttkNotUsed(tree1),
+      const ftm::FTMTree_MT *ttkNotUsed(tree2),
       std::vector<std::vector<dataType>> &treeTable,
       std::vector<ftm::idNode> &children1,
       std::vector<ftm::idNode> &children2,
@@ -232,8 +232,8 @@ namespace ttk {
 
     template <class dataType>
     void computeForestsDistance(
-      ftm::FTMTree_MT *tree1,
-      ftm::FTMTree_MT *tree2,
+      const ftm::FTMTree_MT *tree1,
+      const ftm::FTMTree_MT *tree2,
       int i,
       int j,
       std::vector<std::vector<dataType>> &treeTable,
@@ -299,7 +299,7 @@ namespace ttk {
     // ------------------------------------------------------------------------
     template <class dataType>
     void computeForestToEmptyDistance(
-      ftm::FTMTree_MT *tree1,
+      const ftm::FTMTree_MT *tree1,
       ftm::idNode nodeI,
       int i,
       std::vector<std::vector<dataType>> &treeTable,
@@ -313,7 +313,7 @@ namespace ttk {
 
     template <class dataType>
     void computeSubtreeToEmptyDistance(
-      ftm::FTMTree_MT *tree1,
+      const ftm::FTMTree_MT *tree1,
       ftm::idNode nodeI,
       int i,
       std::vector<std::vector<dataType>> &treeTable,
@@ -323,7 +323,7 @@ namespace ttk {
 
     template <class dataType>
     void computeEmptyToForestDistance(
-      ftm::FTMTree_MT *tree2,
+      const ftm::FTMTree_MT *tree2,
       ftm::idNode nodeJ,
       int j,
       std::vector<std::vector<dataType>> &treeTable,
@@ -337,7 +337,7 @@ namespace ttk {
 
     template <class dataType>
     void computeEmptyToSubtreeDistance(
-      ftm::FTMTree_MT *tree2,
+      const ftm::FTMTree_MT *tree2,
       ftm::idNode nodeJ,
       int j,
       std::vector<std::vector<dataType>> &treeTable,
@@ -374,8 +374,8 @@ namespace ttk {
 
     template <class dataType>
     void computeSubtreesDistance(
-      ftm::FTMTree_MT *tree1,
-      ftm::FTMTree_MT *tree2,
+      const ftm::FTMTree_MT *tree1,
+      const ftm::FTMTree_MT *tree2,
       int i,
       int j,
       ftm::idNode nodeI,
@@ -427,8 +427,8 @@ namespace ttk {
     // --------------------------------------------------------------------------------
     template <class dataType>
     void computeMatching(
-      ftm::FTMTree_MT *tree1,
-      ftm::FTMTree_MT *tree2,
+      const ftm::FTMTree_MT *tree1,
+      const ftm::FTMTree_MT *tree2,
       std::vector<std::vector<std::tuple<int, int>>> &treeBackTable,
       std::vector<std::vector<std::vector<std::tuple<int, int>>>>
         &forestBackTable,
@@ -479,8 +479,8 @@ namespace ttk {
     // ------------------------------------------------------------------------
     template <class dataType>
     dataType
-      computeDistance(ftm::FTMTree_MT *tree1,
-                      ftm::FTMTree_MT *tree2,
+      computeDistance(const ftm::FTMTree_MT *tree1,
+                      const ftm::FTMTree_MT *tree2,
                       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>
                         &outputMatching) {
       // ---------------------
@@ -544,8 +544,8 @@ namespace ttk {
 
     template <class dataType>
     dataType computeDistance(
-      ftm::FTMTree_MT *tree1,
-      ftm::FTMTree_MT *tree2,
+      const ftm::FTMTree_MT *tree1,
+      const ftm::FTMTree_MT *tree2,
       std::vector<std::tuple<ftm::idNode, ftm::idNode>> &outputMatching) {
       std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>
         realOutputMatching;
@@ -651,8 +651,8 @@ namespace ttk {
 
     template <class dataType>
     void computeEditDistance(
-      ftm::FTMTree_MT *tree1,
-      ftm::FTMTree_MT *tree2,
+      const ftm::FTMTree_MT *tree1,
+      const ftm::FTMTree_MT *tree2,
       std::vector<std::vector<dataType>> &treeTable,
       std::vector<std::vector<dataType>> &forestTable,
       std::vector<std::vector<std::tuple<int, int>>> &treeBackTable,
@@ -694,8 +694,8 @@ namespace ttk {
 
     template <class dataType>
     void classicEditDistance(
-      ftm::FTMTree_MT *tree1,
-      ftm::FTMTree_MT *tree2,
+      const ftm::FTMTree_MT *tree1,
+      const ftm::FTMTree_MT *tree2,
       bool processTree1,
       bool computeEmptyTree,
       ftm::idNode nodeI,
@@ -769,8 +769,8 @@ namespace ttk {
     // ------------------------------------------------------------------------
     template <class dataType>
     void parallelEditDistance(
-      ftm::FTMTree_MT *tree1,
-      ftm::FTMTree_MT *tree2,
+      const ftm::FTMTree_MT *tree1,
+      const ftm::FTMTree_MT *tree2,
       std::vector<std::vector<dataType>> &treeTable,
       std::vector<std::vector<dataType>> &forestTable,
       std::vector<std::vector<std::tuple<int, int>>> &treeBackTable,
@@ -816,8 +816,8 @@ namespace ttk {
     // Forests and subtrees distances
     template <class dataType>
     void parallelTreeDistance_v2(
-      ftm::FTMTree_MT *tree1,
-      ftm::FTMTree_MT *tree2,
+      const ftm::FTMTree_MT *tree1,
+      const ftm::FTMTree_MT *tree2,
       bool isTree1,
       int i,
       std::vector<ftm::idNode> &tree1Leaves,
@@ -831,7 +831,7 @@ namespace ttk {
         &forestBackTable,
       bool firstCall = false) {
       ftm::idNode const nodeT = -1;
-      ftm::FTMTree_MT *treeT = (isTree1) ? tree1 : tree2;
+      const ftm::FTMTree_MT *treeT = (isTree1) ? tree1 : tree2;
       std::vector<int> treeChildDone(treeT->getNumberOfNodes(), 0);
       std::vector<bool> treeNodeDone(treeT->getNumberOfNodes(), false);
       std::queue<ftm::idNode> treeQueue;
@@ -863,8 +863,8 @@ namespace ttk {
     // (isCalled_=false)
     template <class dataType>
     void parallelTreeDistancePara(
-      ftm::FTMTree_MT *tree1,
-      ftm::FTMTree_MT *tree2,
+      const ftm::FTMTree_MT *tree1,
+      const ftm::FTMTree_MT *tree2,
       bool isTree1,
       int i,
       std::vector<ftm::idNode> &tree1Leaves,
@@ -900,8 +900,8 @@ namespace ttk {
 
     template <class dataType>
     void parallelTreeDistanceTask(
-      ftm::FTMTree_MT *tree1,
-      ftm::FTMTree_MT *tree2,
+      const ftm::FTMTree_MT *tree1,
+      const ftm::FTMTree_MT *tree2,
       bool isTree1,
       int i,
       std::vector<ftm::idNode> &tree1Leaves,
@@ -933,7 +933,7 @@ namespace ttk {
          treeChildDone, treeNodeDone) if(isTree1)
         {
 #endif
-          ftm::FTMTree_MT *treeT = (isTree1) ? tree1 : tree2;
+          const ftm::FTMTree_MT *treeT = (isTree1) ? tree1 : tree2;
           // while(nodeT != -1){
           while(!taskQueue.empty()) {
             nodeT = taskQueue.front();
@@ -1006,7 +1006,7 @@ namespace ttk {
     // Subtree/Forest with empty tree distances
     template <class dataType>
     void parallelEmptyTreeDistance_v2(
-      ftm::FTMTree_MT *tree,
+      const ftm::FTMTree_MT *tree,
       bool isTree1,
       std::vector<ftm::idNode> &treeLeaves,
       std::vector<int> &treeNodeChildSize,
@@ -1035,7 +1035,7 @@ namespace ttk {
 
     template <class dataType>
     void parallelEmptyTreeDistancePara(
-      ftm::FTMTree_MT *tree,
+      const ftm::FTMTree_MT *tree,
       bool isTree1,
       std::vector<ftm::idNode> &treeLeaves,
       std::vector<int> &treeNodeChildSize,
@@ -1064,7 +1064,7 @@ namespace ttk {
 
     template <class dataType>
     void parallelEmptyTreeDistanceTask(
-      ftm::FTMTree_MT *tree,
+      const ftm::FTMTree_MT *tree,
       bool isTree1,
       std::vector<ftm::idNode> &ttkNotUsed(treeLeaves),
       std::vector<int> &treeNodeChildSize,

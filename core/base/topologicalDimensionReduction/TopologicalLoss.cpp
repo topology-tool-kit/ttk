@@ -32,11 +32,12 @@ torch::Tensor ttk::TopologicalLoss::computeLoss(const torch::Tensor &latent) {
 }
 
 void ttk::TopologicalLoss::precomputeInputPersistence() {
-  if(regul_ == REGUL::TOPOAE) {
+  if(regul_ == REGUL::TOPOAE || regul_ == REGUL::W_DIM1) {
     rpd::EdgeSets3 inputCritical;
     ripser::ripser(points_, inputCritical, rpd::inf, 0, false);
     inputCriticalPairIndices = {pairsToTorch(inputCritical[0])};
-  } else if(regul_ == REGUL::TOPOAE_DIM1) {
+  }
+  if(regul_ == REGUL::TOPOAE_DIM1) {
     rpd::EdgeSets3 inputCritical;
     ripser::ripser(points_, inputCritical, rpd::inf, 1, false);
     for(int i = 0; i <= 2; ++i)
@@ -45,12 +46,6 @@ void ttk::TopologicalLoss::precomputeInputPersistence() {
     ripser::ripser(points_, inputPD, rpd::inf, 1, false);
     auction = std::make_unique<
       PersistenceDiagramWarmRestartAuction<rpd::PersistencePair>>(inputPD[1]);
-#ifdef TTK_W1REG_WITH_TOPOAE0
-    // we add topoAE0 loss
-    rpd::EdgeSets3 inputCritical;
-    ripser::ripser(points_, inputCritical, rpd::inf, 0, false);
-    inputCriticalPairIndices[0] = pairsToTorch(inputCritical[0]);
-#endif
   } else if(regul_ == REGUL::CASCADE || regul_ == REGUL::ASYMMETRIC_CASCADE) {
     // first compute the PD with Ripser
     rpd::PairCellsWithOracle::callOracle(points_, inputPD);
@@ -116,14 +111,21 @@ void ttk::TopologicalLoss::computeLatentCascades(
       latent_.cpu().data_ptr<float>(), latent_.size(0))
       .computeRips0And1Persistence(latentCriticalAndCascades, false, false);
   else {
-    rpd::PairCells pc(
-      latent_.cpu().data_ptr<float>(), latent_.size(0), latent_.size(1));
+    rpd::MultidimensionalDiagram latentPD;
+    ripser::ripser(latent_.cpu().data_ptr<float>(), latent_.size(0),
+                   latent_.size(1), latentPD, rpd::inf, 1, false);
+    rpd::PairCellsWithOracle pc(latent_.cpu().data_ptr<float>(),
+                                latent_.size(0), latent_.size(1), latentPD,
+                                false);
     pc.run();
     pc.getCascades(latentCriticalAndCascades);
   }
 #else
-  rpd::PairCells pc(
-    latent_.cpu().data_ptr<float>(), latent_.size(0), latent_.size(1));
+  rpd::MultidimensionalDiagram latentPD;
+  ripser::ripser(latent_.cpu().data_ptr<float>(), latent_.size(0),
+                 latent_.size(1), latentPD, rpd::inf, 1, false);
+  rpd::PairCellsWithOracle pc(latent_.cpu().data_ptr<float>(), latent_.size(0),
+                              latent_.size(1), latentPD, false);
   pc.run();
   pc.getCascades(latentCriticalAndCascades);
 #endif

@@ -29,21 +29,22 @@ namespace ttk::rpd {
   enum CRIT { DEATH0, BIRTH1, DEATH1, CASC1 };
   using Cascade = EdgeSet;
 
-  using Generator = std::pair<EdgeSet, std::pair<value_t, value_t>>;
+  using Facet = std::array<id_t, 3>;
+  using Generator1 = std::pair<std::vector<Edge>, std::pair<value_t, value_t>>;
+  using Generator2 = std::pair<std::vector<Facet>, std::pair<value_t, value_t>>;
 
   struct FiltratedEdge {
-    std::pair<id_t, id_t> e;
+    Edge e;
     value_t d;
   };
   inline FiltratedEdge max(const FiltratedEdge &a, const FiltratedEdge &b) {
     if(a.d > b.d)
       return a;
-    else
-      return b;
+    return b;
   }
 
   struct FiltratedQuadEdge {
-    std::pair<id_t, id_t> e;
+    Edge e;
     int f1;
     int f2;
     value_t d;
@@ -69,7 +70,8 @@ namespace ttk::rpd {
 
   class UnionFind {
   private:
-    std::vector<int> parent_, rank_;
+    std::vector<int> parent_;
+    std::vector<unsigned char> rank_;
 
   public:
     explicit UnionFind(unsigned n);

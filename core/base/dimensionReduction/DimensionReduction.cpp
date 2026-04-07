@@ -81,22 +81,13 @@ int DimensionReduction::execute(
       ae_CUDA, ae_Deterministic, ae_Seed, NumberOfComponents, ae_Epochs,
       ae_LearningRate, ae_Optimizer, ae_Method, ae_Model, ae_Architecture,
       ae_Activation, ae_BatchSize, ae_BatchNormalization, ae_RegCoefficient,
-      IsInputImages);
+      IsInputImages, ae_PreOptimize, ae_PreOptimizeEpochs);
     tcdr.setDebugLevel(debugLevel_);
     tcdr.setThreadNumber(threadNumber_);
 
     outputEmbedding.resize(NumberOfComponents);
     for(int d = 0; d < NumberOfComponents; d++)
       outputEmbedding[d].resize(nRows);
-
-    if(ae_PreOptimize) {
-      DimensionReduction initDR;
-      initDR.setDebugLevel(debugLevel_);
-      initDR.setInputMethod(ae_PreOptimizeMethod);
-      std::vector<std::vector<double>> latentInitialization;
-      initDR.execute(latentInitialization, inputMatrix, nRows, nColumns);
-      tcdr.setLatentInitialization(latentInitialization);
-    }
 
     tcdr.execute(outputEmbedding, inputMatrix, nRows);
 

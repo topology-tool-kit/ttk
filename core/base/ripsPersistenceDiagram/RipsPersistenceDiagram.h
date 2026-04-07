@@ -42,27 +42,21 @@ namespace ttk {
      *
      * @param[in] points Input point cloud or input distance matrix
      * @param[out] ph Persistence diagram
-     * @param[out] generators Persistent generators, if required
      */
     int execute(const rpd::PointCloud &points,
-                rpd::MultidimensionalDiagram &ph,
-                std::vector<rpd::Generator> &generators) const;
+                rpd::MultidimensionalDiagram &ph) const;
 
   protected:
     /** BackEnd */
     BACKEND BackEnd{BACKEND::RIPSER};
     /** Max dimension of computed persistence diagram */
-    int SimplexMaximumDimension{1};
+    int HomologyMaximumDimension{1};
     /** Rips diameter threshold */
     double SimplexMaximumDiameter{rpd::inf};
     /** Field of coefficients */
     int FieldOfCoefficients{2};
     /** is input a distance matrix */
     bool InputIsDistanceMatrix{false};
-    /** Delaunay-Rips */
-    bool DelaunayRips{false};
-    /** output generators */
-    bool OutputGenerators{false};
 
   }; // RipsPersistenceDiagram class
 

@@ -27,7 +27,7 @@ namespace ttk {
     RipsPersistenceGenerators();
     void execute(const std::vector<std::vector<double>> &points,
                  rpd::MultidimensionalDiagram &diagrams,
-                 std::vector<rpd::Generator> &generators) const {
+                 std::vector<rpd::Generator1> &generators) const {
       rpd::PairCellsWithOracle::callOracle(
         points, diagrams, SimplexMaximumDiameter, InputIsDistanceMatrix);
       rpd::PairCellsWithOracle pc(

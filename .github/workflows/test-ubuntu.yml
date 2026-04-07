@@ -42,6 +42,7 @@ jobs:
           libosmesa-dev \
           libopenmpi-dev \
           libsqlite3-dev \
+          libtbb-dev \
           libwebsocketpp-dev \
           graphviz \
           python3-sklearn \

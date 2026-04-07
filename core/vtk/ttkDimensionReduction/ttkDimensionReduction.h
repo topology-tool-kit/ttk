@@ -71,8 +71,9 @@
 ///
 /// "Topological Autoencoders++: Fast and Accurate Cycle-Aware Dimensionality
 /// Reduction" \n
-/// Mattéo Clémot, Julie Digne, Julien Tierny, \n
-/// arXiv preprint, 2025.
+/// MattÃ©o ClÃ©mot, Julie Digne, Julien Tierny, \n
+/// IEEE Transactions on Visualization and Computer Graphics.
+/// Accepted, to be presented at IEEE VIS 2026.
 
 #pragma once
 
@@ -110,6 +111,22 @@ public:
 
   vtkSetMacro(RegexpString, const std::string &);
   vtkGetMacro(RegexpString, std::string);
+
+  void SetInitializationFields(const std::string &s) {
+    InitializationFields.push_back(s);
+    Modified();
+  }
+
+  void ClearInitializationFields() {
+    InitializationFields.clear();
+    Modified();
+  }
+
+  vtkSetMacro(SelectInitializationFieldsWithRegexp, bool);
+  vtkGetMacro(SelectInitializationFieldsWithRegexp, bool);
+
+  vtkSetMacro(InitializationRegexpString, const std::string &);
+  vtkGetMacro(InitializationRegexpString, std::string);
 
   vtkSetMacro(NumberOfComponents, int);
   vtkGetMacro(NumberOfComponents, int);
@@ -310,8 +327,8 @@ public:
   vtkSetMacro(ae_PreOptimize, bool);
   vtkGetMacro(ae_PreOptimize, bool);
 
-  ttkSetEnumMacro(ae_PreOptimizeMethod, METHOD);
-  vtkGetEnumMacro(ae_PreOptimizeMethod, METHOD);
+  vtkSetMacro(ae_PreOptimizeEpochs, int);
+  vtkGetMacro(ae_PreOptimizeEpochs, int);
 
   // testing
   vtkSetMacro(ModulePath, const std::string &);
@@ -337,6 +354,10 @@ private:
   bool SelectFieldsWithRegexp{false};
   std::string RegexpString{".*"};
   std::vector<std::string> ScalarFields{};
+
+  bool SelectInitializationFieldsWithRegexp{false};
+  std::string InitializationRegexpString{".*"};
+  std::vector<std::string> InitializationFields{};
 
   bool KeepAllDataArrays{true};
 
