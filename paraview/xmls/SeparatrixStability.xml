@@ -84,21 +84,31 @@
 
       <DoubleVectorProperty
         name="epsilon"
-        label="Birth/death threshold"
+        label="Relative destruction cost"
         command="SetCostDeathBirth"
         number_of_elements="1"
         default_values="0.1"
         panel_visibility="advanced">
-        <Documentation>
+      <Documentation>
+        Relative cost (with regard to the data span, between 0 and 1) associated with the destruction of a critical point. Set this parameter to larger values to allow for larger displacements for a critical point from one field to another. Set this parameter to smaller values to prevent a critical point from jumping too far from one field to another.
         </Documentation>
       </DoubleVectorProperty>  
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="spx" />
+        <Property name="spy" />
+        <Property name="spz" />
+        <Property name="spf" />
+        <Property name="MergeEdgesOnSaddles" />
+        <Property name="epsilon" />
+      </PropertyGroup>
 
       <!-- DEBUG -->
       ${DEBUG_WIDGETS}
 
       <!-- MENU CATEGORY -->
       <Hints>
-        <ShowInMenu category="TTK - Misc" />
+        <ShowInMenu category="TTK - Ensemble Scalar Data" />
       </Hints>
     </SourceProxy>
   </ProxyGroup>
