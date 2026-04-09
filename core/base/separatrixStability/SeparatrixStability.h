@@ -1,3 +1,26 @@
+/// \ingroup vtk
+/// \class ttkSeparatrixStability
+/// \author Thomas Daniel <thomas.daniel124@gmail.com>
+/// \date July 2025.
+///
+/// \brief Compute the occurrence rate of separatrices in an ensemble.
+///
+/// This module takes as an input a set of 1-dimensional separatrices of the 
+/// Morse-Smale complex for an ensemble dataset. It computes as an output, for 
+/// each separatrix, its rate of occurrence in the ensemble (based on partial 
+/// isomorphism computations).
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/molecularVibration/">Molecular
+///   Vibration example</a>
+///   
+/// \b Related \b publication: \n
+/// "BondMatcher: H-Bond Stability Analysis in Molecular Systems" \n
+/// Thomas Daniel, Malgorzata Olejniczak, Julien Tierny \n
+/// IEEE Transactions on Visualization and Computer Graphics \n
+/// Proc. of IEEE VIS 2025.
+
 #pragma once
 
 #include <Debug.h>
