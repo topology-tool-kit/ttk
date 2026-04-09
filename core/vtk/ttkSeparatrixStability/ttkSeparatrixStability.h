@@ -5,10 +5,10 @@
 ///
 /// \brief TTK VTK-filter that wraps the ttk::SeparatrixStability module.
 ///
-/// It takes as an input a vtkMultiBlockDataSet representing the 1-dimensional 
-/// separatrices of the Morse-Smale complex for an ensemble dataset. It 
-/// computes as an output, a copy of the input, with for each separatrix, its 
-/// rate of occurrence in the ensemble (based on partial isomorphism 
+/// It takes as an input a vtkMultiBlockDataSet representing the 1-dimensional
+/// separatrices of the Morse-Smale complex for an ensemble dataset. It
+/// computes as an output, a copy of the input, with for each separatrix, its
+/// rate of occurrence in the ensemble (based on partial isomorphism
 /// computations).
 ///
 /// \sa ttk::SeparatrixStability
@@ -18,7 +18,7 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/molecularVibration/">Molecular
 ///   Vibration example</a>
-///   
+///
 /// \b Related \b publication: \n
 /// "BondMatcher: H-Bond Stability Analysis in Molecular Systems" \n
 /// Thomas Daniel, Malgorzata Olejniczak, Julien Tierny \n
