@@ -6,7 +6,13 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy name="ttkSeparatrixStability" class="ttkSeparatrixStability" label="TTK SeparatrixStability">
-      <Documentation long_help="SeparatrixStability Long" short_help="SeparatrixStability Short">This filter is a well documented ttk example filter that computes for each vertex of a vtkDataSet the average scalar value of itself and its neighbors.</Documentation>
+      <Documentation long_help="SeparatrixStability Long" short_help="SeparatrixStability Short">This filter takes as an input a vtkMultiBlockDataSet representing the 1-dimensional separatrices of the Morse-Smale complex for an ensemble dataset. It computes as an output, a copy of the input, with for each separatrix, its rate of occurrence in the ensemble (based on partial isomorphism computations).
+
+      Online examples:
+
+      - https://topology-tool-kit.github.io/examples/molecularVibration/
+
+    </Documentation>
 
       <InputProperty name="Input" command="SetInputConnection">
         <ProxyGroupDomain name="groups">
