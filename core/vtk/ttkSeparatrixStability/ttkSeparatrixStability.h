@@ -1,16 +1,29 @@
 /// \ingroup vtk
 /// \class ttkSeparatrixStability
-/// \author Your Name Here <your.email@address.here>
-/// \date The Date Here.
+/// \author Thomas Daniel <thomas.daniel124@gmail.com>
+/// \date July 2025.
 ///
 /// \brief TTK VTK-filter that wraps the ttk::SeparatrixStability module.
 ///
-/// This VTK filter uses the ttk::SeparatrixStability module to compute
-/// an averaging of the data values of an input point data array defined on the
-/// input vtkDataSet.
+/// It takes as an input a vtkMultiBlockDataSet representing the 1-dimensional 
+/// separatrices of the Morse-Smale complex for an ensemble dataset. It 
+/// computes as an output, a copy of the input, with for each separatrix, its 
+/// rate of occurrence in the ensemble (based on partial isomorphism 
+/// computations).
 ///
 /// \sa ttk::SeparatrixStability
 /// \sa ttkAlgorithm
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/molecularVibration/">Molecular
+///   Vibration example</a>
+///   
+/// \b Related \b publication: \n
+/// "BondMatcher: H-Bond Stability Analysis in Molecular Systems" \n
+/// Thomas Daniel, Malgorzata Olejniczak, Julien Tierny \n
+/// IEEE Transactions on Visualization and Computer Graphics \n
+/// Proc. of IEEE VIS 2025.
 
 #pragma once
 
