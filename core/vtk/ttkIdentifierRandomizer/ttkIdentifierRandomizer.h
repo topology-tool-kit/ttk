@@ -31,6 +31,9 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/">
 ///   KarhunenLove Digits 64Dimensions example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/molecularVibration/">Molecular
+///   Vibration example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">
 /// Tectonic puzzle example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/tribute/">

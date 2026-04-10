@@ -63,6 +63,14 @@ namespace ttk {
   const char MorseSmaleDescendingName[] = "DescendingManifold";
   const char MorseSmaleManifoldName[] = "MorseSmaleManifold";
 
+  // default name for SeparatrixStability
+
+  const char SeparatrixStabilityOccurrenceCount[] = "Occurrence";
+  const char SeparatrixStabilityIsomorphismClassId[] = "IsomorphismClassId";
+  const char SeparatrixStabilityMatchingIdName[] = "MatchingIdInBlock";
+  const char SeparatrixStabilityMatchingIdSeparatrixName[]
+    = "SeparatrixMatchingIdInBlock";
+
   // default names for persistence diagram meta data
   const char PersistenceCriticalTypeName[] = "CriticalType";
   const char PersistenceBirthName[] = "Birth";

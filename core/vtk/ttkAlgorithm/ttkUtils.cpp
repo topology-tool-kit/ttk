@@ -281,6 +281,7 @@ void ttkUtils::SetVoidArray(vtkDataArray *array,
                             void *data,
                             vtkIdType size,
                             int save) {
+
   switch(array->GetDataType()) {
     vtkTemplateMacro(
       auto *aosArray = vtkAOSDataArrayTemplate<VTK_TT>::FastDownCast(array);
