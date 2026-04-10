@@ -1,5 +1,5 @@
-/// \ingroup vtk
-/// \class ttkSeparatrixStability
+/// \ingroup base
+/// \class ttk::SeparatrixStability
 /// \author Thomas Daniel <thomas.daniel124@gmail.com>
 /// \date July 2025.
 ///
@@ -9,6 +9,8 @@
 /// Morse-Smale complex for an ensemble dataset. It computes as an output, for
 /// each separatrix, its rate of occurrence in the ensemble (based on partial
 /// isomorphism computations).
+///
+/// \sa ttkSeparatrixStability.cpp %for a usage example.
 ///
 /// \b Online \b examples: \n
 ///   - <a
