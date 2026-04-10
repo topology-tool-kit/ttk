@@ -23,7 +23,8 @@
           <DataType value="vtkMultiBlockDataSet" />
         </DataTypeDomain>
         <InputArrayDomain name="input_array" attribute_type="point" number_of_components="1" />
-        <Documentation>A vtkDataSet that has at least one point data scalar array that can be used to compute averages.</Documentation>
+        <Documentation>A vtkMultiBlockDataSet representing an ensemble of 1-dimensional separatrices.
+        </Documentation>
       </InputProperty>
 
 
@@ -36,7 +37,7 @@
         panel_visibility="advanced">
         <DoubleRangeDomain name="spx" min="0.0" max="1.0"/>
         <Documentation>Importance weight for the X component of
-          the extremum</Documentation>
+          the extremum (critical point assignment)</Documentation>
       </DoubleVectorProperty>
 
       <DoubleVectorProperty
@@ -48,7 +49,7 @@
         panel_visibility="advanced">
         <DoubleRangeDomain name="spy" min="0.0" max="1.0"/>
         <Documentation>Importance weight for the Y component of
-            the extremum</Documentation>
+            the extremum (critical point assignment)</Documentation>
       </DoubleVectorProperty>
 
       <DoubleVectorProperty
@@ -60,7 +61,7 @@
         panel_visibility="advanced">
         <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
         <Documentation>Importance weight for the Z component of
-        the extremum</Documentation>
+        the extremum (critical point assignment)</Documentation>
       </DoubleVectorProperty>
 
       <DoubleVectorProperty
@@ -72,7 +73,7 @@
         panel_visibility="advanced">
         <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
         <Documentation>Importance weight for the scalar component of
-        the extremum</Documentation>
+        the extremum (critical point assignment)</Documentation>
       </DoubleVectorProperty>
 
       <IntVectorProperty
@@ -84,7 +85,7 @@
         default_values="1">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Check this box to merge the edges on the saddles points.
+          Check this box to merge the edges on the saddles points (i.e., concatenating separatrices with a common saddle).
         </Documentation>
       </IntVectorProperty> 
 
