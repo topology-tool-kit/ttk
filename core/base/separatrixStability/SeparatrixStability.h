@@ -24,7 +24,6 @@
 #pragma once
 
 #include <Debug.h>
-#include <Triangulation.h>
 #include <optional>
 #include <utility>
 #include <vector>

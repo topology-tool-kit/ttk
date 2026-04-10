@@ -2,11 +2,9 @@
 #include <ttkMorseSmaleComplex.h>
 #include <ttkUtils.h>
 
-#include <vtkAbstractArray.h>
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataObject.h>
-#include <vtkDataObjectTypes.h>
 #include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
@@ -43,7 +41,6 @@ int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
     return 1;
   } else if(port == 3) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
-    // info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
     return 1;
   }
   return 0;

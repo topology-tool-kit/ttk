@@ -4,6 +4,5 @@ ttk_add_base_library(separatrixStability
   HEADERS
     SeparatrixStability.h
   DEPENDS
-    triangulation
     assignmentSolver
 )

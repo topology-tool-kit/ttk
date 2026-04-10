@@ -2,6 +2,7 @@
 #include <SeparatrixStability.h>
 
 #include <cmath>
+
 ttk::SeparatrixStability::SeparatrixStability() {
   // inherited from Debug: prefix will be printed at the beginning of every msg
   this->setDebugMsgPrefix("SeparatrixStability");

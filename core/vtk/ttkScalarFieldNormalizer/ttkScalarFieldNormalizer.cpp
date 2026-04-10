@@ -3,7 +3,6 @@
 #include <Geometry.h>
 
 #include <vtkDataArray.h>
-#include <vtkDataObjectTypes.h>
 #include <vtkDataSet.h>
 #include <vtkInformation.h>
 #include <vtkObjectFactory.h>
