@@ -90,6 +90,20 @@ namespace ttk {
       int finalContrib;
     };
 
+    struct RotatingCalipersResult {
+      double minDist;
+      double maxDist;
+      ttk::SimplexId minVertex1;
+      ttk::SimplexId minVertex2;
+      ttk::SimplexId maxVertex1;
+      ttk::SimplexId maxVertex2;
+      
+      RotatingCalipersResult() 
+        : minDist(0.0), maxDist(0.0), 
+          minVertex1(-1), minVertex2(-1),
+          maxVertex1(-1), maxVertex2(-1) {}
+    };
+
 
     template <class dataType, class triangulationType>
     int execute(         
@@ -147,7 +161,14 @@ namespace ttk {
                std::vector<double>              &surfMin,
                std::vector<double>              &surfMax,
                std::vector<double>              &surfMean
-	); 
+	);
+
+	template <class triangulationType>
+	int computeRotatingCalipersForSurface(
+               const std::vector<ttk::SimplexId> &surfaceVertices,
+               const triangulationType *triangulation,
+               RotatingCalipersResult &result
+	);
 
 
     int computeSurfaceCellCount(const std::vector<ttk::SimplexId> &surfVertices,
@@ -682,17 +703,13 @@ int ttk::DebrisTracer::computeMergeTree(
   this->printMsg("Merge-tree surface segmentation (" + std::to_string(nFrames)
                  + " frame(s), " + std::to_string(nPixels) + " vertices)");
 
-  // Build the actual list of frame indices to process
   std::vector<int> frameIndices(nFrames);
   for(int f = 0; f < nFrames; ++f)
     frameIndices[f] = (!onlyFrameSurface_) ? f : frameSurf;
 
-  // Per-frame, per-trajectory surface value (to merge after parallel region)
-  // trajSurfPerFrame[f][trajId] = surfVal  (0.0 means not touched)
   std::vector<std::vector<double>> trajSurfPerFrame(nFrames,
     std::vector<double>(nTraj, 0.0));
 
-  // Per-frame trajDouble flags (each frame independent)
   std::vector<std::vector<char>> trajDoublePerFrame(nFrames,
     std::vector<char>(nTraj, 0));
 
@@ -704,7 +721,6 @@ int ttk::DebrisTracer::computeMergeTree(
 #endif
   for(int fi = 0; fi < nFrames; fi++) {
 
-    // Check if a previous frame signaled an error
     if(globalError != 0) continue;
 
     const int frame = frameIndices[fi];
@@ -721,7 +737,7 @@ int ttk::DebrisTracer::computeMergeTree(
       static_cast<size_t>(nPixels),
       scalars,
       offsets.data(),
-      1); // single thread per frame (parallelism is across frames)
+      1); // single thread per frame 
 
     dataType sMin = scalars[0], sMax = scalars[0];
     for(ttk::SimplexId i = 1; i < nPixels; ++i) {
@@ -886,8 +902,11 @@ int ttk::DebrisTracer::computeMergeTree(
           computeSurfaceCellCount(segmentId[segId], triangulation));
         if(surfVal == 0)
           surfVal = 1;
-
-        trajSurfPerFrame[fi][trajId] = surfVal;
+  	    
+		RotatingCalipersResult rcResult;
+     	computeRotatingCalipersForSurface(segmentId[segId], triangulation, rcResult);
+        
+		trajSurfPerFrame[fi][trajId] = surfVal;
 
         for(size_t i = 0; i < segmentId[segId].size(); i++) {
           int v = segmentId[segId][i];
@@ -906,7 +925,6 @@ int ttk::DebrisTracer::computeMergeTree(
 
     } // end trajectory loop
 
-    // Clean allVertexDebris for doubled trajectories (per-frame, no race)
     for(int t = 0; t < static_cast<int>(localTrajDouble.size()); t++) {
       if(!localTrajDouble[t]) continue;
       for(int v = 0; v < nPixels; v++) {
@@ -924,7 +942,6 @@ int ttk::DebrisTracer::computeMergeTree(
     return -1;
   }
 
-  // --- Merge per-frame results into trajSurfaces ---
   std::vector<std::vector<double>> trajSurfaces(nTraj);
   for(size_t trajId = 0; trajId < nTraj; ++trajId) {
     for(int fi = 0; fi < nFrames; ++fi) {
@@ -1043,7 +1060,7 @@ dataType ttk::DebrisTracer::otsuThresholdLocal(
     }
   }
 
-  // Map bin index back to scalar threshold
+  // Map bin index back to scalar threshold (Otsu)
   const double t = minD + (static_cast<double>(bestK) / (nbins - 1)) * (maxD - minD);
   return static_cast<dataType>(t);
 }
@@ -1133,4 +1150,242 @@ void ttk::DebrisTracer::cleanDarkSegmentInPlace(
   }
 
   segmentVerts.swap(bestCC);
+}
+
+
+// ============================================================================
+// ROTATING CALIPERS IMPLEMENTATION
+// ============================================================================
+
+namespace {
+  // Point structure for 2D coordinates with original vertex ID
+  struct Point2D {
+    double x, y;
+    ttk::SimplexId vertexId;
+    
+    Point2D(double x_ = 0, double y_ = 0, ttk::SimplexId id = -1) 
+      : x(x_), y(y_), vertexId(id) {}
+  };
+
+  // Vector operations
+  inline double dot(const Point2D &a, const Point2D &b) {
+    return a.x * b.x + a.y * b.y;
+  }
+
+  inline double cross(const Point2D &a, const Point2D &b) {
+    return a.x * b.y - a.y * b.x;
+  }
+
+  inline Point2D subtract(const Point2D &a, const Point2D &b) {
+    return Point2D(a.x - b.x, a.y - b.y);
+  }
+
+  inline double distance(const Point2D &a, const Point2D &b) {
+    double dx = a.x - b.x;
+    double dy = a.y - b.y;
+    return std::sqrt(dx * dx + dy * dy);
+  }
+
+  // Convex hull using monotone chain algorithm (Andrew's algorithm)
+  // Returns hull in counter-clockwise order
+  std::vector<Point2D> convexHull(std::vector<Point2D> pts) {
+    if(pts.size() < 3) return pts;
+
+    // Sort points lexicographically
+    std::sort(pts.begin(), pts.end(), 
+              [](const Point2D &a, const Point2D &b) {
+                return (a.x < b.x) || (a.x == b.x && a.y < b.y);
+              });
+
+    auto ccw = [](const Point2D &o, const Point2D &a, const Point2D &b) {
+      return cross(subtract(a, o), subtract(b, o));
+    };
+
+    std::vector<Point2D> lower, upper;
+
+    // Build lower hull
+    for(const auto &p : pts) {
+      while(lower.size() >= 2 && 
+            ccw(lower[lower.size()-2], lower[lower.size()-1], p) <= 0) {
+        lower.pop_back();
+      }
+      lower.push_back(p);
+    }
+
+    // Build upper hull
+    for(int i = (int)pts.size() - 1; i >= 0; --i) {
+      const auto &p = pts[i];
+      while(upper.size() >= 2 && 
+            ccw(upper[upper.size()-2], upper[upper.size()-1], p) <= 0) {
+        upper.pop_back();
+      }
+      upper.push_back(p);
+    }
+
+    // Remove last point of each half (duplicate of first point of other half)
+    lower.pop_back();
+    upper.pop_back();
+
+    // Concatenate
+    lower.insert(lower.end(), upper.begin(), upper.end());
+    return lower;
+  }
+
+  // Compute edge angle for vertex i
+  double edgeAngle(const std::vector<Point2D> &hull, int i) {
+    const int n = (int)hull.size();
+    Point2D edge = subtract(hull[(i + 1) % n], hull[i]);
+    double angle = std::atan2(edge.y, edge.x);
+    if(angle < 0) angle += 2.0 * M_PI;
+    return angle;
+  }
+
+  // Angle delta to align ref with edgeAng (modulo π)
+  double angleDelta(double edgeAng, double ref) {
+    double d = std::fmod(edgeAng - ref, M_PI);
+    if(d <= 1e-9) d += M_PI;
+    return d;
+  }
+
+  // Find extreme vertex in given direction
+  int findExtreme(const std::vector<Point2D> &hull, const Point2D &dir) {
+    int best = 0;
+    double bestVal = dot(hull[0], dir);
+    for(int k = 1; k < (int)hull.size(); ++k) {
+      double val = dot(hull[k], dir);
+      if(val > bestVal + 1e-10) {
+        bestVal = val;
+        best = k;
+      }
+    }
+    return best;
+  }
+
+  // Rotating calipers to find min and max antipodal distances with vertex IDs
+  void rotatingCalipers2(const std::vector<Point2D> &hull,
+                         double &minDist, double &maxDist,
+                         ttk::SimplexId &minV1, ttk::SimplexId &minV2,
+                         ttk::SimplexId &maxV1, ttk::SimplexId &maxV2) {
+    const int n = (int)hull.size();
+    if(n < 2) {
+      minDist = maxDist = 0.0;
+      minV1 = minV2 = maxV1 = maxV2 = -1;
+      return;
+    }
+
+    // Initialize: ref = π/2 (vertical support lines)
+    double ref = M_PI / 2.0;
+    int i = findExtreme(hull, Point2D(-1, 0)); // x min
+    int j = findExtreme(hull, Point2D( 1, 0)); // x max
+
+    minDist = std::numeric_limits<double>::max();
+    maxDist = 0.0;
+    minV1 = minV2 = maxV1 = maxV2 = -1;
+
+    double totalRot = 0.0;
+    const double PI = M_PI;
+
+    while(totalRot < PI) {
+      // Current distance between antipodal points
+      double dist = distance(hull[i], hull[j]);
+      
+      if(dist < minDist) {
+        minDist = dist;
+        minV1 = hull[i].vertexId;
+        minV2 = hull[j].vertexId;
+      }
+      
+      if(dist > maxDist) {
+        maxDist = dist;
+        maxV1 = hull[i].vertexId;
+        maxV2 = hull[j].vertexId;
+      }
+
+      // Compute angle deltas for both edges
+      double angI = edgeAngle(hull, i);
+      double angJ = edgeAngle(hull, j);
+      double dtI = angleDelta(angI, ref);
+      double dtJ = angleDelta(angJ, ref);
+
+      // Advance the caliper that requires less rotation
+      double dt = std::min(dtI, dtJ);
+
+      // Check if we would exceed π rotation
+      if(totalRot + dt > PI) {
+        dt = PI - totalRot;
+      }
+
+      ref += dt;
+      totalRot += dt;
+
+      // Advance vertices whose edges are now aligned
+      const double eps = 1e-9;
+      if(std::abs(dtI - dt) < eps) {
+        i = (i + 1) % n;
+      }
+      if(std::abs(dtJ - dt) < eps) {
+        j = (j + 1) % n;
+      }
+
+      if(totalRot >= PI - eps) break;
+    }
+  }
+
+} // anonymous namespace
+
+
+template <class triangulationType>
+int ttk::DebrisTracer::computeRotatingCalipersForSurface(
+    const std::vector<ttk::SimplexId> &surfaceVertices,
+    const triangulationType *triangulation,
+    RotatingCalipersResult &result) {
+
+  // Initialize result
+  result = RotatingCalipersResult();
+
+  if(surfaceVertices.size() < 2) {
+    return 0;
+  }
+
+  // Remove duplicate vertices
+  std::unordered_set<ttk::SimplexId> uniqueSet(surfaceVertices.begin(), 
+                                                surfaceVertices.end());
+  std::vector<ttk::SimplexId> uniqueVerts(uniqueSet.begin(), uniqueSet.end());
+
+  if(uniqueVerts.size() < 2) {
+    return 0;
+  }
+
+  // Convert to 2D points (using x,y coordinates) and keep vertex IDs
+  std::vector<Point2D> points;
+  points.reserve(uniqueVerts.size());
+
+  for(const auto &v : uniqueVerts) {
+    std::array<float, 3> coords{};
+    triangulation->getVertexPoint(v, coords[0], coords[1], coords[2]);
+    points.emplace_back(coords[0], coords[1], v);
+  }
+
+  // If only 2 points, just compute distance directly
+  if(points.size() == 2) {
+    result.minDist = result.maxDist = distance(points[0], points[1]);
+    result.minVertex1 = result.maxVertex1 = points[0].vertexId;
+    result.minVertex2 = result.maxVertex2 = points[1].vertexId;
+    return 0;
+  }
+
+  // Compute convex hull
+  std::vector<Point2D> hull = convexHull(points);
+
+  if(hull.size() < 2) {
+    return 0;
+  }
+
+  // Apply rotating calipers
+  rotatingCalipers2(hull, 
+                    result.minDist, result.maxDist,
+                    result.minVertex1, result.minVertex2,
+                    result.maxVertex1, result.maxVertex2);
+
+  return 0;
 }
