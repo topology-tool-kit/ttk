@@ -114,6 +114,7 @@ namespace ttk {
                 std::vector<double> &surfMax,
                 std::vector<double> &surfMean,
                 std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
+                std::vector<std::vector<RotatingCalipersResult>> &rotatingCalipersResults,
                 int frameSurf,
                 std::vector<LinearTrajectory> &merge,
                 const triangulationType *triangulation);
@@ -160,7 +161,8 @@ namespace ttk {
                std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
                std::vector<double>              &surfMin,
                std::vector<double>              &surfMax,
-               std::vector<double>              &surfMean
+               std::vector<double>              &surfMean,
+               std::vector<std::vector<RotatingCalipersResult>> &rotatingCalipersResults
 	);
 
 	template <class triangulationType>
@@ -644,6 +646,7 @@ int ttk::DebrisTracer::execute(
                 std::vector<double>             &surfMax,
                 std::vector<double>             &surfMean,
                 std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
+                std::vector<std::vector<RotatingCalipersResult>> &rotatingCalipersResults,
                 int frameSurf,
                 std::vector<LinearTrajectory> &finalTraj,
                 const triangulationType *triangulation) {
@@ -675,7 +678,8 @@ int ttk::DebrisTracer::execute(
 			triangulation,
 			finalTraj,
 			allVertexDebris,
-			surfMin, surfMax, surfMean);
+			surfMin, surfMax, surfMean,
+			rotatingCalipersResults);
 
 
     this->printMsg("Statistics complete", 1.0, timer.getElapsedTime(),
@@ -693,7 +697,8 @@ int ttk::DebrisTracer::computeMergeTree(
   std::vector<std::vector<ttk::SimplexId>> &allVertexDebris,
   std::vector<double>              &surfMin,
   std::vector<double>              &surfMax,
-  std::vector<double>              &surfMean
+  std::vector<double>              &surfMean,
+  std::vector<std::vector<RotatingCalipersResult>> &rotatingCalipersResults
 ) {
 
   ttk::Timer globalTimer;
@@ -712,6 +717,12 @@ int ttk::DebrisTracer::computeMergeTree(
 
   std::vector<std::vector<char>> trajDoublePerFrame(nFrames,
     std::vector<char>(nTraj, 0));
+
+  // Initialize rotating calipers results: [nFrames][nTraj]
+  rotatingCalipersResults.resize(nFrames);
+  for(int f = 0; f < nFrames; ++f) {
+    rotatingCalipersResults[f].resize(nTraj);
+  }
 
 
   int globalError = 0;
@@ -905,6 +916,9 @@ int ttk::DebrisTracer::computeMergeTree(
   	    
 		RotatingCalipersResult rcResult;
      	computeRotatingCalipersForSurface(segmentId[segId], triangulation, rcResult);
+        
+        // Store the result in the 2D vector [frame][trajId]
+        rotatingCalipersResults[fi][trajId] = rcResult;
         
 		trajSurfPerFrame[fi][trajId] = surfVal;
 
