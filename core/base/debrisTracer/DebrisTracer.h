@@ -12,10 +12,10 @@
 // ttk common includes
 #include <Debug.h>
 #include <Triangulation.h>
-#include <PersistenceDiagram.h>
-#include <TopologicalSimplification.h>
+#include <FTMTreePP.h>
 #include <ExTreeM.h>
 #include <PathCompression.h>
+#include <LocalizedTopologicalSimplification.h>
 #ifdef TTK_ENABLE_EIGEN
 #include <Eigen/Dense>
 #endif
@@ -679,114 +679,102 @@ int ttk::DebrisTracer::computeMergeTree(
 
   ttk::Timer globalTimer;
   const ttk::SimplexId nPixels = triangulation->getNumberOfVertices();
-  const int nFrames = (!onlyFrameSurface_) ? inputData_.size() : 1;
-  std::vector<std::vector<double>> trajSurfaces(finalTraj.size());
+  const int nFrames = (!onlyFrameSurface_) ? static_cast<int>(inputData_.size()) : 1;
   const auto nTraj = finalTraj.size();
   this->printMsg("Merge-tree surface segmentation (" + std::to_string(nFrames)
                  + " frame(s), " + std::to_string(nPixels) + " vertices)");
-  std::vector<char> trajDouble(nTraj);
-  for(int frame = 0  ; frame < nFrames; frame++) {
+
+  // Build the actual list of frame indices to process
+  std::vector<int> frameIndices(nFrames);
+  for(int f = 0; f < nFrames; ++f)
+    frameIndices[f] = (!onlyFrameSurface_) ? f : frameSurf;
+
+  // Per-frame, per-trajectory surface value (to merge after parallel region)
+  // trajSurfPerFrame[f][trajId] = surfVal  (0.0 means not touched)
+  std::vector<std::vector<double>> trajSurfPerFrame(nFrames,
+    std::vector<double>(nTraj, 0.0));
+
+  // Per-frame trajDouble flags (each frame independent)
+  std::vector<std::vector<char>> trajDoublePerFrame(nFrames,
+    std::vector<char>(nTraj, 0));
+
+  // Per-frame saddleSeg / minSeg (last-writer-wins across frames, same as sequential)
+  std::vector<std::vector<ttk::SimplexId>> saddleSegPerFrame(nFrames,
+    std::vector<ttk::SimplexId>(nTraj, -1));
+  std::vector<std::vector<ttk::SimplexId>> minSegPerFrame(nFrames,
+    std::vector<ttk::SimplexId>(nTraj, -1));
+
+  int globalError = 0;
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
+#endif
+  for(int fi = 0; fi < nFrames; fi++) {
+
+    // Check if a previous frame signaled an error
+    if(globalError != 0) continue;
+
+    const int frame = frameIndices[fi];
 
     ttk::Timer frameTimer;
-    std::fill(trajDouble.begin(), trajDouble.end(), 0);
-  	frame = (!onlyFrameSurface_)  ? frame : frameSurf;
-	this->printMsg("Processing frame " + std::to_string(frame) + "/"
-                   + std::to_string(nFrames - 1));
     auto *scalars = static_cast<dataType *>(inputData_[frame]);
 
-    std::vector<ttk::SimplexId> pdOffsets(nPixels);
-    ttk::preconditionOrderArray<dataType>(
-      static_cast<size_t>(nPixels),
-      scalars,
-      pdOffsets.data(),
-      this->threadNumber_);
-
-    ttk::PersistenceDiagram persistenceDiagram;
-    persistenceDiagram.setThreadNumber(this->threadNumber_);
-    persistenceDiagram.setDebugLevel(0);
-    persistenceDiagram.setBackend(
-      ttk::PersistenceDiagram::BACKEND::DISCRETE_MORSE_SANDWICH);
-    persistenceDiagram.preconditionTriangulation(
-      const_cast<triangulationType *>(triangulation));
-
-    ttk::DiagramType diagram;
-
-    const int statusPD = persistenceDiagram.execute(
-      diagram,
-      scalars,
-      0, 
-      pdOffsets.data(),
-      const_cast<triangulationType *>(triangulation));
-
-    if(statusPD != 0) {
-      this->printErr("PersistenceDiagram::execute failed");
-      return -1;
-    }
-
-    // Critical Points tresh 
-	double maxPers = 0.0;
-
-	for(const auto &pair : diagram) {
-	  if(pair.dim != 0) continue;
-	  const double pers = pair.persistence();
-	  if(!std::isfinite(pers)) continue;
-	  if(pers > maxPers) maxPers = pers;
-	}
-
-	const double threshold = maxPers * (this->persistenceThreshold_ / 100.0);
-
-	std::vector<ttk::SimplexId> criticalPoints;
-	criticalPoints.reserve(diagram.size() * 2);
-
-	for(const auto &pair : diagram) {
-	  if(pair.dim != 0) continue;
-	  const double pers = pair.persistence();
-	  if(!std::isfinite(pers)) continue;
-	  if(pers < threshold) continue;
-	  criticalPoints.push_back(pair.birth.id);
-	  criticalPoints.push_back(pair.death.id);
-	}
-
-    // Topological Simplification
+    // --- Topological Simplification ---
     std::vector<dataType> outScalars(nPixels);
     std::copy(scalars, scalars + nPixels, outScalars.begin());
 
-    std::vector<ttk::SimplexId> offsets = pdOffsets;
-
-    ttk::TopologicalSimplification topoSimp;
-    topoSimp.setThreadNumber(this->threadNumber_);
-    topoSimp.setDebugLevel(0);
-    topoSimp.setBackend(ttk::TopologicalSimplification::BACKEND::LTS);
-    topoSimp.preconditionTriangulation(const_cast<triangulationType *>(triangulation));
-
-    const bool addPerturbation = true;
-    const ttk::SimplexId constraintNumber = static_cast<ttk::SimplexId>(criticalPoints.size());
-    const ttk::DiagramType emptyDiagram;
-    topoSimp.execute<dataType, triangulationType>(
+    std::vector<ttk::SimplexId> offsets(nPixels);
+    ttk::preconditionOrderArray<dataType>(
+      static_cast<size_t>(nPixels),
       scalars,
-      outScalars.data(),
-      criticalPoints.empty() ? nullptr : criticalPoints.data(),
-      pdOffsets.data(),
       offsets.data(),
-      constraintNumber,
-      addPerturbation,
-      *const_cast<triangulationType *>(triangulation),
-      emptyDiagram);
+      1); // single thread per frame (parallelism is across frames)
 
-    // Merge tree (ttk::ExTreeM)
+    dataType sMin = scalars[0], sMax = scalars[0];
+    for(ttk::SimplexId i = 1; i < nPixels; ++i) {
+      if(scalars[i] < sMin) sMin = scalars[i];
+      if(scalars[i] > sMax) sMax = scalars[i];
+    }
+    const dataType persistenceThreshold
+      = static_cast<dataType>((sMax - sMin) * (this->persistenceThreshold_ / 100.0));
 
+    ttk::lts::LocalizedTopologicalSimplification lts;
+    lts.setThreadNumber(1);
+    lts.setDebugLevel(0);
+    lts.preconditionTriangulation(
+      const_cast<triangulationType *>(triangulation));
+
+    const int statusSimp
+      = lts.removeNonPersistentExtrema<dataType, ttk::SimplexId,
+                                       triangulationType>(
+          outScalars.data(),
+          offsets.data(),
+          triangulation,
+          persistenceThreshold,
+          true,
+          ttk::lts::LocalizedTopologicalSimplification::PAIR_TYPE::EXTREMUM_SADDLE);
+
+    if(statusSimp != 0) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic write
+#endif
+      globalError = -1;
+      continue;
+    }
+
+    // --- Merge tree (ExTreeM) ---
     std::vector<ttk::SimplexId> order(nPixels);
     ttk::preconditionOrderArray<dataType>(
       static_cast<size_t>(nPixels),
       outScalars.data(),
       order.data(),
-      this->threadNumber_);
+      1);
 
     std::vector<ttk::SimplexId> ascendingManifold(nPixels, -1);
     std::vector<ttk::SimplexId> descendingManifold(nPixels, -1);
 
     ttk::PathCompression pathComp;
-    pathComp.setThreadNumber(this->threadNumber_);
+    pathComp.setThreadNumber(1);
     pathComp.setDebugLevel(0);
     pathComp.setComputeSegmentation(true, true, false);
 
@@ -801,8 +789,11 @@ int ttk::DebrisTracer::computeMergeTree(
         order.data(),
         *const_cast<triangulationType *>(triangulation));
       if(statusPC != 0) {
-        this->printErr("PathCompression::execute failed");
-        return -1;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic write
+#endif
+        globalError = -1;
+        continue;
       }
     }
 
@@ -814,17 +805,11 @@ int ttk::DebrisTracer::computeMergeTree(
     std::vector<ttk::ExTreeM::Branch> branches;
 
     ttk::ExTreeM exTreeM;
-    exTreeM.setThreadNumber(this->threadNumber_);
+    exTreeM.setThreadNumber(1);
     exTreeM.setDebugLevel(0);
 
     std::vector<ttk::SimplexId> orderJoin(order);
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_)
     for(ttk::SimplexId i = 0; i < nPixels; ++i) {
-#else
-    for(ttk::SimplexId i = 0; i < nPixels; ++i) {
-#endif
       orderJoin[i] = nPixels - orderJoin[i] - 1;
     }
 
@@ -843,11 +828,14 @@ int ttk::DebrisTracer::computeMergeTree(
       treeType);
 
     if(statusMT != 1) {
-      this->printErr("ExTreeM::computePairs failed");
-      return -1;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic write
+#endif
+      globalError = -1;
+      continue;
     }
 
-    //  Association to trajectories
+    // --- Association to trajectories ---
     std::vector<std::vector<ttk::SimplexId>> segmentId(
       *std::max_element(segmentation.begin(), segmentation.end()) + 1);
 
@@ -858,12 +846,7 @@ int ttk::DebrisTracer::computeMergeTree(
 
     std::vector<ttk::SimplexId> segMinVertex(segmentId.size(), -1);
 
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_)
     for(size_t s = 0; s < segmentId.size(); ++s) {
-#else
-    for(size_t s = 0; s < segmentId.size(); ++s) {
-#endif
       const auto &verts = segmentId[s];
       if(verts.empty())
         continue;
@@ -883,6 +866,7 @@ int ttk::DebrisTracer::computeMergeTree(
     }
 
     std::vector<char> segCleaned(segmentId.size(), 0);
+    auto &localTrajDouble = trajDoublePerFrame[fi];
 
     for(size_t trajId = 0; trajId < nTraj; ++trajId) {
       const auto &traj = finalTraj[trajId];
@@ -891,14 +875,14 @@ int ttk::DebrisTracer::computeMergeTree(
         continue;
 
       ttk::SimplexId vId = -1;
-	  vId = traj.getOriginalVertex(frame);
-      if(vId<0) {
+      vId = traj.getOriginalVertex(frame);
+      if(vId < 0) {
         const double x = traj.evalX(frame);
-        if(x < boundaryXMin_ || x > boundaryX_+1)
+        if(x < boundaryXMin_ || x > boundaryX_ + 1)
           continue;
 
         const double y = traj.evalY(frame);
-        if(y < boundaryYMin_ || y > boundaryY_+1)
+        if(y < boundaryYMin_ || y > boundaryY_ + 1)
           continue;
 
         const ttk::SimplexId xi = std::lround(x);
@@ -909,57 +893,92 @@ int ttk::DebrisTracer::computeMergeTree(
       if(vId < 0 || vId >= nPixels)
         continue;
 
-	  if(regionType[vId] == 0) {
+      if(regionType[vId] == 0) {
 
-	    auto segId = segmentation[vId];
+        auto segId = segmentation[vId];
 
-		if(segId >= 0 && segId < (ttk::SimplexId)segmentId.size() && !segCleaned[segId] && segmentId[segId].size() > 8 && errSurf_ != 0) 		 {
-	  	  cleanDarkSegmentInPlace<dataType, triangulationType>(
-	  	    segmentId[segId], scalars, triangulation, static_cast<int>(errSurf_));
-	  	  segCleaned[segId] = 1;
-	    }
+        if(segId >= 0 && segId < (ttk::SimplexId)segmentId.size()
+           && !segCleaned[segId] && segmentId[segId].size() > 8
+           && errSurf_ != 0) {
+          cleanDarkSegmentInPlace<dataType, triangulationType>(
+            segmentId[segId], scalars, triangulation,
+            static_cast<int>(errSurf_));
+          segCleaned[segId] = 1;
+        }
 
-		if (static_cast<int>(segmentId[segId].size()) > maxSurfSize_) continue;
+        if(static_cast<int>(segmentId[segId].size()) > maxSurfSize_)
+          continue;
 
-	    double surfVal = static_cast<double>(
-	  	computeSurfaceCellCount(segmentId[segId], triangulation));
-	    if(surfVal == 0) surfVal = 1;
+        double surfVal = static_cast<double>(
+          computeSurfaceCellCount(segmentId[segId], triangulation));
+        if(surfVal == 0)
+          surfVal = 1;
 
-	    trajSurfaces[trajId].push_back(surfVal);
-		
-		for (size_t i = 0; i<segmentId[segId].size(); i++){
-			int v = segmentId[segId][i];
-			int check = allVertexDebris[frame][v];
-		  	if (check == -1 ) allVertexDebris[frame][v] = trajId;
-			else if (check != static_cast<int>(trajId) ){
-				trajDouble[trajId] = 1;
-				if (check >=0)
-					trajDouble[check]=1;
-			}
-		}
+        trajSurfPerFrame[fi][trajId] = surfVal;
 
-	    (*saddleSeg_)[trajId]   = segMinVertex[segId];
-	  	(*minSeg_)[trajId]      = segId;
-	  }
+        for(size_t i = 0; i < segmentId[segId].size(); i++) {
+          int v = segmentId[segId][i];
+          int check = allVertexDebris[frame][v];
+          if(check == -1)
+            allVertexDebris[frame][v] = trajId;
+          else if(check != static_cast<int>(trajId)) {
+            localTrajDouble[trajId] = 1;
+            if(check >= 0)
+              localTrajDouble[check] = 1;
+          }
+        }
 
-    }
-    for(int t = 0; t < static_cast<int>(trajDouble.size()); t++) {
-      if(!trajDouble[t]) continue;
+        saddleSegPerFrame[fi][trajId] = segMinVertex[segId];
+        minSegPerFrame[fi][trajId]    = segId;
+      }
+
+    } // end trajectory loop
+
+    // Clean allVertexDebris for doubled trajectories (per-frame, no race)
+    for(int t = 0; t < static_cast<int>(localTrajDouble.size()); t++) {
+      if(!localTrajDouble[t]) continue;
       for(int v = 0; v < nPixels; v++) {
         if(allVertexDebris[frame][v] == t)
           allVertexDebris[frame][v] = -2;
       }
     }
+
     this->printMsg("Frame " + std::to_string(frame) + " done", 1.0,
-                   frameTimer.getElapsedTime(), this->threadNumber_);
+                   frameTimer.getElapsedTime(), 1);
+  } // end parallel frame loop
+
+  if(globalError != 0) {
+    this->printErr("Error in parallel frame processing");
+    return -1;
+  }
+
+  // --- Merge per-frame results into trajSurfaces ---
+  std::vector<std::vector<double>> trajSurfaces(nTraj);
+  for(size_t trajId = 0; trajId < nTraj; ++trajId) {
+    for(int fi = 0; fi < nFrames; ++fi) {
+      const double sv = trajSurfPerFrame[fi][trajId];
+      if(sv > 0.0)
+        trajSurfaces[trajId].push_back(sv);
+    }
+  }
+
+  // Merge saddleSeg / minSeg (last frame that touched a traj wins,
+  // preserving sequential last-writer-wins order)
+  for(int fi = 0; fi < nFrames; ++fi) {
+    for(size_t trajId = 0; trajId < nTraj; ++trajId) {
+      if(saddleSegPerFrame[fi][trajId] >= 0) {
+        (*saddleSeg_)[trajId] = saddleSegPerFrame[fi][trajId];
+        (*minSeg_)[trajId]    = minSegPerFrame[fi][trajId];
+      }
+    }
   }
 
   // Per-trajectory surface statistics (surfMin, surfMax, surfMean)
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
-  for(size_t trajId = 0; trajId < finalTraj.size(); ++trajId) {
+  for(size_t trajId = 0; trajId < nTraj; ++trajId) {
 #else
-  for(size_t trajId = 0; trajId < finalTraj.size(); ++trajId) {
+  for(size_t trajId = 0; trajId < nTraj; ++trajId) {
 #endif
     const std::vector<double> &surfaces = trajSurfaces[trajId];
 

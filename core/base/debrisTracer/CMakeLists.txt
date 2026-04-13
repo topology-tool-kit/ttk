@@ -5,9 +5,9 @@ ttk_add_base_library(debrisTracer
     DebrisTracer.h
   DEPENDS
     triangulation
-	persistenceDiagram
-	topologicalSimplification
+	localizedTopologicalSimplification
 	exTreeM
+	ftmTreePP
 	pathCompression
 )
 
