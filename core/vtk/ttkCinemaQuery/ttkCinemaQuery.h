@@ -29,6 +29,9 @@
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreeFeatureTracking/">Merge
 ///   Tree Feature Tracking example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/molecularVibration/">Molecular
+///   Vibration example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/">Nested
 ///   Tracking from Overlap example</a> \n
 

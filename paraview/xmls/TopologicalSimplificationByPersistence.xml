@@ -21,6 +21,8 @@
         - https://topology-tool-kit.github.io/examples/cosmicWeb/
 
         - https://topology-tool-kit.github.io/examples/contourTreeAlignment/
+
+        - https://topology-tool-kit.github.io/examples/molecularVibration/
       </Documentation>
 
       <InputProperty name="Input" command="SetInputConnection">
