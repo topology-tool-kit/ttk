@@ -55,8 +55,7 @@ namespace ttk {
 	inline void setMinYTimeOrigin(int v){ minYTimeOrigin_ = v; }
 	inline void setMaxYTimeOrigin(int v){ maxYTimeOrigin_ = v; }
 	inline void setPersisThresh(double v){ persistenceThreshold_ = v; }
-	inline void setMinSeg(std::vector<ttk::SimplexId> &v){ minSeg_ = &v; }
-	inline void setSaddleSeg(std::vector<ttk::SimplexId> &v){ saddleSeg_ = &v; }
+
 	inline void setErrSurf(double v){ errSurf_ = v;}
 	inline void setOnlyFrameSurface(bool v){ onlyFrameSurface_ = v;}
 	inline void setMaxSurfSize(int m){ maxSurfSize_ = m;}
@@ -200,8 +199,7 @@ namespace ttk {
 	double boundaryXMin_;
 	double boundaryX_;
 	double persistenceThreshold_;
-	std::vector<ttk::SimplexId> *minSeg_;
-	std::vector<ttk::SimplexId> *saddleSeg_;
+
 	double errSurf_;
 	int maxSurfSize_;
   }; // DebrisTracer class
@@ -698,11 +696,6 @@ int ttk::DebrisTracer::computeMergeTree(
   std::vector<std::vector<char>> trajDoublePerFrame(nFrames,
     std::vector<char>(nTraj, 0));
 
-  // Per-frame saddleSeg / minSeg (last-writer-wins across frames, same as sequential)
-  std::vector<std::vector<ttk::SimplexId>> saddleSegPerFrame(nFrames,
-    std::vector<ttk::SimplexId>(nTraj, -1));
-  std::vector<std::vector<ttk::SimplexId>> minSegPerFrame(nFrames,
-    std::vector<ttk::SimplexId>(nTraj, -1));
 
   int globalError = 0;
 
@@ -844,26 +837,6 @@ int ttk::DebrisTracer::computeMergeTree(
         segmentId[segmentation[vId]].push_back(static_cast<ttk::SimplexId>(vId));
     }
 
-    std::vector<ttk::SimplexId> segMinVertex(segmentId.size(), -1);
-
-    for(size_t s = 0; s < segmentId.size(); ++s) {
-      const auto &verts = segmentId[s];
-      if(verts.empty())
-        continue;
-
-      ttk::SimplexId bestV   = verts[0];
-      auto           bestOrd = order[bestV];
-
-      for(const auto v : verts) {
-        const auto o = order[v];
-        if(o > bestOrd) {
-          bestOrd = o;
-          bestV   = v;
-        }
-      }
-
-      segMinVertex[s] = bestV;
-    }
 
     std::vector<char> segCleaned(segmentId.size(), 0);
     auto &localTrajDouble = trajDoublePerFrame[fi];
@@ -928,8 +901,7 @@ int ttk::DebrisTracer::computeMergeTree(
           }
         }
 
-        saddleSegPerFrame[fi][trajId] = segMinVertex[segId];
-        minSegPerFrame[fi][trajId]    = segId;
+
       }
 
     } // end trajectory loop
@@ -962,16 +934,6 @@ int ttk::DebrisTracer::computeMergeTree(
     }
   }
 
-  // Merge saddleSeg / minSeg (last frame that touched a traj wins,
-  // preserving sequential last-writer-wins order)
-  for(int fi = 0; fi < nFrames; ++fi) {
-    for(size_t trajId = 0; trajId < nTraj; ++trajId) {
-      if(saddleSegPerFrame[fi][trajId] >= 0) {
-        (*saddleSeg_)[trajId] = saddleSegPerFrame[fi][trajId];
-        (*minSeg_)[trajId]    = minSegPerFrame[fi][trajId];
-      }
-    }
-  }
 
   // Per-trajectory surface statistics (surfMin, surfMax, surfMean)
 #ifdef TTK_ENABLE_OPENMP

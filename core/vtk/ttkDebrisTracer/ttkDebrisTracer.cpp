@@ -235,10 +235,6 @@ int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
   this->setMinYTimeOrigin(minYTimeOrigin);
   this->setMaxYTimeOrigin(maxYTimeOrigin);
   this->setPersisThresh(persisThresh);
-  std::vector<ttk::SimplexId> minSeg(numTraj);
-  std::vector<ttk::SimplexId> saddleSeg(numTraj);
-  this->setMinSeg(minSeg);
-  this->setSaddleSeg(saddleSeg);
   this->setErrSurf(errSurf);
   this->setOnlyFrameSurface(onlyFrameSurface);
   this->setMaxSurfSize(maxSurfSize);
