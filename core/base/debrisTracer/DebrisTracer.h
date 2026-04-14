@@ -91,16 +91,12 @@ namespace ttk {
     };
 
     struct RotatingCalipersResult {
-      double minDist;
       double maxDist;
-      ttk::SimplexId minVertex1;
-      ttk::SimplexId minVertex2;
       ttk::SimplexId maxVertex1;
       ttk::SimplexId maxVertex2;
       
       RotatingCalipersResult() 
-        : minDist(0.0), maxDist(0.0), 
-          minVertex1(-1), minVertex2(-1),
+        : maxDist(0.0), 
           maxVertex1(-1), maxVertex2(-1) {}
     };
 
@@ -1275,15 +1271,14 @@ namespace {
     return best;
   }
 
-  // Rotating calipers to find min and max antipodal distances with vertex IDs
+  // Rotating calipers to find max antipodal distance (diameter)
   void rotatingCalipers2(const std::vector<Point2D> &hull,
-                         double &minDist, double &maxDist,
-                         ttk::SimplexId &minV1, ttk::SimplexId &minV2,
+                         double &maxDist,
                          ttk::SimplexId &maxV1, ttk::SimplexId &maxV2) {
     const int n = (int)hull.size();
     if(n < 2) {
-      minDist = maxDist = 0.0;
-      minV1 = minV2 = maxV1 = maxV2 = -1;
+      maxDist = 0.0;
+      maxV1 = maxV2 = -1;
       return;
     }
 
@@ -1292,9 +1287,8 @@ namespace {
     int i = findExtreme(hull, Point2D(-1, 0)); // x min
     int j = findExtreme(hull, Point2D( 1, 0)); // x max
 
-    minDist = std::numeric_limits<double>::max();
     maxDist = 0.0;
-    minV1 = minV2 = maxV1 = maxV2 = -1;
+    maxV1 = maxV2 = -1;
 
     double totalRot = 0.0;
     const double PI = M_PI;
@@ -1302,12 +1296,6 @@ namespace {
     while(totalRot < PI) {
       // Current distance between antipodal points
       double dist = distance(hull[i], hull[j]);
-      
-      if(dist < minDist) {
-        minDist = dist;
-        minV1 = hull[i].vertexId;
-        minV2 = hull[j].vertexId;
-      }
       
       if(dist > maxDist) {
         maxDist = dist;
@@ -1382,9 +1370,9 @@ int ttk::DebrisTracer::computeRotatingCalipersForSurface(
 
   // If only 2 points, just compute distance directly
   if(points.size() == 2) {
-    result.minDist = result.maxDist = distance(points[0], points[1]);
-    result.minVertex1 = result.maxVertex1 = points[0].vertexId;
-    result.minVertex2 = result.maxVertex2 = points[1].vertexId;
+    result.maxDist = distance(points[0], points[1]);
+    result.maxVertex1 = points[0].vertexId;
+    result.maxVertex2 = points[1].vertexId;
     return 0;
   }
 
@@ -1397,8 +1385,7 @@ int ttk::DebrisTracer::computeRotatingCalipersForSurface(
 
   // Apply rotating calipers
   rotatingCalipers2(hull, 
-                    result.minDist, result.maxDist,
-                    result.minVertex1, result.minVertex2,
+                    result.maxDist,
                     result.maxVertex1, result.maxVertex2);
 
   return 0;

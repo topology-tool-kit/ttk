@@ -466,11 +466,9 @@ int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
       
       for(size_t trajId = 0; trajId < nTraj; ++trajId) {
         const auto &rc = rotatingCalipersResults[frame][trajId];
-        if(rc.minVertex1 >= 0 && rc.minVertex2 >= 0 && 
-           rc.maxVertex1 >= 0 && rc.maxVertex2 >= 0 &&
-           rc.minVertex1 < nVertices && rc.minVertex2 < nVertices &&
+        if(rc.maxVertex1 >= 0 && rc.maxVertex2 >= 0 &&
            rc.maxVertex1 < nVertices && rc.maxVertex2 < nVertices) {
-          nbRCLines += 2; // min and max lines
+          nbRCLines += 1; // Only max distance line
         }
       }
     }
@@ -494,7 +492,7 @@ int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
   inputTrajId->SetNumberOfTuples(nLinearSegments);
 
   auto segmentKind = vtkSmartPointer<vtkIntArray>::New();  
-  // 0 = initial segment, 1 = fusion link, 2 = RC min distance, 3 = RC max distance
+  // 0 = initial segment, 1 = fusion link, 2 = RC max distance (diameter)
   segmentKind->SetName("SegmentKind");
   segmentKind->SetNumberOfTuples(nLinearSegments);
   
@@ -537,7 +535,7 @@ int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
     const vtkIdType nVertices = triangulation->getNumberOfVertices();
     vtkIdType rcIdx = nInit + nLinks;
     
-    this->printMsg("Adding " + std::to_string(nRCLines) + " rotating calipers lines to chains");
+    this->printMsg("Adding " + std::to_string(nRCLines) + " rotating calipers lines (diameter) to chains");
     
     for(size_t frame = 0; frame < nFrames; ++frame) {
       if(frame >= rotatingCalipersResults.size()) break;
@@ -547,34 +545,16 @@ int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
         const auto &rc = rotatingCalipersResults[frame][trajId];
         
         // Skip if no valid vertices
-        if(rc.minVertex1 < 0 || rc.minVertex2 < 0 || 
-           rc.maxVertex1 < 0 || rc.maxVertex2 < 0) {
+        if(rc.maxVertex1 < 0 || rc.maxVertex2 < 0) {
           continue;
         }
         
         // Check vertices are within bounds
-        if(rc.minVertex1 >= nVertices || rc.minVertex2 >= nVertices ||
-           rc.maxVertex1 >= nVertices || rc.maxVertex2 >= nVertices) {
+        if(rc.maxVertex1 >= nVertices || rc.maxVertex2 >= nVertices) {
           continue;
         }
         
-        // Get coordinates for min distance line
-        std::array<float, 3> coords1Min{}, coords2Min{};
-        triangulation->getVertexPoint(rc.minVertex1, coords1Min[0], coords1Min[1], coords1Min[2]);
-        triangulation->getVertexPoint(rc.minVertex2, coords2Min[0], coords2Min[1], coords2Min[2]);
-        
-        // Add min distance line
-        addSegment(ppts, lines, rcIdx,
-                   coords1Min[0], coords1Min[1], static_cast<double>(frame),
-                   coords2Min[0], coords2Min[1], static_cast<double>(frame));
-        
-        finalChainId->SetValue(rcIdx, static_cast<int>(trajId)); // Store trajId in FinalChainId
-        inputTrajId->SetValue(rcIdx, -1);
-        segmentKind->SetValue(rcIdx, 2); // 2 = RC min distance
-        rcDistance->SetValue(rcIdx, rc.minDist);
-        rcIdx++;
-        
-        // Get coordinates for max distance line
+        // Get coordinates for max distance line (diameter)
         std::array<float, 3> coords1Max{}, coords2Max{};
         triangulation->getVertexPoint(rc.maxVertex1, coords1Max[0], coords1Max[1], coords1Max[2]);
         triangulation->getVertexPoint(rc.maxVertex2, coords2Max[0], coords2Max[1], coords2Max[2]);
@@ -586,7 +566,7 @@ int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
         
         finalChainId->SetValue(rcIdx, static_cast<int>(trajId)); // Store trajId in FinalChainId
         inputTrajId->SetValue(rcIdx, -1);
-        segmentKind->SetValue(rcIdx, 3); // 3 = RC max distance
+        segmentKind->SetValue(rcIdx, 2); // 2 = RC max distance (diameter)
         rcDistance->SetValue(rcIdx, rc.maxDist);
         rcIdx++;
       }
