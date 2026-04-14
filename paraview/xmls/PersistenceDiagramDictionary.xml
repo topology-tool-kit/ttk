@@ -8,7 +8,7 @@
           long_help="Encodes an ensemble of persistence diagrams by a dictionary and a vector of barycentric coefficients."
           shorthelp="Persistence Diagrams Dictionary Encoding."
           >
-        This filter encodes an ensemble of persistence diagrams by a dictionary (much small ensemble of PDs) and a vector of barycentric coefficients.
+        This filter encodes an ensemble of persistence diagrams by a dictionary (much smaller ensemble of PDs) and a vector of barycentric coefficients.
 
         Related publication: "Wasserstein Dictionaries of Persistence Diagram"
         Keanu Sisouk, Julie Delon, Julien Tierny
