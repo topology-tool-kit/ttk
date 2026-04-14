@@ -66,8 +66,22 @@
       <!-- OUTPUT PARAMETER WIDGETS -->
 
       <IntVectorProperty
+        name="ProgBarycenter"
+        label="Progressive barycenter"
+        command="SetProgBarycenter"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        >
+        <BooleanDomain name="bool"/>
+      <Documentation>
+          Compute the barycenters using progressivity
+      </Documentation>
+    </IntVectorProperty>
+
+      <IntVectorProperty
          name="ProjMet"
-         label="Projection Method"
+         label="Atom Projection Method"
          command="SetProjMet"
          number_of_elements="1"
         default_values="0"
@@ -110,25 +124,23 @@
     </IntVectorProperty>
 
       
-      <IntVectorProperty
-        name="ProgBarycenter"
-        label="Progressive barycenter"
-        command="SetProgBarycenter"
-        number_of_elements="1"
-        default_values="0"
-        panel_visibility="advanced">
-        >
-        <BooleanDomain name="bool"/>
-      <Documentation>
-          Compute the barycenters using progressivity
-      </Documentation>
-    </IntVectorProperty>
+
 
       <!-- A string parameter that controls the name of the output array -->
 
 
       <!-- Create a UI group that contains all output parameter widgets (here only one) -->
 
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="ProgBarycenter" />  
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="ProjMet" />
+        <Property name="ShowAtoms" />
+        <Property name="Spacing" />
+      </PropertyGroup>
 
       <!-- DEBUG -->
       ${DEBUG_WIDGETS}

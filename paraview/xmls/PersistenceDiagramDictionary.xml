@@ -278,7 +278,7 @@
 
 
       <!-- Create a UI group that contains all input parameter widgets (here only one) -->
-      <PropertyGroup panel_widget="Line" label="Input Options">
+      <PropertyGroup panel_widget="Line" label="Input options">
 
         <Property name="AtomNumber_" />
         <Property name="Percent_" />
@@ -297,7 +297,7 @@
         <Property name="DimReductMode_" />
       </PropertyGroup>
 
-      <PropertyGroup panel_widget="Line" label="Output Options">
+      <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="CompressionFactor_" />
       </PropertyGroup>
 
