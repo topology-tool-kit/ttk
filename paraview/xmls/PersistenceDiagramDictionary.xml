@@ -13,9 +13,12 @@
         Related publication: "Wasserstein Dictionaries of Persistence Diagram"
         Keanu Sisouk, Julie Delon, Julien Tierny
         IEEE Transactions on Visualization and Computer Graphics.
-        Proceedings of IEEE VIS 2023.
+        Presented at IEEE VIS 2024.
 
-        See also PersistenceDiagram
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/persistenceDiagramDictionary/
+
       </Documentation>
 
       <InputProperty
