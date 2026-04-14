@@ -3,6 +3,7 @@
 ### dev
 - Cycle-aware dimensionality reduction (TopoAE++, IEEE TVCG 2026)
 - Distributed computation of persistent homology! (IEEE TPDS 2025)
+- Separatrix stability, a.k.a., BondMatcher (IEEE TVCG 2025)
 - Discrete vector field topology! (IEEE VIS 2024)
 - Fast DelaunayRips persistence computation for point cloud data
 - New backend for TrackingFromFields (critical point based)
