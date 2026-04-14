@@ -8,7 +8,6 @@
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
 #include <vtkLine.h>
-#include <vtkAppendFilter.h>
 #include <Timer.h>
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -453,110 +452,34 @@ int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
     outputSurface->GetPointData()->AddArray(col);
   }
 
-  // ------------------------- ROTATING CALIPERS LINES --------------------------
-  // Add characteristic distance lines (min and max) as cell data
+  // --------------------------- LINEAR REG && ADDED --------------------------
   
-  if(!rotatingCalipersResults.empty()) {
+  // Count rotating calipers lines first
+  size_t nbRCLines = 0;
+  if(!rotatingCalipersResults.empty() && triangulation) {
     const size_t nFrames = rotatingCalipersResults.size();
-    
-    // Create a new unstructured grid to store the lines
-    auto rcPoints = vtkSmartPointer<vtkPoints>::New();
-    auto rcLines = vtkSmartPointer<vtkCellArray>::New();
-    
-    auto rcFrameArr = vtkSmartPointer<vtkIntArray>::New();
-    rcFrameArr->SetName("Frame");
-    
-    auto rcTrajIdArr = vtkSmartPointer<vtkIntArray>::New();
-    rcTrajIdArr->SetName("TrajId");
-    
-    auto rcTypeArr = vtkSmartPointer<vtkIntArray>::New();
-    rcTypeArr->SetName("DistanceType"); // 0 = min, 1 = max
-    
-    auto rcDistArr = vtkSmartPointer<vtkDoubleArray>::New();
-    rcDistArr->SetName("Distance");
-    
-    vtkIdType pointId = 0;
+    const vtkIdType nVertices = triangulation->getNumberOfVertices();
     
     for(size_t frame = 0; frame < nFrames; ++frame) {
+      if(frame >= rotatingCalipersResults.size()) break;
       const size_t nTraj = rotatingCalipersResults[frame].size();
       
       for(size_t trajId = 0; trajId < nTraj; ++trajId) {
         const auto &rc = rotatingCalipersResults[frame][trajId];
-        
-        // Skip if no valid vertices
-        if(rc.minVertex1 < 0 || rc.minVertex2 < 0 || 
-           rc.maxVertex1 < 0 || rc.maxVertex2 < 0) {
-          continue;
+        if(rc.minVertex1 >= 0 && rc.minVertex2 >= 0 && 
+           rc.maxVertex1 >= 0 && rc.maxVertex2 >= 0 &&
+           rc.minVertex1 < nVertices && rc.minVertex2 < nVertices &&
+           rc.maxVertex1 < nVertices && rc.maxVertex2 < nVertices) {
+          nbRCLines += 2; // min and max lines
         }
-        
-        // Get coordinates for min distance line
-        std::array<float, 3> coords1Min{}, coords2Min{};
-        triangulation->getVertexPoint(rc.minVertex1, coords1Min[0], coords1Min[1], coords1Min[2]);
-        triangulation->getVertexPoint(rc.minVertex2, coords2Min[0], coords2Min[1], coords2Min[2]);
-        
-        // Create min distance line
-        vtkIdType p1Min = pointId++;
-        vtkIdType p2Min = pointId++;
-        rcPoints->InsertNextPoint(coords1Min[0], coords1Min[1], static_cast<double>(frame));
-        rcPoints->InsertNextPoint(coords2Min[0], coords2Min[1], static_cast<double>(frame));
-        
-        auto lineMin = vtkSmartPointer<vtkLine>::New();
-        lineMin->GetPointIds()->SetId(0, p1Min);
-        lineMin->GetPointIds()->SetId(1, p2Min);
-        rcLines->InsertNextCell(lineMin);
-        
-        rcFrameArr->InsertNextValue(static_cast<int>(frame));
-        rcTrajIdArr->InsertNextValue(static_cast<int>(trajId));
-        rcTypeArr->InsertNextValue(0); // 0 = min
-        rcDistArr->InsertNextValue(rc.minDist);
-        
-        // Get coordinates for max distance line
-        std::array<float, 3> coords1Max{}, coords2Max{};
-        triangulation->getVertexPoint(rc.maxVertex1, coords1Max[0], coords1Max[1], coords1Max[2]);
-        triangulation->getVertexPoint(rc.maxVertex2, coords2Max[0], coords2Max[1], coords2Max[2]);
-        
-        // Create max distance line
-        vtkIdType p1Max = pointId++;
-        vtkIdType p2Max = pointId++;
-        rcPoints->InsertNextPoint(coords1Max[0], coords1Max[1], static_cast<double>(frame));
-        rcPoints->InsertNextPoint(coords2Max[0], coords2Max[1], static_cast<double>(frame));
-        
-        auto lineMax = vtkSmartPointer<vtkLine>::New();
-        lineMax->GetPointIds()->SetId(0, p1Max);
-        lineMax->GetPointIds()->SetId(1, p2Max);
-        rcLines->InsertNextCell(lineMax);
-        
-        rcFrameArr->InsertNextValue(static_cast<int>(frame));
-        rcTrajIdArr->InsertNextValue(static_cast<int>(trajId));
-        rcTypeArr->InsertNextValue(1); // 1 = max
-        rcDistArr->InsertNextValue(rc.maxDist);
       }
     }
-    
-    // Create a separate unstructured grid for the lines and append to outputSurface
-    auto rcGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    rcGrid->SetPoints(rcPoints);
-    rcGrid->SetCells(VTK_LINE, rcLines);
-    rcGrid->GetCellData()->AddArray(rcFrameArr);
-    rcGrid->GetCellData()->AddArray(rcTrajIdArr);
-    rcGrid->GetCellData()->AddArray(rcTypeArr);
-    rcGrid->GetCellData()->AddArray(rcDistArr);
-    
-    // Merge the rotating calipers grid into outputSurface
-    auto appendFilter = vtkSmartPointer<vtkAppendFilter>::New();
-    appendFilter->AddInputData(outputSurface);
-    appendFilter->AddInputData(rcGrid);
-    appendFilter->MergePointsOff();
-    appendFilter->Update();
-    
-    outputSurface->ShallowCopy(appendFilter->GetOutput());
   }
-
-  // --------------------------- LINEAR REG && ADDED --------------------------
   
   const vtkIdType nInit  = static_cast<vtkIdType>(linearTraj.size());
   const vtkIdType nLinks = static_cast<vtkIdType>(fuseRecords.size());
-  const vtkIdType nLinearSegments = nInit + nLinks;
+  const vtkIdType nRCLines = static_cast<vtkIdType>(nbRCLines);
+  const vtkIdType nLinearSegments = nInit + nLinks + nRCLines;
 
   auto ppts   = vtkSmartPointer<vtkPoints>::New();
   auto lines = vtkSmartPointer<vtkCellArray>::New();
@@ -570,9 +493,15 @@ int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
   inputTrajId->SetName("InputTrajId");
   inputTrajId->SetNumberOfTuples(nLinearSegments);
 
-  auto segmentKind = vtkSmartPointer<vtkIntArray>::New();  // 0 = initial segment, 1 = fusion link
+  auto segmentKind = vtkSmartPointer<vtkIntArray>::New();  
+  // 0 = initial segment, 1 = fusion link, 2 = RC min distance, 3 = RC max distance
   segmentKind->SetName("SegmentKind");
   segmentKind->SetNumberOfTuples(nLinearSegments);
+  
+  auto rcDistance = vtkSmartPointer<vtkDoubleArray>::New();
+  rcDistance->SetName("RCDistance");
+  rcDistance->SetNumberOfTuples(nLinearSegments);
+  rcDistance->FillValue(-1.0); // -1 for non-RC segments
   
   for(vtkIdType i = 0; i < nInit; ++i) {
 	const auto &traj = linearTraj[static_cast<size_t>(i)];
@@ -602,12 +531,75 @@ int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
     segmentKind->SetValue(segIdx, 1);
   }
   
+  // Add rotating calipers lines
+  if(nRCLines > 0 && triangulation) {
+    const size_t nFrames = rotatingCalipersResults.size();
+    const vtkIdType nVertices = triangulation->getNumberOfVertices();
+    vtkIdType rcIdx = nInit + nLinks;
+    
+    this->printMsg("Adding " + std::to_string(nRCLines) + " rotating calipers lines to chains");
+    
+    for(size_t frame = 0; frame < nFrames; ++frame) {
+      if(frame >= rotatingCalipersResults.size()) break;
+      const size_t nTraj = rotatingCalipersResults[frame].size();
+      
+      for(size_t trajId = 0; trajId < nTraj; ++trajId) {
+        const auto &rc = rotatingCalipersResults[frame][trajId];
+        
+        // Skip if no valid vertices
+        if(rc.minVertex1 < 0 || rc.minVertex2 < 0 || 
+           rc.maxVertex1 < 0 || rc.maxVertex2 < 0) {
+          continue;
+        }
+        
+        // Check vertices are within bounds
+        if(rc.minVertex1 >= nVertices || rc.minVertex2 >= nVertices ||
+           rc.maxVertex1 >= nVertices || rc.maxVertex2 >= nVertices) {
+          continue;
+        }
+        
+        // Get coordinates for min distance line
+        std::array<float, 3> coords1Min{}, coords2Min{};
+        triangulation->getVertexPoint(rc.minVertex1, coords1Min[0], coords1Min[1], coords1Min[2]);
+        triangulation->getVertexPoint(rc.minVertex2, coords2Min[0], coords2Min[1], coords2Min[2]);
+        
+        // Add min distance line
+        addSegment(ppts, lines, rcIdx,
+                   coords1Min[0], coords1Min[1], static_cast<double>(frame),
+                   coords2Min[0], coords2Min[1], static_cast<double>(frame));
+        
+        finalChainId->SetValue(rcIdx, static_cast<int>(trajId)); // Store trajId in FinalChainId
+        inputTrajId->SetValue(rcIdx, -1);
+        segmentKind->SetValue(rcIdx, 2); // 2 = RC min distance
+        rcDistance->SetValue(rcIdx, rc.minDist);
+        rcIdx++;
+        
+        // Get coordinates for max distance line
+        std::array<float, 3> coords1Max{}, coords2Max{};
+        triangulation->getVertexPoint(rc.maxVertex1, coords1Max[0], coords1Max[1], coords1Max[2]);
+        triangulation->getVertexPoint(rc.maxVertex2, coords2Max[0], coords2Max[1], coords2Max[2]);
+        
+        // Add max distance line
+        addSegment(ppts, lines, rcIdx,
+                   coords1Max[0], coords1Max[1], static_cast<double>(frame),
+                   coords2Max[0], coords2Max[1], static_cast<double>(frame));
+        
+        finalChainId->SetValue(rcIdx, static_cast<int>(trajId)); // Store trajId in FinalChainId
+        inputTrajId->SetValue(rcIdx, -1);
+        segmentKind->SetValue(rcIdx, 3); // 3 = RC max distance
+        rcDistance->SetValue(rcIdx, rc.maxDist);
+        rcIdx++;
+      }
+    }
+  }
+  
   
   outputLinear->SetPoints(ppts);
   outputLinear->SetCells(VTK_LINE, lines);
   outputLinear->GetCellData()->AddArray(finalChainId);
   outputLinear->GetCellData()->AddArray(inputTrajId);
   outputLinear->GetCellData()->AddArray(segmentKind);
+  outputLinear->GetCellData()->AddArray(rcDistance);
   //--------------------------- TRAJECTORIES -----------------------
   
   const vtkIdType n = static_cast<vtkIdType>(finalTraj.size());
