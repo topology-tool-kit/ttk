@@ -1163,12 +1163,9 @@ void ttk::DebrisTracer::cleanDarkSegmentInPlace(
 }
 
 
-// ============================================================================
-// ROTATING CALIPERS IMPLEMENTATION
-// ============================================================================
+// ROTATING CALIPERS 
 
 namespace {
-  // Point structure for 2D coordinates with original vertex ID
   struct Point2D {
     double x, y;
     ttk::SimplexId vertexId;
@@ -1177,7 +1174,6 @@ namespace {
       : x(x_), y(y_), vertexId(id) {}
   };
 
-  // Vector operations
   inline double dot(const Point2D &a, const Point2D &b) {
     return a.x * b.x + a.y * b.y;
   }
@@ -1196,12 +1192,9 @@ namespace {
     return std::sqrt(dx * dx + dy * dy);
   }
 
-  // Convex hull using monotone chain algorithm (Andrew's algorithm)
-  // Returns hull in counter-clockwise order
   std::vector<Point2D> convexHull(std::vector<Point2D> pts) {
     if(pts.size() < 3) return pts;
 
-    // Sort points lexicographically
     std::sort(pts.begin(), pts.end(), 
               [](const Point2D &a, const Point2D &b) {
                 return (a.x < b.x) || (a.x == b.x && a.y < b.y);
@@ -1213,7 +1206,7 @@ namespace {
 
     std::vector<Point2D> lower, upper;
 
-    // Build lower hull
+    // lower hull
     for(const auto &p : pts) {
       while(lower.size() >= 2 && 
             ccw(lower[lower.size()-2], lower[lower.size()-1], p) <= 0) {
@@ -1222,7 +1215,7 @@ namespace {
       lower.push_back(p);
     }
 
-    // Build upper hull
+    // upper hull
     for(int i = (int)pts.size() - 1; i >= 0; --i) {
       const auto &p = pts[i];
       while(upper.size() >= 2 && 
@@ -1231,17 +1224,12 @@ namespace {
       }
       upper.push_back(p);
     }
-
-    // Remove last point of each half (duplicate of first point of other half)
     lower.pop_back();
     upper.pop_back();
-
-    // Concatenate
     lower.insert(lower.end(), upper.begin(), upper.end());
     return lower;
   }
 
-  // Compute edge angle for vertex i
   double edgeAngle(const std::vector<Point2D> &hull, int i) {
     const int n = (int)hull.size();
     Point2D edge = subtract(hull[(i + 1) % n], hull[i]);
@@ -1250,14 +1238,12 @@ namespace {
     return angle;
   }
 
-  // Angle delta to align ref with edgeAng (modulo π)
   double angleDelta(double edgeAng, double ref) {
     double d = std::fmod(edgeAng - ref, M_PI);
     if(d <= 1e-9) d += M_PI;
     return d;
   }
 
-  // Find extreme vertex in given direction
   int findExtreme(const std::vector<Point2D> &hull, const Point2D &dir) {
     int best = 0;
     double bestVal = dot(hull[0], dir);
@@ -1271,7 +1257,6 @@ namespace {
     return best;
   }
 
-  // Rotating calipers to find max antipodal distance (diameter)
   void rotatingCalipers2(const std::vector<Point2D> &hull,
                          double &maxDist,
                          ttk::SimplexId &maxV1, ttk::SimplexId &maxV2) {
@@ -1282,7 +1267,6 @@ namespace {
       return;
     }
 
-    // Initialize: ref = π/2 (vertical support lines)
     double ref = M_PI / 2.0;
     int i = findExtreme(hull, Point2D(-1, 0)); // x min
     int j = findExtreme(hull, Point2D( 1, 0)); // x max
@@ -1294,7 +1278,6 @@ namespace {
     const double PI = M_PI;
 
     while(totalRot < PI) {
-      // Current distance between antipodal points
       double dist = distance(hull[i], hull[j]);
       
       if(dist > maxDist) {
@@ -1303,16 +1286,13 @@ namespace {
         maxV2 = hull[j].vertexId;
       }
 
-      // Compute angle deltas for both edges
       double angI = edgeAngle(hull, i);
       double angJ = edgeAngle(hull, j);
       double dtI = angleDelta(angI, ref);
       double dtJ = angleDelta(angJ, ref);
 
-      // Advance the caliper that requires less rotation
       double dt = std::min(dtI, dtJ);
 
-      // Check if we would exceed π rotation
       if(totalRot + dt > PI) {
         dt = PI - totalRot;
       }
@@ -1320,7 +1300,6 @@ namespace {
       ref += dt;
       totalRot += dt;
 
-      // Advance vertices whose edges are now aligned
       const double eps = 1e-9;
       if(std::abs(dtI - dt) < eps) {
         i = (i + 1) % n;
@@ -1333,7 +1312,7 @@ namespace {
     }
   }
 
-} // anonymous namespace
+} 
 
 
 template <class triangulationType>
@@ -1342,14 +1321,12 @@ int ttk::DebrisTracer::computeRotatingCalipersForSurface(
     const triangulationType *triangulation,
     RotatingCalipersResult &result) {
 
-  // Initialize result
   result = RotatingCalipersResult();
 
   if(surfaceVertices.size() < 2) {
     return 0;
   }
 
-  // Remove duplicate vertices
   std::unordered_set<ttk::SimplexId> uniqueSet(surfaceVertices.begin(), 
                                                 surfaceVertices.end());
   std::vector<ttk::SimplexId> uniqueVerts(uniqueSet.begin(), uniqueSet.end());
@@ -1358,7 +1335,6 @@ int ttk::DebrisTracer::computeRotatingCalipersForSurface(
     return 0;
   }
 
-  // Convert to 2D points (using x,y coordinates) and keep vertex IDs
   std::vector<Point2D> points;
   points.reserve(uniqueVerts.size());
 
@@ -1368,7 +1344,6 @@ int ttk::DebrisTracer::computeRotatingCalipersForSurface(
     points.emplace_back(coords[0], coords[1], v);
   }
 
-  // If only 2 points, just compute distance directly
   if(points.size() == 2) {
     result.maxDist = distance(points[0], points[1]);
     result.maxVertex1 = points[0].vertexId;
@@ -1376,14 +1351,12 @@ int ttk::DebrisTracer::computeRotatingCalipersForSurface(
     return 0;
   }
 
-  // Compute convex hull
   std::vector<Point2D> hull = convexHull(points);
 
   if(hull.size() < 2) {
     return 0;
   }
 
-  // Apply rotating calipers
   rotatingCalipers2(hull, 
                     result.maxDist,
                     result.maxVertex1, result.maxVertex2);
