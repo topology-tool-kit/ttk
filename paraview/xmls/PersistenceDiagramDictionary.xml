@@ -60,41 +60,6 @@
         </Documentation>
       </InputProperty>
 
-      <IntVectorProperty
-         name="BackEnd"
-         label="BackEnd"
-         command="SetBackEnd"
-         number_of_elements="1"
-        default_values="0"
-        panel_visibility="advanced" >
-    <EnumerationDomain name="enum">
-         <Entry value="0" text="Border initialization"/>
-         <Entry value="1" text="Random initialization"/>
-         <Entry value="2" text="First element initialization"/>
-         <Entry value="3" text="Input atom (optional input)"/>
-         <Entry value="4" text="Greddy initialization"/>
-       </EnumerationDomain>
-       <Documentation>
-           Backend for the computation of the dictionary of the persistence diagrams.
-       </Documentation>
-     </IntVectorProperty>
-
-      <IntVectorProperty
-          name="Critical pairs"
-          label="Critical pairs used"
-          command="SetPairType"
-          number_of_elements="1"
-          default_values="-1" >
-        <EnumerationDomain name="enum">
-          <Entry value="-1" text="All pairs : global clustering"/>
-          <Entry value="0" text="min-saddle pairs"/>
-          <Entry value="1" text="saddle-saddle pairs"/>
-          <Entry value="2" text="saddle-max pairs"/>
-        </EnumerationDomain>
-        <Documentation>
-          Specify the types of critical pairs to be taken into account for the clustering.
-        </Documentation>
-      </IntVectorProperty>
 
       <IntVectorProperty name = "AtomNumber_" label = "Number of Atoms" command="SetAtomNumber_" number_of_elements = "1" default_values="3" >
       <IntRangeDomain name = "Range" min = "0" max = "20" />
@@ -124,6 +89,47 @@
             Set the persistence threshold as a percentage of the global persistence of each persistence diagram inputs.
         </Documentation>
       </DoubleVectorProperty>
+
+      <IntVectorProperty
+          name="Critical pairs"
+          label="Critical pairs used"
+          command="SetPairType"
+          number_of_elements="1"
+          default_values="-1" >
+        <EnumerationDomain name="enum">
+          <Entry value="-1" text="All pairs : global clustering"/>
+          <Entry value="0" text="min-saddle pairs"/>
+          <Entry value="1" text="saddle-saddle pairs"/>
+          <Entry value="2" text="saddle-max pairs"/>
+        </EnumerationDomain>
+        <Documentation>
+          Specify the types of critical pairs to be taken into account for the clustering.
+        </Documentation>
+      </IntVectorProperty>
+
+
+      <IntVectorProperty
+         name="BackEnd"
+         label="Initialization BackEnd"
+         command="SetBackEnd"
+         number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced" >
+    <EnumerationDomain name="enum">
+         <Entry value="0" text="Border"/>
+         <Entry value="1" text="Random"/>
+         <Entry value="2" text="First element"/>
+         <Entry value="3" text="Input atom (optional input)"/>
+         <Entry value="4" text="Greddy"/>
+       </EnumerationDomain>
+       <Documentation>
+           Backend for the computation of the dictionary of the persistence diagrams.
+       </Documentation>
+     </IntVectorProperty>
+
+      <IntVectorProperty name = "Seed_" label = "Seed for random init" command="SetSeed_" number_of_elements = "1" default_values="0" >
+      <IntRangeDomain name = "Range" min = "0" max = "1000" />
+      </IntVectorProperty>
 
       <DoubleVectorProperty name = "CompressionFactor_" label = "Compression factor" command="SetCompressionFactor_" number_of_elements = "1" default_values="1.5" >
       <DoubleRangeDomain name = "Range" min = "1.0" max = "50.0" />
@@ -266,24 +272,34 @@
       <IntRangeDomain name = "Range" min = "0" max = "1000" />
       </IntVectorProperty>
 
-      <IntVectorProperty name = "Seed_" label = "Seed for random init" command="SetSeed_" number_of_elements = "1" default_values="0" >
-      <IntRangeDomain name = "Range" min = "0" max = "1000" />
-      </IntVectorProperty>
 
 
       <!-- A string parameter that controls the name of the output array -->
 
 
       <!-- Create a UI group that contains all input parameter widgets (here only one) -->
-      <PropertyGroup panel_widget="Line" label="Input Options">
+      <PropertyGroup panel_widget="Line" label="Input options">
+
         <Property name="AtomNumber_" />
         <Property name="Percent_" />
-        <Property name="CompressionFactor_" />
-        <Property name="MaxEpoch_" />
+        <Property name="Critical pairs" />
+        <Property name="BackEnd" />
         <Property name="Seed_" />
+        <Property name="MaxEpoch_" />
+        <Property name="OptimizeWeights_" />
+        <Property name="OptimizeAtoms_" />
+        <Property name="MaxEigenValue_" />
+        <Property name="ProgBarycenter_" />
+        <Property name="ProgApproach_" />
+        <Property name="StopCondition_" />
+        <Property name="CreationFeatures_" />
+        <Property name="CompressionMode_" />
+        <Property name="DimReductMode_" />
       </PropertyGroup>
 
-
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="CompressionFactor_" />
+      </PropertyGroup>
 
       <!-- DEBUG -->
       ${DEBUG_WIDGETS}
