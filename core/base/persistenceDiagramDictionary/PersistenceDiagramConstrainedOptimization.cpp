@@ -74,6 +74,10 @@ void PersistenceDiagramConstrainedOptimization::gradientDescentWeights(
   double stepWeight;
   double L = 0.;
 
+#ifndef TTK_ENABLE_EIGEN
+  maxEigenValue = false;
+#endif
+
   if(maxEigenValue) {
 #ifdef TTK_ENABLE_EIGEN
     for(size_t i = 0; i < hessianList.size(); ++i) {

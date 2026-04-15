@@ -1,10 +1,6 @@
 #include "PersistenceDiagramUtils.h"
 #include <algorithm>
 #include <cmath>
-#ifdef TTK_ENABLE_EIGEN
-#include <Eigen/Dense>
-#include <Eigen/Eigenvalues>
-#endif
 
 #include <PersistenceDiagramDictionary.h>
 
