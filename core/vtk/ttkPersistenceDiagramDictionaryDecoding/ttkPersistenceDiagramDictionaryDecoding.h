@@ -13,6 +13,11 @@
 /// IEEE Transactions on Visualization and Computer Graphics, 2023.
 ///
 /// \sa PersistenceDiagramDictionaryDecoding
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramDictionary/">Persistence
+///   Diagram Dictionary example</a> \n
 
 #pragma once
 

@@ -2,7 +2,7 @@
 /// \class ttkPersistenceDiagramDictionary
 /// \author Keanu Sisouk <keanu.sisouk@lip6.fr>
 /// \author Pierre Guillou <pierre.guillou@lip6.fr>
-/// \date Mai 2023
+/// \date May 2023
 ///
 /// \brief TTK processing package for the computation of a Dictionary
 /// of Persistence Diagrams and barycentric weights to approximate
@@ -14,6 +14,11 @@
 /// IEEE Transactions on Visualization and Computer Graphics, 2023.
 ///
 /// \sa PersistenceDiagramDictionary
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramDictionary/">Persistence
+///   Diagram Dictionary example</a> \n
 
 #pragma once
 

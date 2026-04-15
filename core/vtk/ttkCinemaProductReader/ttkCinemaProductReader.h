@@ -48,6 +48,9 @@
 ///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramClustering/">Persistence
 ///   Diagram Clustering example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramDictionary/">Persistence
+///   Diagram Dictionary example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramDistance/">Persistence
 ///   Diagram Distance example</a> \n
 ///   - <a
