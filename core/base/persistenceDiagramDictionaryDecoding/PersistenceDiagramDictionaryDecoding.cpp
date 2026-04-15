@@ -139,13 +139,13 @@ void ttk::PersistenceDiagramDictionaryDecoding::computeAtomsCoordinates(
           }
         }
         std::vector<std::vector<double>> coordsAtom;
-        DimProjector.execute(coordsAtom,  matrixForProjector, nRow, nRow);
+        DimProjector.execute(coordsAtom, matrixForProjector, nRow, nRow);
 
         for(size_t i = 0; i < 3; ++i) {
           for(size_t j = 0; j < nAtoms; ++j) {
             if(i == 0) {
               trueCoords[j][0] = coordsAtom[0][j];
-            } else if (i == 1) {
+            } else if(i == 1) {
               trueCoords[j][1] = coordsAtom[1][j];
             } else {
               trueCoords[j][2] = coordsAtom[2][j];
@@ -237,7 +237,7 @@ void ttk::PersistenceDiagramDictionaryDecoding::computeAtomsCoordinates(
           }
         }
         std::vector<std::vector<double>> coordsAtom;
-        DimProjector.execute(coordsAtom,  matrixForProjector, nRow, nRow);
+        DimProjector.execute(coordsAtom, matrixForProjector, nRow, nRow);
 
         for(size_t i = 0; i < 2; ++i) {
           for(size_t j = 0; j < nAtoms; ++j) {

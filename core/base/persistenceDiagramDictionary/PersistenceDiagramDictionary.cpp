@@ -51,10 +51,10 @@ void PersistenceDiagramDictionary::execute(
                    threadNumber_, debug::LineMode::NEW);
 
     controlAtomsSize(intermediateDiagrams, dictDiagrams);
-    
+
     method(intermediateDiagrams, dictDiagrams, vectorWeights, numAtom, lossTab,
-          allLosses, histoVectorWeights, histoDictDiagrams, 
-          preWeightOpt, percent, doCompression);
+           allLosses, histoVectorWeights, histoDictDiagrams, preWeightOpt,
+           percent, doCompression);
   } else {
     // Multi scale approach
     bool doCompression = false;
@@ -106,9 +106,9 @@ void PersistenceDiagramDictionary::execute(
       this->printMsg("Initialization computed ", 1, tm_init.getElapsedTime(),
                      threadNumber_, debug::LineMode::NEW);
 
-      method(dataTemp, dictDiagrams, vectorWeights, numAtom, lossTab, 
-            allLosses, histoVectorWeights,histoDictDiagrams, preWeightOpt,
-            percent, doCompression);
+      method(dataTemp, dictDiagrams, vectorWeights, numAtom, lossTab, allLosses,
+             histoVectorWeights, histoDictDiagrams, preWeightOpt, percent,
+             doCompression);
     }
 
     int counter = 0;
@@ -145,9 +145,9 @@ void PersistenceDiagramDictionary::execute(
       if(counter == 0) {
         continue;
       }
-      method(dataTemp, dictDiagrams, vectorWeights, numAtom, lossTab, 
-            allLosses, histoVectorWeights,histoDictDiagrams, preWeightOpt, 
-            percent, doCompression);
+      method(dataTemp, dictDiagrams, vectorWeights, numAtom, lossTab, allLosses,
+             histoVectorWeights, histoDictDiagrams, preWeightOpt, percent,
+             doCompression);
     }
 
     this->printMsg(
@@ -295,7 +295,6 @@ void PersistenceDiagramDictionary::method(
       loss += allLossesAtEpoch[p];
     }
 
-
     for(size_t p = 0; p < nDiags; ++p) {
       if(!ProgApproach_) {
         allLosses[p].push_back(allLossesAtEpoch[p]);
@@ -307,8 +306,8 @@ void PersistenceDiagramDictionary::method(
     lossTab.push_back(loss);
 
     printMsg(
-      " Epoch " + std::to_string(epoch) + ", loss = " + std::to_string(loss), 1, tm_it.getElapsedTime(),
-      threadNumber_, ttk::debug::LineMode::REPLACE);
+      " Epoch " + std::to_string(epoch) + ", loss = " + std::to_string(loss), 1,
+      tm_it.getElapsedTime(), threadNumber_, ttk::debug::LineMode::REPLACE);
 
     if(preWeightOpt && OptimizeAtoms_) {
       if(epoch < 10) {
@@ -896,17 +895,18 @@ void PersistenceDiagramDictionary::method(
     allMatchingsAtoms.resize(nDiags);
   }
   printMsg(
-    " Epoch " + std::to_string(epoch) + ", loss = " + std::to_string(loss), 1.0,tm.getElapsedTime(),
-    threadNumber_);
+    " Epoch " + std::to_string(epoch) + ", loss = " + std::to_string(loss), 1.0,
+    tm.getElapsedTime(), threadNumber_);
 
-  printMsg("Loss returned "
-           + std::to_string(*std::min_element(
-             lossTab.begin() + nbEpochPrevious, lossTab.end()))
-           + " at Epoch "
-           + std::to_string(
-             std::min_element(lossTab.begin() + nbEpochPrevious, lossTab.end())
-             - lossTab.begin()),1.0,tm.getElapsedTime(),
-             threadNumber_);
+  printMsg(
+    "Loss returned "
+      + std::to_string(
+        *std::min_element(lossTab.begin() + nbEpochPrevious, lossTab.end()))
+      + " at Epoch "
+      + std::to_string(
+        std::min_element(lossTab.begin() + nbEpochPrevious, lossTab.end())
+        - lossTab.begin()),
+    1.0, tm.getElapsedTime(), threadNumber_);
 
   for(size_t p = 0; p < dictDiagrams.size(); ++p) {
     const auto &atom = histoDictDiagrams[p];
@@ -961,8 +961,7 @@ double PersistenceDiagramDictionary::computeDistance(
     D2_bis.emplace_back(g);
   }
 
-  PersistenceDiagramAuction auction(
-    this->Wasserstein, 1.0, 1.0, 0.01, true);
+  PersistenceDiagramAuction auction(this->Wasserstein, 1.0, 1.0, 0.01, true);
   auction.BuildAuctionDiagrams(D1, D2_bis);
   double loss = auction.run(matching);
   return loss;
@@ -1281,10 +1280,10 @@ int PersistenceDiagramDictionary::initDictionary(
           std::vector<std::vector<double>> histoVectorWeights(1);
           std::vector<ttk::DiagramType> histoDictDiagrams(dictTemp.size());
           bool doCompression = false;
-          this->method(
-            dataAlone, dictTemp, weightsTemp, static_cast<int>(dictTemp.size()),
-            lossTabTemp, allLossesTemp,  histoVectorWeights, histoDictDiagrams, 
-            false, percent, doCompression);
+          this->method(dataAlone, dictTemp, weightsTemp,
+                       static_cast<int>(dictTemp.size()), lossTabTemp,
+                       allLossesTemp, histoVectorWeights, histoDictDiagrams,
+                       false, percent, doCompression);
           double min_loss
             = *std::min_element(lossTabTemp.begin(), lossTabTemp.end());
           allEnergy[j] = min_loss;
@@ -1298,7 +1297,7 @@ int PersistenceDiagramDictionary::initDictionary(
     default:
       break;
   }
-  
+
   return 0;
 }
 

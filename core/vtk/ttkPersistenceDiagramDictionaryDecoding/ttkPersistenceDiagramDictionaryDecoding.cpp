@@ -137,7 +137,7 @@ int ttkPersistenceDiagramDictionaryDecoding::RequestData(
   outputCoordinates->SetNumberOfRows(numWeights);
 
   GetOutputDiagrams(outputDgm, outputCoordinates, Barycenters, dictDiagrams,
-                 weightsVTK, vectorWeights, Spacing, 1);
+                    weightsVTK, vectorWeights, Spacing, 1);
 
   // Get input object from input vector
   // Note: has to be a vtkDataSet as required by FillInputPortInformation

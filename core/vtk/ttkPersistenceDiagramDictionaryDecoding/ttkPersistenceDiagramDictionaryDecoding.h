@@ -67,13 +67,13 @@ protected:
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   void GetOutputDiagrams(vtkMultiBlockDataSet *output,
-                      vtkTable *output_coordinates,
-                      const std::vector<ttk::DiagramType> &diags,
-                      std::vector<ttk::DiagramType> &atoms,
-                      vtkTable *weights_vtk,
-                      const std::vector<std::vector<double>> &weights,
-                      const double spacing,
-                      const double maxPersistence) const;
+                         vtkTable *output_coordinates,
+                         const std::vector<ttk::DiagramType> &diags,
+                         std::vector<ttk::DiagramType> &atoms,
+                         vtkTable *weights_vtk,
+                         const std::vector<std::vector<double>> &weights,
+                         const double spacing,
+                         const double maxPersistence) const;
 
   // double GetPersistenceOfGlobalPair(const ttk::DiagramType &diagram) const;
 

@@ -16,11 +16,11 @@
 #include <array>
 #include <limits>
 
-#include <PersistenceDiagramConstrainedOptimization.h>
-#include <PersistenceDiagramDictionaryBorderInitializer.h>
 #include <InitDictRandomly.h>
 #include <PersistenceDiagramAuction.h>
 #include <PersistenceDiagramClustering.h>
+#include <PersistenceDiagramConstrainedOptimization.h>
+#include <PersistenceDiagramDictionaryBorderInitializer.h>
 #include <Wrapper.h>
 
 namespace ttk {

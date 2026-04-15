@@ -4,7 +4,6 @@
 #include <PersistenceDiagramUtils.h>
 #include <Wrapper.h>
 
-
 namespace ttk {
   using Matrix = std::vector<std::vector<double>>;
 
@@ -25,6 +24,5 @@ namespace ttk {
   protected:
     int getNextIndex(const Matrix &distMatrix,
                      const std::vector<int> &indices) const;
-
   };
-}
+} // namespace ttk

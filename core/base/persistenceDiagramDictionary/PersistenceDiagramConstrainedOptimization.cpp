@@ -219,7 +219,6 @@ void PersistenceDiagramConstrainedOptimization::gradientDescentAtoms(
     tracker.push_back(1);
   }
 
-
   for(size_t i = 0; i < gradBuffersList.size(); ++i) {
     if(tracker[i] == 0 || checkerAtomsExt[i] == 0) {
 

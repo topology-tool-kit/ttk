@@ -170,8 +170,8 @@ int ttkPersistenceDiagramDictionary::RequestData(
   std::vector<double> lossTab;
   std::vector<std::vector<double>> allLosses(nDiags);
   this->execute(intermediateDiagrams, intermediateAtoms, dictDiagrams,
-                vectorWeights, seed, numAtom, lossTab, 
-                allLosses, this->Percent_);
+                vectorWeights, seed, numAtom, lossTab, allLosses,
+                this->Percent_);
   // zero-padd column name to keep Row Data columns ordered
   outputWeights->SetNumberOfRows(nDiags);
 
