@@ -6,9 +6,15 @@
 /// \b Related \b publication \n
 /// "Wasserstein Dictionaries of Persistence Diagrams" \n
 /// Keanu Sisouk, Julie Delon and Julien Tierny \n
-/// IEEE Transactions on Visualization and Computer Graphics, 2023.
+/// IEEE Transactions on Visualization and Computer Graphics, 2024.
 ///
 /// \sa PersistenceDiagramDictionary
+///
+/// \b Online \b examples: \n
+///
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramDictionary/">Persistence
+///   Diagram Dictionary example</a> \n
 
 #pragma once
 
