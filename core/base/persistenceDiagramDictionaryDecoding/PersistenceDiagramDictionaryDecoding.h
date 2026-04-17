@@ -36,11 +36,6 @@ namespace ttk {
   using Matrice = std::vector<std::vector<double>>;
   using VectorMatchingTuple = std::vector<MatchingType>;
 
-  /**
-   * The PersistenceDiagramDictionaryDecoding class provides methods to compute
-   * for each vertex of a triangulation the average scalar value of itself and
-   * its direct neighbors.
-   */
   class PersistenceDiagramDictionaryDecoding : virtual public Debug {
 
   public:
