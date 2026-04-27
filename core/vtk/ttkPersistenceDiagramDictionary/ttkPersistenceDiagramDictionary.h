@@ -47,7 +47,6 @@ private:
   double Percent_{0};
 
 public:
-  // enum class BACKEND{BORDER_INIT = 0 , RANDOM_INIT = 1 , FIRST_DIAGS = 2};
 
   static ttkPersistenceDiagramDictionary *New();
 
