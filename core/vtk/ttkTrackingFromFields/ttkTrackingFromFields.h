@@ -42,6 +42,7 @@
 #include <TrackingFromFields.h>
 #include <ttkAlgorithm.h>
 #include <ttkTrackingFromFieldsModule.h>
+#include <PostProcessingTracking.h>
 
 #include <algorithm>
 #include <string>
@@ -175,6 +176,70 @@ public:
   vtkGetMacro(PostProcThresh, double);
   /// @}
 
+ 
+  /// @brief Run the trajectory post-processing (linearization,
+  /// fusion, merge-tree surface stats) after the tracking stage.
+  /// @{
+  vtkSetMacro(EnablePostProc, bool);
+  vtkGetMacro(EnablePostProc, bool);
+  /// @}
+
+  /// @brief Linearize each tracked trajectory (least-squares line fit).
+  /// @{
+  vtkSetMacro(DoLinearize, bool);
+  vtkGetMacro(DoLinearize, bool);
+  /// @}
+
+  /// @brief Chain temporally-adjacent, directionally-consistent linearized
+  /// segments into longer trajectories.
+  /// @{
+  vtkSetMacro(DoFusion, bool);
+  vtkGetMacro(DoFusion, bool);
+  /// @}
+
+  /// @brief Run per-frame merge-tree segmentation and attach surface
+  /// statistics (min/max/mean pixel-cell count) to each trajectory cell.
+  /// @{
+  vtkSetMacro(DoMergeTree, bool);
+  vtkGetMacro(DoMergeTree, bool);
+  /// @}
+
+  /// @brief When on, the merge-tree pipeline runs an Otsu-threshold pass on
+  /// the candidate surface segments before accumulating statistics.
+  /// @{
+  vtkSetMacro(UseOtsuSimplification, bool);
+  vtkGetMacro(UseOtsuSimplification, bool);
+  /// @}
+
+  vtkSetMacro(OtsuBins, int);
+  vtkGetMacro(OtsuBins, int);
+
+  vtkSetMacro(MaxSurfSize, int);
+  vtkGetMacro(MaxSurfSize, int);
+
+  /// @brief Max angular deviation (degrees) allowed between two segments
+  /// during fusion. Internally converted to a cosine threshold.
+  /// @{
+  vtkSetMacro(CosColDegrees, double);
+  vtkGetMacro(CosColDegrees, double);
+  /// @}
+
+  /// @brief Max squared pixel distance between segment i's extrapolated
+  /// end and segment j's start during fusion.
+  /// @{
+  vtkSetMacro(MaxLinkRadius, double);
+  vtkGetMacro(MaxLinkRadius, double);
+  /// @}
+
+  /// @brief Max temporal gap (in frames) between consecutive segments in a
+  /// fusion link.
+  /// @{
+  vtkSetMacro(MaxFrameDist, int);
+  vtkGetMacro(MaxFrameDist, int);
+  /// @}
+
+
+
 protected:
   ttkTrackingFromFields();
 
@@ -214,6 +279,18 @@ private:
   int PVAlgorithm{2};
   std::string WassersteinMetric{"2"};
 
+  // Post-processing config.
+  bool EnablePostProc{false};
+  bool DoLinearize{true};
+  bool DoFusion{true};
+  bool DoMergeTree{false};
+  bool UseOtsuSimplification{false};
+  int OtsuBins{0};
+  int MaxSurfSize{10000};
+  double CosColDegrees{20.0};
+  double MaxLinkRadius{225.0};
+  int MaxFrameDist{30};
+
   template <class dataType, class triangulationType>
   int trackWithPersistenceMatching(vtkUnstructuredGrid *output,
                                    unsigned long fieldNumber,
@@ -223,4 +300,11 @@ private:
   int trackWithCriticalPointMatching(vtkUnstructuredGrid *output,
                                      unsigned long fieldNumber,
                                      const triangulationType *triangulation);
+
+  template <class dataType, class triangulationType>
+  int applyPostProcessing(vtkUnstructuredGrid *output,
+    							vtkDataSet *input,
+    							const std::vector<vtkDataArray *> &inputScalarFields,
+    							const triangulationType *triangulation);
+
 };
