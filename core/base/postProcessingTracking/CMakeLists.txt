@@ -1,8 +1,8 @@
 ttk_add_base_library(postProcessingTracking
   SOURCES
-    postProcessingTracking.cpp
+    PostProcessingTracking.cpp
   HEADERS
-    postProcessingTracking.h
+    PostProcessingTracking.h
   DEPENDS
     triangulation
     localizedTopologicalSimplification

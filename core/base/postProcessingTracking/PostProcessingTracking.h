@@ -104,7 +104,7 @@ namespace ttk {
     inline void setMaxRadius(double v) {maxRadius_ = v;}
     inline void setMaxFrameDist(int v) {maxFrameDist_ = v;minFrameDist_ = -v;}
     
-	inline void setPersistenceThreshold(double v) {persistenceThreshold_ = v}
+	inline void setPersistenceThreshold(double v) {persistenceThreshold_ = v;}
     inline void setMaxSurfSize(int v) {maxSurfSize_ = v;}
     inline void setUseOtsuSimplification(bool v) {useOtsuSimplification_ = v;}
     inline void setOtsuBins(int v) {otsuBins_ = v;}
