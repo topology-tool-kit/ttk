@@ -312,14 +312,3 @@ void ttkPersistenceDiagramDictionaryDecoding::GetOutputDiagrams(
   }
 }
 
-// double ttkPersistenceDiagramDictionaryDecoding::GetPersistenceOfGlobalPair(
-//   const ttk::DiagramType &diagram) const {
-
-//   double maxPersistence{0};
-//   for(size_t i = 0; i < diagram.size(); ++i) {
-//     const auto &t = diagram[i];
-//     const double &pers = t.persistence();
-//     maxPersistence = std::max(pers, maxPersistence);
-//   }
-//   return maxPersistence;
-// }
