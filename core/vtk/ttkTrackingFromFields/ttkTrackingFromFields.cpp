@@ -1,6 +1,8 @@
 #include <vtkDoubleArray.h>
 #include <vtkInformation.h>
 #include <vtkPointData.h>
+#include <vtkIntArray.h>
+#include <vtkLine.h>
 
 #include <ttkMacros.h>
 #include <ttkTrackingFromFields.h>
@@ -233,6 +235,248 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   return 1;
 }
 
+template <class dataType, class triangulationType>
+int ttkTrackingFromFields::applyPostProcessing(
+  vtkUnstructuredGrid *output,
+  vtkDataSet *input,
+  const std::vector<vtkDataArray *> &inputScalarFields,
+  const triangulationType *triangulation) {
+
+  ttk::Timer timer;
+  this->printMsg(ttk::debug::Separator::L2);
+  this->printMsg("Post-processing (linearize="
+                 + std::to_string(DoLinearize)
+                 + ", fuse=" + std::to_string(DoFusion)
+                 + ", mergeTree=" + std::to_string(DoMergeTree) + ")");
+
+  vtkIntArray *compIdArray = vtkIntArray::SafeDownCast(
+    output->GetCellData()->GetArray("ConnectedComponentId"));
+  vtkIntArray *timeArray = vtkIntArray::SafeDownCast(
+    output->GetPointData()->GetArray("TimeStep"));
+  vtkIntArray *vertexGlobalIdArray = vtkIntArray::SafeDownCast(
+    output->GetPointData()->GetArray("VertexGlobalId"));
+
+  if(!compIdArray || !timeArray || !vertexGlobalIdArray) {
+    this->printErr("Tracking mesh is missing "
+                   "ConnectedComponentId/TimeStep/VertexGlobalId; "
+                   "skipping post-processing.");
+    return 0;
+  }
+
+  const vtkIdType numCells = output->GetNumberOfCells();
+  std::map<int, std::vector<vtkIdType>> cellsByTraj;
+  for(vtkIdType cellId = 0; cellId < numCells; ++cellId)
+    cellsByTraj[compIdArray->GetValue(cellId)].push_back(cellId);
+
+  const int numTraj = static_cast<int>(cellsByTraj.size());
+  std::vector<std::vector<int>> trajTime(numTraj);
+  std::vector<std::vector<int>> trajVertexId(numTraj);
+  std::vector<std::vector<double>> trajX(numTraj), trajY(numTraj);
+
+  vtkNew<vtkIdList> cellPointIds;
+  auto collectUniqueSortedPointIds
+    = [&](const std::vector<vtkIdType> &cellIds,
+          std::vector<vtkIdType> &pointIds) {
+        pointIds.clear();
+        pointIds.reserve(cellIds.size() * 2);
+        for(const vtkIdType cId : cellIds) {
+          cellPointIds->Reset();
+          output->GetCellPoints(cId, cellPointIds);
+          const vtkIdType n = cellPointIds->GetNumberOfIds();
+          for(vtkIdType k = 0; k < n; ++k)
+            pointIds.push_back(cellPointIds->GetId(k));
+        }
+        std::sort(pointIds.begin(), pointIds.end());
+        pointIds.erase(std::unique(pointIds.begin(), pointIds.end()),
+                       pointIds.end());
+        std::sort(pointIds.begin(), pointIds.end(),
+                  [&](vtkIdType a, vtkIdType b) {
+                    return timeArray->GetValue(a) < timeArray->GetValue(b);
+                  });
+      };
+
+  size_t tIdx = 0;
+  for(const auto &kv : cellsByTraj) {
+    std::vector<vtkIdType> pointIds;
+    collectUniqueSortedPointIds(kv.second, pointIds);
+
+    auto &ts = trajTime[tIdx];
+    auto &vid = trajVertexId[tIdx];
+    auto &cx = trajX[tIdx];
+    auto &cy = trajY[tIdx];
+    ts.reserve(pointIds.size());
+    vid.reserve(pointIds.size());
+    cx.reserve(pointIds.size());
+    cy.reserve(pointIds.size());
+
+    double xyz[3];
+    for(const vtkIdType pId : pointIds) {
+      ts.push_back(timeArray->GetValue(pId));
+      vid.push_back(vertexGlobalIdArray->GetValue(pId));
+      output->GetPoint(pId, xyz);
+      cx.push_back(xyz[0]);
+      cy.push_back(xyz[1]);
+    }
+    ++tIdx;
+  }
+
+  ttk::PostProcessingTracking ppt;
+  ppt.setThreadNumber(this->threadNumber_);
+  ppt.setDebugLevel(this->debugLevel_);
+
+  ppt.setDoLinearize(DoLinearize);
+  ppt.setDoFusion(DoFusion);
+  ppt.setDoMergeTree(DoMergeTree);
+
+  const double pi = M_PI;
+  ppt.setCosCol(std::cos(CosColDegrees * pi / 180.0));
+  ppt.setMaxRadius(MaxLinkRadius);
+  ppt.setMaxFrameDist(MaxFrameDist);
+  ppt.setPersistenceThreshold(Tolerance);
+  ppt.setMaxSurfSize(MaxSurfSize);
+  ppt.setUseOtsuSimplification(UseOtsuSimplification);
+  ppt.setOtsuBins(OtsuBins);
+
+  double *bounds = input->GetBounds();
+  ppt.setBoundaryXMin(bounds[0]); ppt.setBoundaryXMax(bounds[1]); ppt.setBoundaryYMin(bounds[2]); ppt.setBoundaryYMax(bounds[3]);
+
+  ppt.preconditionTriangulation(
+    const_cast<triangulationType *>(triangulation));
+
+  if(DoMergeTree) {
+    std::vector<void *> inputFields;
+    inputFields.reserve(inputScalarFields.size());
+    for(vtkDataArray *a : inputScalarFields)
+      inputFields.push_back(ttkUtils::GetVoidPointer(a));
+    ppt.setInputScalars(inputFields);
+  }
+
+  std::vector<ttk::PostProcessingTracking::LinearTrajectory> linearTraj;
+  std::vector<ttk::PostProcessingTracking::LinearTrajectory> finalTraj;
+  std::vector<ttk::PostProcessingTracking::FuseRecord> fuseRecords;
+  std::vector<double> surfMin, surfMax, surfMean;
+
+  const int status = ppt.execute<dataType, triangulationType>(
+    trajTime, trajVertexId, trajX, trajY, linearTraj, finalTraj, fuseRecords,
+    surfMin, surfMax, surfMean, triangulation);
+  if(status != 1) {
+    this->printWrn("Post-processing returned non-success status; "
+                   "keeping the raw tracking mesh.");
+    return 0;
+  }
+
+  const vtkIdType nOut = static_cast<vtkIdType>(finalTraj.size());
+
+  vtkNew<vtkUnstructuredGrid> newGrid{};
+  vtkNew<vtkPoints> newPoints{};
+  vtkNew<vtkCellArray> newLines{};
+  newPoints->SetNumberOfPoints(2 * nOut);
+
+  auto makeIntArr = [](const char *name, vtkIdType n) {
+    auto a = vtkSmartPointer<vtkIntArray>::New();
+    a->SetName(name);
+    a->SetNumberOfTuples(n);
+    return a;
+  };
+  auto makeDblArr = [](const char *name, vtkIdType n) {
+    auto a = vtkSmartPointer<vtkDoubleArray>::New();
+    a->SetName(name);
+    a->SetNumberOfTuples(n);
+    return a;
+  };
+
+  auto trajIdArr = makeIntArr("TrajId", nOut);
+  auto startFrameArr = makeIntArr("StartFrame", nOut);
+  auto endFrameArr = makeIntArr("EndFrame", nOut);
+  auto durationArr = makeIntArr("Duration", nOut);
+  auto lengthArr = makeIntArr("ComponentLength", nOut);
+  auto axArr = makeDblArr("ax", nOut);
+  auto bxArr = makeDblArr("bx", nOut);
+  auto ayArr = makeDblArr("ay", nOut);
+  auto byArr = makeDblArr("by", nOut);
+  auto surfMinArr = makeDblArr("SurfaceMin", nOut);
+  auto surfMaxArr = makeDblArr("SurfaceMax", nOut);
+  auto surfMeanArr = makeDblArr("SurfaceMean", nOut);
+  auto compIdOut = makeIntArr("ConnectedComponentId", nOut);
+
+  for(vtkIdType i = 0; i < nOut; ++i) {
+    const auto &c = finalTraj[i];
+
+    double x0, y0, x1, y1;
+    const int sF = c.startFrame;
+    const int eF = c.endFrame;
+    if(DoLinearize) {
+      x0 = c.evalX(sF); y0 = c.evalY(sF); x1 = c.evalX(eF); y1 = c.evalY(eF);
+    } else if(!c.criticalPoints.empty()) {
+      x0 = c.evalX(sF); y0 = c.evalY(sF); x1 = c.evalX(eF); y1 = c.evalY(eF);
+      const ttk::SimplexId v0 = c.criticalPoints.front().second;
+      const ttk::SimplexId v1 = c.criticalPoints.back().second;
+      if(v0 >= 0 && v0 < triangulation->getNumberOfVertices()) {
+        float a, b, cZ;
+        triangulation->getVertexPoint(v0, a, b, cZ);
+        x0 = a; y0 = b;
+      }
+      if(v1 >= 0 && v1 < triangulation->getNumberOfVertices()) {
+        float a, b, cZ;
+        triangulation->getVertexPoint(v1, a, b, cZ);
+        x1 = a; y1 = b;
+      }
+    } else {
+      x0 = y0 = x1 = y1 = 0.0;
+    }
+
+    const vtkIdType p0 = 2 * i + 0;
+    const vtkIdType p1 = 2 * i + 1;
+    newPoints->SetPoint(p0, x0, y0, static_cast<double>(sF));
+    newPoints->SetPoint(p1, x1, y1, static_cast<double>(eF));
+
+    vtkNew<vtkLine> line{};
+    line->GetPointIds()->SetId(0, p0);
+    line->GetPointIds()->SetId(1, p1);
+    newLines->InsertNextCell(line);
+
+    trajIdArr->SetValue(i, static_cast<int>(i));
+    startFrameArr->SetValue(i, sF);
+    endFrameArr->SetValue(i, eF);
+    durationArr->SetValue(i, eF - sF);
+    lengthArr->SetValue(i, static_cast<int>(c.criticalPoints.size()));
+    axArr->SetValue(i, c.ax);
+    bxArr->SetValue(i, c.bx);
+    ayArr->SetValue(i, c.ay);
+    byArr->SetValue(i, c.by);
+    surfMinArr->SetValue(i, surfMin[i]);
+    surfMaxArr->SetValue(i, surfMax[i]);
+    surfMeanArr->SetValue(i, surfMean[i]);
+    compIdOut->SetValue(i, static_cast<int>(i));
+  }
+
+  newGrid->SetPoints(newPoints);
+  newGrid->SetCells(VTK_LINE, newLines);
+  newGrid->GetCellData()->AddArray(trajIdArr);
+  newGrid->GetCellData()->AddArray(compIdOut);
+  newGrid->GetCellData()->AddArray(startFrameArr);
+  newGrid->GetCellData()->AddArray(endFrameArr);
+  newGrid->GetCellData()->AddArray(durationArr);
+  newGrid->GetCellData()->AddArray(lengthArr);
+  newGrid->GetCellData()->AddArray(axArr);
+  newGrid->GetCellData()->AddArray(bxArr);
+  newGrid->GetCellData()->AddArray(ayArr);
+  newGrid->GetCellData()->AddArray(byArr);
+  if(DoMergeTree) {
+    newGrid->GetCellData()->AddArray(surfMinArr);
+    newGrid->GetCellData()->AddArray(surfMaxArr);
+    newGrid->GetCellData()->AddArray(surfMeanArr);
+  }
+
+  output->ShallowCopy(newGrid);
+
+  this->printMsg("Post-processing ("
+                   + std::to_string(nOut) + " output trajectories)",
+                 1.0, timer.getElapsedTime(), this->threadNumber_);
+  this->printMsg(ttk::debug::Separator::L2);
+  return 1;
+}
+
 int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
@@ -376,5 +620,12 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
     this->printMsg("The specified matching method is not supported.");
   }
 
+  if(status == 1 && EnablePostProc) {
+    ttkVtkTemplateMacro(
+      inputScalarFields[0]->GetDataType(), triangulation->getType(),
+      (this->applyPostProcessing<VTK_TT, TTK_TT>(
+        output, input, inputScalarFields,
+        (TTK_TT *)triangulation->getData())));
+  }
   return status;
 }

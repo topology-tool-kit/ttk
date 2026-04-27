@@ -370,6 +370,238 @@ the critical point.</Documentation>
         </Documentation>
       </DoubleVectorProperty>-->
 
+	  <IntVectorProperty
+        name="EnablePostProc"
+        command="SetEnablePostProc"
+        label="Enable post-processing"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Turn on the post-processing stage: linearize tracked trajectories,
+          optionally chain them, and optionally attach per-trajectory surface
+          statistics from a per-frame merge-tree segmentation. When off, the
+          filter outputs the raw tracking mesh.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="DoLinearize"
+        command="SetDoLinearize"
+        label="Linearize trajectories"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="EnablePostProc"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          Fit a 2D line (x(t)=ax*t+bx, y(t)=ay*t+by) through each trajectory
+          point cloud and replace the polyline by its linearized endpoints.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="DoFusion"
+        command="SetDoFusion"
+        label="Fuse trajectories"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="EnablePostProc"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          Greedily chain temporally-adjacent, directionally-consistent
+          linearized segments into longer trajectories.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+        name="CosColDegrees"
+        command="SetCosColDegrees"
+        label="Fusion: max angular deviation (deg)"
+        number_of_elements="1"
+        default_values="20.0">
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DoFusion"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Maximum angular deviation (degrees) between two trajectory segments
+          allowed for chaining. Internally converted to a cosine threshold.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="MaxLinkRadius"
+        command="SetMaxLinkRadius"
+        label="Fusion: max link radius² (px²)"
+        number_of_elements="1"
+        default_values="225.0">
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DoFusion"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Maximum squared pixel distance between segment i's extrapolated end
+          and segment j's start frame for a valid chain link.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+        name="MaxFrameDist"
+        command="SetMaxFrameDist"
+        label="Fusion: max frame gap"
+        number_of_elements="1"
+        default_values="30">
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DoFusion"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Maximum temporal gap (frames) between the end of segment i and the
+          start of segment j for a valid chain link.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="DoMergeTree"
+        command="SetDoMergeTree"
+        label="Compute merge-tree surfaces"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="EnablePostProc"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          Compute a per-frame merge tree  and
+          associate each trajectory to its surface segment at each frame. Adds
+          statistics to the
+          trajectory cell-data.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="MaxSurfSize"
+        command="SetMaxSurfSize"
+        label="MergeTree: max surface size (vertices)"
+        number_of_elements="1"
+        default_values="10000">
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DoMergeTree"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Segmentations larger than this vertex count are discarded as likely
+          noise or background artifacts.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="UseOtsuSimplification"
+        command="SetUseOtsuSimplification"
+        label="MergeTree: Otsu simplification"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DoMergeTree"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Run a local Otsu threshold on each surface segment to discard dark
+          background vertices before accumulating statistics.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="OtsuBins"
+        command="SetOtsuBins"
+        label="MergeTree: Otsu bins"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="UseOtsuSimplification"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Number of histogram bins for the local Otsu threshold (typical: 64).
+        </Documentation>
+      </IntVectorProperty>
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="StartTimestep" />
         <Property name="EndTimestep" />
@@ -383,6 +615,19 @@ the critical point.</Documentation>
 <!--         <Property name="Do post-proc" /> -->
 <!--         <Property name="Post-proc threshold" /> -->
       </PropertyGroup>
+	  
+	  <PropertyGroup panel_widget="Line" label="Post-processing">
+        <Property name="EnablePostProc" />
+        <Property name="DoLinearize" />
+        <Property name="DoFusion" />
+        <Property name="CosColDegrees" />
+        <Property name="MaxLinkRadius" />
+        <Property name="MaxFrameDist" />
+        <Property name="DoMergeTree" />
+        <Property name="MaxSurfSize" />
+        <Property name="UseOtsuSimplification" />
+        <Property name="OtsuBins" />
+	  </PropertyGroup>
 
       <!-- TTK internals -->
         ${DEBUG_WIDGETS}
