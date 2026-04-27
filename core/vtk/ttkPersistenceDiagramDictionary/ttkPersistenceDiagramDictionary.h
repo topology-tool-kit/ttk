@@ -47,7 +47,6 @@ private:
   double Percent_{0};
 
 public:
-
   static ttkPersistenceDiagramDictionary *New();
 
   vtkTypeMacro(ttkPersistenceDiagramDictionary, ttkAlgorithm);
