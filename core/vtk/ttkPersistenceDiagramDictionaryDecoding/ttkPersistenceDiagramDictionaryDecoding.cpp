@@ -311,4 +311,3 @@ void ttkPersistenceDiagramDictionaryDecoding::GetOutputDiagrams(
     outputCoordinates->InsertNextRow(row);
   }
 }
-
