@@ -255,6 +255,8 @@ int ttkTrackingFromFields::applyPostProcessing(
     output->GetPointData()->GetArray("TimeStep"));
   vtkIntArray *vertexGlobalIdArray = vtkIntArray::SafeDownCast(
     output->GetPointData()->GetArray("VertexGlobalId"));
+  vtkIntArray *criticalTypeArray = vtkIntArray::SafeDownCast(
+    output->GetPointData()->GetArray("CriticalType"));
 
   if(!compIdArray || !timeArray || !vertexGlobalIdArray) {
     this->printErr("Tracking mesh is missing "
@@ -263,15 +265,54 @@ int ttkTrackingFromFields::applyPostProcessing(
     return 0;
   }
 
+  if(EnableCriticalTypeFilter && !criticalTypeArray) {
+    this->printWrn("CriticalType filter is enabled but the tracking mesh "
+                   "does not expose a 'CriticalType' point-data array; "
+                   "the filter will be ignored.");
+  }
+
   const vtkIdType numCells = output->GetNumberOfCells();
   std::map<int, std::vector<vtkIdType>> cellsByTraj;
   for(vtkIdType cellId = 0; cellId < numCells; ++cellId)
     cellsByTraj[compIdArray->GetValue(cellId)].push_back(cellId);
 
+  // Optional filtering by CriticalType. Trajectories produced by
+  // TrackingFromCriticalPoints are homogeneous in critical type by
+  // construction
+  if(EnableCriticalTypeFilter && criticalTypeArray) {
+    vtkNew<vtkIdList> probePts;
+    const int wanted = FilterCriticalType;
+    int kept = 0, dropped = 0;
+    for(auto it = cellsByTraj.begin(); it != cellsByTraj.end();) {
+      const auto &cells = it->second;
+      bool drop = true;
+      if(!cells.empty()) {
+        probePts->Reset();
+        output->GetCellPoints(cells.front(), probePts);
+        if(probePts->GetNumberOfIds() > 0) {
+          const vtkIdType pId = probePts->GetId(0);
+          if(criticalTypeArray->GetValue(pId) == wanted)
+            drop = false;
+        }
+      }
+      if(drop) {
+        it = cellsByTraj.erase(it);
+        ++dropped;
+      } else {
+        ++it;
+        ++kept;
+      }
+    }
+    this->printMsg("CriticalType filter: kept " + std::to_string(kept)
+                   + " trajectories, dropped " + std::to_string(dropped)
+                   + " (target type=" + std::to_string(wanted) + ")");
+  }
+
   const int numTraj = static_cast<int>(cellsByTraj.size());
   std::vector<std::vector<int>> trajTime(numTraj);
   std::vector<std::vector<int>> trajVertexId(numTraj);
   std::vector<std::vector<double>> trajX(numTraj), trajY(numTraj);
+  std::vector<int> trajCriticalType(numTraj, -1);
 
   vtkNew<vtkIdList> cellPointIds;
   auto collectUniqueSortedPointIds
@@ -317,6 +358,8 @@ int ttkTrackingFromFields::applyPostProcessing(
       cx.push_back(xyz[0]);
       cy.push_back(xyz[1]);
     }
+    if(criticalTypeArray && !pointIds.empty())
+      trajCriticalType[tIdx] = criticalTypeArray->GetValue(pointIds.front());
     ++tIdx;
   }
 
@@ -367,6 +410,13 @@ int ttkTrackingFromFields::applyPostProcessing(
 
   const vtkIdType nOut = static_cast<vtkIdType>(finalTraj.size());
 
+  std::vector<int> finalCriticalType(nOut, -1);
+  for(size_t i = 0; i < linearTraj.size() && i < trajCriticalType.size(); ++i) {
+    const int cid = linearTraj[i].finalChainId;
+    if(cid >= 0 && cid < (int)nOut && finalCriticalType[cid] < 0)
+      finalCriticalType[cid] = trajCriticalType[i];
+  }
+
   vtkNew<vtkUnstructuredGrid> newGrid{};
   vtkNew<vtkPoints> newPoints{};
   vtkNew<vtkCellArray> newLines{};
@@ -390,6 +440,7 @@ int ttkTrackingFromFields::applyPostProcessing(
   auto endFrameArr = makeIntArr("EndFrame", nOut);
   auto durationArr = makeIntArr("Duration", nOut);
   auto lengthArr = makeIntArr("ComponentLength", nOut);
+  auto criticalTypeOut = makeIntArr("CriticalType", nOut);
   auto axArr = makeDblArr("ax", nOut);
   auto bxArr = makeDblArr("bx", nOut);
   auto ayArr = makeDblArr("ay", nOut);
@@ -440,6 +491,7 @@ int ttkTrackingFromFields::applyPostProcessing(
     endFrameArr->SetValue(i, eF);
     durationArr->SetValue(i, eF - sF);
     lengthArr->SetValue(i, static_cast<int>(c.criticalPoints.size()));
+    criticalTypeOut->SetValue(i, finalCriticalType[i]);
     axArr->SetValue(i, c.ax);
     bxArr->SetValue(i, c.bx);
     ayArr->SetValue(i, c.ay);
@@ -458,6 +510,7 @@ int ttkTrackingFromFields::applyPostProcessing(
   newGrid->GetCellData()->AddArray(endFrameArr);
   newGrid->GetCellData()->AddArray(durationArr);
   newGrid->GetCellData()->AddArray(lengthArr);
+  newGrid->GetCellData()->AddArray(criticalTypeOut);
   newGrid->GetCellData()->AddArray(axArr);
   newGrid->GetCellData()->AddArray(bxArr);
   newGrid->GetCellData()->AddArray(ayArr);

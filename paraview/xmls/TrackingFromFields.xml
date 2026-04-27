@@ -1,4 +1,3 @@
-
 <ServerManagerConfiguration>
   <!-- This is the server manager configuration XML. It defines the interface to
        our new filter. As a rule of thumb, try to locate the configuration for
@@ -502,6 +501,60 @@ the critical point.</Documentation>
       </IntVectorProperty>
 
       <IntVectorProperty
+        name="EnableCriticalTypeFilter"
+        command="SetEnableCriticalTypeFilter"
+        label="Filter by critical type"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="EnablePostProc"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          When on, only trajectories whose tracked critical type matches
+          'Target critical type' are kept; the others are discarded entirely
+          (they disappear from the output, and from any subsequent fusion or
+          merge-tree pass). Useful to restrict downstream analysis to e.g.
+          local maxima only. When off, all trajectories from the tracker are
+          processed, regardless of their critical type.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="FilterCriticalType"
+        command="SetFilterCriticalType"
+        label="Target critical type"
+        number_of_elements="1"
+        default_values="0">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Local minimum"/>
+          <Entry value="1" text="Saddle 1"/>
+          <Entry value="2" text="Saddle 2"/>
+          <Entry value="3" text="Local maximum"/>
+        </EnumerationDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnableCriticalTypeFilter"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Critical type to keep when 'Filter by critical type' is enabled.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
         name="DoMergeTree"
         command="SetDoMergeTree"
         label="Compute merge-tree surfaces"
@@ -623,6 +676,8 @@ the critical point.</Documentation>
         <Property name="CosColDegrees" />
         <Property name="MaxLinkRadius" />
         <Property name="MaxFrameDist" />
+        <Property name="EnableCriticalTypeFilter" />
+        <Property name="FilterCriticalType" />
         <Property name="DoMergeTree" />
         <Property name="MaxSurfSize" />
         <Property name="UseOtsuSimplification" />
