@@ -515,9 +515,8 @@ the critical point.</Documentation>
         </Hints>
         <Documentation>
           When on, only trajectories whose tracked critical type matches
-          'Target critical type' are kept; the others are discarded entirely
-          (they disappear from the output, and from any subsequent fusion or
-          merge-tree pass). Useful to restrict downstream analysis to e.g.
+          'Target critical type' are kept; the others are discarded entirely. 
+		  Useful to restrict downstream analysis to e.g.
           local maxima only. When off, all trajectories from the tracker are
           processed, regardless of their critical type.
         </Documentation>
