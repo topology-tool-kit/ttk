@@ -154,35 +154,41 @@ int ttk::PostProcessingTracking::correctTrajectory(
   const double maxLinkDist2 = maxRadius_;
 
   for(int i = 0; i < numTraj; ++i) {
-    if(usedAsStart[i] || trajTime[i].empty())
-      continue;
+    if(usedAsStart[i] || trajTime[i].empty()) continue;
+
     const int endFrame = trajTime[i].back();
 
-    double bestDot = similarityThreshold;
-    double bestDist2 = std::numeric_limits<double>::infinity();
-    int bestJ = -1;
-    double bestTime = maxFrameDist_;
+    int    bestJ     = -1;
+    double bestScore = std::numeric_limits<double>::infinity();
+
+    const double dist2Denom  = (maxLinkDist2 > 0.0) ? maxLinkDist2 : 1.0;
+    const double dotDenom    = (1.0 - similarityThreshold > 1e-12)
+                               ? (1.0 - similarityThreshold) : 1.0;
+    const double timeDenom   = (maxFrameDist_ > 0) ? static_cast<double>(maxFrameDist_) : 1.0;
 
     for(int j = 0; j < numTraj; ++j) {
-      if(usedAsEnd[j] || j == i || trajTime[j].empty())
-        continue;
+      if(usedAsEnd[j] || j == i || trajTime[j].empty()) continue;
+
       const int startFrame = trajTime[j].front();
-      const double dist2
-        = dist2AtStartFrame(linearTraj[i], linearTraj[j], startFrame);
-      if(dist2 > maxLinkDist2)
-        continue;
+
+      const double dist2 = dist2AtStartFrame(linearTraj[i], linearTraj[j], startFrame);
+      if(dist2 > maxLinkDist2) continue;
+
       const double dot = dirDot(i, j, meanDx, meanDy, meanDz);
-      if(dot < bestDot)
-        continue;
-      if(!temporalOk(startFrame, endFrame))
-        continue;
-      if(std::abs(endFrame - startFrame) > bestTime)
-        continue;
-      if(dist2 < bestDist2) {
-        bestDot = dot;
-        bestDist2 = dist2;
-        bestJ = j;
-        bestTime = endFrame - startFrame;
+      if(dot < similarityThreshold) continue;
+
+      if(!temporalOk(startFrame, endFrame)) continue;
+
+      const double penDist2 = dist2 / dist2Denom;
+      const double penDot   = (1.0 - dot) / dotDenom;
+      const double penTime  = static_cast<double>(std::abs(endFrame - startFrame))
+                              / timeDenom;
+
+      const double score = penDist2 + penDot + penTime;
+
+      if(score < bestScore) {
+        bestScore = score;
+        bestJ     = j;
       }
     }
     if(bestJ >= 0) {
