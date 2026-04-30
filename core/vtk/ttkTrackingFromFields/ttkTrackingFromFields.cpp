@@ -276,9 +276,6 @@ int ttkTrackingFromFields::applyPostProcessing(
   for(vtkIdType cellId = 0; cellId < numCells; ++cellId)
     cellsByTraj[compIdArray->GetValue(cellId)].push_back(cellId);
 
-  // Optional filtering by CriticalType. Trajectories produced by
-  // TrackingFromCriticalPoints are homogeneous in critical type by
-  // construction
   if(EnableCriticalTypeFilter && criticalTypeArray) {
     vtkNew<vtkIdList> probePts;
     const int wanted = FilterCriticalType;
