@@ -1,0 +1,316 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+        name="ttkPersistenceDiagramDictionary"
+        class="ttkPersistenceDiagramDictionary"
+        label="TTK PersistenceDiagramDictionary">
+      <Documentation
+          long_help="Encodes an ensemble of persistence diagrams by a dictionary and a vector of barycentric coefficients."
+          shorthelp="Persistence Diagrams Dictionary Encoding."
+          >
+        This filter encodes an ensemble of persistence diagrams by a dictionary (much smaller ensemble of PDs) and a vector of barycentric coefficients.
+
+        Related publication: "Wasserstein Dictionaries of Persistence Diagram"
+        Keanu Sisouk, Julie Delon, Julien Tierny
+        IEEE Transactions on Visualization and Computer Graphics.
+        Presented at IEEE VIS 2024.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/persistenceDiagramDictionary/
+
+      </Documentation>
+
+      <InputProperty
+          name="Input"
+                    port_index="0"
+          command="SetInputConnection"
+          multiple_input="1">
+        <!-- clean_command="RemoveAllInputs" -->
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkMultiBlockDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+          name="optional input"
+                    port_index="1"
+          command="SetInputConnection"
+          multiple_input="1">
+        <!-- clean_command="RemoveAllInputs" -->
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkMultiBlockDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Input Atoms (optional)
+        </Documentation>
+      </InputProperty>
+
+
+      <IntVectorProperty name = "AtomNumber_" label = "Number of Atoms" command="SetAtomNumber_" number_of_elements = "1" default_values="3" >
+      <IntRangeDomain name = "Range" min = "0" max = "20" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="BackEnd"
+            value="3"
+            inverse="1"/>
+        </Hints>
+        <Documentation>
+            Set the number of elements in the dictionary.
+        </Documentation>       
+      </IntVectorProperty>
+
+
+      <DoubleVectorProperty name = "Percent_" label = "Percent threshold" command="SetPercent_" number_of_elements = "1" default_values="0" >
+      <DoubleRangeDomain name = "Range" min = "0.0" max = "50.0" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="BackEnd"
+            value="3"
+            inverse="1"/>
+        </Hints>
+        <Documentation>
+            Set the persistence threshold as a percentage of the global persistence of each persistence diagram inputs.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+          name="Critical pairs"
+          label="Critical pairs used"
+          command="SetPairType"
+          number_of_elements="1"
+          default_values="-1" >
+        <EnumerationDomain name="enum">
+          <Entry value="-1" text="All pairs : global clustering"/>
+          <Entry value="0" text="min-saddle pairs"/>
+          <Entry value="1" text="saddle-saddle pairs"/>
+          <Entry value="2" text="saddle-max pairs"/>
+        </EnumerationDomain>
+        <Documentation>
+          Specify the types of critical pairs to be taken into account for the clustering.
+        </Documentation>
+      </IntVectorProperty>
+
+
+      <IntVectorProperty
+         name="BackEnd"
+         label="Initialization BackEnd"
+         command="SetBackEnd"
+         number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced" >
+    <EnumerationDomain name="enum">
+         <Entry value="0" text="Border"/>
+         <Entry value="1" text="Random"/>
+         <Entry value="2" text="First element"/>
+         <Entry value="3" text="Input atom (optional input)"/>
+         <Entry value="4" text="Greddy"/>
+       </EnumerationDomain>
+       <Documentation>
+           Backend for the computation of the dictionary of the persistence diagrams.
+       </Documentation>
+     </IntVectorProperty>
+
+      <IntVectorProperty name = "Seed_" label = "Seed for random init" command="SetSeed_" number_of_elements = "1" default_values="0" >
+      <IntRangeDomain name = "Range" min = "0" max = "1000" />
+      </IntVectorProperty>
+
+      <DoubleVectorProperty name = "CompressionFactor_" label = "Compression factor" command="SetCompressionFactor_" number_of_elements = "1" default_values="1.5" >
+      <DoubleRangeDomain name = "Range" min = "1.0" max = "50.0" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="BackEnd"
+            value="3"
+            inverse="1"/>
+        </Hints>
+        <Documentation>
+            Set the compression factor gained by the encoding process.
+        </Documentation>
+      </DoubleVectorProperty>
+
+        <IntVectorProperty
+        name="OptimizeWeights_"
+        command="SetOptimizeWeights_"
+        label="Optimize weights"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Performs the optimization of the barycentric weights.
+        </Documentation>
+      </IntVectorProperty>
+
+        <IntVectorProperty
+        name="OptimizeAtoms_"
+        command="SetOptimizeAtoms_"
+        label="Optimize atoms"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Performs the optimization of the dictionary.
+        </Documentation>
+      </IntVectorProperty>
+
+
+
+        <IntVectorProperty
+        name="MaxEigenValue_"
+        command="SetMaxEigenValue_"
+        label="Max eigen value strategy"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Set the strategy for choosing the gradient step as the maxium eigen value of the Hessian function.
+        </Documentation>
+      </IntVectorProperty>
+
+        <IntVectorProperty
+        name="ProgBarycenter_"
+        command="SetProgBarycenter_"
+        label="Progressive barycenter"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Performs progressivity when computing barycenters of the dictionary.
+        </Documentation>
+      </IntVectorProperty>
+
+
+
+        <IntVectorProperty
+        name="ProgApproach_"
+        command="SetProgApproach_"
+        label="Progressive approach"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Activate the multi-scaling approach of the Dicitionary method.
+        </Documentation>
+      </IntVectorProperty>
+
+
+        <IntVectorProperty
+        name="StopCondition_"
+        command="SetStopCondition_"
+        label="Stopping condition"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Activate the empiric stopping condition of the optimization.
+        </Documentation>
+      </IntVectorProperty>
+
+        <IntVectorProperty
+        name="CreationFeatures_"
+        command="SetCreationFeatures_"
+        label="Creation of features"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Performs the creation of features in the diagram of the dictionary during the optimization, recommended when using the multi-scaling approach.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="CompressionMode_"
+        command="SetCompressionMode_"
+        label="Compression mode"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Activate the compression mode, it removes the pair so that the size of the dictionary is controled by the compression factor.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="DimReductMode_"
+        command="SetDimReductMode_"
+        label="Dimension reduction mode"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+            Activate the dimension reduction mode, it only works when the number of atom is 3.
+        </Documentation>
+      </IntVectorProperty>
+
+
+      <IntVectorProperty name = "MaxEpoch_" label = "Maximum number of iteration" command="SetMaxEpoch_" number_of_elements = "1" default_values="1000" >
+      <IntRangeDomain name = "Range" min = "0" max = "1000" />
+      </IntVectorProperty>
+
+
+
+      <!-- A string parameter that controls the name of the output array -->
+
+
+      <!-- Create a UI group that contains all input parameter widgets (here only one) -->
+      <PropertyGroup panel_widget="Line" label="Input options">
+
+        <Property name="AtomNumber_" />
+        <Property name="Percent_" />
+        <Property name="Critical pairs" />
+        <Property name="BackEnd" />
+        <Property name="Seed_" />
+        <Property name="MaxEpoch_" />
+        <Property name="OptimizeWeights_" />
+        <Property name="OptimizeAtoms_" />
+        <Property name="MaxEigenValue_" />
+        <Property name="ProgBarycenter_" />
+        <Property name="ProgApproach_" />
+        <Property name="StopCondition_" />
+        <Property name="CreationFeatures_" />
+        <Property name="CompressionMode_" />
+        <Property name="DimReductMode_" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="CompressionFactor_" />
+      </PropertyGroup>
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - Ensemble Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
