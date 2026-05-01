@@ -411,7 +411,8 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
                                       vtkInformationVector **inputVector,
                                       vtkInformationVector *outputVector) {
 
-  const auto input = vtkDataSet::GetData(inputVector[0]);
+  const auto input
+    = vtkDataSet::SafeDownCast(vtkDataSet::GetData(inputVector[0]));
   auto outputCriticalPoints = vtkPolyData::GetData(outputVector, 0);
   auto outputSeparatrices1 = vtkPolyData::GetData(outputVector, 1);
   auto outputSeparatrices2 = vtkPolyData::GetData(outputVector, 2);

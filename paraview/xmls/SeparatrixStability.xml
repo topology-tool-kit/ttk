@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- TODO 11: Add widgets to the ParaView UI that control the member variables of the vtk filter -->
+<!-- NOTE: Unfortunately the widget types and their properties are not well documented. -->
+<!--       The best thing you can do is to look at filters that have similar widgets you require and copy their source code. -->
+<!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkSeparatrixStability" class="ttkSeparatrixStability" label="TTK SeparatrixStability">
+      <Documentation long_help="SeparatrixStability Long" short_help="SeparatrixStability Short">This filter takes as an input a vtkMultiBlockDataSet representing the 1-dimensional separatrices of the Morse-Smale complex for an ensemble dataset. It computes as an output, a copy of the input, with for each separatrix, its rate of occurrence in the ensemble (based on partial isomorphism computations).
+
+      Online examples:
+
+      - https://topology-tool-kit.github.io/examples/molecularVibration/
+
+    </Documentation>
+
+      <InputProperty name="Input" command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkMultiBlockDataSet" />
+        </DataTypeDomain>
+        <InputArrayDomain name="input_array" attribute_type="point" number_of_components="1" />
+        <Documentation>A vtkMultiBlockDataSet representing an ensemble of 1-dimensional separatrices.
+        </Documentation>
+      </InputProperty>
+
+
+      <DoubleVectorProperty
+        name="spx"
+        label="X weight"
+        command="SetPX"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="spx" min="0.0" max="1.0"/>
+        <Documentation>Importance weight for the X component of
+          the extremum (critical point assignment)</Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="spy"
+        label="Y weight"
+        command="SetPY"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="spy" min="0.0" max="1.0"/>
+        <Documentation>Importance weight for the Y component of
+            the extremum (critical point assignment)</Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="spz"
+        label="Z weight"
+        command="SetPZ"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
+        <Documentation>Importance weight for the Z component of
+        the extremum (critical point assignment)</Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="spf"
+        label="F weight"
+        command="SetPF"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
+        <Documentation>Importance weight for the scalar component of
+        the extremum (critical point assignment)</Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+        name="MergeEdgesOnSaddles"
+        command="SetMergeEdgesOnSaddles"
+        label="Merge edges on saddle"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to merge the edges on the saddles points (i.e., concatenating separatrices with a common saddle).
+        </Documentation>
+      </IntVectorProperty> 
+
+      <DoubleVectorProperty
+        name="epsilon"
+        label="Relative destruction cost"
+        command="SetCostDeathBirth"
+        number_of_elements="1"
+        default_values="0.1"
+        panel_visibility="advanced">
+      <Documentation>
+        Relative cost (with regard to the data span, between 0 and 1) associated with the destruction of a critical point. Set this parameter to larger values to allow for larger displacements for a critical point from one field to another. Set this parameter to smaller values to prevent a critical point from jumping too far from one field to another.
+        </Documentation>
+      </DoubleVectorProperty>  
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="spx" />
+        <Property name="spy" />
+        <Property name="spz" />
+        <Property name="spf" />
+        <Property name="MergeEdgesOnSaddles" />
+        <Property name="epsilon" />
+      </PropertyGroup>
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - Ensemble Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

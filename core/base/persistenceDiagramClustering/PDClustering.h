@@ -242,6 +242,13 @@ namespace ttk {
       this->printMsg(msg.str());
     }
 
+    inline void setUseCustomWeights(bool data) {
+      useCustomWeights_ = data;
+    }
+    inline void setCustomWeights(std::vector<double> *pdata) {
+      customWeights_ = pdata;
+    }
+
   protected:
     std::vector<PDBarycenter> barycenter_computer_min_{};
     std::vector<PDBarycenter> barycenter_computer_sad_{};
@@ -322,5 +329,8 @@ namespace ttk {
     std::vector<double> distanceToCentroid_{};
 
     int n_iterations_;
+
+    std::vector<double> *customWeights_{};
+    bool useCustomWeights_{false};
   };
 } // namespace ttk
