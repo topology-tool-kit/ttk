@@ -266,6 +266,7 @@ int ttk::PostProcessingTracking::correctTrajectory(
 
     if(doLinearizeFuse_) {
       LinearTrajectory lineCoef = fitLineCoefForChain(chain);
+      lineCoef.finalChainId = finalId;
       lineCoef.originalTrajId = -1;
       lineCoef.segmentKind = 2;
 

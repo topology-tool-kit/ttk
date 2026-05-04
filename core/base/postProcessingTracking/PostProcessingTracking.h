@@ -50,7 +50,7 @@ namespace ttk {
 
   public:
     /// @brief Linear trajectory: x(t) = ax*t + bx, y(t) = ay*t + by,
-    /// defined on the frame range [startFrame, endFrame].
+    /// defined on the inclusive frame range [startFrame, endFrame].
     struct LinearTrajectory {
       double ax{0.0}, bx{0.0}, ay{0.0}, by{0.0};
       int startFrame{0};
@@ -77,7 +77,7 @@ namespace ttk {
       }
     };
 
-    /// @brief Fusion-link record: trajectory i ends and trajectory j starts,
+    /// @brief Fusion-link record: trajectory i ends and trajectory j starts
     struct FuseRecord {
       int i{-1}, j{-1};
       int endFrame{0};
@@ -93,7 +93,6 @@ namespace ttk {
       return triangulation->preconditionVertexStars();
     }
 
-    // --- Setters ------------------------------------------------------------
 
     inline void setInputScalars(const std::vector<void *> &inputScalars) {inputData_ = inputScalars;}
     inline void setCosCol(double v) {cosCol_ = v;}
@@ -105,7 +104,6 @@ namespace ttk {
     inline void setUseOtsuSimplification(bool v) {useOtsuSimplification_ = v;}
     inline void setOtsuBins(int v) {otsuBins_ = v;}
     
-
     inline void setBoundaryXMin(double v) {boundaryXMin_ = v;}
     inline void setBoundaryXMax(double v) {boundaryXMax_ = v;}
     inline void setBoundaryYMin(double v) {boundaryYMin_ = v;}
@@ -126,13 +124,15 @@ namespace ttk {
     /// @param[out] linearTraj    per-input-trajectory linear fits (with
     ///                           finalChainId set when the segment is part of
     ///                           a fused chain in outputTraj, -1 otherwise)
-    /// @param[out] outputTraj    final trajectory set
+    /// @param[out] outputTraj    final trajectory set (fused chains + un-fused
+    ///                           survivors)
     /// @param[out] fuseRecords   list of i -> j fusion links
     int correctTrajectory(
       const std::vector<std::vector<int>> &trajTime,
       const std::vector<std::vector<int>> &trajVertexId,
       const std::vector<std::vector<double>> &coordsX,
       const std::vector<std::vector<double>> &coordsY,
+      const std::vector<int> &trajCriticalType,
       std::vector<LinearTrajectory> &linearTraj,
       std::vector<LinearTrajectory> &outputTraj,
       std::vector<FuseRecord> &fuseRecords);
@@ -140,7 +140,7 @@ namespace ttk {
     /// @brief Compute merge-tree-based segmentation per trajectory && per frame.
     ///
     /// @param[in]  triangulation   triangulation of the scalar field
-    /// @param[in,out] finalTraj    trajectories to annotate
+    /// @param[in,out] finalTraj    trajectories to annotate 
     /// @param[out] surfMin         per-trajectory minimum surface
     /// @param[out] surfMax         per-trajectory maximum surface
     /// @param[out] surfMean        per-trajectory mean surface
@@ -151,12 +151,13 @@ namespace ttk {
                          std::vector<double> &surfMax,
                          std::vector<double> &surfMean);
 
-
+    /// @brief correctTrajectory + computeMergeTree.
     template <class dataType, class triangulationType>
     int execute(const std::vector<std::vector<int>> &trajTime,
                 const std::vector<std::vector<int>> &trajVertexId,
                 const std::vector<std::vector<double>> &coordsX,
                 const std::vector<std::vector<double>> &coordsY,
+                const std::vector<int> &trajCriticalType,
                 std::vector<LinearTrajectory> &linearTraj,
                 std::vector<LinearTrajectory> &finalTraj,
                 std::vector<FuseRecord> &fuseRecords,
@@ -198,7 +199,7 @@ namespace ttk {
     std::vector<void *> inputData_{};
 
     double cosCol_{0.9};
-    double maxRadius_{225.0}; 
+    double maxRadius_{225.0}; // squared pixel distance
     int maxFrameDist_{30};
     int minFrameDist_{-30};
 
@@ -640,7 +641,7 @@ int ttk::PostProcessingTracking::computeMergeTree(
     return -1;
   }
 
-  // Zero-out contributions where the trajectory collided with another one 
+  // Zero-out contributions from frames where the trajectory collided with another one 
   for(int frame = 0; frame < nFrames; ++frame) {
     for(size_t trajId = 0; trajId < nTraj; ++trajId) {
       if(trajDoublePerFrame[frame][trajId])
@@ -686,6 +687,7 @@ int ttk::PostProcessingTracking::execute(
   const std::vector<std::vector<int>> &trajVertexId,
   const std::vector<std::vector<double>> &coordsX,
   const std::vector<std::vector<double>> &coordsY,
+  const std::vector<int> &trajCriticalType,
   std::vector<LinearTrajectory> &linearTraj,
   std::vector<LinearTrajectory> &finalTraj,
   std::vector<FuseRecord> &fuseRecords,
@@ -698,7 +700,8 @@ int ttk::PostProcessingTracking::execute(
 
   if(doLinearize_ || doFusion_) {
     this->correctTrajectory(trajTime, trajVertexId, coordsX, coordsY,
-                            linearTraj, finalTraj, fuseRecords);
+                            trajCriticalType, linearTraj, finalTraj,
+                            fuseRecords);
   } else {
     const int numTraj = static_cast<int>(trajTime.size());
     linearTraj.assign(numTraj, LinearTrajectory{});
