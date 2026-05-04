@@ -9,16 +9,19 @@ int ttk::PostProcessingTracking::correctTrajectory(
   const std::vector<std::vector<int>> &trajVertexId,
   const std::vector<std::vector<double>> &coordsX,
   const std::vector<std::vector<double>> &coordsY,
+  const std::vector<int> &trajCriticalType,
   std::vector<LinearTrajectory> &linearTraj,
   std::vector<LinearTrajectory> &outputTraj,
   std::vector<FuseRecord> &fuseRecords) {
 
   ttk::Timer timer;
   const int numTraj = static_cast<int>(trajTime.size());
+  const bool useTypeConstraint
+    = (static_cast<int>(trajCriticalType.size()) == numTraj);
   this->printMsg("Linearization and chaining (" + std::to_string(numTraj)
                  + " input trajectories, linearize="
                  + std::to_string(doLinearize_) + ", fuse="
-                 + std::to_string(doFusion_) + ")");
+                 + std::to_string(doFusion_));
 
   auto dirDot = [&](int i, int j, const std::vector<double> &mDx,
                     const std::vector<double> &mDy,
@@ -78,7 +81,6 @@ int ttk::PostProcessingTracking::correctTrajectory(
 #ifdef TTK_ENABLE_EIGEN
     linearRegression(T, X, Y, lineCoef);
 #else
-    // Fallback
     lineCoef = linearTraj[chain.front().i];
 #endif
     lineCoef.startFrame = trajTime[chain[0].i].front();
@@ -168,6 +170,9 @@ int ttk::PostProcessingTracking::correctTrajectory(
 
     for(int j = 0; j < numTraj; ++j) {
       if(usedAsEnd[j] || j == i || trajTime[j].empty()) continue;
+
+      if(useTypeConstraint
+         && trajCriticalType[i] != trajCriticalType[j]) continue;
 
       const int startFrame = trajTime[j].front();
 
@@ -301,4 +306,3 @@ int ttk::PostProcessingTracking::correctTrajectory(
                  1.0, timer.getElapsedTime(), this->threadNumber_);
   return 1;
 }
-

@@ -238,21 +238,6 @@ public:
   vtkGetMacro(MaxFrameDist, int);
   /// @}
 
-  /// @brief When on, only trajectories whose critical type equals
-  /// FilterCriticalType are kept; the others are discarded entirely (they
-  /// disappear from the output).
-  /// @{
-  vtkSetMacro(EnableCriticalTypeFilter, bool);
-  vtkGetMacro(EnableCriticalTypeFilter, bool);
-  /// @}
-
-  /// @brief Critical type to keep when EnableCriticalTypeFilter is on.
-  /// 0 = local minimum, 1 = saddle 1, 2 = saddle 2, 3 = local maximum.
-  /// @{
-  vtkSetMacro(FilterCriticalType, int);
-  vtkGetMacro(FilterCriticalType, int);
-  /// @}
-
 
 
 protected:
@@ -305,8 +290,6 @@ private:
   double CosColDegrees{20.0};
   double MaxLinkRadius{225.0};
   int MaxFrameDist{30};
-  bool EnableCriticalTypeFilter{false};
-  int FilterCriticalType{0};
 
   template <class dataType, class triangulationType>
   int trackWithPersistenceMatching(vtkUnstructuredGrid *output,

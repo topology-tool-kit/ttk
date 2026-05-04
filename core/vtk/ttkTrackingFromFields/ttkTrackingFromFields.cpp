@@ -265,45 +265,10 @@ int ttkTrackingFromFields::applyPostProcessing(
     return 0;
   }
 
-  if(EnableCriticalTypeFilter && !criticalTypeArray) {
-    this->printWrn("CriticalType filter is enabled but the tracking mesh "
-                   "does not expose a 'CriticalType' point-data array; "
-                   "the filter will be ignored.");
-  }
-
   const vtkIdType numCells = output->GetNumberOfCells();
   std::map<int, std::vector<vtkIdType>> cellsByTraj;
   for(vtkIdType cellId = 0; cellId < numCells; ++cellId)
     cellsByTraj[compIdArray->GetValue(cellId)].push_back(cellId);
-
-  if(EnableCriticalTypeFilter && criticalTypeArray) {
-    vtkNew<vtkIdList> probePts;
-    const int wanted = FilterCriticalType;
-    int kept = 0, dropped = 0;
-    for(auto it = cellsByTraj.begin(); it != cellsByTraj.end();) {
-      const auto &cells = it->second;
-      bool drop = true;
-      if(!cells.empty()) {
-        probePts->Reset();
-        output->GetCellPoints(cells.front(), probePts);
-        if(probePts->GetNumberOfIds() > 0) {
-          const vtkIdType pId = probePts->GetId(0);
-          if(criticalTypeArray->GetValue(pId) == wanted)
-            drop = false;
-        }
-      }
-      if(drop) {
-        it = cellsByTraj.erase(it);
-        ++dropped;
-      } else {
-        ++it;
-        ++kept;
-      }
-    }
-    this->printMsg("CriticalType filter: kept " + std::to_string(kept)
-                   + " trajectories, dropped " + std::to_string(dropped)
-                   + " (target type=" + std::to_string(wanted) + ")");
-  }
 
   const int numTraj = static_cast<int>(cellsByTraj.size());
   std::vector<std::vector<int>> trajTime(numTraj);
@@ -397,7 +362,8 @@ int ttkTrackingFromFields::applyPostProcessing(
   std::vector<double> surfMin, surfMax, surfMean;
 
   const int status = ppt.execute<dataType, triangulationType>(
-    trajTime, trajVertexId, trajX, trajY, linearTraj, finalTraj, fuseRecords,
+    trajTime, trajVertexId, trajX, trajY, trajCriticalType,
+    linearTraj, finalTraj, fuseRecords,
     surfMin, surfMax, surfMean, triangulation);
   if(status != 1) {
     this->printWrn("Post-processing returned non-success status; "
