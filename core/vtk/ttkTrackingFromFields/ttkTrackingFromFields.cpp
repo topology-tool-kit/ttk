@@ -475,8 +475,9 @@ int ttkTrackingFromFields::applyPostProcessing(
 
     const vtkIdType p0 = 2 * i + 0;
     const vtkIdType p1 = 2 * i + 1;
-    newPoints->SetPoint(p0, x0, y0, static_cast<double>(sF));
-    newPoints->SetPoint(p1, x1, y1, static_cast<double>(eF));
+    double const spacing = Spacing;
+    newPoints->SetPoint(p0, x0, y0, static_cast<double>(sF*spacing));
+    newPoints->SetPoint(p1, x1, y1, static_cast<double>(eF*spacing));
 
     vtkNew<vtkLine> line{};
     line->GetPointIds()->SetId(0, p0);
