@@ -422,6 +422,37 @@ the critical point.</Documentation>
         </Documentation>
       </IntVectorProperty>
 
+      <IntVectorProperty
+        name="LinearizeFuse"
+        command="SetLinearizeFuse"
+        label="Linearize fused chains"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DoFusion"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          When on, each fused chain is refit as a single global line
+          (SegmentKind = 2). When off, the original linearized segments are
+          preserved (SegmentKind = 0) and a junction segment
+          (SegmentKind = 1, ConnectedComponentId = -1) is inserted between
+          consecutive segments. All segments of a chain share the same TrajId
+          and CriticalType in both modes.
+        </Documentation>
+      </IntVectorProperty>
+
       <DoubleVectorProperty
         name="CosColDegrees"
         command="SetCosColDegrees"
@@ -619,6 +650,7 @@ the critical point.</Documentation>
         <Property name="EnablePostProc" />
         <Property name="DoLinearize" />
         <Property name="DoFusion" />
+        <Property name="LinearizeFuse" />
         <Property name="CosColDegrees" />
         <Property name="MaxLinkRadius" />
         <Property name="MaxFrameDist" />

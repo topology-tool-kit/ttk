@@ -21,7 +21,9 @@ int ttk::PostProcessingTracking::correctTrajectory(
   this->printMsg("Linearization and chaining (" + std::to_string(numTraj)
                  + " input trajectories, linearize="
                  + std::to_string(doLinearize_) + ", fuse="
-                 + std::to_string(doFusion_));
+                 + std::to_string(doFusion_) + ", linearizeFuse="
+                 + std::to_string(doLinearizeFuse_) + ", same-type="
+                 + std::to_string(useTypeConstraint) + ")");
 
   auto dirDot = [&](int i, int j, const std::vector<double> &mDx,
                     const std::vector<double> &mDy,
@@ -125,12 +127,13 @@ int ttk::PostProcessingTracking::correctTrajectory(
   fuseRecords.clear();
 
   if(!doFusion_) {
-    // No chaining
     outputTraj.reserve(numTraj);
     for(int i = 0; i < numTraj; ++i) {
       if(trajTime[i].empty())
         continue;
       LinearTrajectory lt = linearTraj[i];
+      lt.originalTrajId = i;
+      lt.segmentKind = 0;
       lt.criticalPoints.reserve(trajTime[i].size());
       for(size_t k = 0; k < trajTime[i].size(); ++k) {
         lt.criticalPoints.emplace_back(
@@ -138,6 +141,7 @@ int ttk::PostProcessingTracking::correctTrajectory(
           static_cast<ttk::SimplexId>(trajVertexId[i][k]));
       }
       linearTraj[i].finalChainId = static_cast<int>(outputTraj.size());
+      lt.finalChainId = linearTraj[i].finalChainId;
       outputTraj.push_back(std::move(lt));
     }
     this->printMsg("Linearization only (" + std::to_string(outputTraj.size())
@@ -260,24 +264,92 @@ int ttk::PostProcessingTracking::correctTrajectory(
       }
     }
 
-    LinearTrajectory lineCoef = fitLineCoefForChain(chain);
+    if(doLinearizeFuse_) {
+      LinearTrajectory lineCoef = fitLineCoefForChain(chain);
+      lineCoef.originalTrajId = -1;
+      lineCoef.segmentKind = 2;
 
-    const int firstTraj = chain[0].i;
-    for(size_t k = 0; k < trajTime[firstTraj].size(); ++k) {
-      lineCoef.criticalPoints.emplace_back(
-        trajTime[firstTraj][k],
-        static_cast<ttk::SimplexId>(trajVertexId[firstTraj][k]));
-    }
-    for(const auto &rec : chain) {
-      const int tj = rec.j;
-      for(size_t k = 0; k < trajTime[tj].size(); ++k) {
+      const int firstTraj = chain[0].i;
+      for(size_t k = 0; k < trajTime[firstTraj].size(); ++k) {
         lineCoef.criticalPoints.emplace_back(
-          trajTime[tj][k],
-          static_cast<ttk::SimplexId>(trajVertexId[tj][k]));
+          trajTime[firstTraj][k],
+          static_cast<ttk::SimplexId>(trajVertexId[firstTraj][k]));
+      }
+      for(const auto &rec : chain) {
+        const int tj = rec.j;
+        for(size_t k = 0; k < trajTime[tj].size(); ++k) {
+          lineCoef.criticalPoints.emplace_back(
+            trajTime[tj][k],
+            static_cast<ttk::SimplexId>(trajVertexId[tj][k]));
+        }
+      }
+
+      outputTraj.push_back(std::move(lineCoef));
+    } else {
+      const int firstTraj = chain[0].i;
+      {
+        LinearTrajectory seg = linearTraj[firstTraj];
+        seg.startFrame = trajTime[firstTraj].front();
+        seg.endFrame = trajTime[firstTraj].back();
+        seg.finalChainId = finalId;
+        seg.originalTrajId = firstTraj;
+        seg.segmentKind = 0;
+        seg.criticalPoints.reserve(trajTime[firstTraj].size());
+        for(size_t k = 0; k < trajTime[firstTraj].size(); ++k) {
+          seg.criticalPoints.emplace_back(
+            trajTime[firstTraj][k],
+            static_cast<ttk::SimplexId>(trajVertexId[firstTraj][k]));
+        }
+        outputTraj.push_back(std::move(seg));
+      }
+
+      for(const auto &rec : chain) {
+        const int iSeg = rec.i;
+        const int jSeg = rec.j;
+        const int tEnd = trajTime[iSeg].back();
+        const int tStart = trajTime[jSeg].front();
+        const auto &cI = linearTraj[iSeg];
+        const auto &cJ = linearTraj[jSeg];
+
+        LinearTrajectory junction;
+        const double xA = cI.evalX(tEnd);
+        const double yA = cI.evalY(tEnd);
+        const double xB = cJ.evalX(tStart);
+        const double yB = cJ.evalY(tStart);
+        if(tStart != tEnd) {
+          const double dt = static_cast<double>(tStart - tEnd);
+          junction.ax = (xB - xA) / dt;
+          junction.ay = (yB - yA) / dt;
+          junction.bx = xA - junction.ax * static_cast<double>(tEnd);
+          junction.by = yA - junction.ay * static_cast<double>(tEnd);
+        } else {
+          junction.ax = 0.0;
+          junction.ay = 0.0;
+          junction.bx = xA;
+          junction.by = yA;
+        }
+        junction.startFrame = tEnd;
+        junction.endFrame = tStart;
+        junction.finalChainId = finalId;
+        junction.originalTrajId = -1;
+        junction.segmentKind = 1;
+        outputTraj.push_back(std::move(junction));
+
+        LinearTrajectory seg = linearTraj[jSeg];
+        seg.startFrame = trajTime[jSeg].front();
+        seg.endFrame = trajTime[jSeg].back();
+        seg.finalChainId = finalId;
+        seg.originalTrajId = jSeg;
+        seg.segmentKind = 0;
+        seg.criticalPoints.reserve(trajTime[jSeg].size());
+        for(size_t k = 0; k < trajTime[jSeg].size(); ++k) {
+          seg.criticalPoints.emplace_back(
+            trajTime[jSeg][k],
+            static_cast<ttk::SimplexId>(trajVertexId[jSeg][k]));
+        }
+        outputTraj.push_back(std::move(seg));
       }
     }
-
-    outputTraj.push_back(std::move(lineCoef));
   }
 
   for(int i = 0; i < numTraj; ++i) {
@@ -286,6 +358,8 @@ int ttk::PostProcessingTracking::correctTrajectory(
     LinearTrajectory lineCoef = linearTraj[i];
     lineCoef.startFrame = trajTime[i].front();
     lineCoef.endFrame = trajTime[i].back();
+    lineCoef.originalTrajId = i;
+    lineCoef.segmentKind = 0;
     lineCoef.criticalPoints.reserve(trajTime[i].size());
     for(size_t k = 0; k < trajTime[i].size(); ++k) {
       lineCoef.criticalPoints.emplace_back(
@@ -293,6 +367,7 @@ int ttk::PostProcessingTracking::correctTrajectory(
         static_cast<ttk::SimplexId>(trajVertexId[i][k]));
     }
     linearTraj[i].finalChainId = static_cast<int>(outputTraj.size());
+    lineCoef.finalChainId = linearTraj[i].finalChainId;
     outputTraj.push_back(std::move(lineCoef));
   }
 

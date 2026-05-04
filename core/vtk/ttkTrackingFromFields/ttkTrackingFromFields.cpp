@@ -331,6 +331,7 @@ int ttkTrackingFromFields::applyPostProcessing(
 
   ppt.setDoLinearize(DoLinearize);
   ppt.setDoFusion(DoFusion);
+  ppt.setDoLinearizeFuse(LinearizeFuse);
   ppt.setDoMergeTree(DoMergeTree);
 
   const double pi = M_PI;
@@ -373,11 +374,16 @@ int ttkTrackingFromFields::applyPostProcessing(
 
   const vtkIdType nOut = static_cast<vtkIdType>(finalTraj.size());
 
-  std::vector<int> finalCriticalType(nOut, -1);
+  int maxChainId = -1;
+  for(const auto &c : finalTraj) {
+    if(c.finalChainId > maxChainId) maxChainId = c.finalChainId;
+  }
+  const int nChains = maxChainId + 1;
+  std::vector<int> chainCriticalType(std::max(nChains, 0), -1);
   for(size_t i = 0; i < linearTraj.size() && i < trajCriticalType.size(); ++i) {
     const int cid = linearTraj[i].finalChainId;
-    if(cid >= 0 && cid < (int)nOut && finalCriticalType[cid] < 0)
-      finalCriticalType[cid] = trajCriticalType[i];
+    if(cid >= 0 && cid < nChains && chainCriticalType[cid] < 0)
+      chainCriticalType[cid] = trajCriticalType[i];
   }
 
   vtkNew<vtkUnstructuredGrid> newGrid{};
@@ -412,6 +418,7 @@ int ttkTrackingFromFields::applyPostProcessing(
   auto surfMaxArr = makeDblArr("SurfaceMax", nOut);
   auto surfMeanArr = makeDblArr("SurfaceMean", nOut);
   auto compIdOut = makeIntArr("ConnectedComponentId", nOut);
+  auto segmentKindOut = makeIntArr("SegmentKind", nOut);
 
   for(vtkIdType i = 0; i < nOut; ++i) {
     const auto &c = finalTraj[i];
@@ -436,7 +443,7 @@ int ttkTrackingFromFields::applyPostProcessing(
         x1 = a; y1 = b;
       }
     } else {
-      x0 = y0 = x1 = y1 = 0.0;
+      x0 = c.evalX(sF); y0 = c.evalY(sF); x1 = c.evalX(eF); y1 = c.evalY(eF);
     }
 
     const vtkIdType p0 = 2 * i + 0;
@@ -450,12 +457,16 @@ int ttkTrackingFromFields::applyPostProcessing(
     line->GetPointIds()->SetId(1, p1);
     newLines->InsertNextCell(line);
 
-    trajIdArr->SetValue(i, static_cast<int>(i));
+    trajIdArr->SetValue(i, c.finalChainId);
     startFrameArr->SetValue(i, sF);
     endFrameArr->SetValue(i, eF);
     durationArr->SetValue(i, eF - sF);
     lengthArr->SetValue(i, static_cast<int>(c.criticalPoints.size()));
-    criticalTypeOut->SetValue(i, finalCriticalType[i]);
+    {
+      const int cid = c.finalChainId;
+      const int t = (cid >= 0 && cid < nChains) ? chainCriticalType[cid] : -1;
+      criticalTypeOut->SetValue(i, t);
+    }
     axArr->SetValue(i, c.ax);
     bxArr->SetValue(i, c.bx);
     ayArr->SetValue(i, c.ay);
@@ -463,13 +474,15 @@ int ttkTrackingFromFields::applyPostProcessing(
     surfMinArr->SetValue(i, surfMin[i]);
     surfMaxArr->SetValue(i, surfMax[i]);
     surfMeanArr->SetValue(i, surfMean[i]);
-    compIdOut->SetValue(i, static_cast<int>(i));
+    compIdOut->SetValue(i, c.originalTrajId);
+    segmentKindOut->SetValue(i, c.segmentKind);
   }
 
   newGrid->SetPoints(newPoints);
   newGrid->SetCells(VTK_LINE, newLines);
   newGrid->GetCellData()->AddArray(trajIdArr);
   newGrid->GetCellData()->AddArray(compIdOut);
+  newGrid->GetCellData()->AddArray(segmentKindOut);
   newGrid->GetCellData()->AddArray(startFrameArr);
   newGrid->GetCellData()->AddArray(endFrameArr);
   newGrid->GetCellData()->AddArray(durationArr);

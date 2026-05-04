@@ -197,6 +197,16 @@ public:
   vtkGetMacro(DoFusion, bool);
   /// @}
 
+  /// @brief When on, fused chains are refit as a single global line. When off,
+  /// the original linearized segments are preserved and (N-1) explicit
+  /// junction segments are inserted between them; junctions carry
+  /// ConnectedComponentId = -1 and SegmentKind = 1, originals carry
+  /// SegmentKind = 0, refit chains carry SegmentKind = 2.
+  /// @{
+  vtkSetMacro(LinearizeFuse, bool);
+  vtkGetMacro(LinearizeFuse, bool);
+  /// @}
+
   /// @brief Run per-frame merge-tree segmentation and attach surface
   /// statistics (min/max/mean pixel-cell count) to each trajectory cell.
   /// @{
@@ -283,6 +293,7 @@ private:
   bool EnablePostProc{false};
   bool DoLinearize{true};
   bool DoFusion{true};
+  bool LinearizeFuse{true};
   bool DoMergeTree{false};
   bool UseOtsuSimplification{false};
   int OtsuBins{0};
