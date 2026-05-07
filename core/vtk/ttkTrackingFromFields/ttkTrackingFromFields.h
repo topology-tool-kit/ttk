@@ -255,6 +255,9 @@ protected:
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestDataObject(vtkInformation *request,
+                        vtkInformationVector **inputVector,
+                        vtkInformationVector *outputVector) override;
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
@@ -314,8 +317,9 @@ private:
 
   template <class dataType, class triangulationType>
   int applyPostProcessing(vtkUnstructuredGrid *output,
-    							vtkDataSet *input,
-    							const std::vector<vtkDataArray *> &inputScalarFields,
-    							const triangulationType *triangulation);
+                          vtkDataSet *segOutput,
+                          vtkDataSet *input,
+                          const std::vector<vtkDataArray *> &inputScalarFields,
+                          const triangulationType *triangulation);
 
 };

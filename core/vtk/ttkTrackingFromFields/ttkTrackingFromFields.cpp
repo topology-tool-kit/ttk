@@ -3,6 +3,8 @@
 #include <vtkPointData.h>
 #include <vtkIntArray.h>
 #include <vtkLine.h>
+ // #include <vtkNew.h>
+ // #include <vtkSmartPointer.h>
 
 #include <ttkMacros.h>
 #include <ttkTrackingFromFields.h>
@@ -13,13 +15,17 @@ vtkStandardNewMacro(ttkTrackingFromFields);
 
 ttkTrackingFromFields::ttkTrackingFromFields() {
   this->SetNumberOfInputPorts(1);
-  this->SetNumberOfOutputPorts(1);
+  this->SetNumberOfOutputPorts(2);
 }
 
 int ttkTrackingFromFields::FillOutputPortInformation(int port,
                                                      vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
+  }
+  if(port == 1) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
     return 1;
   }
   return 0;
@@ -31,6 +37,38 @@ int ttkTrackingFromFields::FillInputPortInformation(int port,
     return 1;
   }
   return 0;
+}
+
+int ttkTrackingFromFields::RequestDataObject(
+  vtkInformation *ttkNotUsed(request),
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
+
+  vtkInformation *outInfo = outputVector->GetInformationObject(0);
+  if(outInfo&& !vtkUnstructuredGrid::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()))) {
+    vtkNew<vtkUnstructuredGrid> ug;
+    outInfo->Set(vtkDataObject::DATA_OBJECT(), ug);
+  }
+
+  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+  vtkInformation *outInfo1 = outputVector->GetInformationObject(1);
+  if(!inInfo || !outInfo1)
+    return 0;
+
+  vtkDataObject *inputDO = inInfo->Get(vtkDataObject::DATA_OBJECT());
+  vtkDataObject *currentDO = outInfo1->Get(vtkDataObject::DATA_OBJECT());
+
+  if(inputDO == nullptr)
+    return 0;
+
+  if(currentDO == nullptr
+     || !currentDO->IsA(inputDO->GetClassName())) {
+    vtkSmartPointer<vtkDataObject> newDO
+      = vtkSmartPointer<vtkDataObject>::Take(inputDO->NewInstance());
+    outInfo1->Set(vtkDataObject::DATA_OBJECT(), newDO);
+  }
+
+  return 1;
 }
 
 // (*) Persistence-driven approach
@@ -238,6 +276,7 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
 template <class dataType, class triangulationType>
 int ttkTrackingFromFields::applyPostProcessing(
   vtkUnstructuredGrid *output,
+  vtkDataSet *segOutput,
   vtkDataSet *input,
   const std::vector<vtkDataArray *> &inputScalarFields,
   const triangulationType *triangulation) {
@@ -361,11 +400,12 @@ int ttkTrackingFromFields::applyPostProcessing(
   std::vector<ttk::PostProcessingTracking::LinearTrajectory> finalTraj;
   std::vector<ttk::PostProcessingTracking::FuseRecord> fuseRecords;
   std::vector<double> surfMin, surfMax, surfMean;
+  std::vector<std::vector<int>> vertexTrajPerFrame;
 
   const int status = ppt.execute<dataType, triangulationType>(
     trajTime, trajVertexId, trajX, trajY, trajCriticalType,
     linearTraj, finalTraj, fuseRecords,
-    surfMin, surfMax, surfMean, triangulation);
+    surfMin, surfMax, surfMean, vertexTrajPerFrame, triangulation);
   if(status != 1) {
     this->printWrn("Post-processing returned non-success status; "
                    "keeping the raw tracking mesh.");
@@ -500,6 +540,26 @@ int ttkTrackingFromFields::applyPostProcessing(
 
   output->ShallowCopy(newGrid);
 
+  if(DoMergeTree && !vertexTrajPerFrame.empty()) {
+    const vtkIdType nPts = segOutput->GetNumberOfPoints();
+    const int nFrames = static_cast<int>(vertexTrajPerFrame.size());
+
+    for(int frame = 0; frame < nFrames; ++frame) {
+      const auto &labels = vertexTrajPerFrame[frame];
+      if(static_cast<vtkIdType>(labels.size()) != nPts) {
+        this->printWrn("Error size segmentation Output");
+        continue;
+      }
+      vtkNew<vtkIntArray> segArr;
+      segArr->SetName(("Seg_" + std::to_string(frame)).c_str());
+      segArr->SetNumberOfComponents(1);
+      segArr->SetNumberOfTuples(nPts);
+      for(vtkIdType v = 0; v < nPts; ++v)
+        segArr->SetValue(v, labels[v]);
+      segOutput->GetPointData()->AddArray(segArr);
+    }
+  }
+
   this->printMsg("Post-processing ("
                    + std::to_string(nOut) + " output trajectories)",
                  1.0, timer.getElapsedTime(), this->threadNumber_);
@@ -512,19 +572,18 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
                                        vtkInformationVector *outputVector) {
 
   auto input = vtkDataSet::GetData(inputVector[0]);
-  auto output = vtkUnstructuredGrid::GetData(outputVector);
+  auto output = vtkUnstructuredGrid::GetData(outputVector, 0);
+  auto segOutput = vtkDataSet::GetData(outputVector, 1);
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
   if(!triangulation)
     return 0;
 
   this->preconditionTriangulation(triangulation);
 
-  // Test validity of datasets
-  if(input == nullptr || output == nullptr) {
+  if(input == nullptr || output == nullptr || segOutput == nullptr) {
     return -1;
   }
-
-  // Get number and list of inputs.
+  segOutput->ShallowCopy(input);
   std::vector<vtkDataArray *> inputScalarFieldsRaw;
   std::vector<vtkDataArray *> inputScalarFields;
   const auto pointData = input->GetPointData();
@@ -654,7 +713,7 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
     ttkVtkTemplateMacro(
       inputScalarFields[0]->GetDataType(), triangulation->getType(),
       (this->applyPostProcessing<VTK_TT, TTK_TT>(
-        output, input, inputScalarFields,
+        output, segOutput, input, inputScalarFields,
         (TTK_TT *)triangulation->getData())));
   }
   return status;

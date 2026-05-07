@@ -139,17 +139,20 @@ namespace ttk {
 
     /// @brief Compute merge-tree-based segmentation per trajectory && per frame.
     ///
-    /// @param[in]  triangulation   triangulation of the scalar field
-    /// @param[in,out] finalTraj    trajectories to annotate 
-    /// @param[out] surfMin         per-trajectory minimum surface
-    /// @param[out] surfMax         per-trajectory maximum surface
-    /// @param[out] surfMean        per-trajectory mean surface
+    /// @param[in]  triangulation        triangulation of the scalar field
+    /// @param[in,out] finalTraj         trajectories to annotate
+    /// @param[out] surfMin              per-trajectory minimum surface
+    /// @param[out] surfMax              per-trajectory maximum surface
+    /// @param[out] surfMean             per-trajectory mean surface
+    /// @param[out] vertexTrajPerFrame   per-frame, per-vertex labelling:
+    ///                                  -1 = no surface, -2 = collision,
     template <class dataType, class triangulationType>
     int computeMergeTree(const triangulationType *triangulation,
                          const std::vector<LinearTrajectory> &finalTraj,
                          std::vector<double> &surfMin,
                          std::vector<double> &surfMax,
-                         std::vector<double> &surfMean);
+                         std::vector<double> &surfMean,
+                         std::vector<std::vector<int>> &vertexTrajPerFrame);
 
     /// @brief correctTrajectory + computeMergeTree.
     template <class dataType, class triangulationType>
@@ -164,6 +167,7 @@ namespace ttk {
                 std::vector<double> &surfMin,
                 std::vector<double> &surfMax,
                 std::vector<double> &surfMean,
+                std::vector<std::vector<int>> &vertexTrajPerFrame,
                 const triangulationType *triangulation);
 
   protected:
@@ -433,15 +437,18 @@ int ttk::PostProcessingTracking::computeMergeTree(
   const std::vector<LinearTrajectory> &finalTraj,
   std::vector<double> &surfMin,
   std::vector<double> &surfMax,
-  std::vector<double> &surfMean) {
+  std::vector<double> &surfMean,
+  std::vector<std::vector<int>> &vertexTrajPerFrame) {
 
   const size_t nTraj = finalTraj.size();
   surfMin.assign(nTraj, 0.0);
   surfMax.assign(nTraj, 0.0);
   surfMean.assign(nTraj, 0.0);
 
-  if(!doMergeTree_ || nTraj == 0 || inputData_.empty())
+  if(!doMergeTree_ || nTraj == 0 || inputData_.empty()) {
+    vertexTrajPerFrame.clear();
     return 0;
+  }
 
   ttk::Timer globalTimer;
   const ttk::SimplexId nPixels = triangulation->getNumberOfVertices();
@@ -457,6 +464,9 @@ int ttk::PostProcessingTracking::computeMergeTree(
     nFrames, std::vector<double>(nTraj, 0.0));
   std::vector<std::vector<char>> trajDoublePerFrame(
     nFrames, std::vector<char>(nTraj, 0));
+
+  vertexTrajPerFrame.assign(
+    nFrames, std::vector<int>(nPixels, -1));
 
   int globalError = 0;
 
@@ -620,14 +630,20 @@ int ttk::PostProcessingTracking::computeMergeTree(
         surfVal = 1;
       trajSurfPerFrame[frame][trajId] = surfVal;
 
+      const int currentChainId = finalTraj[trajId].finalChainId;
+      auto &localVertexLabel = vertexTrajPerFrame[frame];
+
       for(const auto v : segmentId[segId]) {
         const int check = vertexTraj[v];
-        if(check == -1)
+        if(check == -1) {
           vertexTraj[v] = static_cast<int>(trajId);
-        else if(check != static_cast<int>(trajId)) {
+          if(currentChainId >= 0)
+            localVertexLabel[v] = currentChainId;
+        } else if(check != static_cast<int>(trajId)) {
           localTrajDouble[trajId] = 1;
           if(check >= 0)
             localTrajDouble[check] = 1;
+          localVertexLabel[v] = -2;
         }
       }
     } //trajectory loop
@@ -694,6 +710,7 @@ int ttk::PostProcessingTracking::execute(
   std::vector<double> &surfMin,
   std::vector<double> &surfMax,
   std::vector<double> &surfMean,
+  std::vector<std::vector<int>> &vertexTrajPerFrame,
   const triangulationType *triangulation) {
 
   ttk::Timer timer;
@@ -732,7 +749,10 @@ int ttk::PostProcessingTracking::execute(
 
   if(doMergeTree_) {
     this->computeMergeTree<dataType, triangulationType>(
-      triangulation, finalTraj, surfMin, surfMax, surfMean);
+      triangulation, finalTraj, surfMin, surfMax, surfMean,
+      vertexTrajPerFrame);
+  } else {
+    vertexTrajPerFrame.clear();
   }
 
   this->printMsg("PostProcessingTracking post-processing complete", 1.0,

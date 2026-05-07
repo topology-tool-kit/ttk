@@ -665,6 +665,7 @@ the critical point.</Documentation>
 
       <!-- Outputs -->
       <OutputPort name="Persistence Mesh" index="2" id="port3"/>
+      <OutputPort name="Segmentation" index="1" id="port_seg"/>
 
       <Hints>
         <ShowInMenu category="TTK - Time-varying Scalar Data" />
