@@ -450,17 +450,17 @@ int ttkTrackingFromFields::applyPostProcessing(
   auto startFrameArr = makeIntArr("StartFrame", nOut);
   auto endFrameArr = makeIntArr("EndFrame", nOut);
   auto durationArr = makeIntArr("Duration", nOut);
-  auto lengthArr = makeIntArr("ComponentLength", nOut);
   auto criticalTypeOut = makeIntArr("CriticalType", nOut);
   auto axArr = makeDblArr("ax", nOut);
   auto bxArr = makeDblArr("bx", nOut);
   auto ayArr = makeDblArr("ay", nOut);
   auto byArr = makeDblArr("by", nOut);
+  auto ejecArr = makeDblArr("Ejection", nOut);
   auto surfMinArr = makeDblArr("SurfaceMin", nOut);
   auto surfMaxArr = makeDblArr("SurfaceMax", nOut);
   auto surfMeanArr = makeDblArr("SurfaceMean", nOut);
   auto compIdOut = makeIntArr("ConnectedComponentId", nOut);
-  auto segmentKindOut = makeIntArr("SegmentKind", nOut);
+  auto segmentKindOut = makeIntArr("SegmentKind", nOut); // 0 initial linearize, 1 added link, 2 final Fuse
 
   for(vtkIdType i = 0; i < nOut; ++i) {
     const auto &c = finalTraj[i];
@@ -502,8 +502,7 @@ int ttkTrackingFromFields::applyPostProcessing(
     trajIdArr->SetValue(i, c.finalChainId);
     startFrameArr->SetValue(i, sF);
     endFrameArr->SetValue(i, eF);
-    durationArr->SetValue(i, eF - sF);
-    lengthArr->SetValue(i, static_cast<int>(c.criticalPoints.size()));
+    durationArr->SetValue(i, (eF - sF)+1);
     {
       const int cid = c.finalChainId;
       const int t = (cid >= 0 && cid < nChains) ? chainCriticalType[cid] : -1;
@@ -513,6 +512,7 @@ int ttkTrackingFromFields::applyPostProcessing(
     bxArr->SetValue(i, c.bx);
     ayArr->SetValue(i, c.ay);
     byArr->SetValue(i, c.by);
+	ejecArr->SetValue(i, std::atan(c.ay/c.ax));
     surfMinArr->SetValue(i, surfMin[i]);
     surfMaxArr->SetValue(i, surfMax[i]);
     surfMeanArr->SetValue(i, surfMean[i]);
@@ -528,12 +528,12 @@ int ttkTrackingFromFields::applyPostProcessing(
   newGrid->GetCellData()->AddArray(startFrameArr);
   newGrid->GetCellData()->AddArray(endFrameArr);
   newGrid->GetCellData()->AddArray(durationArr);
-  newGrid->GetCellData()->AddArray(lengthArr);
   newGrid->GetCellData()->AddArray(criticalTypeOut);
   newGrid->GetCellData()->AddArray(axArr);
   newGrid->GetCellData()->AddArray(bxArr);
   newGrid->GetCellData()->AddArray(ayArr);
   newGrid->GetCellData()->AddArray(byArr);
+  newGrid->GetCellData()->AddArray(ejecArr);
   if(DoMergeTree) {
     newGrid->GetCellData()->AddArray(surfMinArr);
     newGrid->GetCellData()->AddArray(surfMaxArr);
