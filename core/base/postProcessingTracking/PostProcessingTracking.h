@@ -90,7 +90,8 @@ namespace ttk {
     int preconditionTriangulation(
       ttk::AbstractTriangulation *triangulation) const {
       triangulation->preconditionVertexNeighbors();
-      return triangulation->preconditionVertexStars();
+      triangulation->preconditionVertexStars();
+      return triangulation->preconditionCellVertices();
     }
 
 
@@ -637,13 +638,39 @@ int ttk::PostProcessingTracking::computeMergeTree(
         const int check = vertexTraj[v];
         if(check == -1) {
           vertexTraj[v] = static_cast<int>(trajId);
-          if(currentChainId >= 0)
-            localVertexLabel[v] = currentChainId;
         } else if(check != static_cast<int>(trajId)) {
           localTrajDouble[trajId] = 1;
           if(check >= 0)
             localTrajDouble[check] = 1;
-          localVertexLabel[v] = -2;
+        }
+      }
+
+      if(currentChainId >= 0) {
+        std::unordered_set<ttk::SimplexId> dilatedSet;
+        dilatedSet.reserve(segmentId[segId].size() * 4);
+        for(const ttk::SimplexId v : segmentId[segId]) {
+          const ttk::SimplexId starCount
+            = triangulation->getVertexStarNumber(v);
+          for(ttk::SimplexId k = 0; k < starCount; ++k) {
+            ttk::SimplexId cellId;
+            triangulation->getVertexStar(v, k, cellId);
+            const int nCellVerts
+              = triangulation->getCellVertexNumber(cellId);
+            for(int cv = 0; cv < nCellVerts; ++cv) {
+              ttk::SimplexId vDil;
+              triangulation->getCellVertex(cellId, cv, vDil);
+              dilatedSet.insert(vDil);
+            }
+          }
+        }
+
+        for(const ttk::SimplexId v : dilatedSet) {
+          const int prev = localVertexLabel[v];
+          if(prev == -1) {
+            localVertexLabel[v] = currentChainId;
+          } else if(prev != currentChainId && prev != -2) {
+            localVertexLabel[v] = -2;
+          }
         }
       }
     } //trajectory loop
