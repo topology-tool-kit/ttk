@@ -90,8 +90,7 @@ namespace ttk {
     int preconditionTriangulation(
       ttk::AbstractTriangulation *triangulation) const {
       triangulation->preconditionVertexNeighbors();
-      triangulation->preconditionVertexStars();
-      return triangulation->preconditionCellVertices();
+      return triangulation->preconditionVertexStars();
     }
 
 
