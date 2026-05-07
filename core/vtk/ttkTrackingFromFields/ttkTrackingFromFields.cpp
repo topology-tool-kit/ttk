@@ -552,8 +552,8 @@ int ttkTrackingFromFields::applyPostProcessing(
         this->printWrn("Error size segmentation Output");
         continue;
       }
-      char segName[16];
-      std::snprintf(segName, sizeof(segName), "%04d", frame);
+      char segName[20];
+      std::snprintf(segName, sizeof(segName), "Seg_%04d", frame);
       vtkNew<vtkIntArray> segArr;
       segArr->SetName(segName);
       segArr->SetNumberOfComponents(1);

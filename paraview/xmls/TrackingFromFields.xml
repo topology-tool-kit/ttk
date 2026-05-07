@@ -663,7 +663,8 @@ the critical point.</Documentation>
       <!-- TTK internals -->
         ${DEBUG_WIDGETS}
 
-      <!-- Outputs -->
+		<!-- Outputs -->
+		<OutputPort name="Tracking" index="0" id="port0"/>
       <OutputPort name="Persistence Mesh" index="2" id="port3"/>
       <OutputPort name="Segmentation" index="1" id="port_seg"/>
 
