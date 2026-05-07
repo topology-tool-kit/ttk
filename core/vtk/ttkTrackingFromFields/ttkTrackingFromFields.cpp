@@ -3,6 +3,8 @@
 #include <vtkPointData.h>
 #include <vtkIntArray.h>
 #include <vtkLine.h>
+
+#include <cstdio>
  // #include <vtkNew.h>
  // #include <vtkSmartPointer.h>
 
@@ -550,8 +552,10 @@ int ttkTrackingFromFields::applyPostProcessing(
         this->printWrn("Error size segmentation Output");
         continue;
       }
+      char segName[16];
+      std::snprintf(segName, sizeof(segName), "%04d", frame);
       vtkNew<vtkIntArray> segArr;
-      segArr->SetName(("Seg_" + std::to_string(frame)).c_str());
+      segArr->SetName(segName);
       segArr->SetNumberOfComponents(1);
       segArr->SetNumberOfTuples(nPts);
       for(vtkIdType v = 0; v < nPts; ++v)
