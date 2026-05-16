@@ -29,6 +29,8 @@
 
 #include <vtkCompositeDataPipeline.h>
 
+using namespace std;
+
 // Pass input type information key
 #include <vtkInformationKey.h>
 vtkInformationKeyMacro(ttkAlgorithm, SAME_DATA_TYPE_AS_INPUT_PORT, Integer);
