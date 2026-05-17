@@ -243,7 +243,7 @@ bool ttkContourAroundPoint::postprocess() {
   ttkUtils::SetVoidArray(
     cinfoArr, _outContoursCinfos.data(), _outContoursCinfos.size(), 1);
 #if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 6, 1)
-  cells->SetData(nc, cinfoArr);
+  cells->ImportLegacyFormat(cinfoArr);
 #else
   cells->SetCells(nc, cinfoArr);
 #endif
