@@ -223,7 +223,7 @@ int finalize(vector<vector<TrackingFromOverlap::Nodes>> &levelTimeNodesMap,
 
     auto cellArray = vtkSmartPointer<vtkCellArray>::New();
 #if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 6, 1)
-    cellArray->SetData(nEdgesT + nEdgesN, cells);
+    cellArray->ImportLegacyFormat(cells);
 #else
     cellArray->SetCells(nEdgesT + nEdgesN, cells);
 #endif
