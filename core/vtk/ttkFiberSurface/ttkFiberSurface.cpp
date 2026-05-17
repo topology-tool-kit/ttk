@@ -119,8 +119,7 @@ int ttkFiberSurface::RequestData(vtkInformation *ttkNotUsed(request),
   vtkCellArray *connectivity = polygon->GetCells();
 
 #if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 6, 1)
-  if(connectivity->GetConnectivityArray()->GetNumberOfTuples() 
-      < cellNumber) {
+  if(connectivity->GetConnectivityArray()->GetNumberOfTuples() < cellNumber) {
 #else
   if(connectivity->GetData()->GetNumberOfTuples() < 3 * cellNumber) {
 #endif
@@ -129,14 +128,14 @@ int ttkFiberSurface::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
 #if !defined(_WIN32) || defined(_WIN32) && defined(VTK_USE_64BIT_IDS)
-  #if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 6, 1)
-    vtkNew<vtkIdTypeArray> legacyFormat;
-    connectivity->ExportLegacyFormat(legacyFormat);
-    const long long int *cellArray = (const long long int *)
-      legacyFormat->GetPointer(0);
-  #else
-    const long long int *cellArray = connectivity->GetData()->GetPointer(0);
-  #endif
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 6, 1)
+  vtkNew<vtkIdTypeArray> legacyFormat;
+  connectivity->ExportLegacyFormat(legacyFormat);
+  const long long int *cellArray
+    = (const long long int *)legacyFormat->GetPointer(0);
+#else
+  const long long int *cellArray = connectivity->GetData()->GetPointer(0);
+#endif
 #else
   int *pt = connectivity->GetPointer();
   long long extra_pt = *pt;

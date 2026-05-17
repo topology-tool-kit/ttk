@@ -42,11 +42,11 @@ static int checkCellTypes(vtkPointSet *object) {
 #endif
   {
     auto cellTypes = vtkSmartPointer<vtkCellTypes>::New();
-    #if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 6, 1)
-      object->GetDistinctCellTypes(cellTypes);
-    #else
-      object->GetCellTypes(cellTypes);
-    #endif
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 6, 1)
+    object->GetDistinctCellTypes(cellTypes);
+#else
+    object->GetCellTypes(cellTypes);
+#endif
     nTypes = cellTypes->GetNumberOfTypes();
   }
 
