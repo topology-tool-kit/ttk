@@ -10,6 +10,7 @@
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkVersionMacros.h>
 
 #include <vtkFloatArray.h>
 #include <vtkIdTypeArray.h>
@@ -241,7 +242,11 @@ bool ttkContourAroundPoint::postprocess() {
   auto cinfoArr = vtkSmartPointer<vtkIdTypeArray>::New();
   ttkUtils::SetVoidArray(
     cinfoArr, _outContoursCinfos.data(), _outContoursCinfos.size(), 1);
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 6, 1)
+  cells->ImportLegacyFormat(cinfoArr);
+#else
   cells->SetCells(nc, cinfoArr);
+#endif
   _outFld->SetCells(ctypes.data(), cells);
 
   // ---- Point data (output 0) ---- //

@@ -7,6 +7,7 @@
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkVersionMacros.h>
 
 #include <ttkFiberSurface.h>
 #include <ttkMacros.h>
@@ -117,13 +118,24 @@ int ttkFiberSurface::RequestData(vtkInformation *ttkNotUsed(request),
   SimplexId const cellNumber = polygon->GetNumberOfCells();
   vtkCellArray *connectivity = polygon->GetCells();
 
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 6, 1)
+  if(connectivity->GetConnectivityArray()->GetNumberOfTuples() < cellNumber) {
+#else
   if(connectivity->GetData()->GetNumberOfTuples() < 3 * cellNumber) {
+#endif
     this->printErr("Error: ill-defined range polygon.");
     return 0;
   }
 
 #if !defined(_WIN32) || defined(_WIN32) && defined(VTK_USE_64BIT_IDS)
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 6, 1)
+  vtkNew<vtkIdTypeArray> legacyFormat;
+  connectivity->ExportLegacyFormat(legacyFormat);
+  const long long int *cellArray
+    = (const long long int *)legacyFormat->GetPointer(0);
+#else
   const long long int *cellArray = connectivity->GetData()->GetPointer(0);
+#endif
 #else
   int *pt = connectivity->GetPointer();
   long long extra_pt = *pt;

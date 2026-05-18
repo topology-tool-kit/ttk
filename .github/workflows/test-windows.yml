@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 env:
-  PV_TAG: v6.0.1-headless
+  PV_TAG: v6.1.0-headless
   PV_REPO: topology-tool-kit/ttk-paraview
   PV_DIR: C:\Program Files\TTK-ParaView
   TTK_DIR: C:\Program Files (x86)\ttk

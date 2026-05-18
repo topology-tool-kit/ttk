@@ -10,7 +10,7 @@
 - New backend for TrackingFromFields (critical point based)
 - Stochastic discrete gradient (IEEE VIS 2012)
 - Fast planar Rips filtration persistence computation
-- Migration to ParaView 6
+- Migration to ParaView 6.1
 - CI updates
 
 ### 1.3.0

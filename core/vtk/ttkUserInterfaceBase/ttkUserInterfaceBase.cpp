@@ -3,6 +3,7 @@
 
 #include <vtkPointData.h>
 #include <vtkTexture.h>
+#include <vtkVersionMacros.h>
 
 #ifndef TTK_INSTALL_ASSETS_DIR
 #define TTK_INSTALL_ASSETS_DIR "."
@@ -92,7 +93,11 @@ int ttkUserInterfaceBase::exportScene(const string &fileName) const {
 
   vtkVRMLExporter *exporter = vtkVRMLExporter::New();
 
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 6, 1)
+  exporter->SetRenderWindow(renderWindow_);
+#else
   exporter->SetInput(renderWindow_);
+#endif
   exporter->SetFileName(fileName.data());
   exporter->Write();
 
