@@ -57,7 +57,6 @@ namespace ttk {
       int endFrame{0};
       int finalChainId{-1};
       int originalTrajId{-1};
-      int segmentKind{0};
 
       std::vector<std::pair<int, ttk::SimplexId>> criticalPoints;
 

@@ -133,7 +133,6 @@ int ttk::PostProcessingTracking::correctTrajectory(
         continue;
       LinearTrajectory lt = linearTraj[i];
       lt.originalTrajId = i;
-      lt.segmentKind = 0;
       lt.criticalPoints.reserve(trajTime[i].size());
       for(size_t k = 0; k < trajTime[i].size(); ++k) {
         lt.criticalPoints.emplace_back(
@@ -268,7 +267,6 @@ int ttk::PostProcessingTracking::correctTrajectory(
       LinearTrajectory lineCoef = fitLineCoefForChain(chain);
       lineCoef.finalChainId = finalId;
       lineCoef.originalTrajId = -1;
-      lineCoef.segmentKind = 2;
 
       const int firstTraj = chain[0].i;
       for(size_t k = 0; k < trajTime[firstTraj].size(); ++k) {
@@ -294,7 +292,6 @@ int ttk::PostProcessingTracking::correctTrajectory(
         seg.endFrame = trajTime[firstTraj].back();
         seg.finalChainId = finalId;
         seg.originalTrajId = firstTraj;
-        seg.segmentKind = 0;
         seg.criticalPoints.reserve(trajTime[firstTraj].size());
         for(size_t k = 0; k < trajTime[firstTraj].size(); ++k) {
           seg.criticalPoints.emplace_back(
@@ -333,7 +330,6 @@ int ttk::PostProcessingTracking::correctTrajectory(
         junction.endFrame = tStart;
         junction.finalChainId = finalId;
         junction.originalTrajId = -1;
-        junction.segmentKind = 1;
         outputTraj.push_back(std::move(junction));
 
         LinearTrajectory seg = linearTraj[jSeg];
@@ -341,7 +337,6 @@ int ttk::PostProcessingTracking::correctTrajectory(
         seg.endFrame = trajTime[jSeg].back();
         seg.finalChainId = finalId;
         seg.originalTrajId = jSeg;
-        seg.segmentKind = 0;
         seg.criticalPoints.reserve(trajTime[jSeg].size());
         for(size_t k = 0; k < trajTime[jSeg].size(); ++k) {
           seg.criticalPoints.emplace_back(
@@ -360,7 +355,6 @@ int ttk::PostProcessingTracking::correctTrajectory(
     lineCoef.startFrame = trajTime[i].front();
     lineCoef.endFrame = trajTime[i].back();
     lineCoef.originalTrajId = i;
-    lineCoef.segmentKind = 0;
     lineCoef.criticalPoints.reserve(trajTime[i].size());
     for(size_t k = 0; k < trajTime[i].size(); ++k) {
       lineCoef.criticalPoints.emplace_back(

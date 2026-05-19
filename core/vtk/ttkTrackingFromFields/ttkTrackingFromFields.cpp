@@ -460,7 +460,6 @@ int ttkTrackingFromFields::applyPostProcessing(
   auto surfMaxArr = makeDblArr("SurfaceMax", nOut);
   auto surfMeanArr = makeDblArr("SurfaceMean", nOut);
   auto compIdOut = makeIntArr("ConnectedComponentId", nOut);
-  auto segmentKindOut = makeIntArr("SegmentKind", nOut); // 0 initial linearize, 1 added link, 2 final Fuse
 
   for(vtkIdType i = 0; i < nOut; ++i) {
     const auto &c = finalTraj[i];
@@ -517,14 +516,12 @@ int ttkTrackingFromFields::applyPostProcessing(
     surfMaxArr->SetValue(i, surfMax[i]);
     surfMeanArr->SetValue(i, surfMean[i]);
     compIdOut->SetValue(i, c.originalTrajId);
-    segmentKindOut->SetValue(i, c.segmentKind);
   }
 
   newGrid->SetPoints(newPoints);
   newGrid->SetCells(VTK_LINE, newLines);
   newGrid->GetCellData()->AddArray(trajIdArr);
   newGrid->GetCellData()->AddArray(compIdOut);
-  newGrid->GetCellData()->AddArray(segmentKindOut);
   newGrid->GetCellData()->AddArray(startFrameArr);
   newGrid->GetCellData()->AddArray(endFrameArr);
   newGrid->GetCellData()->AddArray(durationArr);
