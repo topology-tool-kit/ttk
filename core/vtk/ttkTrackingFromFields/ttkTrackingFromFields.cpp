@@ -285,10 +285,12 @@ int ttkTrackingFromFields::applyPostProcessing(
 
   ttk::Timer timer;
   this->printMsg(ttk::debug::Separator::L2);
-  this->printMsg("Post-processing (linearize="
-                 + std::to_string(DoLinearize)
-                 + ", fuse=" + std::to_string(DoFusion)
-                 + ", mergeTree=" + std::to_string(DoMergeTree) + ")");
+
+  const bool rebuildMesh = (DoLinearize || DoFusion);
+  if(!rebuildMesh && !DoMergeTree) {
+    this->printMsg("Nothing to do: all post-processing flags disabled.");
+    return 1;
+  }
 
   vtkIntArray *compIdArray = vtkIntArray::SafeDownCast(
     output->GetCellData()->GetArray("ConnectedComponentId"));
@@ -312,10 +314,15 @@ int ttkTrackingFromFields::applyPostProcessing(
     cellsByTraj[compIdArray->GetValue(cellId)].push_back(cellId);
 
   const int numTraj = static_cast<int>(cellsByTraj.size());
+  std::vector<int> originalCCIds(numTraj, -1);
   std::vector<std::vector<int>> trajTime(numTraj);
   std::vector<std::vector<int>> trajVertexId(numTraj);
-  std::vector<std::vector<double>> trajX(numTraj), trajY(numTraj);
+  std::vector<std::vector<double>> trajX, trajY;
   std::vector<int> trajCriticalType(numTraj, -1);
+  if(rebuildMesh) {
+    trajX.assign(numTraj, {});
+    trajY.assign(numTraj, {});
+  }
 
   vtkNew<vtkIdList> cellPointIds;
   auto collectUniqueSortedPointIds
@@ -341,25 +348,28 @@ int ttkTrackingFromFields::applyPostProcessing(
 
   size_t tIdx = 0;
   for(const auto &kv : cellsByTraj) {
+    originalCCIds[tIdx] = kv.first;
     std::vector<vtkIdType> pointIds;
     collectUniqueSortedPointIds(kv.second, pointIds);
 
     auto &ts = trajTime[tIdx];
     auto &vid = trajVertexId[tIdx];
-    auto &cx = trajX[tIdx];
-    auto &cy = trajY[tIdx];
     ts.reserve(pointIds.size());
     vid.reserve(pointIds.size());
-    cx.reserve(pointIds.size());
-    cy.reserve(pointIds.size());
+    if(rebuildMesh) {
+      trajX[tIdx].reserve(pointIds.size());
+      trajY[tIdx].reserve(pointIds.size());
+    }
 
     double xyz[3];
     for(const vtkIdType pId : pointIds) {
       ts.push_back(timeArray->GetValue(pId));
       vid.push_back(vertexGlobalIdArray->GetValue(pId));
-      output->GetPoint(pId, xyz);
-      cx.push_back(xyz[0]);
-      cy.push_back(xyz[1]);
+      if(rebuildMesh) {
+        output->GetPoint(pId, xyz);
+        trajX[tIdx].push_back(xyz[0]);
+        trajY[tIdx].push_back(xyz[1]);
+      }
     }
     if(criticalTypeArray && !pointIds.empty())
       trajCriticalType[tIdx] = criticalTypeArray->GetValue(pointIds.front());
@@ -375,8 +385,7 @@ int ttkTrackingFromFields::applyPostProcessing(
   ppt.setDoLinearizeFuse(LinearizeFuse);
   ppt.setDoMergeTree(DoMergeTree);
 
-  const double pi = M_PI;
-  ppt.setCosCol(std::cos(CosColDegrees * pi / 180.0));
+  ppt.setCosCol(std::cos(CosColDegrees * M_PI / 180.0));
   ppt.setMaxRadius(MaxLinkRadius);
   ppt.setMaxFrameDist(MaxFrameDist);
   ppt.setPersistenceThreshold(Tolerance);
@@ -385,7 +394,10 @@ int ttkTrackingFromFields::applyPostProcessing(
   ppt.setOtsuBins(OtsuBins);
 
   double *bounds = input->GetBounds();
-  ppt.setBoundaryXMin(bounds[0]); ppt.setBoundaryXMax(bounds[1]); ppt.setBoundaryYMin(bounds[2]); ppt.setBoundaryYMax(bounds[3]);
+  ppt.setBoundaryXMin(bounds[0]);
+  ppt.setBoundaryXMax(bounds[1]);
+  ppt.setBoundaryYMin(bounds[2]);
+  ppt.setBoundaryYMax(bounds[3]);
 
   ppt.preconditionTriangulation(
     const_cast<triangulationType *>(triangulation));
@@ -398,11 +410,52 @@ int ttkTrackingFromFields::applyPostProcessing(
     ppt.setInputScalars(inputFields);
   }
 
+  std::vector<std::vector<int>> vertexTrajPerFrame;
+
+  // merge-tree segmentation only 
+  if(!rebuildMesh) {
+    std::vector<ttk::PostProcessingTracking::LinearTrajectory> rawTraj;
+    rawTraj.reserve(numTraj);
+    for(int i = 0; i < numTraj; ++i) {
+      if(trajTime[i].empty())
+        continue;
+      ttk::PostProcessingTracking::LinearTrajectory lt{};
+      lt.isLinearized = false;
+      lt.startFrame = trajTime[i].front();
+      lt.endFrame = trajTime[i].back();
+      lt.finalChainId = originalCCIds[i];
+      lt.originalTrajId = originalCCIds[i];
+      lt.criticalPoints.reserve(trajTime[i].size());
+      for(size_t k = 0; k < trajTime[i].size(); ++k)
+        lt.criticalPoints.emplace_back(
+          trajTime[i][k],
+          static_cast<ttk::SimplexId>(trajVertexId[i][k]));
+      rawTraj.push_back(std::move(lt));
+    }
+
+    std::vector<double> surfMin, surfMax, surfMean;
+    const int mtStatus = ppt.computeMergeTree<dataType, triangulationType>(
+      triangulation, rawTraj, surfMin, surfMax, surfMean, vertexTrajPerFrame);
+    if(mtStatus < 0) {
+      this->printWrn("Merge-tree segmentation failed; "
+                     "keeping the raw tracking mesh.");
+      return 0;
+    }
+
+    writeSegmentationArrays(segOutput, vertexTrajPerFrame);
+
+    this->printMsg("Post-processing (merge-tree only, "
+                     + std::to_string(rawTraj.size()) + " trajectories)",
+                   1.0, timer.getElapsedTime(), this->threadNumber_);
+    this->printMsg(ttk::debug::Separator::L2);
+    return 1;
+  }
+
+  // full postprocess pipeline (+ optional merge-tree)
   std::vector<ttk::PostProcessingTracking::LinearTrajectory> linearTraj;
   std::vector<ttk::PostProcessingTracking::LinearTrajectory> finalTraj;
   std::vector<ttk::PostProcessingTracking::FuseRecord> fuseRecords;
   std::vector<double> surfMin, surfMax, surfMean;
-  std::vector<std::vector<int>> vertexTrajPerFrame;
 
   const int status = ppt.execute<dataType, triangulationType>(
     trajTime, trajVertexId, trajX, trajY, trajCriticalType,
@@ -489,9 +542,9 @@ int ttkTrackingFromFields::applyPostProcessing(
 
     const vtkIdType p0 = 2 * i + 0;
     const vtkIdType p1 = 2 * i + 1;
-    double const spacing = Spacing;
-    newPoints->SetPoint(p0, x0, y0, static_cast<double>(sF*spacing));
-    newPoints->SetPoint(p1, x1, y1, static_cast<double>(eF*spacing));
+    const double spacing = Spacing;
+    newPoints->SetPoint(p0, x0, y0, static_cast<double>(sF * spacing));
+    newPoints->SetPoint(p1, x1, y1, static_cast<double>(eF * spacing));
 
     vtkNew<vtkLine> line{};
     line->GetPointIds()->SetId(0, p0);
@@ -501,7 +554,7 @@ int ttkTrackingFromFields::applyPostProcessing(
     trajIdArr->SetValue(i, c.finalChainId);
     startFrameArr->SetValue(i, sF);
     endFrameArr->SetValue(i, eF);
-    durationArr->SetValue(i, (eF - sF)+1);
+    durationArr->SetValue(i, (eF - sF) + 1);
     {
       const int cid = c.finalChainId;
       const int t = (cid >= 0 && cid < nChains) ? chainCriticalType[cid] : -1;
@@ -511,7 +564,7 @@ int ttkTrackingFromFields::applyPostProcessing(
     bxArr->SetValue(i, c.bx);
     ayArr->SetValue(i, c.ay);
     byArr->SetValue(i, c.by);
-	ejecArr->SetValue(i, std::atan(c.ay/c.ax));
+    ejecArr->SetValue(i, std::atan(c.ay / c.ax));
     surfMinArr->SetValue(i, surfMin[i]);
     surfMaxArr->SetValue(i, surfMax[i]);
     surfMeanArr->SetValue(i, surfMean[i]);
@@ -539,33 +592,40 @@ int ttkTrackingFromFields::applyPostProcessing(
 
   output->ShallowCopy(newGrid);
 
-  if(DoMergeTree && !vertexTrajPerFrame.empty()) {
-    const vtkIdType nPts = segOutput->GetNumberOfPoints();
-    const int nFrames = static_cast<int>(vertexTrajPerFrame.size());
+  if(DoMergeTree)
+    writeSegmentationArrays(segOutput, vertexTrajPerFrame);
 
-    for(int frame = 0; frame < nFrames; ++frame) {
-      const auto &labels = vertexTrajPerFrame[frame];
-      if(static_cast<vtkIdType>(labels.size()) != nPts) {
-        this->printWrn("Error size segmentation Output");
-        continue;
-      }
-      char segName[20];
-      std::snprintf(segName, sizeof(segName), "Seg_%04d", frame);
-      vtkNew<vtkIntArray> segArr;
-      segArr->SetName(segName);
-      segArr->SetNumberOfComponents(1);
-      segArr->SetNumberOfTuples(nPts);
-      for(vtkIdType v = 0; v < nPts; ++v)
-        segArr->SetValue(v, labels[v]);
-      segOutput->GetPointData()->AddArray(segArr);
-    }
-  }
-
-  this->printMsg("Post-processing ("
-                   + std::to_string(nOut) + " output trajectories)",
-                 1.0, timer.getElapsedTime(), this->threadNumber_);
   this->printMsg(ttk::debug::Separator::L2);
   return 1;
+}
+
+void ttkTrackingFromFields::writeSegmentationArrays(
+  vtkDataSet *segOutput,
+  const std::vector<std::vector<int>> &vertexTrajPerFrame) {
+
+  if(vertexTrajPerFrame.empty())
+    return;
+
+  const vtkIdType nPts = segOutput->GetNumberOfPoints();
+  const int nFrames = static_cast<int>(vertexTrajPerFrame.size());
+
+  for(int frame = 0; frame < nFrames; ++frame) {
+    const auto &labels = vertexTrajPerFrame[frame];
+    if(static_cast<vtkIdType>(labels.size()) != nPts) {
+      this->printWrn("Segmentation output size mismatch on frame "
+                     + std::to_string(frame));
+      continue;
+    }
+    char segName[20];
+    std::snprintf(segName, sizeof(segName), "Seg_%04d", frame);
+    vtkNew<vtkIntArray> segArr;
+    segArr->SetName(segName);
+    segArr->SetNumberOfComponents(1);
+    segArr->SetNumberOfTuples(nPts);
+    for(vtkIdType v = 0; v < nPts; ++v)
+      segArr->SetValue(v, labels[v]);
+    segOutput->GetPointData()->AddArray(segArr);
+  }
 }
 
 int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),

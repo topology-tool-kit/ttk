@@ -4,7 +4,7 @@
 /// \date April 2026
 ///
 /// \brief TTK processing package for post-processing tracked trajectories:
-/// linearization, fusion (chaining), and merge-tree-based surface statistics.
+/// linearization, fusion (chaining), and merge-tree-based segmentation statistics.
 ///
 /// This module takes the initial trajectories produced by an upstream tracker
 /// (TrackingFromFields) and refines them:
@@ -13,7 +13,7 @@
 ///   - fusion: greedily chain temporally-adjacent, directionally-consistent
 ///     linearized segments into longer trajectories;
 ///   - merge-tree segmentation: per-frame, compute a merge tree of the scalar
-///     field and associate each trajectory to a surface segment
+///     field and associate each trajectory 
 ///
 /// \sa ttk::TrackingFromFields
 /// \sa ttk::TrackingFromCriticalPoints
@@ -57,6 +57,7 @@ namespace ttk {
       int endFrame{0};
       int finalChainId{-1};
       int originalTrajId{-1};
+      bool isLinearized{true};
 
       std::vector<std::pair<int, ttk::SimplexId>> criticalPoints;
 
@@ -453,7 +454,7 @@ int ttk::PostProcessingTracking::computeMergeTree(
   const ttk::SimplexId nPixels = triangulation->getNumberOfVertices();
   const int nFrames = static_cast<int>(inputData_.size());
 
-  this->printMsg("Merge-tree surface segmentation ("
+  this->printMsg("Merge-tree segmentation ("
                  + std::to_string(nFrames) + " frames, "
                  + std::to_string(nPixels) + " vertices, "
                  + std::to_string(nTraj) + " trajectories)");
@@ -593,7 +594,8 @@ int ttk::PostProcessingTracking::computeMergeTree(
 
       ttk::SimplexId vId = traj.getOriginalVertex(frame);
       if(vId < 0) {
-        // Fall back to the linearized position at this frame
+        if(!traj.isLinearized)
+          continue;
         const double x = traj.evalX(frame);
         if(x < boundaryXMin_ || x > boundaryXMax_ + 1)
           continue;
@@ -672,9 +674,6 @@ int ttk::PostProcessingTracking::computeMergeTree(
         }
       }
     } //trajectory loop
-
-    this->printMsg("Frame " + std::to_string(frame) + " done", 1.0,
-                   frameTimer.getElapsedTime(), 1);
   } // frame loop
 
   if(globalError != 0) {
@@ -717,7 +716,7 @@ int ttk::PostProcessingTracking::computeMergeTree(
     }
   }
 
-  this->printMsg("Merge-tree surface segmentation complete", 1.0,
+  this->printMsg("Merge-tree segmentation complete", 1.0,
                  globalTimer.getElapsedTime(), this->threadNumber_);
   return 0;
 }
@@ -740,32 +739,9 @@ int ttk::PostProcessingTracking::execute(
 
   ttk::Timer timer;
 
-  if(doLinearize_ || doFusion_) {
-    this->correctTrajectory(trajTime, trajVertexId, coordsX, coordsY,
-                            trajCriticalType, linearTraj, finalTraj,
-                            fuseRecords);
-  } else {
-    const int numTraj = static_cast<int>(trajTime.size());
-    linearTraj.assign(numTraj, LinearTrajectory{});
-    finalTraj.clear();
-    finalTraj.reserve(numTraj);
-    for(int i = 0; i < numTraj; ++i) {
-      if(trajTime[i].empty())
-        continue;
-      LinearTrajectory lt{};
-      lt.startFrame = trajTime[i].front();
-      lt.endFrame = trajTime[i].back();
-      lt.criticalPoints.reserve(trajTime[i].size());
-      for(size_t k = 0; k < trajTime[i].size(); ++k)
-        lt.criticalPoints.emplace_back(
-          trajTime[i][k],
-          static_cast<ttk::SimplexId>(trajVertexId[i][k]));
-      linearTraj[i] = lt;
-      linearTraj[i].finalChainId = static_cast<int>(finalTraj.size());
-      finalTraj.push_back(lt);
-    }
-    fuseRecords.clear();
-  }
+  this->correctTrajectory(trajTime, trajVertexId, coordsX, coordsY,
+                          trajCriticalType, linearTraj, finalTraj,
+                          fuseRecords);
 
   const int numFinal = static_cast<int>(finalTraj.size());
   surfMin.assign(numFinal, 0.0);

@@ -19,11 +19,7 @@ int ttk::PostProcessingTracking::correctTrajectory(
   const bool useTypeConstraint
     = (static_cast<int>(trajCriticalType.size()) == numTraj);
   this->printMsg("Linearization and chaining (" + std::to_string(numTraj)
-                 + " input trajectories, linearize="
-                 + std::to_string(doLinearize_) + ", fuse="
-                 + std::to_string(doFusion_) + ", linearizeFuse="
-                 + std::to_string(doLinearizeFuse_) + ", same-type="
-                 + std::to_string(useTypeConstraint) + ")");
+                 + " input trajectories" + ")");
 
   auto dirDot = [&](int i, int j, const std::vector<double> &mDx,
                     const std::vector<double> &mDy,

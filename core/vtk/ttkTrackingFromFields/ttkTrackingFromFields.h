@@ -321,4 +321,8 @@ private:
                           const std::vector<vtkDataArray *> &inputScalarFields,
                           const triangulationType *triangulation);
 
+  void writeSegmentationArrays(
+    vtkDataSet *segOutput,
+    const std::vector<std::vector<int>> &vertexTrajPerFrame);
+
 };
