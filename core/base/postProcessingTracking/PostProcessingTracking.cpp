@@ -21,12 +21,6 @@ int ttk::PostProcessingTracking::correctTrajectory(
   this->printMsg("Linearization and chaining (" + std::to_string(numTraj)
                  + " input trajectories" + ")");
 
-  auto dirDot = [&](int i, int j, const std::vector<double> &mDx,
-                    const std::vector<double> &mDy,
-                    const std::vector<double> &mDz) -> double {
-    return mDx[i] * mDx[j] + mDy[i] * mDy[j] + mDz[i] * mDz[j];
-  };
-
   auto temporalOk = [&](int sFrame, int eFrame) -> bool {
     return (sFrame - eFrame > minFrameDist_)
            && (sFrame - eFrame < maxFrameDist_);
@@ -145,8 +139,8 @@ int ttk::PostProcessingTracking::correctTrajectory(
     return 1;
   }
 
-  std::vector<double> meanDx(numTraj), meanDy(numTraj), meanDz(numTraj);
-  computeMeanUnitDirectionLinear(linearTraj, meanDx, meanDy, meanDz);
+  std::vector<std::array<double, 3>> meanDir(numTraj);
+  computeMeanUnitDirectionLinear(linearTraj, meanDir);
 
   fuseRecords.reserve(numTraj);
   std::vector<char> usedAsStart(numTraj, false), usedAsEnd(numTraj, false);
@@ -178,7 +172,8 @@ int ttk::PostProcessingTracking::correctTrajectory(
       const double dist2 = dist2AtStartFrame(linearTraj[i], linearTraj[j], startFrame);
       if(dist2 > maxLinkDist2) continue;
 
-      const double dot = dirDot(i, j, meanDx, meanDy, meanDz);
+      const double dot = ttk::Geometry::dotProduct<double>(
+        meanDir[i].data(), meanDir[j].data(), 3);
       if(dot < similarityThreshold) continue;
 
       if(!temporalOk(startFrame, endFrame)) continue;

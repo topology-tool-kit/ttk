@@ -4,6 +4,7 @@ ttk_add_base_library(postProcessingTracking
   HEADERS
     PostProcessingTracking.h
   DEPENDS
+	geometry
     triangulation
     localizedTopologicalSimplification
     exTreeM

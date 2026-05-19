@@ -22,6 +22,7 @@
 
 #include <DataTypes.h>
 #include <Debug.h>
+#include <Geometry.h>
 #include <Timer.h>
 #include <Triangulation.h>
 
@@ -36,6 +37,7 @@
 #endif
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <limits>
 #include <map>
@@ -180,9 +182,7 @@ namespace ttk {
 
     int computeMeanUnitDirectionLinear(
       const std::vector<LinearTrajectory> &newTraj,
-      std::vector<double> &meanDx,
-      std::vector<double> &meanDy,
-      std::vector<double> &meanDz);
+      std::vector<std::array<double, 3>> &meanDir);
 
     int computeSurfaceCellCount(
       const std::vector<ttk::SimplexId> &surfVertices,
@@ -257,20 +257,15 @@ inline int ttk::PostProcessingTracking::linearRegression(
 
 inline int ttk::PostProcessingTracking::computeMeanUnitDirectionLinear(
   const std::vector<LinearTrajectory> &newTraj,
-  std::vector<double> &meanDx,
-  std::vector<double> &meanDy,
-  std::vector<double> &meanDz) {
+  std::vector<std::array<double, 3>> &meanDir) {
   const size_t nTraj = newTraj.size();
-  meanDx.assign(nTraj, 0.0);
-  meanDy.assign(nTraj, 0.0);
-  meanDz.assign(nTraj, 0.0);
+  meanDir.assign(nTraj, {0.0, 0.0, 0.0});
   for(size_t i = 0; i < nTraj; ++i) {
     const auto &t = newTraj[i];
-    const double mag = std::sqrt(t.ax * t.ax + t.ay * t.ay + 1.0);
+    std::array<double, 3> v{t.ax, t.ay, 1.0};
+    const double mag = ttk::Geometry::magnitude<double>(v.data(), 3);
     if(mag > 0.0) {
-      meanDx[i] = t.ax / mag;
-      meanDy[i] = t.ay / mag;
-      meanDz[i] = 1.0 / mag;
+      ttk::Geometry::scaleVector<double>(v.data(), 1.0 / mag, meanDir[i].data(), 3);
     }
   }
   return 1;

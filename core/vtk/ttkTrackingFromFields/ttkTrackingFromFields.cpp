@@ -508,10 +508,9 @@ int ttkTrackingFromFields::applyPostProcessing(
   auto bxArr = makeDblArr("bx", nOut);
   auto ayArr = makeDblArr("ay", nOut);
   auto byArr = makeDblArr("by", nOut);
-  auto ejecArr = makeDblArr("Ejection", nOut);
-  auto surfMinArr = makeDblArr("SurfaceMin", nOut);
-  auto surfMaxArr = makeDblArr("SurfaceMax", nOut);
-  auto surfMeanArr = makeDblArr("SurfaceMean", nOut);
+  auto surfMinArr = makeDblArr("SegmentationMin", nOut);
+  auto surfMaxArr = makeDblArr("SegmentationMax", nOut);
+  auto surfMeanArr = makeDblArr("SegmentationMean", nOut);
   auto compIdOut = makeIntArr("ConnectedComponentId", nOut);
 
   for(vtkIdType i = 0; i < nOut; ++i) {
@@ -564,7 +563,6 @@ int ttkTrackingFromFields::applyPostProcessing(
     bxArr->SetValue(i, c.bx);
     ayArr->SetValue(i, c.ay);
     byArr->SetValue(i, c.by);
-    ejecArr->SetValue(i, std::atan(c.ay / c.ax));
     surfMinArr->SetValue(i, surfMin[i]);
     surfMaxArr->SetValue(i, surfMax[i]);
     surfMeanArr->SetValue(i, surfMean[i]);
@@ -583,7 +581,6 @@ int ttkTrackingFromFields::applyPostProcessing(
   newGrid->GetCellData()->AddArray(bxArr);
   newGrid->GetCellData()->AddArray(ayArr);
   newGrid->GetCellData()->AddArray(byArr);
-  newGrid->GetCellData()->AddArray(ejecArr);
   if(DoMergeTree) {
     newGrid->GetCellData()->AddArray(surfMinArr);
     newGrid->GetCellData()->AddArray(surfMaxArr);
