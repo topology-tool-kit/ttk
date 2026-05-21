@@ -517,7 +517,9 @@ int ttkTrackingFromFields::applyPostProcessing(
     const auto &c = finalTraj[i];
 
     double x0, y0, x1, y1;
-    const int sF = c.startFrame;
+	int sF;
+	if (DoStartFrame && (DoLinearize || LinearizeFuse)) {sF = StartFrame;}
+    else {sF = c.startFrame;}
     const int eF = c.endFrame;
     if(DoLinearize) {
       x0 = c.evalX(sF); y0 = c.evalY(sF); x1 = c.evalX(eF); y1 = c.evalY(eF);
@@ -542,6 +544,7 @@ int ttkTrackingFromFields::applyPostProcessing(
     const vtkIdType p0 = 2 * i + 0;
     const vtkIdType p1 = 2 * i + 1;
     const double spacing = Spacing;
+
     newPoints->SetPoint(p0, x0, y0, static_cast<double>(sF * spacing));
     newPoints->SetPoint(p1, x1, y1, static_cast<double>(eF * spacing));
 

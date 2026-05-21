@@ -448,6 +448,58 @@ the critical point.</Documentation>
         </Documentation>
       </IntVectorProperty>
 
+      <IntVectorProperty
+        name="DoStartFrame"
+        command="SetDoStartFrame"
+        label="Change Start Frame"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DoLinearize"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Change starting timestep of each trajectories 
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="StartFrame"
+        command="SetStartFrame"
+        label="StartFrame"
+        number_of_elements="1"
+        default_values="0">
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DoStartFrame"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+         	Start Frame of each trajectory 
+        </Documentation>
+	</IntVectorProperty>
+
+
       <DoubleVectorProperty
         name="CosColDegrees"
         command="SetCosColDegrees"
@@ -646,7 +698,9 @@ the critical point.</Documentation>
         <Property name="LinearizeFuse" />
         <Property name="CosColDegrees" />
         <Property name="MaxLinkRadius" />
-        <Property name="MaxFrameDist" />
+		<Property name="MaxFrameDist" />
+		<Property name="DoStartFrame" />
+		<Property name="StartFrame" />
         <Property name="DoMergeTree" />
         <Property name="MaxSurfSize" />
         <Property name="UseOtsuSimplification" />

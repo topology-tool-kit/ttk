@@ -206,6 +206,20 @@ public:
   vtkGetMacro(LinearizeFuse, bool);
   /// @}
 
+  /// @brief When on, change the starting Frame of each trajectory
+  /// i.e. change z value for the first point of each line in 
+  /// trajectory output
+  /// @{
+  vtkSetMacro(DoStartFrame, bool);
+  vtkGetMacro(DoStartFrame, bool);
+  /// @}
+
+  /// @brief Starting Frame value if DoStartFrame==1
+  /// @{
+  vtkSetMacro(StartFrame, int);
+  vtkGetMacro(StartFrame, int);
+  /// @}
+
   /// @brief Run per-frame merge-tree segmentation and attach surface
   /// statistics (min/max/mean pixel-cell count) to each trajectory cell.
   /// @{
@@ -296,6 +310,8 @@ private:
   bool DoLinearize{true};
   bool DoFusion{true};
   bool LinearizeFuse{true};
+  bool DoStartFrame{false};
+  bool StartFrame{0};
   bool DoMergeTree{false};
   bool UseOtsuSimplification{false};
   int OtsuBins{0};
