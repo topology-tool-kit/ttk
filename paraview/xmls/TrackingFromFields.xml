@@ -399,7 +399,7 @@ the critical point.</Documentation>
         </Hints>
         <Documentation>
           Fit a 2D line (x(t)=ax*t+bx, y(t)=ay*t+by) through each trajectory
-          point cloud and replace the polyline by its linearized endpoints.
+          point cloud.
         </Documentation>
       </IntVectorProperty>
 
@@ -444,19 +444,14 @@ the critical point.</Documentation>
           </PropertyWidgetDecorator>
         </Hints>
         <Documentation>
-          When on, each fused chain is refit as a single global line
-          (SegmentKind = 2). When off, the original linearized segments are
-          preserved (SegmentKind = 0) and a junction segment
-          (SegmentKind = 1, ConnectedComponentId = -1) is inserted between
-          consecutive segments. All segments of a chain share the same TrajId
-          and CriticalType in both modes.
+          Each fused chain is refit as a single global line.
         </Documentation>
       </IntVectorProperty>
 
       <DoubleVectorProperty
         name="CosColDegrees"
         command="SetCosColDegrees"
-        label="Fusion: max angular deviation (deg)"
+        label="Max angular (°)"
         number_of_elements="1"
         default_values="20.0">
         <Hints>
@@ -475,14 +470,14 @@ the critical point.</Documentation>
         </Hints>
         <Documentation>
           Maximum angular deviation (degrees) between two trajectory segments
-          allowed for chaining. Internally converted to a cosine threshold.
+          allowed for chaining.
         </Documentation>
       </DoubleVectorProperty>
 
       <DoubleVectorProperty
         name="MaxLinkRadius"
         command="SetMaxLinkRadius"
-        label="Fusion: max link radius² (px²)"
+        label="Max link (px)"
         number_of_elements="1"
         default_values="225.0">
         <Hints>
@@ -508,7 +503,7 @@ the critical point.</Documentation>
       <IntVectorProperty
         name="MaxFrameDist"
         command="SetMaxFrameDist"
-        label="Fusion: max frame gap"
+        label="Max frame gap"
         number_of_elements="1"
         default_values="30">
         <Hints>
@@ -534,7 +529,7 @@ the critical point.</Documentation>
       <IntVectorProperty
         name="DoMergeTree"
         command="SetDoMergeTree"
-        label="Compute merge-tree surfaces"
+        label="Compute merge-tree segmentation"
         number_of_elements="1"
         default_values="0">
         <BooleanDomain name="bool"/>
@@ -546,16 +541,14 @@ the critical point.</Documentation>
         </Hints>
         <Documentation>
           Compute a per-frame merge tree  and
-          associate each trajectory to its surface segment at each frame. Adds
-          statistics to the
-          trajectory cell-data.
+          associate each trajectory to its surface segment at each frame.
         </Documentation>
       </IntVectorProperty>
 
       <IntVectorProperty
         name="MaxSurfSize"
         command="SetMaxSurfSize"
-        label="MergeTree: max surface size (vertices)"
+        label="Max surface size"
         number_of_elements="1"
         default_values="10000">
         <Hints>
@@ -581,7 +574,7 @@ the critical point.</Documentation>
       <IntVectorProperty
         name="UseOtsuSimplification"
         command="SetUseOtsuSimplification"
-        label="MergeTree: Otsu simplification"
+        label="Otsu simplification"
         number_of_elements="1"
         default_values="0"
         panel_visibility="advanced">
@@ -609,9 +602,9 @@ the critical point.</Documentation>
       <IntVectorProperty
         name="OtsuBins"
         command="SetOtsuBins"
-        label="MergeTree: Otsu bins"
+        label="Otsu bins"
         number_of_elements="1"
-        default_values="0"
+        default_values="40"
         panel_visibility="advanced">
         <Hints>
           <PropertyWidgetDecorator type="CompositeDecorator">
@@ -628,7 +621,7 @@ the critical point.</Documentation>
           </PropertyWidgetDecorator>
         </Hints>
         <Documentation>
-          Number of histogram bins for the local Otsu threshold (typical: 64).
+          Number of histogram bins for the local Otsu threshold.
         </Documentation>
       </IntVectorProperty>
 
