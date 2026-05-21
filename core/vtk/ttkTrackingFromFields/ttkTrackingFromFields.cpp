@@ -554,9 +554,9 @@ int ttkTrackingFromFields::applyPostProcessing(
     newLines->InsertNextCell(line);
 
     trajIdArr->SetValue(i, c.finalChainId);
-    startFrameArr->SetValue(i, sF);
+    startFrameArr->SetValue(i, c.startFrame);
     endFrameArr->SetValue(i, eF);
-    durationArr->SetValue(i, (eF - sF) + 1);
+    durationArr->SetValue(i, (eF - c.startFrame) + 1);
     {
       const int cid = c.finalChainId;
       const int t = (cid >= 0 && cid < nChains) ? chainCriticalType[cid] : -1;
