@@ -311,7 +311,7 @@ private:
   bool DoFusion{true};
   bool LinearizeFuse{true};
   bool DoStartFrame{false};
-  bool StartFrame{0};
+  int StartFrame{0};
   bool DoMergeTree{false};
   bool UseOtsuSimplification{false};
   int OtsuBins{0};
