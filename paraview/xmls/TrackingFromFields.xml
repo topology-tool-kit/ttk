@@ -694,11 +694,11 @@ the critical point.</Documentation>
 	  <PropertyGroup panel_widget="Line" label="Post-processing">
         <Property name="EnablePostProc" />
         <Property name="DoLinearize" />
-        <Property name="DoFusion" />
-        <Property name="LinearizeFuse" />
-        <Property name="CosColDegrees" />
-        <Property name="MaxLinkRadius" />
+		<Property name="DoFusion" />
+		<Property name="CosColDegrees" />
+		<Property name="MaxLinkRadius" />
 		<Property name="MaxFrameDist" />
+        <Property name="LinearizeFuse" />
 		<Property name="DoStartFrame" />
 		<Property name="StartFrame" />
         <Property name="DoMergeTree" />
