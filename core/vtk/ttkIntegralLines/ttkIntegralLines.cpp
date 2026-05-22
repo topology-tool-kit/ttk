@@ -225,6 +225,23 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
   vtkDataArray *inputOffsets = this->GetOrderArray(
     domain, 0, triangulation, false, 1, ForceInputOffsetScalarField);
 
+#ifndef TTK_ENABLE_MPI
+  if(BackEnd == BACKEND::NUMERICAL){
+    printMsg("Selected numerical backend");
+    return 1;
+  }
+  else if(BackEnd == BACKEND::DISCRETE){
+    printMsg("Selected discrete backend");
+    return 1;
+  }
+#endif
+
+#ifdef TTK_ENABLE_MPI
+  if(BackEnd != BACKEND::ONESKELETON){
+    printWrn("Distributed run, defaulting to `OneSkeleton` backend.");
+  }
+#endif
+
   const ttk::SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
   this->setVertexNumber(numberOfPointsInDomain);
   int numberOfPointsInSeeds = seeds->GetNumberOfPoints();

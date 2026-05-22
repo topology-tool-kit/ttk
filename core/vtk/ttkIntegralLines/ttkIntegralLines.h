@@ -71,6 +71,7 @@
 // ttk code includes
 #include <IntegralLines.h>
 #include <ttkAlgorithm.h>
+#include <ttkMacros.h>
 
 class vtkUnstructuredGrid;
 
@@ -82,6 +83,12 @@ public:
 
   vtkTypeMacro(ttkIntegralLines, ttkAlgorithm);
 
+  enum class BACKEND{
+    ONESKELETON = 0,
+    NUMERICAL = 1,
+    DISCRETE = 2,
+  };
+
   vtkGetMacro(Direction, int);
   vtkSetMacro(Direction, int);
 
@@ -90,6 +97,9 @@ public:
 
   vtkSetMacro(ForceInputOffsetScalarField, bool);
   vtkGetMacro(ForceInputOffsetScalarField, bool);
+
+  ttkSetEnumMacro(BackEnd, BACKEND);
+  vtkGetEnumMacro(BackEnd, BACKEND);
 
   vtkSetMacro(EnableForking, bool);
   vtkGetMacro(EnableForking, bool);
@@ -123,6 +133,7 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
+  BACKEND BackEnd{BACKEND::ONESKELETON};
   int Direction{0};
   bool ForceInputVertexScalarField{false};
   bool ForceInputOffsetScalarField{false};
