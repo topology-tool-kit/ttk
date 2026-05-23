@@ -1,0 +1,10 @@
+ttk_add_base_library(vPath
+  SOURCES
+    VPath.cpp
+  HEADERS
+    VPath.h
+  DEPENDS
+    discreteGradient
+    geometry
+    triangulation
+    )
