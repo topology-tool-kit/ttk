@@ -18,37 +18,47 @@
 #pragma once
 
 // base code includes
+#include <DiscreteGradient.h>
 #include <Triangulation.h>
 // std includes
 
 namespace ttk {
   namespace vp {
 
-  class VPath : virtual public Debug {
+    class VPath : virtual public Debug {
 
-  public:
-    VPath();
-    ~VPath() override;
+    public:
+      VPath();
+      ~VPath() override;
 
-    // template <class triangulationType = ttk::AbstractTriangulation>
-    // int execute(triangulationType *triangulation);
+      // template <class triangulationType = ttk::AbstractTriangulation>
+      // int execute(triangulationType *triangulation);
 
-    /**
-     * @brief Computes the integral line starting at the vertex of global id
-     * seedIdentifier.
-     *
-     * @tparam triangulationType
-     * @param triangulation
-     * @param integralLine integral line to compute
-     * @param offsets Order array of the scalar array
-     */
-    // template <class triangulationType = ttk::AbstractTriangulation>
-    // void computeIntegralLine(const triangulationType *triangulation,
-    //                          ttk::intgl::IntegralLine *integralLine,
-    //                          const ttk::SimplexId *offsets) const;
+      /*
+       * @brief Extract a vpath.
+       *
+       * @param output Vector storing the output vpath.
+       * @param isForward Forward or backward vpath (default: forward).
+       */
+      int execute(std::vector<ttk::dcg::Cell> &output,
+        const bool &isForward = true);
 
-  protected:
+      /**
+      * @brief Computes the integral line starting at the vertex of global id
+      * seedIdentifier.
+      *
+      * @tparam triangulationType
+      * @param triangulation
+      * @param integralLine integral line to compute
+      * @param offsets Order array of the scalar array
+      */
+      // template <class triangulationType = ttk::AbstractTriangulation>
+      // void computeIntegralLine(const triangulationType *triangulation,
+      //                          ttk::intgl::IntegralLine *integralLine,
+      //                          const ttk::SimplexId *offsets) const;
 
-#endif
-  };
+    protected:
+
+    };
+  } // namespace vp
 } // namespace ttk

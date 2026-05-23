@@ -226,12 +226,42 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
     domain, 0, triangulation, false, 1, ForceInputOffsetScalarField);
 
 #ifndef TTK_ENABLE_MPI
+
+  std::vector<ttk::SimplexId> idSpareStorage{};
+  ttk::SimplexId *identifiers = this->GetIdentifierArrayPtr(
+    ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds,
+    idSpareStorage);
+
   if(BackEnd == BACKEND::NUMERICAL){
     printMsg("Selected numerical backend");
     return 1;
   }
   else if(BackEnd == BACKEND::DISCRETE){
     printMsg("Selected discrete backend");
+
+    ttk::vp::VPath vpath;
+    vpath.setDebugLevel(debugLevel_);
+    vpath.setThreadNumber(threadNumber_);
+
+    std::vector<ttk::dcg::Cell> outputPath;
+
+    // TODO
+    // double-check ttkDiscreteGradient for initialization
+
+    vpath.execute(outputPath);
+
+    // TODO
+    // double check ttkMorseSmaleComplex for vpath2geometry
+
+    // this->setVertexNumber(numberOfPointsInDomain);
+    // this->setSeedNumber(numberOfPointsInSeeds);
+    // this->setDirection(Direction);
+    // this->setInputScalarField(inputScalars->GetVoidPointer(0));
+    // this->setInputOffsets(ttkUtils::GetPointer<ttk::SimplexId>(inputOffsets));
+    // this->setVertexIdentifierScalarField(&inputIdentifiers);
+    // this->setOutputIntegralLines(&integralLines);
+    // this->preconditionTriangulation(triangulation);
+
     return 1;
   }
 #endif
@@ -330,10 +360,6 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
     }
   }
 #else
-  std::vector<ttk::SimplexId> idSpareStorage{};
-  ttk::SimplexId *identifiers = this->GetIdentifierArrayPtr(
-    ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds,
-    idSpareStorage);
   std::unordered_set<ttk::SimplexId> isSeed;
   for(ttk::SimplexId k = 0; k < numberOfPointsInSeeds; ++k) {
     isSeed.insert(identifiers[k]);

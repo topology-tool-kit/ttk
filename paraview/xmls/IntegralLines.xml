@@ -191,8 +191,10 @@ plateaus).
           <Entry value="2" text="Discrete"/>
         </EnumerationDomain>
         <Documentation>
-            Backend for the computation of the persistence diagram.
-            The progressive and approximate approaches only allow the computation of saddle-extremum pairs on regular grids.
+            Backend for the computation of the integral lines.
+            - the 'OneSkeleton' backend follows the flow along the edges of the mesh. This backend supports MPI computation.
+- the 'Numerical' backend computes integral lines following the piecewise constant gradient of each simplex (i.e., it is going through the simplices)
+- the 'Discrete' backend computes a discrete integral line (a.k.a. v-path), following the discrete Morse theory model.
         </Documentation>
       </IntVectorProperty>
 
