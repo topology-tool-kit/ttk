@@ -225,52 +225,56 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
   vtkDataArray *inputOffsets = this->GetOrderArray(
     domain, 0, triangulation, false, 1, ForceInputOffsetScalarField);
 
-#ifndef TTK_ENABLE_MPI
+  bool isRunningWithMPI = false;
+
+#ifdef TTK_ENABLE_MPI
+  isRunningWithMPI = ttk::isRunningWithMPI();
+#endif
 
   std::vector<ttk::SimplexId> idSpareStorage{};
   ttk::SimplexId *identifiers = this->GetIdentifierArrayPtr(
     ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds,
     idSpareStorage);
 
-  if(BackEnd == BACKEND::NUMERICAL){
-    printMsg("Selected numerical backend");
-    return 1;
+  if(!isRunningWithMPI){
+
+    if(BackEnd == BACKEND::NUMERICAL){
+      printMsg("Selected numerical backend");
+      return 1;
+    }
+    else if(BackEnd == BACKEND::DISCRETE){
+      printMsg("Selected discrete backend");
+
+      ttk::vp::VPath vpath;
+      vpath.setDebugLevel(debugLevel_);
+      vpath.setThreadNumber(threadNumber_);
+
+      std::vector<ttk::dcg::Cell> outputPath;
+
+      // TODO
+      // double-check ttkDiscreteGradient for initialization
+
+      vpath.execute(outputPath);
+
+      // TODO
+      // double check ttkMorseSmaleComplex for vpath2geometry
+
+      // this->setVertexNumber(numberOfPointsInDomain);
+      // this->setSeedNumber(numberOfPointsInSeeds);
+      // this->setDirection(Direction);
+      // this->setInputScalarField(inputScalars->GetVoidPointer(0));
+      // this->setInputOffsets(ttkUtils::GetPointer<ttk::SimplexId>(inputOffsets));
+      // this->setVertexIdentifierScalarField(&inputIdentifiers);
+      // this->setOutputIntegralLines(&integralLines);
+      // this->preconditionTriangulation(triangulation);
+
+      return 1;
+    }
   }
-  else if(BackEnd == BACKEND::DISCRETE){
-    printMsg("Selected discrete backend");
-
-    ttk::vp::VPath vpath;
-    vpath.setDebugLevel(debugLevel_);
-    vpath.setThreadNumber(threadNumber_);
-
-    std::vector<ttk::dcg::Cell> outputPath;
-
-    // TODO
-    // double-check ttkDiscreteGradient for initialization
-
-    vpath.execute(outputPath);
-
-    // TODO
-    // double check ttkMorseSmaleComplex for vpath2geometry
-
-    // this->setVertexNumber(numberOfPointsInDomain);
-    // this->setSeedNumber(numberOfPointsInSeeds);
-    // this->setDirection(Direction);
-    // this->setInputScalarField(inputScalars->GetVoidPointer(0));
-    // this->setInputOffsets(ttkUtils::GetPointer<ttk::SimplexId>(inputOffsets));
-    // this->setVertexIdentifierScalarField(&inputIdentifiers);
-    // this->setOutputIntegralLines(&integralLines);
-    // this->preconditionTriangulation(triangulation);
-
-    return 1;
+  else{
+    if(BackEnd != BACKEND::ONESKELETON)
+      printWrn("Distributed run, defaulting to the `OneSkeleton` backend.");
   }
-#endif
-
-#ifdef TTK_ENABLE_MPI
-  if(BackEnd != BACKEND::ONESKELETON){
-    printWrn("Distributed run, defaulting to `OneSkeleton` backend.");
-  }
-#endif
 
   const ttk::SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
   this->setVertexNumber(numberOfPointsInDomain);
