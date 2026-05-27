@@ -232,16 +232,16 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
     ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds,
     idSpareStorage);
 
-  if(BackEnd == BACKEND::NUMERICAL){
+  if(BackEnd == BACKEND::NUMERICAL) {
     printMsg("Selected numerical backend");
     return 1;
-  }
-  else if(BackEnd == BACKEND::DISCRETE){
+  } else if(BackEnd == BACKEND::DISCRETE) {
     printMsg("Selected discrete backend");
 
     ttk::vp::VPath vpath;
     vpath.setDebugLevel(debugLevel_);
     vpath.setThreadNumber(threadNumber_);
+    vpath.preconditionTriangulation(TTK_TRIANGULATION_INTERNAL);
 
     std::vector<ttk::dcg::Cell> outputPath;
 
@@ -267,7 +267,7 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
 #endif
 
 #ifdef TTK_ENABLE_MPI
-  if(BackEnd != BACKEND::ONESKELETON){
+  if(BackEnd != BACKEND::ONESKELETON) {
     printWrn("Distributed run, defaulting to `OneSkeleton` backend.");
   }
 #endif

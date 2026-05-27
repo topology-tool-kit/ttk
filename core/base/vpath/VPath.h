@@ -43,6 +43,11 @@ namespace ttk {
       int execute(std::vector<ttk::dcg::Cell> &output,
         const bool &isForward = true);
 
+      inline void preconditionTriangulation(AbstractTriangulation *triangulation){
+
+        // see dms precondition
+      }
+
       /**
       * @brief Computes the integral line starting at the vertex of global id
       * seedIdentifier.
@@ -59,6 +64,7 @@ namespace ttk {
 
     protected:
 
+      dcg::DiscreteGradient dcg_{};
     };
   } // namespace vp
 } // namespace ttk
