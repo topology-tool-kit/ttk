@@ -10,9 +10,3 @@ VPath::VPath(){
 
 VPath::~VPath() = default;
 
-int VPath::execute(vector<dcg::Cell> &output, const bool &isForward){
-
-  printMsg("Computing VPath...");
-
-  return 0;
-}

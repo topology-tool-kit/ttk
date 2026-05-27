@@ -239,22 +239,44 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
   if(!isRunningWithMPI){
 
     if(BackEnd == BACKEND::NUMERICAL){
-      printMsg("Selected numerical backend");
+      printMsg("Selected `numerical` backend.");
       return 1;
     }
     else if(BackEnd == BACKEND::DISCRETE){
-      printMsg("Selected discrete backend");
+      printMsg("Selected `discrete` backend.");
 
       ttk::vp::VPath vpath;
+
       vpath.setDebugLevel(debugLevel_);
       vpath.setThreadNumber(threadNumber_);
 
+      // setup the mesh
+      vpath.preconditionTriangulation(triangulation);
+
+      // setup the data
+      vpath.setInputScalarField(inputScalars->GetVoidPointer(0),
+        inputScalars->GetMTime());
+      vpath.setInputOffsets(
+        static_cast<SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)));
+
+      std::vector<ttk::dcg::Cell> seedCells(seeds->GetNumberOfPoints());
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+      for(int i = 0; i < (int) seedCells.size(); i++){
+        seedCells[i].dim_ = 0;
+        seedCells[i].id_ = identifiers[i];
+      }
+
+
       std::vector<ttk::dcg::Cell> outputPath;
 
-      // TODO
-      // double-check ttkDiscreteGradient for initialization
-
-      vpath.execute(outputPath);
+      int status{};
+      ttkTemplateMacro(triangulation->getType(),
+                       status = vpath.execute(
+                         static_cast<TTK_TT *>(triangulation->getData()),
+                         seedCells, outputPath));
 
       // TODO
       // double check ttkMorseSmaleComplex for vpath2geometry

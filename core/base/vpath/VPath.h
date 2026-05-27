@@ -34,18 +34,35 @@ namespace ttk {
       // template <class triangulationType = ttk::AbstractTriangulation>
       // int execute(triangulationType *triangulation);
 
-      /*
+      /**
        * @brief Extract a vpath.
        *
        * @param output Vector storing the output vpath.
        * @param isForward Forward or backward vpath (default: forward).
        */
-      int execute(std::vector<ttk::dcg::Cell> &output,
+      template <class triangulationType>
+      int execute(
+        const triangulationType *triangulation,
+        const std::vector<ttk::dcg::Cell> &seeds,
+        std::vector<ttk::dcg::Cell> &output,
         const bool &isForward = true);
 
+      /**
+       * @brief Triangulation preconditioning.
+       */
       inline void preconditionTriangulation(AbstractTriangulation *triangulation){
 
         // see dms precondition
+        dcg_.preconditionTriangulation(triangulation);
+      }
+
+      inline void setInputOffsets(const SimplexId *const offsets) {
+        this->dcg_.setInputOffsets(offsets);
+      }
+
+      inline void setInputScalarField(const void *const scalars,
+        const size_t &mTime){
+        this->dcg_.setInputScalarField(scalars, mTime);
       }
 
       /**
@@ -68,3 +85,19 @@ namespace ttk {
     };
   } // namespace vp
 } // namespace ttk
+
+template <class triangulationType>
+int ttk::vp::VPath::execute(
+  const triangulationType *triangulation,
+  const std::vector<dcg::Cell> &input,
+  std::vector<dcg::Cell> &output, const bool &isForward){
+
+  // fetching discrete gradient (or computing it)
+  dcg_.setDebugLevel(debugLevel_);
+  dcg_.setThreadNumber(threadNumber_);
+  dcg_.buildGradient(*triangulation, false, nullptr);
+
+  printMsg("Computing VPath...");
+
+  return 0;
+}
