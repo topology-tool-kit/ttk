@@ -44,7 +44,7 @@ namespace ttk {
       int execute(
         const triangulationType *triangulation,
         const std::vector<ttk::dcg::Cell> &seeds,
-        std::vector<ttk::dcg::Cell> &output,
+        std::vector<std::vector<ttk::dcg::Cell>> &output,
         const bool &isForward = true);
 
       /**
@@ -89,15 +89,37 @@ namespace ttk {
 template <class triangulationType>
 int ttk::vp::VPath::execute(
   const triangulationType *triangulation,
-  const std::vector<dcg::Cell> &input,
-  std::vector<dcg::Cell> &output, const bool &isForward){
+  const std::vector<dcg::Cell> &seeds,
+  std::vector<std::vector<dcg::Cell>> &output, const bool &isForward){
 
-  // fetching discrete gradient (or computing it)
+  // fetching discrete gradient (or pre-computing it)
   dcg_.setDebugLevel(debugLevel_);
   dcg_.setThreadNumber(threadNumber_);
   dcg_.buildGradient(*triangulation, false, nullptr);
 
-  printMsg("Computing VPath...");
+  Timer t;
+
+  output.resize(seeds.size());
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
+#endif
+  for(int i = 0; i < (int) seeds.size(); i++){
+    if(isForward){
+      dcg_.getDescendingPath(seeds[i], output[i], *triangulation);
+      printMsg("  - Seed-"
+        + std::to_string(seeds[i].dim_) + " #"
+        + std::to_string(seeds[i].id_)
+        + ": "
+        + std::to_string(output[i].size()) + " item(s).");
+    }
+    else{
+      printErr("TODO!");
+    }
+  }
+
+  printMsg("Computed " + std::to_string(output.size()) + " v-path(s)", 1,
+    t.getElapsedTime(), threadNumber_);
 
   return 0;
 }

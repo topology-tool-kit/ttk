@@ -1549,6 +1549,9 @@ int DiscreteGradient::getDescendingPath(
 
     } while(connectedEdgeId != -1);
   }
+  else{
+    printWrn("Descending path not implemented!");
+  }
 
   return 0;
 }

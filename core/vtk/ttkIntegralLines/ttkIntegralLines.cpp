@@ -270,7 +270,7 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       }
 
 
-      std::vector<ttk::dcg::Cell> outputPath;
+      std::vector<std::vector<ttk::dcg::Cell>> outputPath;
 
       int status{};
       ttkTemplateMacro(triangulation->getType(),
