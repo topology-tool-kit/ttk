@@ -10,6 +10,7 @@
 #include <vtkDataObject.h>
 #include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
 #include <vtkInformation.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
@@ -280,7 +281,30 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
                          // isForward?
                          Direction == 0));
 
+      int pointNumber{0};
+      for(auto &path : outputPath){
+        pointNumber += path.size();
+      }
+
       vtkNew<vtkFloatArray> pointCoords{};
+      vtkNew<ttkSimplexIdTypeArray> seedIds{};
+
+      pointCoords->SetNumberOfComponents(3);
+      pointCoords->SetNumberOfTuples(pointNumber);
+      int pointId = 0;
+      for(auto &path : outputPath){
+        for(auto &c : path){
+          float point[3];
+          triangulation->getCellIncenter(c.id_, c.dim_, point);
+          pointCoords->SetTuple3(pointId, point[0], point[1], point[2]);
+          pointId++;
+        }
+      }
+
+      vtkNew<vtkPoints> pointSet{};
+      pointSet->SetData(pointCoords);
+      output->SetPoints(pointSet);
+
 
       /* NOTE:
        * get the barycenter of a cell: triangulation->getCellIncenter()
