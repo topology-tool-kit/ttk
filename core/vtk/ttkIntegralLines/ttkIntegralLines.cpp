@@ -276,7 +276,16 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       ttkTemplateMacro(triangulation->getType(),
                        status = vpath.execute(
                          static_cast<TTK_TT *>(triangulation->getData()),
-                         seedCells, outputPath));
+                         seedCells, outputPath,
+                         // isForward?
+                         Direction == 0));
+
+      vtkNew<vtkFloatArray> pointCoords{};
+
+      /* NOTE:
+       * get the barycenter of a cell: triangulation->getCellIncenter()
+       * see ttkMorseSmaleComplex.cpp:305
+       */
 
       // TODO
       // double check ttkMorseSmaleComplex for vpath2geometry

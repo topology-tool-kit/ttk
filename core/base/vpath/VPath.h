@@ -45,7 +45,7 @@ namespace ttk {
         const triangulationType *triangulation,
         const std::vector<ttk::dcg::Cell> &seeds,
         std::vector<std::vector<ttk::dcg::Cell>> &output,
-        const bool &isForward = true);
+        const bool &isForward = false);
 
       /**
        * @brief Triangulation preconditioning.
@@ -101,17 +101,34 @@ int ttk::vp::VPath::execute(
 
   output.resize(seeds.size());
 
+  /*
+   * NOTE:
+   * when considering seeds of non-zero dimension, mutliple v-paths may exist
+   * for a given seed.
+   *
+   * TODO:
+   * modify the output
+   * consider a pair<Cell, vector<SimplexId>> where SimplexId encodes the
+   * identifiers of the v-path going through that cell (for the given seed).
+   */
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
 #endif
   for(int i = 0; i < (int) seeds.size(); i++){
-    if(isForward){
+    if(!isForward){
       dcg_.getDescendingPath(seeds[i], output[i], *triangulation);
-      printMsg("  - Seed-"
-        + std::to_string(seeds[i].dim_) + " #"
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif
+      printMsg("  - Seed-#"
         + std::to_string(seeds[i].id_)
-        + ": "
-        + std::to_string(output[i].size()) + " item(s).");
+        + " (dim: "
+        + std::to_string(seeds[i].dim_)
+        + "): "
+        + std::to_string(output[i].size()) + " item(s).",
+          debug::Priority::DETAIL);
     }
     else{
       printErr("TODO!");
