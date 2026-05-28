@@ -115,6 +115,7 @@ namespace ttk {
     inline void setDoFusion(bool v) {doFusion_ = v;}
     inline void setDoLinearizeFuse(bool v) {doLinearizeFuse_ = v;}
 	inline void setDoMergeTree(bool v) {doMergeTree_ = v;}
+    inline void setUseSplitTree(bool v) {useSplitTree_ = v;}
 
 
     /// @brief Linearize + (optional) chain input per-trajectory point clouds.
@@ -221,6 +222,7 @@ namespace ttk {
     bool doFusion_{true};
     bool doLinearizeFuse_{true};
     bool doMergeTree_{false};
+    bool useSplitTree_{false};
   };
 
 } // namespace ttk
@@ -551,15 +553,18 @@ int ttk::PostProcessingTracking::computeMergeTree(
     exTreeM.setThreadNumber(1);
     exTreeM.setDebugLevel(0);
 
-    std::vector<ttk::SimplexId> orderJoin(order);
-    for(ttk::SimplexId i = 0; i < nPixels; ++i)
-      orderJoin[i] = nPixels - orderJoin[i] - 1;
+    std::vector<ttk::SimplexId> treeOrder(order);
+    if(!useSplitTree_) {
+      for(ttk::SimplexId i = 0; i < nPixels; ++i)
+        treeOrder[i] = nPixels - treeOrder[i] - 1;
+    }
 
-    const auto treeType = ttk::ftm::TreeType::Join;
+    const auto treeType
+      = useSplitTree_ ? ttk::ftm::TreeType::Split : ttk::ftm::TreeType::Join;
     const int statusMT = exTreeM.computePairs<triangulationType>(
       persistencePairs, cpMap, branches, segmentation.data(),
       regionType.data(), ascendingManifold.data(), descendingManifold.data(),
-      orderJoin.data(), triangulation, treeType);
+      treeOrder.data(), triangulation, treeType);
     if(statusMT != 1) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic write

@@ -616,8 +616,8 @@ int ttkDebrisTracer::RequestData(vtkInformation *ttkNotUsed(request),
     }
 
     addSegment(mergePoints, mergeLines, i,
-               traj.evalX(startF), traj.evalY(startF), startF,
-               traj.evalX(endF),   traj.evalY(endF),   endF);
+               traj.evalX(startF), traj.evalY(startF), startF*2.5,
+               traj.evalX(endF),   traj.evalY(endF),   endF*2.5);
 
     ejecArr->SetValue(i, ejection);
     mergeIdArr->SetValue(i, static_cast<int>(i));

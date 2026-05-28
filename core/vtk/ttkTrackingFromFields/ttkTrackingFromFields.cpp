@@ -384,6 +384,7 @@ int ttkTrackingFromFields::applyPostProcessing(
   ppt.setDoFusion(DoFusion);
   ppt.setDoLinearizeFuse(LinearizeFuse);
   ppt.setDoMergeTree(DoMergeTree);
+  ppt.setUseSplitTree(UseSplitTree);
 
   ppt.setCosCol(std::cos(CosColDegrees * M_PI / 180.0));
   ppt.setMaxRadius(MaxLinkRadius);

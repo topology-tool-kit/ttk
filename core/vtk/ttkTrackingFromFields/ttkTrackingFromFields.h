@@ -227,6 +227,13 @@ public:
   vtkGetMacro(DoMergeTree, bool);
   /// @}
 
+  /// @brief Select the merge-tree variant used for per-frame segmentation.
+  /// When off (default), a join tree is used
+  /// @{
+  vtkSetMacro(UseSplitTree, bool);
+  vtkGetMacro(UseSplitTree, bool);
+  /// @}
+
   /// @brief When on, the merge-tree pipeline runs an Otsu-threshold pass on
   /// the candidate surface segments before accumulating statistics.
   /// @{
@@ -313,6 +320,7 @@ private:
   bool DoStartFrame{false};
   int StartFrame{0};
   bool DoMergeTree{false};
+  bool UseSplitTree{false};
   bool UseOtsuSimplification{false};
   int OtsuBins{0};
   int MaxSurfSize{10000};
