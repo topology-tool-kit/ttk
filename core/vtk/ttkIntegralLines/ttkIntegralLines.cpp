@@ -304,6 +304,8 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       vtkNew<vtkPoints> pointSet{};
       pointSet->SetData(pointCoords);
       output->SetPoints(pointSet);
+      printMsg("VTK output: "
+        + std::to_string(pointSet->GetNumberOfPoints()) + " point(s)");
 
 
       /* NOTE:
