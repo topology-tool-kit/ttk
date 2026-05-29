@@ -553,18 +553,16 @@ int ttk::PostProcessingTracking::computeMergeTree(
     exTreeM.setThreadNumber(1);
     exTreeM.setDebugLevel(0);
 
-    std::vector<ttk::SimplexId> treeOrder(order);
-    if(!useSplitTree_) {
-      for(ttk::SimplexId i = 0; i < nPixels; ++i)
-        treeOrder[i] = nPixels - treeOrder[i] - 1;
-    }
+    std::vector<ttk::SimplexId> orderJoin(order);
+    for(ttk::SimplexId i = 0; i < nPixels; ++i)
+      orderJoin[i] = nPixels - orderJoin[i] - 1;
 
     const auto treeType
       = useSplitTree_ ? ttk::ftm::TreeType::Split : ttk::ftm::TreeType::Join;
     const int statusMT = exTreeM.computePairs<triangulationType>(
       persistencePairs, cpMap, branches, segmentation.data(),
       regionType.data(), ascendingManifold.data(), descendingManifold.data(),
-      treeOrder.data(), triangulation, treeType);
+      orderJoin.data(), triangulation, treeType);
     if(statusMT != 1) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic write
