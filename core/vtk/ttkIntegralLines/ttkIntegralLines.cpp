@@ -301,17 +301,21 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
 
       vertexSeedId->SetNumberOfComponents(1);
       vertexSeedId->SetNumberOfTuples(pointNumber);
-      vertexSeedId->SetName("SeedId");
+      vertexSeedId->SetName("SeedIdentifier");
 
       outputMaskField->SetNumberOfComponents(1);
       outputMaskField->SetNumberOfTuples(pointNumber);
       outputMaskField->SetName(ttk::MaskScalarFieldName);
 
-      cellSeedId->SetName("SeedId");
+      cellSeedId->SetName("SeedIdentifier");
 
       int pointId = 0;
       int pathId = 0;
+      int pathPointId = 0;
       for(auto &path : outputPath){
+
+        pathPointId = 0;
+
         for(auto &c : path){
           float point[3];
           triangulation->getCellIncenter(c.id_, c.dim_, point);
@@ -324,8 +328,9 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
             outputMaskField->SetTuple1(pointId, 1);
           }
           pointId++;
+          pathPointId++;
 
-          if(pointId > 1){
+          if(pathPointId > 1){
             vtkIdType edgeIds[2] = {pointId - 2, pointId - 1};
             outputPathGeometry->InsertNextCell(VTK_LINE, 2, edgeIds);
             cellSeedId->InsertNextValue((int) seedCells[pathId].id_);
