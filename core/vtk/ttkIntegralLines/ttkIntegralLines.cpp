@@ -281,49 +281,67 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
                          // isForward?
                          Direction == 0));
 
+      if(status)
+        return status;
+
       int pointNumber{0};
       for(auto &path : outputPath){
         pointNumber += path.size();
       }
 
+      vtkNew<vtkUnstructuredGrid> outputPathGeometry;
+
       vtkNew<vtkFloatArray> pointCoords{};
-      vtkNew<ttkSimplexIdTypeArray> seedIds{};
+      vtkNew<vtkIntArray> vertexSeedId{};
+      vtkNew<vtkIntArray> cellSeedId{};
+      vtkNew<vtkUnsignedCharArray> outputMaskField{};
 
       pointCoords->SetNumberOfComponents(3);
       pointCoords->SetNumberOfTuples(pointNumber);
+
+      vertexSeedId->SetNumberOfComponents(1);
+      vertexSeedId->SetNumberOfTuples(pointNumber);
+      vertexSeedId->SetName("SeedId");
+
+      outputMaskField->SetNumberOfComponents(1);
+      outputMaskField->SetNumberOfTuples(pointNumber);
+      outputMaskField->SetName(ttk::MaskScalarFieldName);
+
+      cellSeedId->SetName("SeedId");
+
       int pointId = 0;
+      int pathId = 0;
       for(auto &path : outputPath){
         for(auto &c : path){
           float point[3];
           triangulation->getCellIncenter(c.id_, c.dim_, point);
           pointCoords->SetTuple3(pointId, point[0], point[1], point[2]);
+          vertexSeedId->SetTuple1(pointId, (int) seedCells[pathId].id_);
+          if((!pointId)||(pointId == pointNumber - 1)){
+            outputMaskField->SetTuple1(pointId, 0);
+          }
+          else{
+            outputMaskField->SetTuple1(pointId, 1);
+          }
           pointId++;
+
+          if(pointId > 1){
+            vtkIdType edgeIds[2] = {pointId - 2, pointId - 1};
+            outputPathGeometry->InsertNextCell(VTK_LINE, 2, edgeIds);
+            cellSeedId->InsertNextValue((int) seedCells[pathId].id_);
+          }
         }
+        pathId++;
       }
 
       vtkNew<vtkPoints> pointSet{};
       pointSet->SetData(pointCoords);
-      output->SetPoints(pointSet);
-      printMsg("VTK output: "
-        + std::to_string(pointSet->GetNumberOfPoints()) + " point(s)");
+      outputPathGeometry->SetPoints(pointSet);
+      outputPathGeometry->GetPointData()->AddArray(vertexSeedId);
+      outputPathGeometry->GetPointData()->AddArray(outputMaskField);
+      outputPathGeometry->GetCellData()->AddArray(cellSeedId);
 
-
-      /* NOTE:
-       * get the barycenter of a cell: triangulation->getCellIncenter()
-       * see ttkMorseSmaleComplex.cpp:305
-       */
-
-      // TODO
-      // double check ttkMorseSmaleComplex for vpath2geometry
-
-      // this->setVertexNumber(numberOfPointsInDomain);
-      // this->setSeedNumber(numberOfPointsInSeeds);
-      // this->setDirection(Direction);
-      // this->setInputScalarField(inputScalars->GetVoidPointer(0));
-      // this->setInputOffsets(ttkUtils::GetPointer<ttk::SimplexId>(inputOffsets));
-      // this->setVertexIdentifierScalarField(&inputIdentifiers);
-      // this->setOutputIntegralLines(&integralLines);
-      // this->preconditionTriangulation(triangulation);
+      output->ShallowCopy(outputPathGeometry);
 
       return 1;
     }
