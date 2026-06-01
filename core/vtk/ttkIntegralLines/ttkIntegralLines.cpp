@@ -262,6 +262,15 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
 
       std::vector<ttk::dcg::Cell> seedCells(seeds->GetNumberOfPoints());
 
+      printf("%d cells in the seed input\n",
+             seeds->GetNumberOfCells());
+
+      /*
+       * TODO
+       * the seeds should not be retrieved from the points but from the cells.
+       * then, it'd be transparent (vertex or edge or triangle or tetrahedron).
+       */
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif

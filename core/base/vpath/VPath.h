@@ -118,21 +118,23 @@ int ttk::vp::VPath::execute(
   for(int i = 0; i < (int) seeds.size(); i++){
     if(!isForward){
       dcg_.getDescendingPath(seeds[i], output[i], *triangulation);
+    }
+    else{
+      dcg_.getAscendingPath(seeds[i], output[i], *triangulation);
+    }
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp critical
 #endif
-      printMsg("  - Seed-#"
-        + std::to_string(seeds[i].id_)
-        + " (dim: "
-        + std::to_string(seeds[i].dim_)
-        + "): "
-        + std::to_string(output[i].size()) + " item(s).",
-          debug::Priority::DETAIL);
-    }
-    else{
-      printErr("TODO!");
-    }
+    printMsg("  - Seed-#"
+      + std::to_string(seeds[i].id_)
+      + " (dim: "
+      + std::to_string(seeds[i].dim_)
+      + ", f: "
+      + std::to_string(isForward)
+      + "): "
+      + std::to_string(output[i].size()) + " item(s).",
+        debug::Priority::DETAIL);
   }
 
   printMsg("Computed " + std::to_string(output.size()) + " v-path(s)", 1,

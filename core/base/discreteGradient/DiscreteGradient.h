@@ -437,6 +437,14 @@ user in the gradient.
                             const triangulationType &triangulation) const;
 
       /**
+       * Return all VPath terminating at the given cell.
+       */
+      template <typename triangulationType>
+      int getDescendingPaths(const Cell &cell,
+                            std::vector<std::vector<Cell> > &vpaths,
+                            const triangulationType &triangulation) const;
+
+      /**
        * Return the VPath terminating at the given 2-saddle restricted to the
 2-separatrice of the 1-saddle.
        */

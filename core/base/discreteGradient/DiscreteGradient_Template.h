@@ -1550,7 +1550,110 @@ int DiscreteGradient::getDescendingPath(
     } while(connectedEdgeId != -1);
   }
   else{
-    printWrn("Descending path not implemented!");
+    printWrn("Descending path not implemented for this simplex dimension!");
+  }
+
+  return 0;
+}
+
+template <typename triangulationType>
+int DiscreteGradient::getDescendingPaths(
+  const Cell &cell,
+  std::vector<std::vector<Cell> > &vpaths,
+  const triangulationType &triangulation) const {
+
+  // NOTE: see claude "V-paths extraction from TTK simplices"
+
+  int pathId = vpaths.size();
+  vpaths.resize(pathId + 1);
+
+  if(cell.dim_ == 0) {
+    // assume that cellId is a vertex
+    SimplexId currentId = cell.id_;
+    SimplexId connectedEdgeId;
+    do {
+      // add a vertex
+      const Cell vertex(0, currentId);
+      vpaths[pathId].push_back(vertex);
+
+      if(isCellCritical(vertex)
+#ifdef TTK_ENABLE_MPI
+         || triangulation.getVertexRank(currentId) != ttk::MPIrank_
+#endif
+      ) {
+        break;
+      }
+
+      connectedEdgeId = getPairedCell(vertex, triangulation);
+      if(connectedEdgeId == -1) {
+        break;
+      }
+
+      // add an edge
+      const Cell edge(1, connectedEdgeId);
+      vpaths[pathId].push_back(edge);
+
+      if(isCellCritical(edge)) {
+        break;
+      }
+
+      for(int i = 0; i < 2; ++i) {
+        SimplexId vertexId;
+        triangulation.getEdgeVertex(connectedEdgeId, i, vertexId);
+
+        if(vertexId != currentId) {
+          currentId = vertexId;
+          break;
+        }
+      }
+
+    } while(connectedEdgeId != -1);
+  }
+  else if(cell.dim_ == 1){
+    // assume that cellId is an edge
+    SimplexId currentId = cell.id_;
+    SimplexId connectedTriangleId;
+    do {
+      // add an edge
+      const Cell edge(1, currentId);
+      vpaths[pathId].push_back(edge);
+
+      if(isCellCritical(edge)
+#ifdef TTK_ENABLE_MPI
+         || triangulation.getEdgeRank(currentId) != ttk::MPIrank_
+#endif
+      ) {
+        break;
+      }
+
+      connectedTriangleId = getPairedCell(edge, triangulation);
+      if(connectedTriangleId == -1) {
+        break;
+      }
+
+      // add a triangle
+      const Cell triangle(2, connectedTriangleId);
+      vpaths[pathId].push_back(triangle);
+
+      if(isCellCritical(triangle)) {
+        break;
+      }
+
+      for(int i = 0; i < 3; ++i) {
+        SimplexId edgeId;
+        triangulation.getTriangleEdge(connectedTriangleId, i, edgeId);
+
+        if(edgeId != currentId) {
+          // TODO
+          // handle forks (multiple valid edgeId, not necessarily the first one)
+          currentId = edgeId;
+          break;
+        }
+      }
+    }while(connectedTriangleId != -1);
+  }
+  else{
+    printWrn("Descending path not implemented for this simplex dimension!");
   }
 
   return 0;
@@ -1723,6 +1826,9 @@ int DiscreteGradient::getAscendingPath(const Cell &cell,
         // stop at convergence caused by boundary effect
       } while(currentId != oldId);
     }
+    else{
+      printWrn("Ascending path not implemented for this simplex dimension!");
+    }
   } else if(dimensionality_ == 3) {
     if(cell.dim_ == 3) {
       // assume that cellId is a tetra
@@ -1784,6 +1890,12 @@ int DiscreteGradient::getAscendingPath(const Cell &cell,
         // stop at convergence caused by boundary effect
       } while(currentId != oldId);
     }
+    else{
+      printWrn("Ascending path not implemented for this simplex dimension!");
+    }
+  }
+  else{
+    printWrn("Ascending path not implemented for this input dimension!");
   }
 
   return 0;
