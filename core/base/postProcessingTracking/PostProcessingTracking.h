@@ -115,7 +115,7 @@ namespace ttk {
     inline void setDoFusion(bool v) {doFusion_ = v;}
     inline void setDoLinearizeFuse(bool v) {doLinearizeFuse_ = v;}
 	inline void setDoMergeTree(bool v) {doMergeTree_ = v;}
-    inline void setUseSplitTree(bool v) {useSplitTree_ = v;}
+    inline void setUseSplitTree(int v) {useSplitTree_ = v;}
 
 
     /// @brief Linearize + (optional) chain input per-trajectory point clouds.
@@ -222,7 +222,7 @@ namespace ttk {
     bool doFusion_{true};
     bool doLinearizeFuse_{true};
     bool doMergeTree_{false};
-    bool useSplitTree_{false};
+    int useSplitTree_{2}; 
   };
 
 } // namespace ttk
@@ -543,146 +543,159 @@ int ttk::PostProcessingTracking::computeMergeTree(
       }
     }
 
-    std::vector<ttk::SimplexId> segmentation(nPixels, -1);
-    std::vector<char> regionType(nPixels, 0);
-    std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> persistencePairs;
-    std::map<ttk::SimplexId, int> cpMap;
-    std::vector<ttk::ExTreeM::Branch> branches;
+    std::vector<ttk::SimplexId> orderInv(nPixels);
+    for(ttk::SimplexId i = 0; i < nPixels; ++i)
+      orderInv[i] = nPixels - order[i] - 1;
 
-    ttk::ExTreeM exTreeM;
-    exTreeM.setThreadNumber(1);
-    exTreeM.setDebugLevel(0);
+    auto &localTrajDouble = trajDoublePerFrame[frame];
+    auto &localVertexLabel = vertexTrajPerFrame[frame];
+    std::vector<int> vertexTraj(nPixels, -1);
 
-    const ttk::SimplexId *mtOrder = order.data();
-    ttk::SimplexId *mtManifold = descendingManifold.data();
-    ttk::SimplexId *mtScratch = ascendingManifold.data();
+    auto runTree = [&](const ttk::SimplexId *mtOrder,
+                       ttk::SimplexId *mtManifold,
+                       ttk::SimplexId *mtScratch) -> bool {
+      std::vector<ttk::SimplexId> segmentation(nPixels, -1);
+      std::vector<char> regionType(nPixels, 0);
+      std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> persistencePairs;
+      std::map<ttk::SimplexId, int> cpMap;
+      std::vector<ttk::ExTreeM::Branch> branches;
 
-    std::vector<ttk::SimplexId> orderInv;
-    if(!useSplitTree_) {
-      orderInv.resize(nPixels);
-      for(ttk::SimplexId i = 0; i < nPixels; ++i)
-        orderInv[i] = nPixels - order[i] - 1;
-      mtOrder = orderInv.data();
-      mtManifold = ascendingManifold.data();
-      mtScratch = descendingManifold.data();
+      ttk::ExTreeM exTreeM;
+      exTreeM.setThreadNumber(1);
+      exTreeM.setDebugLevel(0);
+
+      const int statusMT = exTreeM.computePairs<triangulationType>(
+        persistencePairs, cpMap, branches, segmentation.data(),
+        regionType.data(), mtManifold, mtScratch, mtOrder, triangulation,
+        ttk::ftm::TreeType::Join);
+      if(statusMT != 1)
+        return false;
+
+      const ttk::SimplexId maxSegId
+        = *std::max_element(segmentation.begin(), segmentation.end());
+      std::vector<std::vector<ttk::SimplexId>> segmentId(maxSegId + 1);
+      for(size_t vId = 0; vId < segmentation.size(); ++vId) {
+        if(regionType[vId] == 0)
+          segmentId[segmentation[vId]].push_back(
+            static_cast<ttk::SimplexId>(vId));
+      }
+
+      std::vector<char> segCleaned(segmentId.size(), 0);
+
+      for(size_t trajId = 0; trajId < nTraj; ++trajId) {
+        const auto &traj = finalTraj[trajId];
+        if(frame < traj.startFrame || frame > traj.endFrame)
+          continue;
+
+        ttk::SimplexId vId = traj.getOriginalVertex(frame);
+        if(vId < 0) {
+          if(!traj.isLinearized)
+            continue;
+          const double x = traj.evalX(frame);
+          if(x < boundaryXMin_ || x > boundaryXMax_ + 1)
+            continue;
+          const double y = traj.evalY(frame);
+          if(y < boundaryYMin_ || y > boundaryYMax_ + 1)
+            continue;
+          const ttk::SimplexId xi = static_cast<ttk::SimplexId>(std::lround(x));
+          const ttk::SimplexId yi = static_cast<ttk::SimplexId>(std::lround(y));
+          vId = xi + yi * (ttk::SimplexId)(boundaryXMax_ - boundaryXMin_ + 1);
+        }
+        if(vId < 0 || vId >= nPixels)
+          continue;
+        if(regionType[vId] != 0)
+          continue;
+
+        const auto segId = segmentation[vId];
+        if(segId < 0 || segId >= (ttk::SimplexId)segmentId.size())
+          continue;
+
+        if(trajSurfPerFrame[frame][trajId] > 0.0)
+          continue;
+
+        if(useOtsuSimplification_ && !segCleaned[segId]
+           && segmentId[segId].size() > 8 && otsuBins_ > 0) {
+          cleanDarkSegmentInPlace<dataType, triangulationType>(
+            segmentId[segId], scalars, triangulation, otsuBins_);
+          segCleaned[segId] = 1;
+        }
+
+        if(static_cast<int>(segmentId[segId].size()) > maxSurfSize_)
+          continue;
+
+        double surfVal = static_cast<double>(
+          computeSurfaceCellCount(segmentId[segId], triangulation));
+        if(surfVal == 0)
+          surfVal = 1;
+        trajSurfPerFrame[frame][trajId] = surfVal;
+
+        const int currentChainId = finalTraj[trajId].finalChainId;
+
+        for(const auto v : segmentId[segId]) {
+          const int check = vertexTraj[v];
+          if(check == -1) {
+            vertexTraj[v] = static_cast<int>(trajId);
+          } else if(check != static_cast<int>(trajId)) {
+            localTrajDouble[trajId] = 1;
+            if(check >= 0)
+              localTrajDouble[check] = 1;
+          }
+        }
+
+        if(currentChainId >= 0) {
+          std::unordered_set<ttk::SimplexId> dilatedSet;
+          dilatedSet.reserve(segmentId[segId].size() * 4);
+          for(const ttk::SimplexId v : segmentId[segId]) {
+            const ttk::SimplexId starCount
+              = triangulation->getVertexStarNumber(v);
+            for(ttk::SimplexId k = 0; k < starCount; ++k) {
+              ttk::SimplexId cellId;
+              triangulation->getVertexStar(v, k, cellId);
+              const int nCellVerts
+                = triangulation->getCellVertexNumber(cellId);
+              for(int cv = 0; cv < nCellVerts; ++cv) {
+                ttk::SimplexId vDil;
+                triangulation->getCellVertex(cellId, cv, vDil);
+                dilatedSet.insert(vDil);
+              }
+            }
+          }
+
+          for(const ttk::SimplexId v : dilatedSet) {
+            const int prev = localVertexLabel[v];
+            if(prev == -1) {
+              localVertexLabel[v] = currentChainId;
+            } else if(prev != currentChainId && prev != -2) {
+              localVertexLabel[v] = -2;
+            }
+          }
+        }
+      } // trajectory loop
+      return true;
+    };
+
+    bool ok = true;
+    if(useSplitTree_ == 1) { 
+      ok = runTree(order.data(), descendingManifold.data(),
+                   ascendingManifold.data());
+    } else if(useSplitTree_ == 0) {
+      ok = runTree(orderInv.data(), ascendingManifold.data(),
+                   descendingManifold.data());
+    } else {
+      ok = runTree(order.data(), descendingManifold.data(),
+                   ascendingManifold.data());
+      if(ok)
+        ok = runTree(orderInv.data(), ascendingManifold.data(),
+                     descendingManifold.data());
     }
 
-    const auto treeType =  ttk::ftm::TreeType::Join;
-    const int statusMT = exTreeM.computePairs<triangulationType>(
-      persistencePairs, cpMap, branches, segmentation.data(),
-      regionType.data(), mtManifold, mtScratch,
-      mtOrder, triangulation, treeType);
-
-
-    if(statusMT != 1) {
+    if(!ok) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic write
 #endif
       globalError = -1;
       continue;
     }
-
-    const ttk::SimplexId maxSegId
-      = *std::max_element(segmentation.begin(), segmentation.end());
-    std::vector<std::vector<ttk::SimplexId>> segmentId(maxSegId + 1);
-    for(size_t vId = 0; vId < segmentation.size(); ++vId) {
-      if(regionType[vId] == 0)
-        segmentId[segmentation[vId]].push_back(
-          static_cast<ttk::SimplexId>(vId));
-    }
-
-    std::vector<char> segCleaned(segmentId.size(), 0);
-    auto &localTrajDouble = trajDoublePerFrame[frame];
-
-    std::vector<int> vertexTraj(nPixels, -1);
-
-    for(size_t trajId = 0; trajId < nTraj; ++trajId) {
-      const auto &traj = finalTraj[trajId];
-      if(frame < traj.startFrame || frame > traj.endFrame)
-        continue;
-
-      ttk::SimplexId vId = traj.getOriginalVertex(frame);
-      if(vId < 0) {
-        if(!traj.isLinearized)
-          continue;
-        const double x = traj.evalX(frame);
-        if(x < boundaryXMin_ || x > boundaryXMax_ + 1)
-          continue;
-        const double y = traj.evalY(frame);
-        if(y < boundaryYMin_ || y > boundaryYMax_ + 1)
-          continue;
-        const ttk::SimplexId xi = static_cast<ttk::SimplexId>(std::lround(x));
-        const ttk::SimplexId yi = static_cast<ttk::SimplexId>(std::lround(y));
-        vId = xi + yi * (ttk::SimplexId)(boundaryXMax_ - boundaryXMin_ + 1);
-      }
-      if(vId < 0 || vId >= nPixels)
-        continue;
-      if(regionType[vId] != 0)
-        continue;
-
-      const auto segId = segmentation[vId];
-      if(segId < 0 || segId >= (ttk::SimplexId)segmentId.size())
-        continue;
-
-      if(useOtsuSimplification_ && !segCleaned[segId]
-         && segmentId[segId].size() > 8 && otsuBins_ > 0) {
-        cleanDarkSegmentInPlace<dataType, triangulationType>(
-          segmentId[segId], scalars, triangulation, otsuBins_);
-        segCleaned[segId] = 1;
-      }
-
-      if(static_cast<int>(segmentId[segId].size()) > maxSurfSize_)
-        continue;
-
-      double surfVal = static_cast<double>(
-        computeSurfaceCellCount(segmentId[segId], triangulation));
-      if(surfVal == 0)
-        surfVal = 1;
-      trajSurfPerFrame[frame][trajId] = surfVal;
-
-      const int currentChainId = finalTraj[trajId].finalChainId;
-      auto &localVertexLabel = vertexTrajPerFrame[frame];
-
-      for(const auto v : segmentId[segId]) {
-        const int check = vertexTraj[v];
-        if(check == -1) {
-          vertexTraj[v] = static_cast<int>(trajId);
-        } else if(check != static_cast<int>(trajId)) {
-          localTrajDouble[trajId] = 1;
-          if(check >= 0)
-            localTrajDouble[check] = 1;
-        }
-      }
-
-      if(currentChainId >= 0) {
-        std::unordered_set<ttk::SimplexId> dilatedSet;
-        dilatedSet.reserve(segmentId[segId].size() * 4);
-        for(const ttk::SimplexId v : segmentId[segId]) {
-          const ttk::SimplexId starCount
-            = triangulation->getVertexStarNumber(v);
-          for(ttk::SimplexId k = 0; k < starCount; ++k) {
-            ttk::SimplexId cellId;
-            triangulation->getVertexStar(v, k, cellId);
-            const int nCellVerts
-              = triangulation->getCellVertexNumber(cellId);
-            for(int cv = 0; cv < nCellVerts; ++cv) {
-              ttk::SimplexId vDil;
-              triangulation->getCellVertex(cellId, cv, vDil);
-              dilatedSet.insert(vDil);
-            }
-          }
-        }
-
-        for(const ttk::SimplexId v : dilatedSet) {
-          const int prev = localVertexLabel[v];
-          if(prev == -1) {
-            localVertexLabel[v] = currentChainId;
-          } else if(prev != currentChainId && prev != -2) {
-            localVertexLabel[v] = -2;
-          }
-        }
-      }
-    } //trajectory loop
   } // frame loop
 
   if(globalError != 0) {
@@ -690,7 +703,6 @@ int ttk::PostProcessingTracking::computeMergeTree(
     return -1;
   }
 
-  // Zero-out contributions from frames where the trajectory collided with another one 
   for(int frame = 0; frame < nFrames; ++frame) {
     for(size_t trajId = 0; trajId < nTraj; ++trajId) {
       if(trajDoublePerFrame[frame][trajId])
