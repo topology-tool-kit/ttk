@@ -107,11 +107,6 @@ int ttk::vp::VPath::execute(
    * NOTE:
    * when considering seeds of non-zero dimension, mutliple v-paths may exist
    * for a given seed.
-   *
-   * TODO:
-   * modify the output
-   * consider a pair<Cell, vector<SimplexId>> where SimplexId encodes the
-   * identifiers of the v-path going through that cell (for the given seed).
    */
 
 #ifdef TTK_ENABLE_OPENMP
@@ -135,7 +130,7 @@ int ttk::vp::VPath::execute(
       + ", f: "
       + std::to_string(isForward)
       + "): "
-      + std::to_string(output[i].size()) + " item(s).",
+      + std::to_string(output[i].size()) + " path(s).",
         debug::Priority::DETAIL);
   }
 
