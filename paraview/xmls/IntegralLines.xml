@@ -110,7 +110,7 @@ The sources are specified with a vtkPointSet, containing the simplices from whic
       </IntVectorProperty>
 
         <StringVectorProperty name="InputVertexScalarField"
-                              label="Vertex identifier field"
+                              label="Seed identifier field"
                               command="SetInputArrayToProcess"
                               element_types="0 0 0 0 2"
                               number_of_elements="5"
@@ -132,7 +132,7 @@ The sources are specified with a vtkPointSet, containing the simplices from whic
             value="1" />
         </Hints>
         <Documentation>
-          Select the vertex identifier scalar field in the sources.
+          Select the seed identifier scalar field in the sources.
         </Documentation>
       </StringVectorProperty>
 

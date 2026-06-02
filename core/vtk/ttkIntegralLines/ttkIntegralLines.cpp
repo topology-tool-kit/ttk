@@ -260,33 +260,24 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       vpath.setInputOffsets(
         static_cast<SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)));
 
-      std::vector<ttk::dcg::Cell> seedCells(seeds->GetNumberOfPoints());
-
-      printf("%d cells in the seed input\n",
-             seeds->GetNumberOfCells());
-
-      /*
-       * TODO
-       * the seeds should not be retrieved from the points but from the cells.
-       * then, it'd be transparent (vertex or edge or triangle or tetrahedron).
-       */
+      std::vector<ttk::dcg::Cell> seedCells(seeds->GetNumberOfCells());
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
       for(int i = 0; i < (int) seedCells.size(); i++){
-        seedCells[i].dim_ = 0;
+        vtkCell *cell = seeds->GetCell(i);
+        seedCells[i].dim_ = cell->GetCellDimension();
         seedCells[i].id_ = identifiers[i];
       }
 
-
-      std::vector<std::vector<ttk::dcg::Cell>> outputPath;
+      std::vector<std::vector<std::vector<ttk::dcg::Cell>>> outputPaths;
 
       int status{};
       ttkTemplateMacro(triangulation->getType(),
                        status = vpath.execute(
                          static_cast<TTK_TT *>(triangulation->getData()),
-                         seedCells, outputPath,
+                         seedCells, outputPaths,
                          // isForward?
                          Direction == 0));
 
@@ -294,8 +285,10 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
         return status;
 
       int pointNumber{0};
-      for(auto &path : outputPath){
-        pointNumber += path.size();
+      for(auto &seedPaths : outputPaths){
+        for(auto &path : seedPaths){
+          pointNumber += path.size();
+        }
       }
 
       vtkNew<vtkUnstructuredGrid> outputPathGeometry;
@@ -321,31 +314,34 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       int pointId = 0;
       int pathId = 0;
       int pathPointId = 0;
-      for(auto &path : outputPath){
+      for(auto &seedPaths : outputPaths){
 
-        pathPointId = 0;
+        for(auto &path : seedPaths){
 
-        for(auto &c : path){
-          float point[3];
-          triangulation->getCellIncenter(c.id_, c.dim_, point);
-          pointCoords->SetTuple3(pointId, point[0], point[1], point[2]);
-          vertexSeedId->SetTuple1(pointId, (int) seedCells[pathId].id_);
-          if((!pointId)||(pointId == pointNumber - 1)){
-            outputMaskField->SetTuple1(pointId, 0);
-          }
-          else{
-            outputMaskField->SetTuple1(pointId, 1);
-          }
-          pointId++;
-          pathPointId++;
+          pathPointId = 0;
 
-          if(pathPointId > 1){
-            vtkIdType edgeIds[2] = {pointId - 2, pointId - 1};
-            outputPathGeometry->InsertNextCell(VTK_LINE, 2, edgeIds);
-            cellSeedId->InsertNextValue((int) seedCells[pathId].id_);
+          for(auto &c : path){
+            float point[3];
+            triangulation->getCellIncenter(c.id_, c.dim_, point);
+            pointCoords->SetTuple3(pointId, point[0], point[1], point[2]);
+            vertexSeedId->SetTuple1(pointId, (int) seedCells[pathId].id_);
+            if((!pointId)||(pointId == pointNumber - 1)){
+              outputMaskField->SetTuple1(pointId, 0);
+            }
+            else{
+              outputMaskField->SetTuple1(pointId, 1);
+            }
+            pointId++;
+            pathPointId++;
+
+            if(pathPointId > 1){
+              vtkIdType edgeIds[2] = {pointId - 2, pointId - 1};
+              outputPathGeometry->InsertNextCell(VTK_LINE, 2, edgeIds);
+              cellSeedId->InsertNextValue((int) seedCells[pathId].id_);
+            }
           }
+          pathId++;
         }
-        pathId++;
       }
 
       vtkNew<vtkPoints> pointSet{};

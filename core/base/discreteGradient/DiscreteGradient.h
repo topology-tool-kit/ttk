@@ -440,7 +440,7 @@ user in the gradient.
        * Return all VPath terminating at the given cell.
        */
       template <typename triangulationType>
-      int getDescendingPaths(const Cell &cell,
+      int getAllDescendingPaths(const Cell &cell,
                             std::vector<std::vector<Cell> > &vpaths,
                             const triangulationType &triangulation) const;
 

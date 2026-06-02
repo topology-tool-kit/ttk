@@ -37,14 +37,15 @@ namespace ttk {
       /**
        * @brief Extract a vpath.
        *
-       * @param output Vector storing the output vpath.
+       * @param output Vector storing the output vpaths (1 entry per seed,
+       * with possibly multiple v-path per seed).
        * @param isForward Forward or backward vpath (default: forward).
        */
       template <class triangulationType>
       int execute(
         const triangulationType *triangulation,
         const std::vector<ttk::dcg::Cell> &seeds,
-        std::vector<std::vector<ttk::dcg::Cell>> &output,
+        std::vector<std::vector<std::vector<ttk::dcg::Cell>>> &output,
         const bool &isForward = false);
 
       /**
@@ -90,7 +91,8 @@ template <class triangulationType>
 int ttk::vp::VPath::execute(
   const triangulationType *triangulation,
   const std::vector<dcg::Cell> &seeds,
-  std::vector<std::vector<dcg::Cell>> &output, const bool &isForward){
+  std::vector<std::vector<std::vector<dcg::Cell>>> &output,
+  const bool &isForward){
 
   // fetching discrete gradient (or pre-computing it)
   dcg_.setDebugLevel(debugLevel_);
@@ -117,10 +119,10 @@ int ttk::vp::VPath::execute(
 #endif
   for(int i = 0; i < (int) seeds.size(); i++){
     if(!isForward){
-      dcg_.getDescendingPath(seeds[i], output[i], *triangulation);
+      dcg_.getAllDescendingPaths(seeds[i], output[i], *triangulation);
     }
     else{
-      dcg_.getAscendingPath(seeds[i], output[i], *triangulation);
+      //dcg_.getAscendingPath(seeds[i], output[i], *triangulation);
     }
 
 #ifdef TTK_ENABLE_OPENMP

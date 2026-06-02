@@ -1557,7 +1557,7 @@ int DiscreteGradient::getDescendingPath(
 }
 
 template <typename triangulationType>
-int DiscreteGradient::getDescendingPaths(
+int DiscreteGradient::getAllDescendingPaths(
   const Cell &cell,
   std::vector<std::vector<Cell> > &vpaths,
   const triangulationType &triangulation) const {
@@ -1609,7 +1609,7 @@ int DiscreteGradient::getDescendingPaths(
 
     } while(connectedEdgeId != -1);
   }
-  else if(cell.dim_ == 1){
+/*  else if(cell.dim_ == 1){
     // assume that cellId is an edge
     SimplexId currentId = cell.id_;
     SimplexId connectedTriangleId;
@@ -1643,15 +1643,29 @@ int DiscreteGradient::getDescendingPaths(
         SimplexId edgeId;
         triangulation.getTriangleEdge(connectedTriangleId, i, edgeId);
 
+        int nextTriangleId = -1;
         if(edgeId != currentId) {
-          // TODO
-          // handle forks (multiple valid edgeId, not necessarily the first one)
-          currentId = edgeId;
-          break;
+
+          // we need to only consider edges paired with triangles
+          const Cell edgeOutlet(1, edgeId);
+
+          if(isCellCritical(edgeOutlet)){
+            // this is a valid outlet
+            currentId = edgeId;
+            break;
+          }
+
+          nextTriangleId = getPairedCell(edgeOutlet, triangulation);
+          if(nextTriangleId != -1){
+            // TODO
+            // handle forks (multiple valid edgeId, not necessarily the first one)
+            currentId = edgeId;
+            break;
+          }
         }
       }
     }while(connectedTriangleId != -1);
-  }
+  }*/
   else{
     printWrn("Descending path not implemented for this simplex dimension!");
   }
