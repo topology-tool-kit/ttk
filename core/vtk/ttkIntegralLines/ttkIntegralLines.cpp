@@ -296,6 +296,7 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       vtkNew<vtkFloatArray> pointCoords{};
       vtkNew<vtkIntArray> vertexSeedId{};
       vtkNew<vtkIntArray> cellSeedId{};
+      vtkNew<vtkIntArray> cellForkId{};
       vtkNew<vtkUnsignedCharArray> outputMaskField{};
 
       pointCoords->SetNumberOfComponents(3);
@@ -310,12 +311,14 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       outputMaskField->SetName(ttk::MaskScalarFieldName);
 
       cellSeedId->SetName("SeedIdentifier");
+      cellForkId->SetName("ForkIdentifier");
 
       int pointId = 0;
-      int pathId = 0;
+      int localSeedId = 0;
       int pathPointId = 0;
       for(auto &seedPaths : outputPaths){
 
+        int forkId = 0;
         for(auto &path : seedPaths){
 
           pathPointId = 0;
@@ -324,7 +327,7 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
             float point[3];
             triangulation->getCellIncenter(c.id_, c.dim_, point);
             pointCoords->SetTuple3(pointId, point[0], point[1], point[2]);
-            vertexSeedId->SetTuple1(pointId, (int) seedCells[pathId].id_);
+            vertexSeedId->SetTuple1(pointId, (int) seedCells[localSeedId].id_);
             if((!pointId)||(pointId == pointNumber - 1)){
               outputMaskField->SetTuple1(pointId, 0);
             }
@@ -337,11 +340,13 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
             if(pathPointId > 1){
               vtkIdType edgeIds[2] = {pointId - 2, pointId - 1};
               outputPathGeometry->InsertNextCell(VTK_LINE, 2, edgeIds);
-              cellSeedId->InsertNextValue((int) seedCells[pathId].id_);
+              cellSeedId->InsertNextValue((int) seedCells[localSeedId].id_);
+              cellForkId->InsertNextValue((int) forkId);
             }
           }
-          pathId++;
+          forkId++;
         }
+        localSeedId++;
       }
 
       vtkNew<vtkPoints> pointSet{};
@@ -350,6 +355,7 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       outputPathGeometry->GetPointData()->AddArray(vertexSeedId);
       outputPathGeometry->GetPointData()->AddArray(outputMaskField);
       outputPathGeometry->GetCellData()->AddArray(cellSeedId);
+      outputPathGeometry->GetCellData()->AddArray(cellForkId);
 
       output->ShallowCopy(outputPathGeometry);
 
