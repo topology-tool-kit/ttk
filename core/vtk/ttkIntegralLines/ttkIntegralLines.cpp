@@ -297,6 +297,8 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       vtkNew<vtkIntArray> vertexSeedId{};
       vtkNew<vtkIntArray> cellSeedId{};
       vtkNew<vtkIntArray> cellForkId{};
+      vtkNew<vtkIntArray> vertexSimplexId{};
+      vtkNew<vtkIntArray> vertexSimplexDimension{};
       vtkNew<vtkUnsignedCharArray> outputMaskField{};
 
       pointCoords->SetNumberOfComponents(3);
@@ -305,6 +307,14 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       vertexSeedId->SetNumberOfComponents(1);
       vertexSeedId->SetNumberOfTuples(pointNumber);
       vertexSeedId->SetName("SeedIdentifier");
+
+      vertexSimplexId->SetNumberOfComponents(1);
+      vertexSimplexId->SetNumberOfTuples(pointNumber);
+      vertexSimplexId->SetName("SimplexIdentifier");
+
+      vertexSimplexDimension->SetNumberOfComponents(1);
+      vertexSimplexDimension->SetNumberOfTuples(pointNumber);
+      vertexSimplexDimension->SetName("SimplexDimension");
 
       outputMaskField->SetNumberOfComponents(1);
       outputMaskField->SetNumberOfTuples(pointNumber);
@@ -328,6 +338,8 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
             triangulation->getCellIncenter(c.id_, c.dim_, point);
             pointCoords->SetTuple3(pointId, point[0], point[1], point[2]);
             vertexSeedId->SetTuple1(pointId, (int) seedCells[localSeedId].id_);
+            vertexSimplexId->SetTuple1(pointId, (int) c.id_);
+            vertexSimplexDimension->SetTuple1(pointId, (int) c.dim_);
             if((!pointId)||(pointId == pointNumber - 1)){
               outputMaskField->SetTuple1(pointId, 0);
             }
@@ -354,6 +366,8 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       outputPathGeometry->SetPoints(pointSet);
       outputPathGeometry->GetPointData()->AddArray(vertexSeedId);
       outputPathGeometry->GetPointData()->AddArray(outputMaskField);
+      outputPathGeometry->GetPointData()->AddArray(vertexSimplexId);
+      outputPathGeometry->GetPointData()->AddArray(vertexSimplexDimension);
       outputPathGeometry->GetCellData()->AddArray(cellSeedId);
       outputPathGeometry->GetCellData()->AddArray(cellForkId);
 

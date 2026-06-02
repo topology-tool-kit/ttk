@@ -205,6 +205,9 @@ plateaus).
         default_values="0"
         panel_visibility="advanced">
         <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="BackEnd" values="0" />
+        </Hints>
         <Documentation>
         Enables forking when the integral line comes accross a saddle vertex.
         In that case, it will spawn as many new integral lines as there are

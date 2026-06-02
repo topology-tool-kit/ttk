@@ -139,7 +139,8 @@ int ttk::vp::VPath::execute(
         debug::Priority::DETAIL);
   }
 
-  printMsg("Computed " + std::to_string(output.size()) + " v-path(s)", 1,
+  printMsg("Computed v-path(s) from "
+    + std::to_string(output.size()) + " seed(s)", 1,
     t.getElapsedTime(), threadNumber_);
 
   return 0;
