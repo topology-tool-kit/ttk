@@ -553,16 +553,27 @@ int ttk::PostProcessingTracking::computeMergeTree(
     exTreeM.setThreadNumber(1);
     exTreeM.setDebugLevel(0);
 
-    std::vector<ttk::SimplexId> orderJoin(order);
-    for(ttk::SimplexId i = 0; i < nPixels; ++i)
-      orderJoin[i] = nPixels - orderJoin[i] - 1;
+    const ttk::SimplexId *mtOrder = order.data();
+    ttk::SimplexId *mtManifold = descendingManifold.data();
+    ttk::SimplexId *mtScratch = ascendingManifold.data();
 
-    const auto treeType
-      = useSplitTree_ ? ttk::ftm::TreeType::Split : ttk::ftm::TreeType::Join;
+    std::vector<ttk::SimplexId> orderInv;
+    if(!useSplitTree_) {
+      orderInv.resize(nPixels);
+      for(ttk::SimplexId i = 0; i < nPixels; ++i)
+        orderInv[i] = nPixels - order[i] - 1;
+      mtOrder = orderInv.data();
+      mtManifold = ascendingManifold.data();
+      mtScratch = descendingManifold.data();
+    }
+
+    const auto treeType =  ttk::ftm::TreeType::Join;
     const int statusMT = exTreeM.computePairs<triangulationType>(
       persistencePairs, cpMap, branches, segmentation.data(),
-      regionType.data(), ascendingManifold.data(), descendingManifold.data(),
-      orderJoin.data(), triangulation, treeType);
+      regionType.data(), mtManifold, mtScratch,
+      mtOrder, triangulation, treeType);
+
+
     if(statusMT != 1) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic write
