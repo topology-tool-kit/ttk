@@ -12,6 +12,8 @@
 #include <vtkStringArray.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <iostream>
+
 #ifdef TTK_ENABLE_MPI_TIME
 #include <mpi.h>
 #endif

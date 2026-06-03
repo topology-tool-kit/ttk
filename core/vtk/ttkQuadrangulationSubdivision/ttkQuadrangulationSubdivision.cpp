@@ -8,6 +8,7 @@
 #include <vtkInformation.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
+#include <vtkVersionMacros.h>
 
 vtkStandardNewMacro(ttkQuadrangulationSubdivision);
 
@@ -55,7 +56,11 @@ int ttkQuadrangulationSubdivision::RequestData(
   this->preconditionTriangulation(triangulation);
 
   auto inputCells = quads->GetPolys();
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 6, 1)
+  if(inputCells == nullptr || inputCells->GetConnectivityArray() == nullptr) {
+#else
   if(inputCells == nullptr || inputCells->GetData() == nullptr) {
+#endif
     this->printErr("Invalid input quadrangle cells");
     return 0;
   }

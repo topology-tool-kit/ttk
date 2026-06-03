@@ -13,6 +13,7 @@
 #include <vtkInformationVector.h>
 #include <vtkLongLongArray.h>
 #include <vtkPointData.h>
+#include <vtkVersionMacros.h>
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -221,7 +222,11 @@ int finalize(vector<vector<TrackingFromOverlap::Nodes>> &levelTimeNodesMap,
       }
 
     auto cellArray = vtkSmartPointer<vtkCellArray>::New();
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 6, 1)
+    cellArray->ImportLegacyFormat(cells);
+#else
     cellArray->SetCells(nEdgesT + nEdgesN, cells);
+#endif
     trackingGraph->SetCells(VTK_LINE, cellArray);
 
     auto cellData = trackingGraph->GetCellData();
