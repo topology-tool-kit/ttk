@@ -1,6 +1,5 @@
 #include <PairCells.h>
 
-#include <boost/functional/hash.hpp>
 #include <numeric>
 
 using namespace ttk::rpd;

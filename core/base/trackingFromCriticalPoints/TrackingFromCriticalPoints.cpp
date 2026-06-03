@@ -39,38 +39,33 @@ void ttk::TrackingFromCriticalPoints::sortCriticalPoint(
   for(unsigned int i = 0; i < d.size(); i++) {
     std::array<float, 3> birthCoords = d[i].birth.coords;
     std::array<float, 3> deathCoords = d[i].death.coords;
-    const double pers = std::abs(d[i].persistence());
-    const double birthVal
-      = usePersistenceForDistance_ ? pers : d[i].birth.sfValue;
-    const double deathVal
-      = usePersistenceForDistance_ ? pers : d[i].death.sfValue;
-    if(pers > minimumRelevantPersistence) {
+    if(std::abs(d[i].persistence()) > minimumRelevantPersistence) {
       switch(d[i].dim) {
         case 0:
           minCoords.push_back(birthCoords);
-          minScalar.push_back(birthVal);
+          minScalar.push_back(d[i].birth.sfValue);
           mapMin.push_back(i);
 
           sad_1Coords.push_back(deathCoords);
-          sad_1Scalar.push_back(deathVal);
+          sad_1Scalar.push_back(d[i].death.sfValue);
           mapSad_1.push_back(i);
           break;
         case 1:
           sad_2Coords.push_back(birthCoords);
-          sad_2Scalar.push_back(birthVal);
+          sad_2Scalar.push_back(d[i].birth.sfValue);
           mapSad_2.push_back(i);
 
           maxCoords.push_back(deathCoords);
-          maxScalar.push_back(deathVal);
+          maxScalar.push_back(d[i].death.sfValue);
           mapMax.push_back(i);
           break;
         case 2:
           sad_1Coords.push_back(birthCoords);
-          sad_1Scalar.push_back(deathVal);
+          sad_1Scalar.push_back(d[i].birth.sfValue);
           mapSad_1.push_back(i);
 
           sad_2Coords.push_back(deathCoords);
-          sad_2Scalar.push_back(deathVal);
+          sad_2Scalar.push_back(d[i].death.sfValue);
           mapSad_2.push_back(i);
           break;
       }
