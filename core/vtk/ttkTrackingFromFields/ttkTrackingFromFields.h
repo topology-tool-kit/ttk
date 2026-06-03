@@ -291,7 +291,6 @@ private:
   double PS{0};
   double PF{0};
 
-
   double RelativeDestructionCost{0.1};
   double AssignmentPrecision{0.01};
   int AssignmentMethod{0};
