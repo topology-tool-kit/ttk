@@ -1,12 +1,12 @@
 #include <vtkDoubleArray.h>
 #include <vtkInformation.h>
-#include <vtkPointData.h>
 #include <vtkIntArray.h>
 #include <vtkLine.h>
+#include <vtkPointData.h>
 
 #include <cstdio>
- // #include <vtkNew.h>
- // #include <vtkSmartPointer.h>
+// #include <vtkNew.h>
+// #include <vtkSmartPointer.h>
 
 #include <ttkMacros.h>
 #include <ttkTrackingFromFields.h>
@@ -47,7 +47,9 @@ int ttkTrackingFromFields::RequestDataObject(
   vtkInformationVector *outputVector) {
 
   vtkInformation *outInfo = outputVector->GetInformationObject(0);
-  if(outInfo&& !vtkUnstructuredGrid::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()))) {
+  if(outInfo
+     && !vtkUnstructuredGrid::SafeDownCast(
+       outInfo->Get(vtkDataObject::DATA_OBJECT()))) {
     vtkNew<vtkUnstructuredGrid> ug;
     outInfo->Set(vtkDataObject::DATA_OBJECT(), ug);
   }
@@ -63,8 +65,7 @@ int ttkTrackingFromFields::RequestDataObject(
   if(inputDO == nullptr)
     return 0;
 
-  if(currentDO == nullptr
-     || !currentDO->IsA(inputDO->GetClassName())) {
+  if(currentDO == nullptr || !currentDO->IsA(inputDO->GetClassName())) {
     vtkSmartPointer<vtkDataObject> newDO
       = vtkSmartPointer<vtkDataObject>::Take(inputDO->NewInstance());
     outInfo1->Set(vtkDataObject::DATA_OBJECT(), newDO);
@@ -294,8 +295,8 @@ int ttkTrackingFromFields::applyPostProcessing(
 
   vtkIntArray *compIdArray = vtkIntArray::SafeDownCast(
     output->GetCellData()->GetArray("ConnectedComponentId"));
-  vtkIntArray *timeArray = vtkIntArray::SafeDownCast(
-    output->GetPointData()->GetArray("TimeStep"));
+  vtkIntArray *timeArray
+    = vtkIntArray::SafeDownCast(output->GetPointData()->GetArray("TimeStep"));
   vtkIntArray *vertexGlobalIdArray = vtkIntArray::SafeDownCast(
     output->GetPointData()->GetArray("VertexGlobalId"));
   vtkIntArray *criticalTypeArray = vtkIntArray::SafeDownCast(
@@ -325,26 +326,24 @@ int ttkTrackingFromFields::applyPostProcessing(
   }
 
   vtkNew<vtkIdList> cellPointIds;
-  auto collectUniqueSortedPointIds
-    = [&](const std::vector<vtkIdType> &cellIds,
-          std::vector<vtkIdType> &pointIds) {
-        pointIds.clear();
-        pointIds.reserve(cellIds.size() * 2);
-        for(const vtkIdType cId : cellIds) {
-          cellPointIds->Reset();
-          output->GetCellPoints(cId, cellPointIds);
-          const vtkIdType n = cellPointIds->GetNumberOfIds();
-          for(vtkIdType k = 0; k < n; ++k)
-            pointIds.push_back(cellPointIds->GetId(k));
-        }
-        std::sort(pointIds.begin(), pointIds.end());
-        pointIds.erase(std::unique(pointIds.begin(), pointIds.end()),
-                       pointIds.end());
-        std::sort(pointIds.begin(), pointIds.end(),
-                  [&](vtkIdType a, vtkIdType b) {
-                    return timeArray->GetValue(a) < timeArray->GetValue(b);
-                  });
-      };
+  auto collectUniqueSortedPointIds = [&](const std::vector<vtkIdType> &cellIds,
+                                         std::vector<vtkIdType> &pointIds) {
+    pointIds.clear();
+    pointIds.reserve(cellIds.size() * 2);
+    for(const vtkIdType cId : cellIds) {
+      cellPointIds->Reset();
+      output->GetCellPoints(cId, cellPointIds);
+      const vtkIdType n = cellPointIds->GetNumberOfIds();
+      for(vtkIdType k = 0; k < n; ++k)
+        pointIds.push_back(cellPointIds->GetId(k));
+    }
+    std::sort(pointIds.begin(), pointIds.end());
+    pointIds.erase(
+      std::unique(pointIds.begin(), pointIds.end()), pointIds.end());
+    std::sort(pointIds.begin(), pointIds.end(), [&](vtkIdType a, vtkIdType b) {
+      return timeArray->GetValue(a) < timeArray->GetValue(b);
+    });
+  };
 
   size_t tIdx = 0;
   for(const auto &kv : cellsByTraj) {
@@ -400,8 +399,7 @@ int ttkTrackingFromFields::applyPostProcessing(
   ppt.setBoundaryYMin(bounds[2]);
   ppt.setBoundaryYMax(bounds[3]);
 
-  ppt.preconditionTriangulation(
-    const_cast<triangulationType *>(triangulation));
+  ppt.preconditionTriangulation(const_cast<triangulationType *>(triangulation));
 
   if(DoMergeTree) {
     std::vector<void *> inputFields;
@@ -413,7 +411,7 @@ int ttkTrackingFromFields::applyPostProcessing(
 
   std::vector<std::vector<int>> vertexTrajPerFrame;
 
-  // merge-tree segmentation only 
+  // merge-tree segmentation only
   if(!rebuildMesh) {
     std::vector<ttk::PostProcessingTracking::LinearTrajectory> rawTraj;
     rawTraj.reserve(numTraj);
@@ -429,8 +427,7 @@ int ttkTrackingFromFields::applyPostProcessing(
       lt.criticalPoints.reserve(trajTime[i].size());
       for(size_t k = 0; k < trajTime[i].size(); ++k)
         lt.criticalPoints.emplace_back(
-          trajTime[i][k],
-          static_cast<ttk::SimplexId>(trajVertexId[i][k]));
+          trajTime[i][k], static_cast<ttk::SimplexId>(trajVertexId[i][k]));
       rawTraj.push_back(std::move(lt));
     }
 
@@ -459,9 +456,9 @@ int ttkTrackingFromFields::applyPostProcessing(
   std::vector<double> surfMin, surfMax, surfMean;
 
   const int status = ppt.execute<dataType, triangulationType>(
-    trajTime, trajVertexId, trajX, trajY, trajCriticalType,
-    linearTraj, finalTraj, fuseRecords,
-    surfMin, surfMax, surfMean, vertexTrajPerFrame, triangulation);
+    trajTime, trajVertexId, trajX, trajY, trajCriticalType, linearTraj,
+    finalTraj, fuseRecords, surfMin, surfMax, surfMean, vertexTrajPerFrame,
+    triangulation);
   if(status != 1) {
     this->printWrn("Post-processing returned non-success status; "
                    "keeping the raw tracking mesh.");
@@ -472,7 +469,8 @@ int ttkTrackingFromFields::applyPostProcessing(
 
   int maxChainId = -1;
   for(const auto &c : finalTraj) {
-    if(c.finalChainId > maxChainId) maxChainId = c.finalChainId;
+    if(c.finalChainId > maxChainId)
+      maxChainId = c.finalChainId;
   }
   const int nChains = maxChainId + 1;
   std::vector<int> chainCriticalType(std::max(nChains, 0), -1);
@@ -520,28 +518,42 @@ int ttkTrackingFromFields::applyPostProcessing(
     const auto &c = finalTraj[i];
 
     double x0, y0, x1, y1;
-	int sF;
-	if (DoStartFrame && (DoLinearize || LinearizeFuse)) {sF = StartFrame;}
-    else {sF = c.startFrame;}
+    int sF;
+    if(DoStartFrame && (DoLinearize || LinearizeFuse)) {
+      sF = StartFrame;
+    } else {
+      sF = c.startFrame;
+    }
     const int eF = c.endFrame;
     if(DoLinearize) {
-      x0 = c.evalX(sF); y0 = c.evalY(sF); x1 = c.evalX(eF); y1 = c.evalY(eF);
+      x0 = c.evalX(sF);
+      y0 = c.evalY(sF);
+      x1 = c.evalX(eF);
+      y1 = c.evalY(eF);
     } else if(!c.criticalPoints.empty()) {
-      x0 = c.evalX(sF); y0 = c.evalY(sF); x1 = c.evalX(eF); y1 = c.evalY(eF);
+      x0 = c.evalX(sF);
+      y0 = c.evalY(sF);
+      x1 = c.evalX(eF);
+      y1 = c.evalY(eF);
       const ttk::SimplexId v0 = c.criticalPoints.front().second;
       const ttk::SimplexId v1 = c.criticalPoints.back().second;
       if(v0 >= 0 && v0 < triangulation->getNumberOfVertices()) {
         float a, b, cZ;
         triangulation->getVertexPoint(v0, a, b, cZ);
-        x0 = a; y0 = b;
+        x0 = a;
+        y0 = b;
       }
       if(v1 >= 0 && v1 < triangulation->getNumberOfVertices()) {
         float a, b, cZ;
         triangulation->getVertexPoint(v1, a, b, cZ);
-        x1 = a; y1 = b;
+        x1 = a;
+        y1 = b;
       }
     } else {
-      x0 = c.evalX(sF); y0 = c.evalY(sF); x1 = c.evalX(eF); y1 = c.evalY(eF);
+      x0 = c.evalX(sF);
+      y0 = c.evalY(sF);
+      x1 = c.evalX(eF);
+      y1 = c.evalY(eF);
     }
 
     const vtkIdType p0 = 2 * i + 0;
@@ -776,11 +788,11 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   if(status == 1 && EnablePostProc) {
-    ttkVtkTemplateMacro(
-      inputScalarFields[0]->GetDataType(), triangulation->getType(),
-      (this->applyPostProcessing<VTK_TT, TTK_TT>(
-        output, segOutput, input, inputScalarFields,
-        (TTK_TT *)triangulation->getData())));
+    ttkVtkTemplateMacro(inputScalarFields[0]->GetDataType(),
+                        triangulation->getType(),
+                        (this->applyPostProcessing<VTK_TT, TTK_TT>(
+                          output, segOutput, input, inputScalarFields,
+                          (TTK_TT *)triangulation->getData())));
   }
   return status;
 }

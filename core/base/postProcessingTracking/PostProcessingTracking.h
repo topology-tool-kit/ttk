@@ -4,7 +4,8 @@
 /// \date April 2026
 ///
 /// \brief TTK processing package for post-processing tracked trajectories:
-/// linearization, fusion (chaining), and merge-tree-based segmentation statistics.
+/// linearization, fusion (chaining), and merge-tree-based segmentation
+/// statistics.
 ///
 /// This module takes the initial trajectories produced by an upstream tracker
 /// (TrackingFromFields) and refines them:
@@ -13,7 +14,7 @@
 ///   - fusion: greedily chain temporally-adjacent, directionally-consistent
 ///     linearized segments into longer trajectories;
 ///   - merge-tree segmentation: per-frame, compute a merge tree of the scalar
-///     field and associate each trajectory 
+///     field and associate each trajectory
 ///
 /// \sa ttk::TrackingFromFields
 /// \sa ttk::TrackingFromCriticalPoints
@@ -95,28 +96,61 @@ namespace ttk {
       return triangulation->preconditionVertexStars();
     }
 
+    inline void setInputScalars(const std::vector<void *> &inputScalars) {
+      inputData_ = inputScalars;
+    }
+    inline void setCosCol(double v) {
+      cosCol_ = v;
+    }
+    inline void setMaxRadius(double v) {
+      maxRadius_ = v;
+    }
+    inline void setMaxFrameDist(int v) {
+      maxFrameDist_ = v;
+      minFrameDist_ = -v;
+    }
 
-    inline void setInputScalars(const std::vector<void *> &inputScalars) {inputData_ = inputScalars;}
-    inline void setCosCol(double v) {cosCol_ = v;}
-    inline void setMaxRadius(double v) {maxRadius_ = v;}
-    inline void setMaxFrameDist(int v) {maxFrameDist_ = v;minFrameDist_ = -v;}
-    
-	inline void setPersistenceThreshold(double v) {persistenceThreshold_ = v;}
-    inline void setMaxSurfSize(int v) {maxSurfSize_ = v;}
-    inline void setUseOtsuSimplification(bool v) {useOtsuSimplification_ = v;}
-    inline void setOtsuBins(int v) {otsuBins_ = v;}
-    
-    inline void setBoundaryXMin(double v) {boundaryXMin_ = v;}
-    inline void setBoundaryXMax(double v) {boundaryXMax_ = v;}
-    inline void setBoundaryYMin(double v) {boundaryYMin_ = v;}
-    inline void setBoundaryYMax(double v) {boundaryYMax_ = v;}
-    
-	inline void setDoLinearize(bool v) {doLinearize_ = v;}
-    inline void setDoFusion(bool v) {doFusion_ = v;}
-    inline void setDoLinearizeFuse(bool v) {doLinearizeFuse_ = v;}
-	inline void setDoMergeTree(bool v) {doMergeTree_ = v;}
-    inline void setUseSplitTree(int v) {useSplitTree_ = v;}
+    inline void setPersistenceThreshold(double v) {
+      persistenceThreshold_ = v;
+    }
+    inline void setMaxSurfSize(int v) {
+      maxSurfSize_ = v;
+    }
+    inline void setUseOtsuSimplification(bool v) {
+      useOtsuSimplification_ = v;
+    }
+    inline void setOtsuBins(int v) {
+      otsuBins_ = v;
+    }
 
+    inline void setBoundaryXMin(double v) {
+      boundaryXMin_ = v;
+    }
+    inline void setBoundaryXMax(double v) {
+      boundaryXMax_ = v;
+    }
+    inline void setBoundaryYMin(double v) {
+      boundaryYMin_ = v;
+    }
+    inline void setBoundaryYMax(double v) {
+      boundaryYMax_ = v;
+    }
+
+    inline void setDoLinearize(bool v) {
+      doLinearize_ = v;
+    }
+    inline void setDoFusion(bool v) {
+      doFusion_ = v;
+    }
+    inline void setDoLinearizeFuse(bool v) {
+      doLinearizeFuse_ = v;
+    }
+    inline void setDoMergeTree(bool v) {
+      doMergeTree_ = v;
+    }
+    inline void setUseSplitTree(int v) {
+      useSplitTree_ = v;
+    }
 
     /// @brief Linearize + (optional) chain input per-trajectory point clouds.
     ///
@@ -130,17 +164,17 @@ namespace ttk {
     /// @param[out] outputTraj    final trajectory set (fused chains + un-fused
     ///                           survivors)
     /// @param[out] fuseRecords   list of i -> j fusion links
-    int correctTrajectory(
-      const std::vector<std::vector<int>> &trajTime,
-      const std::vector<std::vector<int>> &trajVertexId,
-      const std::vector<std::vector<double>> &coordsX,
-      const std::vector<std::vector<double>> &coordsY,
-      const std::vector<int> &trajCriticalType,
-      std::vector<LinearTrajectory> &linearTraj,
-      std::vector<LinearTrajectory> &outputTraj,
-      std::vector<FuseRecord> &fuseRecords);
+    int correctTrajectory(const std::vector<std::vector<int>> &trajTime,
+                          const std::vector<std::vector<int>> &trajVertexId,
+                          const std::vector<std::vector<double>> &coordsX,
+                          const std::vector<std::vector<double>> &coordsY,
+                          const std::vector<int> &trajCriticalType,
+                          std::vector<LinearTrajectory> &linearTraj,
+                          std::vector<LinearTrajectory> &outputTraj,
+                          std::vector<FuseRecord> &fuseRecords);
 
-    /// @brief Compute merge-tree-based segmentation per trajectory && per frame.
+    /// @brief Compute merge-tree-based segmentation per trajectory && per
+    /// frame.
     ///
     /// @param[in]  triangulation        triangulation of the scalar field
     /// @param[in,out] finalTraj         trajectories to annotate
@@ -185,9 +219,9 @@ namespace ttk {
       const std::vector<LinearTrajectory> &newTraj,
       std::vector<std::array<double, 3>> &meanDir);
 
-    int computeSurfaceCellCount(
-      const std::vector<ttk::SimplexId> &surfVertices,
-      const ttk::AbstractTriangulation *triangulation);
+    int
+      computeSurfaceCellCount(const std::vector<ttk::SimplexId> &surfVertices,
+                              const ttk::AbstractTriangulation *triangulation);
 
     template <class dataType>
     dataType otsuThresholdLocal(const std::vector<ttk::SimplexId> &verts,
@@ -199,7 +233,6 @@ namespace ttk {
                                  const dataType *scalars,
                                  const triangulationType *triangulation,
                                  const int otsuBins);
-
 
     std::vector<void *> inputData_{};
 
@@ -222,17 +255,17 @@ namespace ttk {
     bool doFusion_{true};
     bool doLinearizeFuse_{true};
     bool doMergeTree_{false};
-    int useSplitTree_{2}; 
+    int useSplitTree_{2};
   };
 
 } // namespace ttk
 
 #ifdef TTK_ENABLE_EIGEN
-inline int ttk::PostProcessingTracking::linearRegression(
-  const std::vector<int> &T,
-  const std::vector<double> &X,
-  const std::vector<double> &Y,
-  LinearTrajectory &traj) {
+inline int
+  ttk::PostProcessingTracking::linearRegression(const std::vector<int> &T,
+                                                const std::vector<double> &X,
+                                                const std::vector<double> &Y,
+                                                LinearTrajectory &traj) {
   const int n = static_cast<int>(T.size());
   if(n < 1)
     return 0;
@@ -267,7 +300,8 @@ inline int ttk::PostProcessingTracking::computeMeanUnitDirectionLinear(
     std::array<double, 3> v{t.ax, t.ay, 1.0};
     const double mag = ttk::Geometry::magnitude<double>(v.data(), 3);
     if(mag > 0.0) {
-      ttk::Geometry::scaleVector<double>(v.data(), 1.0 / mag, meanDir[i].data(), 3);
+      ttk::Geometry::scaleVector<double>(
+        v.data(), 1.0 / mag, meanDir[i].data(), 3);
     }
   }
   return 1;
@@ -384,10 +418,9 @@ void ttk::PostProcessingTracking::cleanDarkSegmentInPlace(
       inSeg[v] = 0;
     kept.clear();
     std::vector<ttk::SimplexId> tmp = segmentVerts;
-    std::sort(tmp.begin(), tmp.end(),
-              [&](ttk::SimplexId a, ttk::SimplexId b) {
-                return scalars[a] < scalars[b];
-              });
+    std::sort(tmp.begin(), tmp.end(), [&](ttk::SimplexId a, ttk::SimplexId b) {
+      return scalars[a] < scalars[b];
+    });
     for(size_t i = 0; i < std::min(minKeep, tmp.size()); ++i) {
       kept.push_back(tmp[i]);
       inSeg[tmp[i]] = 1;
@@ -451,9 +484,8 @@ int ttk::PostProcessingTracking::computeMergeTree(
   const ttk::SimplexId nPixels = triangulation->getNumberOfVertices();
   const int nFrames = static_cast<int>(inputData_.size());
 
-  this->printMsg("Merge-tree segmentation ("
-                 + std::to_string(nFrames) + " frames, "
-                 + std::to_string(nPixels) + " vertices, "
+  this->printMsg("Merge-tree segmentation (" + std::to_string(nFrames)
+                 + " frames, " + std::to_string(nPixels) + " vertices, "
                  + std::to_string(nTraj) + " trajectories)");
 
   // Per-frame / per-traj accumulated surface, and per-frame collision flags
@@ -462,8 +494,7 @@ int ttk::PostProcessingTracking::computeMergeTree(
   std::vector<std::vector<char>> trajDoublePerFrame(
     nFrames, std::vector<char>(nTraj, 0));
 
-  vertexTrajPerFrame.assign(
-    nFrames, std::vector<int>(nPixels, -1));
+  vertexTrajPerFrame.assign(nFrames, std::vector<int>(nPixels, -1));
 
   int globalError = 0;
 
@@ -501,12 +532,10 @@ int ttk::PostProcessingTracking::computeMergeTree(
     lts.preconditionTriangulation(
       const_cast<triangulationType *>(triangulation));
 
-    const int statusSimp
-      = lts.removeNonPersistentExtrema<dataType, ttk::SimplexId,
-                                       triangulationType>(
-        outScalars.data(), offsets.data(), triangulation, persThresh, true,
-        ttk::lts::LocalizedTopologicalSimplification::PAIR_TYPE::
-          EXTREMUM_SADDLE);
+    const int statusSimp = lts.removeNonPersistentExtrema<
+      dataType, ttk::SimplexId, triangulationType>(
+      outScalars.data(), offsets.data(), triangulation, persThresh, true,
+      ttk::lts::LocalizedTopologicalSimplification::PAIR_TYPE::EXTREMUM_SADDLE);
     if(statusSimp != 0) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic write
@@ -551,9 +580,9 @@ int ttk::PostProcessingTracking::computeMergeTree(
     auto &localVertexLabel = vertexTrajPerFrame[frame];
     std::vector<int> vertexTraj(nPixels, -1);
 
-    auto runTree = [&](const ttk::SimplexId *mtOrder,
-                       ttk::SimplexId *mtManifold,
-                       ttk::SimplexId *mtScratch) -> bool {
+    auto runTree
+      = [&](const ttk::SimplexId *mtOrder, ttk::SimplexId *mtManifold,
+            ttk::SimplexId *mtScratch) -> bool {
       std::vector<ttk::SimplexId> segmentation(nPixels, -1);
       std::vector<char> regionType(nPixels, 0);
       std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> persistencePairs;
@@ -651,8 +680,7 @@ int ttk::PostProcessingTracking::computeMergeTree(
             for(ttk::SimplexId k = 0; k < starCount; ++k) {
               ttk::SimplexId cellId;
               triangulation->getVertexStar(v, k, cellId);
-              const int nCellVerts
-                = triangulation->getCellVertexNumber(cellId);
+              const int nCellVerts = triangulation->getCellVertexNumber(cellId);
               for(int cv = 0; cv < nCellVerts; ++cv) {
                 ttk::SimplexId vDil;
                 triangulation->getCellVertex(cellId, cv, vDil);
@@ -675,18 +703,18 @@ int ttk::PostProcessingTracking::computeMergeTree(
     };
 
     bool ok = true;
-    if(useSplitTree_ == 1) { 
-      ok = runTree(order.data(), descendingManifold.data(),
-                   ascendingManifold.data());
+    if(useSplitTree_ == 1) {
+      ok = runTree(
+        order.data(), descendingManifold.data(), ascendingManifold.data());
     } else if(useSplitTree_ == 0) {
-      ok = runTree(orderInv.data(), ascendingManifold.data(),
-                   descendingManifold.data());
+      ok = runTree(
+        orderInv.data(), ascendingManifold.data(), descendingManifold.data());
     } else {
-      ok = runTree(order.data(), descendingManifold.data(),
-                   ascendingManifold.data());
+      ok = runTree(
+        order.data(), descendingManifold.data(), ascendingManifold.data());
       if(ok)
-        ok = runTree(orderInv.data(), ascendingManifold.data(),
-                     descendingManifold.data());
+        ok = runTree(
+          orderInv.data(), ascendingManifold.data(), descendingManifold.data());
     }
 
     if(!ok) {
@@ -710,7 +738,7 @@ int ttk::PostProcessingTracking::computeMergeTree(
     }
   }
 
-  // Per-trajectory stat 
+  // Per-trajectory stat
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif
@@ -761,8 +789,7 @@ int ttk::PostProcessingTracking::execute(
   ttk::Timer timer;
 
   this->correctTrajectory(trajTime, trajVertexId, coordsX, coordsY,
-                          trajCriticalType, linearTraj, finalTraj,
-                          fuseRecords);
+                          trajCriticalType, linearTraj, finalTraj, fuseRecords);
 
   const int numFinal = static_cast<int>(finalTraj.size());
   surfMin.assign(numFinal, 0.0);
@@ -771,8 +798,7 @@ int ttk::PostProcessingTracking::execute(
 
   if(doMergeTree_) {
     this->computeMergeTree<dataType, triangulationType>(
-      triangulation, finalTraj, surfMin, surfMax, surfMean,
-      vertexTrajPerFrame);
+      triangulation, finalTraj, surfMin, surfMax, surfMean, vertexTrajPerFrame);
   } else {
     vertexTrajPerFrame.clear();
   }

@@ -26,9 +26,9 @@ int ttk::PostProcessingTracking::correctTrajectory(
            && (sFrame - eFrame < maxFrameDist_);
   };
 
-  auto dist2AtStartFrame = [&](const LinearTrajectory &coefI,
-                               const LinearTrajectory &coefJ,
-                               int sFrame) -> double {
+  auto dist2AtStartFrame
+    = [&](const LinearTrajectory &coefI, const LinearTrajectory &coefJ,
+          int sFrame) -> double {
     const double xTh = coefI.evalX(sFrame);
     const double yTh = coefI.evalY(sFrame);
     const double xJ = coefJ.evalX(sFrame);
@@ -37,32 +37,31 @@ int ttk::PostProcessingTracking::correctTrajectory(
     return dx * dx + dy * dy;
   };
 
-  auto buildSamplesForChain = [&](const std::vector<FuseRecord> &chain,
-                                  std::vector<int> &T,
-                                  std::vector<double> &X,
-                                  std::vector<double> &Y) {
-    const int capacity = static_cast<int>(chain.size()) * 2 + 2;
-    T.reserve(capacity);
-    X.reserve(capacity);
-    Y.reserve(capacity);
-    for(const auto &r : chain) {
-      const std::vector<int> T2{trajTime[r.i].front(), r.endFrame};
-      const auto &cI = linearTraj[r.i];
-      for(const int t : T2) {
-        X.push_back(cI.evalX(t));
-        Y.push_back(cI.evalY(t));
-        T.push_back(t);
-      }
-    }
-    const FuseRecord &r = chain.back();
-    const auto &cJ = linearTraj[r.j];
-    X.push_back(cJ.evalX(r.startFrame));
-    X.push_back(cJ.evalX(trajTime[r.j].back()));
-    Y.push_back(cJ.evalY(r.startFrame));
-    Y.push_back(cJ.evalY(trajTime[r.j].back()));
-    T.push_back(r.startFrame);
-    T.push_back(trajTime[r.j].back());
-  };
+  auto buildSamplesForChain
+    = [&](const std::vector<FuseRecord> &chain, std::vector<int> &T,
+          std::vector<double> &X, std::vector<double> &Y) {
+        const int capacity = static_cast<int>(chain.size()) * 2 + 2;
+        T.reserve(capacity);
+        X.reserve(capacity);
+        Y.reserve(capacity);
+        for(const auto &r : chain) {
+          const std::vector<int> T2{trajTime[r.i].front(), r.endFrame};
+          const auto &cI = linearTraj[r.i];
+          for(const int t : T2) {
+            X.push_back(cI.evalX(t));
+            Y.push_back(cI.evalY(t));
+            T.push_back(t);
+          }
+        }
+        const FuseRecord &r = chain.back();
+        const auto &cJ = linearTraj[r.j];
+        X.push_back(cJ.evalX(r.startFrame));
+        X.push_back(cJ.evalX(trajTime[r.j].back()));
+        Y.push_back(cJ.evalY(r.startFrame));
+        Y.push_back(cJ.evalY(trajTime[r.j].back()));
+        T.push_back(r.startFrame);
+        T.push_back(trajTime[r.j].back());
+      };
 
   auto fitLineCoefForChain
     = [&](const std::vector<FuseRecord> &chain) -> LinearTrajectory {
@@ -126,8 +125,7 @@ int ttk::PostProcessingTracking::correctTrajectory(
       lt.criticalPoints.reserve(trajTime[i].size());
       for(size_t k = 0; k < trajTime[i].size(); ++k) {
         lt.criticalPoints.emplace_back(
-          trajTime[i][k],
-          static_cast<ttk::SimplexId>(trajVertexId[i][k]));
+          trajTime[i][k], static_cast<ttk::SimplexId>(trajVertexId[i][k]));
       }
       linearTraj[i].finalChainId = static_cast<int>(outputTraj.size());
       lt.finalChainId = linearTraj[i].finalChainId;
@@ -149,45 +147,52 @@ int ttk::PostProcessingTracking::correctTrajectory(
   const double maxLinkDist2 = maxRadius_;
 
   for(int i = 0; i < numTraj; ++i) {
-    if(usedAsStart[i] || trajTime[i].empty()) continue;
+    if(usedAsStart[i] || trajTime[i].empty())
+      continue;
 
     const int endFrame = trajTime[i].back();
 
-    int    bestJ     = -1;
+    int bestJ = -1;
     double bestScore = std::numeric_limits<double>::infinity();
 
-    const double dist2Denom  = (maxLinkDist2 > 0.0) ? maxLinkDist2 : 1.0;
-    const double dotDenom    = (1.0 - similarityThreshold > 1e-12)
-                               ? (1.0 - similarityThreshold) : 1.0;
-    const double timeDenom   = (maxFrameDist_ > 0) ? static_cast<double>(maxFrameDist_) : 1.0;
+    const double dist2Denom = (maxLinkDist2 > 0.0) ? maxLinkDist2 : 1.0;
+    const double dotDenom
+      = (1.0 - similarityThreshold > 1e-12) ? (1.0 - similarityThreshold) : 1.0;
+    const double timeDenom
+      = (maxFrameDist_ > 0) ? static_cast<double>(maxFrameDist_) : 1.0;
 
     for(int j = 0; j < numTraj; ++j) {
-      if(usedAsEnd[j] || j == i || trajTime[j].empty()) continue;
+      if(usedAsEnd[j] || j == i || trajTime[j].empty())
+        continue;
 
-      if(useTypeConstraint
-         && trajCriticalType[i] != trajCriticalType[j]) continue;
+      if(useTypeConstraint && trajCriticalType[i] != trajCriticalType[j])
+        continue;
 
       const int startFrame = trajTime[j].front();
 
-      const double dist2 = dist2AtStartFrame(linearTraj[i], linearTraj[j], startFrame);
-      if(dist2 > maxLinkDist2) continue;
+      const double dist2
+        = dist2AtStartFrame(linearTraj[i], linearTraj[j], startFrame);
+      if(dist2 > maxLinkDist2)
+        continue;
 
       const double dot = ttk::Geometry::dotProduct<double>(
         meanDir[i].data(), meanDir[j].data(), 3);
-      if(dot < similarityThreshold) continue;
+      if(dot < similarityThreshold)
+        continue;
 
-      if(!temporalOk(startFrame, endFrame)) continue;
+      if(!temporalOk(startFrame, endFrame))
+        continue;
 
       const double penDist2 = dist2 / dist2Denom;
-      const double penDot   = (1.0 - dot) / dotDenom;
-      const double penTime  = static_cast<double>(std::abs(endFrame - startFrame))
-                              / timeDenom;
+      const double penDot = (1.0 - dot) / dotDenom;
+      const double penTime
+        = static_cast<double>(std::abs(endFrame - startFrame)) / timeDenom;
 
       const double score = penDist2 + penDot + penTime;
 
       if(score < bestScore) {
         bestScore = score;
-        bestJ     = j;
+        bestJ = j;
       }
     }
     if(bestJ >= 0) {
@@ -214,7 +219,7 @@ int ttk::PostProcessingTracking::correctTrajectory(
     linearTraj[r1.j].finalChainId = finalId;
     used[idx1] = true;
 
-    // Prepend 
+    // Prepend
     bool prepended = true;
     while(prepended) {
       prepended = false;
@@ -234,7 +239,7 @@ int ttk::PostProcessingTracking::correctTrajectory(
       }
     }
 
-    // Extend 
+    // Extend
     bool extended = true;
     while(extended) {
       extended = false;
@@ -269,8 +274,7 @@ int ttk::PostProcessingTracking::correctTrajectory(
         const int tj = rec.j;
         for(size_t k = 0; k < trajTime[tj].size(); ++k) {
           lineCoef.criticalPoints.emplace_back(
-            trajTime[tj][k],
-            static_cast<ttk::SimplexId>(trajVertexId[tj][k]));
+            trajTime[tj][k], static_cast<ttk::SimplexId>(trajVertexId[tj][k]));
         }
       }
 
@@ -349,8 +353,7 @@ int ttk::PostProcessingTracking::correctTrajectory(
     lineCoef.criticalPoints.reserve(trajTime[i].size());
     for(size_t k = 0; k < trajTime[i].size(); ++k) {
       lineCoef.criticalPoints.emplace_back(
-        trajTime[i][k],
-        static_cast<ttk::SimplexId>(trajVertexId[i][k]));
+        trajTime[i][k], static_cast<ttk::SimplexId>(trajVertexId[i][k]));
     }
     linearTraj[i].finalChainId = static_cast<int>(outputTraj.size());
     lineCoef.finalChainId = linearTraj[i].finalChainId;

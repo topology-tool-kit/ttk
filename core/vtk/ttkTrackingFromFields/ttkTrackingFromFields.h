@@ -38,11 +38,11 @@
 #include <vtkUnstructuredGrid.h>
 
 // VTK Module
+#include <PostProcessingTracking.h>
 #include <TrackingFromCriticalPoints.h>
 #include <TrackingFromFields.h>
 #include <ttkAlgorithm.h>
 #include <ttkTrackingFromFieldsModule.h>
-#include <PostProcessingTracking.h>
 
 #include <algorithm>
 #include <string>
@@ -176,7 +176,6 @@ public:
   vtkGetMacro(PostProcThresh, double);
   /// @}
 
- 
   /// @brief Run the trajectory post-processing (linearization,
   /// fusion, merge-tree surface stats) after the tracking stage.
   /// @{
@@ -200,14 +199,14 @@ public:
   /// @brief When on, fused chains are refit as a single global line. When off,
   /// the original linearized segments are preserved and (N-1) explicit
   /// junction segments are inserted between them; junctions carry
-  /// ConnectedComponentId = -1 
+  /// ConnectedComponentId = -1
   /// @{
   vtkSetMacro(LinearizeFuse, bool);
   vtkGetMacro(LinearizeFuse, bool);
   /// @}
 
   /// @brief When on, change the starting Frame of each trajectory
-  /// i.e. change z value for the first point of each line in 
+  /// i.e. change z value for the first point of each line in
   /// trajectory output
   /// @{
   vtkSetMacro(DoStartFrame, bool);
@@ -268,8 +267,6 @@ public:
   vtkGetMacro(MaxFrameDist, int);
   /// @}
 
-
-
 protected:
   ttkTrackingFromFields();
 
@@ -320,7 +317,7 @@ private:
   bool DoStartFrame{false};
   int StartFrame{0};
   bool DoMergeTree{false};
-  int  UseSplitTree{2};
+  int UseSplitTree{2};
   bool UseOtsuSimplification{false};
   int OtsuBins{0};
   int MaxSurfSize{10000};
@@ -348,5 +345,4 @@ private:
   void writeSegmentationArrays(
     vtkDataSet *segOutput,
     const std::vector<std::vector<int>> &vertexTrajPerFrame);
-
 };

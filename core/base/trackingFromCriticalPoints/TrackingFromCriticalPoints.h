@@ -31,16 +31,16 @@ namespace ttk {
     double yWeight_{1};
     double zWeight_{1};
     double fWeight_{0};
-	bool usePersistenceForDistance_{false};
+    bool usePersistenceForDistance_{false};
 
   public:
     TrackingFromCriticalPoints() {
       this->setDebugMsgPrefix("TrackingFromCriticalPoint");
     }
 
-	void setUsePersistenceForDistance(bool r){
-		usePersistenceForDistance_ = r;
-	}
+    void setUsePersistenceForDistance(bool r) {
+      usePersistenceForDistance_ = r;
+    }
 
     void setMeshDiameter(double r) {
       meshDiameter_ = r;
