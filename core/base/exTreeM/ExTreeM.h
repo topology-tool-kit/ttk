@@ -1112,8 +1112,8 @@ namespace ttk {
      *
      * @param[inout] currentTriplet reachable maxima from a saddle
      */
-    void sortAndRemoveDuplicates(
-      std::array<ttk::SimplexId, 45> &currentTriplet) {
+    void
+      sortAndRemoveDuplicates(std::array<ttk::SimplexId, 45> &currentTriplet) {
       std::sort(
         currentTriplet.begin(), currentTriplet.begin() + currentTriplet[44]);
       int tempPointer = 1;

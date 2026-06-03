@@ -1,11 +1,11 @@
 #include <ttkRipsPersistenceDiagram.h>
 
+#include <boost/functional/hash.hpp>
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
 #include <vtkInformation.h>
 #include <vtkPointData.h>
 #include <vtkTable.h>
-#include <boost/functional/hash.hpp>
 
 #include <regex>
 
