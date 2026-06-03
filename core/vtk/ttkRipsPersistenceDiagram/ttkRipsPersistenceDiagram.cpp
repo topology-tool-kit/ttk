@@ -1,6 +1,5 @@
 #include <ttkRipsPersistenceDiagram.h>
 
-#include <boost/functional/hash.hpp>
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
 #include <vtkInformation.h>
