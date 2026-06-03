@@ -117,7 +117,7 @@ int ttk::vp::VPath::execute(
       dcg_.getAllDescendingPaths(seeds[i], output[i], *triangulation);
     }
     else{
-      //dcg_.getAscendingPath(seeds[i], output[i], *triangulation);
+      dcg_.getAllAscendingPaths(seeds[i], output[i], *triangulation);
     }
 
 #ifdef TTK_ENABLE_OPENMP

@@ -429,6 +429,14 @@ user in the gradient.
                            const bool enableCycleDetector = false) const;
 
       /**
+       * Return all VPath coming from the given cell.
+       */
+      template <typename triangulationType>
+      int getAllAscendingPaths(const Cell &cell,
+                            std::vector<std::vector<Cell> > &vpaths,
+                            const triangulationType &triangulation) const;
+
+      /**
        * Return the VPath terminating at the given cell.
        */
       template <typename triangulationType>
