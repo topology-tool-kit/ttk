@@ -294,16 +294,8 @@ the critical point.</Documentation>
           </Documentation>
           <DoubleRangeDomain name="range" min="0.000001" max="1" />
         </DoubleVectorProperty>
-
-	  <IntVectorProperty
-      name="UsePersistenceForDistance"
-      command="SetUsePersistenceForDistance"
-      label="Use Persistence for distance"
-      number_of_elements="1"
-	  default_values="0">
-      </IntVectorProperty>
-
-      <IntVectorProperty
+  
+		<IntVectorProperty
       name="Use spacing"
       command="SetUseGeometricSpacing"
       label="Force Z-translation"

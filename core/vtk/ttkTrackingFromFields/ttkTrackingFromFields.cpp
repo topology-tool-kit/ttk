@@ -181,7 +181,6 @@ int ttkTrackingFromFields::trackWithCriticalPointMatching(
   tracker.setEpsilon(relativeDestructionCost);
   tracker.setAssignmentMethod(assignmentMethod);
   tracker.setWeights(PX, PY, PZ, PF);
-  tracker.setUsePersistenceForDistance(UsePersistenceForDistance);
   tracker.setAssignmentPrecision(AssignmentPrecision);
 
   tracker.setThreadNumber(this->threadNumber_);
