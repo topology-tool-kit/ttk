@@ -1917,7 +1917,7 @@ template <typename triangulationType>
 
   /*
    * NOTE
-   * Looks good in 2D. Needs further tests in 3D.
+   * Looks good in 2D (needs tests for vertices). Needs further tests in 3D.
    */
 
   vpaths.clear();
