@@ -1969,7 +1969,7 @@ template <typename triangulationType>
         break;
     }
 
-    bool hasBranched = false;
+    bool hasProgressed = false;
 
     for(int i = 0; i < cofacetNumber; i++){
       int cofacetId = -1;
@@ -1993,10 +1993,9 @@ template <typename triangulationType>
         cofacet.dim_ = currentCell.dim_ + 1;
         cofacet.id_ = cofacetId;
 
-        stackEntry.partialPath_.push_back(cofacet);
-
         StackEntry newStackEntry;
         newStackEntry.partialPath_ = stackEntry.partialPath_;
+        newStackEntry.partialPath_.push_back(cofacet);
         newStackEntry.currentCell_ = cofacet;
 
         // now find the simplex we came from
@@ -2037,16 +2036,16 @@ template <typename triangulationType>
             // or a critical simplex
             newStackEntry.partialPath_.push_back(simplex);
             newStackEntry.currentCell_ = simplex;
-            hasBranched = true;
+            stack.push(std::move(newStackEntry));
+            hasProgressed = true;
           }
         }
-
-        stack.push(std::move(newStackEntry));
       }
-
-      if(!hasBranched){
-        vpaths.push_back(stackEntry.partialPath_);
-      }
+    }
+    if(!hasProgressed){
+      // example: boundary edge paired with its interior cofacet, we stop the
+      // backward vpath here.
+      vpaths.push_back(stackEntry.partialPath_);
     }
   }
 
