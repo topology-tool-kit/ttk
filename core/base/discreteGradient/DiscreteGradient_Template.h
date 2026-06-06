@@ -1915,11 +1915,6 @@ template <typename triangulationType>
     std::vector<std::vector<Cell> > &vpaths,
     const triangulationType &triangulation) const{
 
-  /*
-   * NOTE
-   * Looks good in 2D (needs tests for vertices). Needs further tests in 3D.
-   */
-
   vpaths.clear();
 
   using vPath = std::vector<Cell>;
@@ -1943,13 +1938,11 @@ template <typename triangulationType>
     StackEntry stackEntry = std::move(stack.top());
     stack.pop();
 
-    printf("popping edge %d\n",
-           stackEntry.currentCell_.id_);
-
     const Cell &currentCell = stackEntry.currentCell_;
     const SimplexId pairedCofacetId = getPairedCell(currentCell, triangulation);
 
-    if(isCellCritical(currentCell)){
+
+    if((currentCell.id_ != cell.id_)&&(isCellCritical(currentCell))){
       // currentCell is a critical simplex: this path has terminated.
       // the simplex has already been added to the stack path
       vpaths.push_back(stackEntry.partialPath_);
@@ -1991,8 +1984,6 @@ template <typename triangulationType>
       }
       if(cofacetId != pairedCofacetId){
 
-        printf("  going for triangle %d\n", cofacetId);
-
         // we don't want to go down the v-path, we want to go backwards
         Cell cofacet;
         cofacet.dim_ = currentCell.dim_ + 1;
@@ -2027,18 +2018,13 @@ template <typename triangulationType>
           simplex.dim_ = cofacet.dim_ - 1;
           const SimplexId simplexPair = getPairedCell(simplex, triangulation);
 
-          if(isCellCritical(simplex)){
-            printf("      edge %d is critical\n", simplex.id_);
-          }
-
-          if(simplexPair == cofacet.id_){
-            printf("      edge %d was paired to our triangle (%d)\n",
-                   simplex.id_, simplexPair);
-          }
-
-          if((simplexPair == cofacet.id_)||(isCellCritical(simplex))){
-            // we found the simplex that was paired the cofacet
-            // or a critical simplex
+          if(isCellCritical(simplex)) {
+            // always terminate here — don't continue the path through a critical cell
+            newStackEntry.partialPath_.push_back(simplex);
+            vpaths.push_back(newStackEntry.partialPath_);
+            hasProgressed = true;  // prevent the fallback push too
+            // do NOT push to stack
+          } else if(simplexPair == cofacet.id_) {
             newStackEntry.partialPath_.push_back(simplex);
             newStackEntry.currentCell_ = simplex;
             stack.push(std::move(newStackEntry));
