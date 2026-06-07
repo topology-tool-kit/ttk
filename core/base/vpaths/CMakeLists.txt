@@ -1,8 +1,8 @@
-ttk_add_base_library(vPath
+ttk_add_base_library(vPaths
   SOURCES
-    VPath.cpp
+    VPaths.cpp
   HEADERS
-    VPath.h
+    VPaths.h
   DEPENDS
     discreteGradient
     geometry

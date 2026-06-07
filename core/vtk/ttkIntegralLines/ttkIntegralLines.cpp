@@ -246,18 +246,18 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
     else if(BackEnd == BACKEND::DISCRETE){
       printMsg("Selected `discrete` backend.");
 
-      ttk::vp::VPath vpath;
+      ttk::vp::VPaths vpaths;
 
-      vpath.setDebugLevel(debugLevel_);
-      vpath.setThreadNumber(threadNumber_);
+      vpaths.setDebugLevel(debugLevel_);
+      vpaths.setThreadNumber(threadNumber_);
 
       // setup the mesh
-      vpath.preconditionTriangulation(triangulation);
+      vpaths.preconditionTriangulation(triangulation);
 
       // setup the data
-      vpath.setInputScalarField(inputScalars->GetVoidPointer(0),
+      vpaths.setInputScalarField(inputScalars->GetVoidPointer(0),
         inputScalars->GetMTime());
-      vpath.setInputOffsets(
+      vpaths.setInputOffsets(
         static_cast<SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)));
 
       std::vector<ttk::dcg::Cell> seedCells(seeds->GetNumberOfCells());
@@ -275,7 +275,7 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
 
       int status{};
       ttkTemplateMacro(triangulation->getType(),
-                       status = vpath.execute(
+                       status = vpaths.execute(
                          static_cast<TTK_TT *>(triangulation->getData()),
                          seedCells, outputPaths,
                          // isForward?
@@ -290,6 +290,9 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
           pointNumber += path.size();
         }
       }
+
+      // TODO
+      // add v-path length (i.e., number of simplices)
 
       vtkNew<vtkUnstructuredGrid> outputPathGeometry;
 

@@ -1,0 +1,9 @@
+ttk_add_base_library(numericalIntegralLines
+  SOURCES
+    NumericalIntegralLines.cpp
+  HEADERS
+    NumericalIntegralLines.h
+  DEPENDS
+    geometry
+    triangulation
+    )
