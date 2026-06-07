@@ -291,9 +291,6 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
         }
       }
 
-      // TODO
-      // add v-path length (i.e., number of simplices)
-
       vtkNew<vtkUnstructuredGrid> outputPathGeometry;
 
       vtkNew<vtkFloatArray> pointCoords{};
@@ -302,6 +299,7 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       vtkNew<vtkIntArray> cellForkId{};
       vtkNew<vtkIntArray> vertexSimplexId{};
       vtkNew<vtkIntArray> vertexSimplexDimension{};
+      vtkNew<vtkIntArray> cellSimplexNumber{};
       vtkNew<vtkUnsignedCharArray> outputMaskField{};
 
       pointCoords->SetNumberOfComponents(3);
@@ -325,6 +323,7 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
 
       cellSeedId->SetName("SeedIdentifier");
       cellForkId->SetName("ForkIdentifier");
+      cellSimplexNumber->SetName("SimplexNumber");
 
       int pointId = 0;
       int localSeedId = 0;
@@ -335,6 +334,8 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
         for(auto &path : seedPaths){
 
           pathPointId = 0;
+
+          int simplexNumber = path.size();
 
           for(auto &c : path){
             float point[3];
@@ -357,6 +358,7 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
               outputPathGeometry->InsertNextCell(VTK_LINE, 2, edgeIds);
               cellSeedId->InsertNextValue((int) seedCells[localSeedId].id_);
               cellForkId->InsertNextValue((int) forkId);
+              cellSimplexNumber->InsertNextValue((simplexNumber));
             }
           }
           forkId++;
@@ -373,6 +375,7 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       outputPathGeometry->GetPointData()->AddArray(vertexSimplexDimension);
       outputPathGeometry->GetCellData()->AddArray(cellSeedId);
       outputPathGeometry->GetCellData()->AddArray(cellForkId);
+      outputPathGeometry->GetCellData()->AddArray(cellSimplexNumber);
 
       output->ShallowCopy(outputPathGeometry);
 
