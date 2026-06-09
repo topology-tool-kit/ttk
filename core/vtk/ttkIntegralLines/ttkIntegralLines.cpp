@@ -241,6 +241,44 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
 
     if(BackEnd == BACKEND::NUMERICAL){
       printMsg("Selected `numerical` backend.");
+
+      ttk::nil::NumericalIntegralLines num;
+
+      num.setDebugLevel(debugLevel_);
+      num.setThreadNumber(threadNumber_);
+
+      // setup the mesh
+      num.preconditionTriangulation(triangulation);
+
+      // setup the data
+      num.setInputScalarField(inputScalars->GetVoidPointer(0));
+
+      // setup the seeds (simplexId, dimension)
+      std::vector<std::pair<SimplexId, int> > seedCells(seeds->GetNumberOfCells());
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+      for(int i = 0; i < (int) seedCells.size(); i++){
+        vtkCell *cell = seeds->GetCell(i);
+        seedCells[i].first = identifiers[i];
+        seedCells[i].second = cell->GetCellDimension();
+      }
+
+      std::vector<std::vector<std::array<float, 3>>> outputPaths;
+
+      int status{};
+      ttkVtkTemplateMacro(inputScalars->GetDataType(),
+                          triangulation->getType(),
+                            (status = num.execute<VTK_TT, TTK_TT>(
+                              static_cast<TTK_TT *>(triangulation->getData()),
+                              seedCells, outputPaths,
+                              // isForward?
+                              Direction == 0)));
+
+      if(status)
+        return status;
+
       return 1;
     }
     else if(BackEnd == BACKEND::DISCRETE){

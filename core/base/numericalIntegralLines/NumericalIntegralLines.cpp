@@ -2,7 +2,7 @@
 
 using namespace std;
 using namespace ttk;
-using namespace vp;
+using namespace nil;
 
 NumericalIntegralLines::NumericalIntegralLines(){
   this->setDebugMsgPrefix("NumericalIntegralLines");

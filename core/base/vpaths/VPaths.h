@@ -35,7 +35,7 @@ namespace ttk {
       // int execute(triangulationType *triangulation);
 
       /**
-       * @brief Extract a vpath.
+       * @brief Extract vpaths.
        *
        * @param output Vector storing the output vpaths (1 entry per seed,
        * with possibly multiple v-path per seed).

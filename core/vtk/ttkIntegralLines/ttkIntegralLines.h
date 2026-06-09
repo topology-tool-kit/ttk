@@ -70,6 +70,7 @@
 
 // ttk code includes
 #include <IntegralLines.h>
+#include <NumericalIntegralLines.h>
 #include <VPaths.h>
 #include <ttkAlgorithm.h>
 #include <ttkMacros.h>
