@@ -107,6 +107,8 @@ template <class dataType, class triangulationType>
   computeNumericalGradient<dataType, triangulationType>(
     triangulation, start.simplexDimension_, start.simplexId_, gradient);
 
+
+
   return 0;
 }
 
@@ -174,7 +176,6 @@ template <class dataType, class triangulationType>
   }
 
   // Gram matrix  gramMatrix[i][j] = edgeVectors[i] . edgeVectors[j]
-  // (simplexDimension x simplexDimension)
   std::vector<std::vector<float>>
     gramMatrix(simplexDimension, std::vector<float>(simplexDimension, 0));
 
