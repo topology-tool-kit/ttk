@@ -24,14 +24,21 @@
 namespace ttk {
   namespace nil {
 
+    struct PathPoint{
+      SimplexId             simplexId_;
+      int                   simplexDimension_;
+      std::vector<float>    barycentricWeights_;
+    };
+
     class NumericalIntegralLines : virtual public Debug {
 
     public:
       NumericalIntegralLines();
       ~NumericalIntegralLines() override;
 
-      // template <class triangulationType = ttk::AbstractTriangulation>
-      // int execute(triangulationType *triangulation);
+      template <class dataType, class triangulationType>
+        int computeEndPoint(const triangulationType *triangulation,
+          const PathPoint &start, PathPoint &end);
 
       /**
        * @brief Compute a single numerical integral line.
@@ -44,9 +51,14 @@ namespace ttk {
       template <class dataType, class triangulationType>
         int computeIntegralLine(const triangulationType *triangulation,
           const std::pair<SimplexId, int> &seed,
-          const std::array<float, 3> &barycentricWeights,
-          std::vector<std::array<float, 3>> &output,
+          const std::vector<float> &barycentricWeights,
+          std::vector<PathPoint> &output,
           const bool &isForward = false);
+
+      template <class dataType, class triangulationType>
+        int computeNumericalGradient(const triangulationType *triangulation,
+          const int &simplexDimension, const int &simplexId,
+          std::vector<float> &gradient);
 
       /**
        * @brief Compute numerical integral lines.
@@ -58,7 +70,7 @@ namespace ttk {
       template <class dataType, class triangulationType>
       int execute(const triangulationType *triangulation,
         const std::vector<std::pair<SimplexId, int>> &seeds,
-        std::vector<std::vector<std::array<float, 3>>> &output,
+        std::vector<std::vector<PathPoint>> &output,
         const bool &isForward = false);
 
       /**
@@ -81,17 +93,47 @@ namespace ttk {
 } // namespace ttk
 
 template <class dataType, class triangulationType>
+  int ttk::nil::NumericalIntegralLines::computeEndPoint(
+    const triangulationType *triangulation,
+    const ttk::nil::PathPoint &start, ttk::nil::PathPoint &end){
+
+  std::vector<float> gradient(3);
+
+  computeNumericalGradient<dataType, triangulationType>(
+    triangulation, start.simplexDimension_, start.simplexId_, gradient);
+
+  return 0;
+}
+
+template <class dataType, class triangulationType>
   int ttk::nil::NumericalIntegralLines::computeIntegralLine(
     const triangulationType *triangulation,
     const std::pair<SimplexId, int> &seed,
-    const std::array<float, 3> &barycentricWeights,
-    std::vector<std::array<float, 3>> &output,
+    const std::vector<float> &startBarycentricWeights,
+    std::vector<PathPoint> &output,
     const bool &isForward){
 
+  output.clear();
+
+  PathPoint startPoint, endPoint;
+
+  startPoint.simplexId_ = seed.first;
+  startPoint.simplexDimension_ = seed.second;
+  startPoint.barycentricWeights_ = startBarycentricWeights;
 
   for(int i = 0; i < (int) maximumIterationNumber_; i++){
 
+    computeEndPoint<dataType, triangulationType>(triangulation, startPoint, endPoint);
   }
+
+  return 0;
+}
+
+template <class dataType, class triangulationType>
+  int ttk::nil::NumericalIntegralLines::computeNumericalGradient(
+    const triangulationType *triangulation,
+    const int &simplexDimension, const int &simplexId,
+    std::vector<float> &gradient){
 
   return 0;
 }
@@ -99,19 +141,19 @@ template <class dataType, class triangulationType>
 template <class dataType, class triangulationType>
 int ttk::nil::NumericalIntegralLines::execute(const triangulationType *triangulation,
     const std::vector<std::pair<SimplexId, int>> &seeds,
-    std::vector<std::vector<std::array<float, 3>>> &output,
+    std::vector<std::vector<PathPoint>> &output,
     const bool &isForward){
 
   Timer t;
 
   output.resize(seeds.size());
 
-  const std::array<float, 3> barycentricWeights{1/3, 1/3, 1/3};
-
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
 #endif
   for(int i = 0; i < (int) seeds.size(); i++){
+    std::vector<float>
+      barycentricWeights(seeds[i].second + 1, 1/(seeds[i].second + 1));
     computeIntegralLine<dataType, triangulationType>(
       triangulation, seeds[i], barycentricWeights, output[i], isForward);
 

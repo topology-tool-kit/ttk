@@ -265,7 +265,7 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
         seedCells[i].second = cell->GetCellDimension();
       }
 
-      std::vector<std::vector<std::array<float, 3>>> outputPaths;
+      std::vector<std::vector<ttk::nil::PathPoint>> outputPaths;
 
       int status{};
       ttkVtkTemplateMacro(inputScalars->GetDataType(),
