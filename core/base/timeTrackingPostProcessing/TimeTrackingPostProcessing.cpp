@@ -18,8 +18,9 @@ int ttk::TimeTrackingPostProcessing::correctTrajectory(
   const int numTraj = static_cast<int>(trajTime.size());
   const bool useTypeConstraint
     = (static_cast<int>(trajCriticalType.size()) == numTraj);
-  this->printMsg("Linearization and chaining (" + std::to_string(numTraj)
-                 + " input trajectories" + ")");
+  this->printMsg("Linear regression + chaining (input: " 
+                 + std::to_string(numTraj)
+                 + " t." + ")");
 
   auto temporalOk = [&](int sFrame, int eFrame) -> bool {
     return (sFrame - eFrame > minFrameDist_)
@@ -131,8 +132,9 @@ int ttk::TimeTrackingPostProcessing::correctTrajectory(
       lt.finalChainId = linearTraj[i].finalChainId;
       outputTraj.push_back(std::move(lt));
     }
-    this->printMsg("Linearization only (" + std::to_string(outputTraj.size())
-                     + " output chains)",
+    this->printMsg("Output: " 
+                     + std::to_string(outputTraj.size())
+                     + " t.",
                    1.0, timer.getElapsedTime(), this->threadNumber_);
     return 1;
   }
@@ -365,8 +367,8 @@ int ttk::TimeTrackingPostProcessing::correctTrajectory(
       std::swap(c.startFrame, c.endFrame);
   }
 
-  this->printMsg("Linearization and chaining ("
-                   + std::to_string(outputTraj.size()) + " output chains)",
+  this->printMsg("Output: "
+                   + std::to_string(outputTraj.size()) + " t.",
                  1.0, timer.getElapsedTime(), this->threadNumber_);
   return 1;
 }
