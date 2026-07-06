@@ -1,10 +1,10 @@
-#include <PostProcessingTracking.h>
+#include <TimeTrackingPostProcessing.h>
 
-ttk::PostProcessingTracking::PostProcessingTracking() {
-  this->setDebugMsgPrefix("PostProcessingTracking");
+ttk::TimeTrackingPostProcessing::TimeTrackingPostProcessing() {
+  this->setDebugMsgPrefix("TimeTrackingPostProcessing");
 }
 
-int ttk::PostProcessingTracking::correctTrajectory(
+int ttk::TimeTrackingPostProcessing::correctTrajectory(
   const std::vector<std::vector<int>> &trajTime,
   const std::vector<std::vector<int>> &trajVertexId,
   const std::vector<std::vector<double>> &coordsX,

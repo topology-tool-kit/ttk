@@ -374,7 +374,7 @@ int ttkTrackingFromFields::applyPostProcessing(
     ++tIdx;
   }
 
-  ttk::PostProcessingTracking ppt;
+  ttk::TimeTrackingPostProcessing ppt;
   ppt.setThreadNumber(this->threadNumber_);
   ppt.setDebugLevel(this->debugLevel_);
 
@@ -412,12 +412,12 @@ int ttkTrackingFromFields::applyPostProcessing(
 
   // merge-tree segmentation only
   if(!rebuildMesh) {
-    std::vector<ttk::PostProcessingTracking::LinearTrajectory> rawTraj;
+    std::vector<ttk::TimeTrackingPostProcessing::LinearTrajectory> rawTraj;
     rawTraj.reserve(numTraj);
     for(int i = 0; i < numTraj; ++i) {
       if(trajTime[i].empty())
         continue;
-      ttk::PostProcessingTracking::LinearTrajectory lt{};
+      ttk::TimeTrackingPostProcessing::LinearTrajectory lt{};
       lt.isLinearized = false;
       lt.startFrame = trajTime[i].front();
       lt.endFrame = trajTime[i].back();
@@ -449,9 +449,9 @@ int ttkTrackingFromFields::applyPostProcessing(
   }
 
   // full postprocess pipeline (+ optional merge-tree)
-  std::vector<ttk::PostProcessingTracking::LinearTrajectory> linearTraj;
-  std::vector<ttk::PostProcessingTracking::LinearTrajectory> finalTraj;
-  std::vector<ttk::PostProcessingTracking::FuseRecord> fuseRecords;
+  std::vector<ttk::TimeTrackingPostProcessing::LinearTrajectory> linearTraj;
+  std::vector<ttk::TimeTrackingPostProcessing::LinearTrajectory> finalTraj;
+  std::vector<ttk::TimeTrackingPostProcessing::FuseRecord> fuseRecords;
   std::vector<double> surfMin, surfMax, surfMean;
 
   const int status = ppt.execute<dataType, triangulationType>(

@@ -38,7 +38,7 @@
 #include <vtkUnstructuredGrid.h>
 
 // VTK Module
-#include <PostProcessingTracking.h>
+#include <TimeTrackingPostProcessing.h>
 #include <TrackingFromCriticalPoints.h>
 #include <TrackingFromFields.h>
 #include <ttkAlgorithm.h>
