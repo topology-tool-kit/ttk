@@ -261,11 +261,11 @@ namespace ttk {
 } // namespace ttk
 
 #ifdef TTK_ENABLE_EIGEN
-inline int ttk::TrackingPostProcessing::linearRegression(
-  const std::vector<int> &T,
-  const std::vector<double> &X,
-  const std::vector<double> &Y,
-  LinearTrajectory &traj) {
+inline int
+  ttk::TrackingPostProcessing::linearRegression(const std::vector<int> &T,
+                                                const std::vector<double> &X,
+                                                const std::vector<double> &Y,
+                                                LinearTrajectory &traj) {
   const int n = static_cast<int>(T.size());
   if(n < 1)
     return 0;
