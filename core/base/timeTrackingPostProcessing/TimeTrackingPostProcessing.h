@@ -484,9 +484,9 @@ int ttk::TimeTrackingPostProcessing::computeMergeTree(
   const ttk::SimplexId nPixels = triangulation->getNumberOfVertices();
   const int nFrames = static_cast<int>(inputData_.size());
 
-  this->printMsg("Merge-tree (" + std::to_string(nFrames)
-                 + " f., " + std::to_string(nPixels) + " v., "
-                 + std::to_string(nTraj) + " t.)");
+  this->printMsg("Merge-tree (" + std::to_string(nFrames) + " f., "
+                 + std::to_string(nPixels) + " v., " + std::to_string(nTraj)
+                 + " t.)");
 
   // Per-frame / per-traj accumulated surface, and per-frame collision flags
   std::vector<std::vector<double>> trajSurfPerFrame(
@@ -765,8 +765,8 @@ int ttk::TimeTrackingPostProcessing::computeMergeTree(
     }
   }
 
-  this->printMsg("Segmentation complete", 1.0,
-                 globalTimer.getElapsedTime(), this->threadNumber_);
+  this->printMsg("Segmentation complete", 1.0, globalTimer.getElapsedTime(),
+                 this->threadNumber_);
   return 0;
 }
 
@@ -803,7 +803,7 @@ int ttk::TimeTrackingPostProcessing::execute(
     vertexTrajPerFrame.clear();
   }
 
-  this->printMsg("Post-processing complete", 1.0,
-                 timer.getElapsedTime(), this->threadNumber_);
+  this->printMsg("Post-processing complete", 1.0, timer.getElapsedTime(),
+                 this->threadNumber_);
   return 1;
 }
