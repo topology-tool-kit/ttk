@@ -377,75 +377,13 @@ the critical point.</Documentation>
       </IntVectorProperty>
 
       <IntVectorProperty
-        name="DoLinearize"
-        command="SetDoLinearize"
-        label="Linearize trajectories"
-        number_of_elements="1"
-        default_values="1">
-        <BooleanDomain name="bool"/>
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-                                   mode="visibility"
-                                   property="EnablePostProc"
-                                   value="1" />
-        </Hints>
-        <Documentation>
-          Fit a 2D line (x(t)=ax*t+bx, y(t)=ay*t+by) through each trajectory
-          point cloud.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-        name="DoFusion"
-        command="SetDoFusion"
-        label="Fuse trajectories"
-        number_of_elements="1"
-        default_values="1">
-        <BooleanDomain name="bool"/>
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-                                   mode="visibility"
-                                   property="EnablePostProc"
-                                   value="1" />
-        </Hints>
-        <Documentation>
-          Greedily chain temporally-adjacent, directionally-consistent
-          linearized segments into longer trajectories.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-        name="LinearizeFuse"
-        command="SetLinearizeFuse"
-        label="Linearize fused chains"
-        number_of_elements="1"
-        default_values="1">
-        <BooleanDomain name="bool"/>
-        <Hints>
-          <PropertyWidgetDecorator type="CompositeDecorator">
-            <Expression type="and">
-              <PropertyWidgetDecorator type="GenericDecorator"
-                                       mode="visibility"
-                                       property="EnablePostProc"
-                                       value="1" />
-              <PropertyWidgetDecorator type="GenericDecorator"
-                                       mode="visibility"
-                                       property="DoFusion"
-                                       value="1" />
-            </Expression>
-          </PropertyWidgetDecorator>
-        </Hints>
-        <Documentation>
-          Each fused chain is refit as a single global line.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
         name="DoStartFrame"
         command="SetDoStartFrame"
         label="Change Start Frame"
         number_of_elements="1"
-        default_values="0">
+        default_values="0"
+        panel_visibility="advanced"
+        >
         <BooleanDomain name="bool"/>
         <Hints>
           <PropertyWidgetDecorator type="CompositeDecorator">
@@ -471,7 +409,9 @@ the critical point.</Documentation>
         command="SetStartFrame"
         label="StartFrame"
         number_of_elements="1"
-        default_values="0">
+        default_values="0"
+        panel_visibility="advanced"
+        >
         <Hints>
           <PropertyWidgetDecorator type="CompositeDecorator">
             <Expression type="and">
@@ -492,12 +432,52 @@ the critical point.</Documentation>
 	</IntVectorProperty>
 
 
+      <IntVectorProperty
+        name="DoLinearize"
+        command="SetDoLinearize"
+        label="Trajectory linear regression"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="EnablePostProc"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          Fit a 2D line (x(t)=ax*t+bx, y(t)=ay*t+by) through each trajectory
+          point cloud.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="DoFusion"
+        command="SetDoFusion"
+        label="Trajectory merging"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="EnablePostProc"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          Greedily chain temporally-adjacent, directionally-consistent
+          linearized segments into longer trajectories.
+        </Documentation>
+      </IntVectorProperty>
+
       <DoubleVectorProperty
         name="CosColDegrees"
         command="SetCosColDegrees"
-        label="Max angular (°)"
+        label="Maximum angle (°)"
         number_of_elements="1"
-        default_values="20.0">
+        default_values="20.0"
+        panel_visibility="advanced"
+        >
         <Hints>
           <PropertyWidgetDecorator type="CompositeDecorator">
             <Expression type="and">
@@ -521,9 +501,11 @@ the critical point.</Documentation>
       <DoubleVectorProperty
         name="MaxLinkRadius"
         command="SetMaxLinkRadius"
-        label="Max link (px)"
+        label="Maximum distance (px)"
         number_of_elements="1"
-        default_values="225.0">
+        default_values="225.0"
+        panel_visibility="advanced"
+        >
         <Hints>
           <PropertyWidgetDecorator type="CompositeDecorator">
             <Expression type="and">
@@ -547,9 +529,10 @@ the critical point.</Documentation>
       <IntVectorProperty
         name="MaxFrameDist"
         command="SetMaxFrameDist"
-        label="Max frame gap"
+        label="Maximum frame gap"
         number_of_elements="1"
-        default_values="30">
+        default_values="30"
+        panel_visibility="advanced">
         <Hints>
           <PropertyWidgetDecorator type="CompositeDecorator">
             <Expression type="and">
@@ -569,6 +552,36 @@ the critical point.</Documentation>
           start of segment j for a valid chain link.
         </Documentation>
       </IntVectorProperty>
+
+
+      <IntVectorProperty
+        name="LinearizeFuse"
+        command="SetLinearizeFuse"
+        label="Merged trajectory linear regression"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DoFusion"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Each fused chain is refit as a single global line.
+        </Documentation>
+      </IntVectorProperty>
+
+
+
 
       <IntVectorProperty
         name="DoMergeTree"
@@ -594,7 +607,8 @@ the critical point.</Documentation>
         command="SetUseSplitTree"
         label="Merge-tree type"
         number_of_elements="1"
-        default_values="0">
+        default_values="0"
+        >
         <EnumerationDomain name="enum">
           <Entry value="0" text="Join tree"/>
           <Entry value="1" text="Split tree"/>
@@ -624,7 +638,9 @@ the critical point.</Documentation>
         command="SetMaxSurfSize"
         label="Max surface size"
         number_of_elements="1"
-        default_values="10000">
+        default_values="10000"
+        panel_visibility="advanced"
+        >
         <Hints>
           <PropertyWidgetDecorator type="CompositeDecorator">
             <Expression type="and">
@@ -648,10 +664,9 @@ the critical point.</Documentation>
       <IntVectorProperty
         name="UseOtsuSimplification"
         command="SetUseOtsuSimplification"
-        label="Otsu simplification"
+        label="Otsu boundary adjustment"
         number_of_elements="1"
-        default_values="0"
-        panel_visibility="advanced">
+        default_values="0">
         <BooleanDomain name="bool"/>
         <Hints>
           <PropertyWidgetDecorator type="CompositeDecorator">
@@ -668,7 +683,7 @@ the critical point.</Documentation>
           </PropertyWidgetDecorator>
         </Hints>
         <Documentation>
-          Run a local Otsu threshold on each surface segment to discard dark
+          Run a local Otsu thresholding on each surface segment to discard dark
           background vertices before accumulating statistics.
         </Documentation>
       </IntVectorProperty>
@@ -676,7 +691,7 @@ the critical point.</Documentation>
       <IntVectorProperty
         name="OtsuBins"
         command="SetOtsuBins"
-        label="Otsu bins"
+        label="Otsu bin number"
         number_of_elements="1"
         default_values="40"
         panel_visibility="advanced">
@@ -695,7 +710,7 @@ the critical point.</Documentation>
           </PropertyWidgetDecorator>
         </Hints>
         <Documentation>
-          Number of histogram bins for the local Otsu threshold.
+          Number of histogram bins for the local Otsu thresholding.
         </Documentation>
       </IntVectorProperty>
 
@@ -714,15 +729,15 @@ the critical point.</Documentation>
       </PropertyGroup>
 	  
 	  <PropertyGroup panel_widget="Line" label="Post-processing">
-        <Property name="EnablePostProc" />
+      <Property name="EnablePostProc" />
+		<Property name="DoStartFrame" />
+		<Property name="StartFrame" />
         <Property name="DoLinearize" />
 		<Property name="DoFusion" />
 		<Property name="CosColDegrees" />
 		<Property name="MaxLinkRadius" />
 		<Property name="MaxFrameDist" />
         <Property name="LinearizeFuse" />
-		<Property name="DoStartFrame" />
-		<Property name="StartFrame" />
         <Property name="DoMergeTree" />
         <Property name="UseSplitTree" />
         <Property name="MaxSurfSize" />
