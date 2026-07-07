@@ -1,5 +1,5 @@
 /// \ingroup base
-/// \class ttk::TimeTrackingPostProcessing
+/// \class ttk::TrackingPostProcessing
 /// \author Théophane Loloum <theophane.loloum@gmail.com>
 /// \date April 2026
 ///
@@ -49,7 +49,7 @@
 
 namespace ttk {
 
-  class TimeTrackingPostProcessing : virtual public Debug {
+  class TrackingPostProcessing : virtual public Debug {
 
   public:
     /// @brief Linear trajectory: x(t) = ax*t + bx, y(t) = ay*t + by,
@@ -88,7 +88,7 @@ namespace ttk {
       int finalContrib{-1};
     };
 
-    TimeTrackingPostProcessing();
+    TrackingPostProcessing();
 
     int preconditionTriangulation(
       ttk::AbstractTriangulation *triangulation) const {
@@ -261,7 +261,7 @@ namespace ttk {
 } // namespace ttk
 
 #ifdef TTK_ENABLE_EIGEN
-inline int ttk::TimeTrackingPostProcessing::linearRegression(
+inline int ttk::TrackingPostProcessing::linearRegression(
   const std::vector<int> &T,
   const std::vector<double> &X,
   const std::vector<double> &Y,
@@ -290,7 +290,7 @@ inline int ttk::TimeTrackingPostProcessing::linearRegression(
 }
 #endif
 
-inline int ttk::TimeTrackingPostProcessing::computeMeanUnitDirectionLinear(
+inline int ttk::TrackingPostProcessing::computeMeanUnitDirectionLinear(
   const std::vector<LinearTrajectory> &newTraj,
   std::vector<std::array<double, 3>> &meanDir) {
   const size_t nTraj = newTraj.size();
@@ -307,7 +307,7 @@ inline int ttk::TimeTrackingPostProcessing::computeMeanUnitDirectionLinear(
   return 1;
 }
 
-inline int ttk::TimeTrackingPostProcessing::computeSurfaceCellCount(
+inline int ttk::TrackingPostProcessing::computeSurfaceCellCount(
   const std::vector<ttk::SimplexId> &surfVertices,
   const ttk::AbstractTriangulation *triangulation) {
   std::unordered_set<ttk::SimplexId> cellIds;
@@ -325,7 +325,7 @@ inline int ttk::TimeTrackingPostProcessing::computeSurfaceCellCount(
 }
 
 template <class dataType>
-dataType ttk::TimeTrackingPostProcessing::otsuThresholdLocal(
+dataType ttk::TrackingPostProcessing::otsuThresholdLocal(
   const std::vector<ttk::SimplexId> &verts,
   const dataType *scalars,
   const int nbins) {
@@ -389,7 +389,7 @@ dataType ttk::TimeTrackingPostProcessing::otsuThresholdLocal(
 }
 
 template <class dataType, class triangulationType>
-void ttk::TimeTrackingPostProcessing::cleanDarkSegmentInPlace(
+void ttk::TrackingPostProcessing::cleanDarkSegmentInPlace(
   std::vector<ttk::SimplexId> &segmentVerts,
   const dataType *scalars,
   const triangulationType *triangulation,
@@ -462,7 +462,7 @@ void ttk::TimeTrackingPostProcessing::cleanDarkSegmentInPlace(
 }
 
 template <class dataType, class triangulationType>
-int ttk::TimeTrackingPostProcessing::computeMergeTree(
+int ttk::TrackingPostProcessing::computeMergeTree(
   const triangulationType *triangulation,
   const std::vector<LinearTrajectory> &finalTraj,
   std::vector<double> &surfMin,
@@ -771,7 +771,7 @@ int ttk::TimeTrackingPostProcessing::computeMergeTree(
 }
 
 template <class dataType, class triangulationType>
-int ttk::TimeTrackingPostProcessing::execute(
+int ttk::TrackingPostProcessing::execute(
   const std::vector<std::vector<int>> &trajTime,
   const std::vector<std::vector<int>> &trajVertexId,
   const std::vector<std::vector<double>> &coordsX,

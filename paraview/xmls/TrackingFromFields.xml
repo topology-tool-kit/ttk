@@ -379,7 +379,7 @@ the critical point.</Documentation>
       <IntVectorProperty
         name="DoStartFrame"
         command="SetDoStartFrame"
-        label="Change Start Frame"
+        label="Change start timestep"
         number_of_elements="1"
         default_values="0"
         panel_visibility="advanced"
