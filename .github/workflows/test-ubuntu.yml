@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 env:
-  PV_TAG: v6.1.0-headless
+  PV_TAG: v6.1.1-headless
   PV_REPO: topology-tool-kit/ttk-paraview
   CMAKE_GENERATOR: Ninja
   CMAKE_BUILD_TYPE: Release
