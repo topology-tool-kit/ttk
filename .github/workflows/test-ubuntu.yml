@@ -61,12 +61,19 @@ jobs:
       uses: ./.github/actions/install-zfp-unix
 
     # TODO: try to replicate for mac
-    - name: Install Torch
+    - name: Install Official Torch
+      if: matrix.os == 'ubuntu-24.04'
       shell: bash
       run: |
         wget https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.9.1%2Bcpu.zip
         unzip libtorch-shared-with-deps-2.9.1+cpu.zip
         sudo cp -R libtorch/* /usr/local/
+
+    - name: Install Ubuntu Torch
+      if: matrix.os != 'ubuntu-24.04'
+      shell: bash
+      run: |
+        sudo apt install -y libtorch-dev
 
     - name: Fetch TTK-ParaView headless Debian package
       run: |
@@ -126,12 +133,19 @@ jobs:
       run: |
         sudo apt update
 
-    - name: Install Torch
+    - name: Install Official Torch
+      if: matrix.os == 'ubuntu-24.04'
       shell: bash
       run: |
         wget https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.9.1%2Bcpu.zip
         unzip libtorch-shared-with-deps-2.9.1+cpu.zip
         sudo cp -R libtorch/* /usr/local/
+
+    - name: Install Ubuntu Torch
+      if: matrix.os != 'ubuntu-24.04'
+      shell: bash
+      run: |
+        sudo apt install -y libtorch-dev
 
     - name: Fetch TTK-ParaView headless Debian package
       run: |
