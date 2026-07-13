@@ -24,7 +24,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04]
     steps:
     - uses: actions/checkout@v4
       name: Checkout TTK source code
@@ -104,7 +104,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04]
     steps:
     - uses: actions/checkout@v4
       name: Checkout TTK source code
@@ -133,6 +133,12 @@ jobs:
 
     - name: Set PYTHONPATH for Ubuntu 24.04 pvpython
       if: matrix.os == 'ubuntu-24.04'
+      run: |
+        # pvpython does not embed the correct PYTHONPATH
+        echo "PYTHONPATH=/usr/lib/python3/dist-packages:$PYTHONPATH" >> $GITHUB_ENV
+
+    - name: Set PYTHONPATH for Ubuntu 26.04 pvpython
+      if: matrix.os == 'ubuntu-26.04'
       run: |
         # pvpython does not embed the correct PYTHONPATH
         echo "PYTHONPATH=/usr/lib/python3/dist-packages:$PYTHONPATH" >> $GITHUB_ENV
@@ -661,6 +667,14 @@ jobs:
         tag: ${{ github.ref }}
         file: ttk-ubuntu-24.04.deb/ttk.deb
         asset_name: ttk-$tag-ubuntu-24.04.deb
+
+    - name: Upload Ubuntu Noble Numbat .deb as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }} 
+        file: ttk-ubuntu-26.04.deb/ttk.deb
+        asset_name: ttk-$tag-ubuntu-26.04.deb
 
     - name: Upload MacOS 14 binary archives as Release Asset
       uses: svenstaro/upload-release-action@v2

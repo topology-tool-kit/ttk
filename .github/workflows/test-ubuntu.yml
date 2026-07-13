@@ -24,7 +24,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04]
 
     steps:
     - uses: actions/checkout@v4
@@ -119,7 +119,7 @@ jobs:
     needs: test-build
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04]
         testSet: [pyTests, screenshotTests]
     steps:
     - name: Install Ubuntu dependencies
