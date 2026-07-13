@@ -38,6 +38,7 @@ jobs:
           libcgal-dev \
           libeigen3-dev \
           libgraphviz-dev \
+          libspectra-dev \
           libsqlite3-dev \
           libtbb-dev \
           libgl1-mesa-dev \

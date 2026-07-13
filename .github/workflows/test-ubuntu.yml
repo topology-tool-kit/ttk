@@ -41,9 +41,11 @@ jobs:
           libgraphviz-dev \
           libosmesa-dev \
           libopenmpi-dev \
+          libspectra-dev \
           libsqlite3-dev \
           libtbb-dev \
           libwebsocketpp-dev \
+          libzfp-dev \
           graphviz \
           python3-sklearn \
           ninja-build \
@@ -53,12 +55,6 @@ jobs:
 
     - name: Run sccache-cache
       uses: mozilla-actions/sccache-action@v0.0.9
-
-    - name: Install optional Spectra dependency
-      uses: ./.github/actions/install-spectra-unix
-
-    - name: Install optional ZFP dependency
-      uses: ./.github/actions/install-zfp-unix
 
     # TODO: try to replicate for mac
     - name: Install Official Torch

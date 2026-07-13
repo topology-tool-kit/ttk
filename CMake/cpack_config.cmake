@@ -19,7 +19,7 @@ else()
   set(CPACK_RESOURCE_FILE_README ${PROJECT_BINARY_DIR}/Readme.txt)
 endif()
 set(CPACK_DEBIAN_PACKAGE_DEPENDS
-  "ttk-paraview (= 6.1.1), libboost-system-dev, libcgal-dev, libeigen3-dev, libgraphviz-dev, libsqlite3-dev, libtbb-dev, libwebsocketpp-dev, graphviz, python3-sklearn, zlib1g-dev, libqhull-dev, python3-dev, libgl1-mesa-dev")
+  "ttk-paraview (= 6.1.1), libboost-system-dev, libcgal-dev, libeigen3-dev, libgraphviz-dev, libspetra-dev, libsqlite3-dev, libtbb-dev, libwebsocketpp-dev, libzfp-dev, graphviz, python3-sklearn, zlib1g-dev, libqhull-dev, python3-dev, libgl1-mesa-dev")
 # adding libtorch-dev if not 24.04
 if(UNIX AND NOT APPLE)
   execute_process(
