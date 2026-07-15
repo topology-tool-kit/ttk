@@ -1,6 +1,7 @@
 /// \ingroup vtk
 /// \class ttkMergeTreeClustering
 /// \author Mathieu Pont (mathieu.pont@lip6.fr)
+/// \author Florian Wetzels (wetzels@cs.uni-kl.de)
 /// \date 2021.
 ///
 /// \brief TTK VTK-filter that wraps the ttk::MergeTreeClustering module.
@@ -25,11 +26,23 @@
 /// Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.\n
 /// Proc. of IEEE VIS 2021.\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2021
+
+/// \b Related \b publication \n
+/// "Merge Tree Geodesics and Barycenters with Path Mappings" \n
+/// F. Wetzels, M. Pont, J. Tierny and C. Garth.\n
+/// Proc. of IEEE VIS 2023.\n
+/// IEEE Transactions on Visualization and Computer Graphics, 2024
 ///
 /// \sa ttk::MergeTreeClustering
 /// \sa ttkAlgorithm
 ///
 /// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeBarycenter_branchMapping/">Merge
+///   Tree Branch Mapping example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeBarycenter_pathMapping/">Merge
+///   Tree Path Mapping example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
 ///   Tree Clustering example</a> \n
@@ -94,12 +107,18 @@ private:
   double JoinSplitMixtureCoefficient = 0.5;
   int DiagramPairTypes = 0;
   bool ComputeBarycenter = false;
+  bool oldComputeBarycenter = ComputeBarycenter;
   unsigned int NumberOfBarycenters = 1;
   double BarycenterSizeLimitPercent = 0.0;
   bool Deterministic = false;
   int pathMetric = 0;
   int branchMetric = 0;
   int baseModule = 0;
+  bool useMedianBarycenter = false;
+  bool useFixedInit = false;
+  int fixedInitNumber = 0;
+  // bool useEarlyOut = true;
+  int iterationLimit = 100;
   double NonMatchingWeight = 1.0;
 
   // Output Options
@@ -107,10 +126,14 @@ private:
   bool OutputSegmentation = false;
   bool PlanarLayout = false;
   bool BranchDecompositionPlanarLayout = false;
+  bool PathPlanarLayout = false;
   double BranchSpacing = 1.;
   bool RescaleTreesIndividually = false;
   double DimensionSpacing = 1.;
   int DimensionToShift = 0;
+  double XShift = 1.0;
+  double YShift = 0.0;
+  double ZShift = 0.0;
   double ImportantPairs = 50.;
   int MaximumImportantPairs = 0;
   int MinimumImportantPairs = 0;
@@ -137,6 +160,10 @@ private:
   std::vector<std::vector<
     std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>>>
     outputMatchingBarycenter, outputMatchingBarycenter2;
+  std::vector<std::vector<
+    std::vector<std::pair<std::pair<ttk::ftm::idNode, ttk::ftm::idNode>,
+                          std::pair<ttk::ftm::idNode, ttk::ftm::idNode>>>>>
+    outputMatchings_path;
 
   // Barycenter
   std::vector<ttk::ftm::MergeTree<double>> barycentersS, barycentersS2;
@@ -166,13 +193,20 @@ private:
       std::vector<
         std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>>(
         numInputs));
-
     outputMatchingBarycenter2 = std::vector<std::vector<
       std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>>>(
       NumberOfBarycenters,
       std::vector<
         std::vector<std::tuple<ttk::ftm::idNode, ttk::ftm::idNode, double>>>(
         numInputs2));
+    outputMatchings_path = std::vector<std::vector<
+      std::vector<std::pair<std::pair<ttk::ftm::idNode, ttk::ftm::idNode>,
+                            std::pair<ttk::ftm::idNode, ttk::ftm::idNode>>>>>(
+      NumberOfBarycenters,
+      std::vector<
+        std::vector<std::pair<std::pair<ttk::ftm::idNode, ttk::ftm::idNode>,
+                              std::pair<ttk::ftm::idNode, ttk::ftm::idNode>>>>(
+        numInputs));
 
     // Barycenter
     barycentersS
@@ -257,6 +291,12 @@ public:
       BranchDecomposition = oldBD;
       NormalizedWasserstein = oldNW;
       KeepSubtree = oldKS;
+    }
+    if(Backend == 1 or Backend == 3) //  edit distance or branch mapping
+      ComputeBarycenter = oldComputeBarycenter;
+    if(newBackend == 1 or newBackend == 3) {
+      oldComputeBarycenter = ComputeBarycenter;
+      ComputeBarycenter = false;
     }
     Backend = newBackend;
     Modified();
@@ -346,11 +386,43 @@ public:
   void SetBranchMetric(int m) {
     branchMetric = m;
     Modified();
+    resetDataVisualization();
   }
 
   void SetPathMetric(int m) {
     pathMetric = m;
     Modified();
+    resetDataVisualization();
+  }
+
+  void SetUseMedianBarycenter(bool useMedian) {
+    useMedianBarycenter = useMedian;
+    Modified();
+    resetDataVisualization();
+  }
+
+  void SetUseFixedInit(bool ufi) {
+    useFixedInit = ufi;
+    Modified();
+    resetDataVisualization();
+  }
+
+  void SetFixedInitNumber(int fi) {
+    fixedInitNumber = fi;
+    Modified();
+    resetDataVisualization();
+  }
+
+  // void SetUseEarlyOut(bool eo) {
+  //   useEarlyOut = eo;
+  //   Modified();
+  //   resetDataVisualization();
+  // }
+
+  void SetIterationLimit(int l) {
+    iterationLimit = l;
+    Modified();
+    resetDataVisualization();
   }
 
   void SetNonMatchingWeight(double weight) {
@@ -376,6 +448,9 @@ public:
   vtkSetMacro(BranchDecompositionPlanarLayout, bool);
   vtkGetMacro(BranchDecompositionPlanarLayout, bool);
 
+  vtkSetMacro(PathPlanarLayout, bool);
+  vtkGetMacro(PathPlanarLayout, bool);
+
   vtkSetMacro(BranchSpacing, double);
   vtkGetMacro(BranchSpacing, double);
 
@@ -387,6 +462,15 @@ public:
 
   vtkSetMacro(DimensionToShift, int);
   vtkGetMacro(DimensionToShift, int);
+
+  vtkSetMacro(XShift, double);
+  vtkGetMacro(XShift, double);
+
+  vtkSetMacro(YShift, double);
+  vtkGetMacro(YShift, double);
+
+  vtkSetMacro(ZShift, double);
+  vtkGetMacro(ZShift, double);
 
   vtkSetMacro(ImportantPairs, double);
   vtkGetMacro(ImportantPairs, double);

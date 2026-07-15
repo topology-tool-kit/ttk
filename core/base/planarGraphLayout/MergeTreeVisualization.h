@@ -17,6 +17,7 @@ namespace ttk {
   protected:
     // Visualization parameters
     bool branchDecompositionPlanarLayout_ = false;
+    bool pathPlanarLayout_ = false;
     double branchSpacing_ = 1.;
     bool rescaleTreesIndividually_ = false;
     double importantPairs_ = 50.; // important pairs threshold
@@ -32,12 +33,15 @@ namespace ttk {
     MergeTreeVisualization() = default;
     ~MergeTreeVisualization() override = default;
 
-    // ==========================================================================
+    // ========================================================================
     // Getter / Setter
-    // ==========================================================================
+    // ========================================================================
     // Visualization parameters
     void setBranchDecompositionPlanarLayout(bool b) {
       branchDecompositionPlanarLayout_ = b;
+    }
+    void setPathPlanarLayout(bool b) {
+      pathPlanarLayout_ = b;
     }
     void setBranchSpacing(double d) {
       branchSpacing_ = d;
@@ -66,9 +70,9 @@ namespace ttk {
       parseExcludeImportantPairsString(d, excludeImportantPairsLowerValues_);
     }
 
-    // ==========================================================================
-    // Planar Layout
-    // ==========================================================================
+    // ========================================================================
+    // Branch Decomposition Tree Planar Layout
+    // ========================================================================
     // TODO manage multi pers pairs
     template <class dataType>
     void treePlanarLayoutBDImpl(
@@ -262,6 +266,141 @@ namespace ttk {
       }
     }
 
+    // ========================================================================
+    // Path Planar Layout
+    // ========================================================================
+    // TODO manage multi pers pairs
+    template <class dataType>
+    void pathPlanarLayout(ftm::FTMTree_MT *tree,
+                          std::vector<float> &retVec,
+                          std::vector<LongSimplexId> &treeSimplexId,
+                          std::vector<ftm::idNode> &leaves,
+                          double importantPairsGap) {
+      std::queue<ftm::idNode> queue;
+      for(auto &node : leaves)
+        queue.emplace(node);
+      std::vector<std::array<float, 4>> bounds(tree->getNumberOfNodes());
+      std::vector<bool> nodeDone(tree->getNumberOfNodes(), false);
+      std::vector<bool> parentOfImportantPair(tree->getNumberOfNodes(), false);
+      std::vector<unsigned int> childSize(tree->getNumberOfNodes()),
+        noChildDone(tree->getNumberOfNodes(), 0);
+      std::vector<double> lowestValue(tree->getNumberOfNodes());
+      bool isJT = tree->isJoinTree<dataType>();
+      for(unsigned int i = 0; i < tree->getNumberOfNodes(); ++i) {
+        std::vector<ftm::idNode> children;
+        tree->getChildren(i, children);
+        childSize[i] = children.size();
+      }
+      while(!queue.empty()) {
+        ftm::idNode node = queue.front();
+        queue.pop();
+        if(nodeDone[node])
+          continue;
+
+        std::vector<ftm::idNode> children;
+        if(!tree->isLeaf(node) and !tree->isRoot(node))
+          tree->getChildren(node, children);
+
+        // Shift children
+        bool isNodeImportant = tree->isImportantPair<dataType>(
+          node, importantPairs_, excludeImportantPairsLowerValues_,
+          excludeImportantPairsHigherValues_);
+        if(isNodeImportant) {
+          bounds[node]
+            = {retVec[treeSimplexId[node] * 2], retVec[treeSimplexId[node] * 2],
+               retVec[treeSimplexId[node] * 2 + 1],
+               retVec[treeSimplexId[node] * 2 + 1]};
+          parentOfImportantPair[node] = true;
+          if(!tree->isLeaf(node) and !tree->isRoot(node)) {
+            float nodeX = retVec[treeSimplexId[node] * 2];
+            ftm::idNode child1 = children[0];
+            ftm::idNode child2 = children[1];
+            if(not nodeDone[child1] or not nodeDone[child2])
+              printErr("not nodeDone[child1] or not nodeDone[child2]");
+            if(children.size() != 2)
+              printWrn("children.size() != 2");
+
+            double sign = (lowestValue[child1] > lowestValue[child2] ? -1 : 1);
+            if(isJT)
+              sign *= -1;
+
+            float child1XBound = bounds[child1][(sign == -1 ? 1 : 0)];
+            double child1Shift
+              = -child1XBound + nodeX + sign * importantPairsGap / 2.0;
+            shiftSubtreeBounds(
+              tree, child1, child1Shift, retVec, treeSimplexId);
+            bounds[child1][0] += child1Shift;
+            bounds[child1][1] += child1Shift;
+            float child2XBound = bounds[child2][(sign == -1 ? 0 : 1)];
+            double child2Shift
+              = -child2XBound + nodeX + sign * -1 * importantPairsGap / 2.0;
+            shiftSubtreeBounds(
+              tree, child2, child2Shift, retVec, treeSimplexId);
+            bounds[child2][0] += child2Shift;
+            bounds[child2][1] += child2Shift;
+          }
+        }
+
+        // Update bounds
+        if(!tree->isLeaf(node) and !tree->isRoot(node)) {
+          for(auto &child : children) {
+            bool isChildImportant = tree->isImportantPair<dataType>(
+              child, importantPairs_, excludeImportantPairsLowerValues_,
+              excludeImportantPairsHigherValues_);
+            if((isChildImportant or parentOfImportantPair[child])
+               and not parentOfImportantPair[node])
+              bounds[node] = bounds[child];
+            if(isChildImportant or parentOfImportantPair[child]) {
+              bounds[node] = {std::min(bounds[node][0], bounds[child][0]),
+                              std::max(bounds[node][1], bounds[child][1]),
+                              std::min(bounds[node][2], bounds[child][2]),
+                              std::max(bounds[node][3], bounds[child][3])};
+              parentOfImportantPair[node] = true;
+            }
+          }
+        }
+
+        // Update lowest value
+        lowestValue[node] = tree->getValue<dataType>(node);
+        for(auto &child : children) {
+          if(isJT)
+            lowestValue[node] = std::min(lowestValue[node], lowestValue[child]);
+          else
+            lowestValue[node] = std::max(lowestValue[node], lowestValue[child]);
+        }
+
+        //
+        nodeDone[node] = true;
+        ftm::idNode parent = tree->getParentSafe(node);
+        noChildDone[parent] += 1;
+        if(noChildDone[parent] == childSize[parent])
+          queue.emplace(parent);
+      }
+    }
+
+    void shiftSubtreeBounds(ftm::FTMTree_MT *tree,
+                            ftm::idNode subtreeRoot,
+                            double shift,
+                            std::vector<float> &retVec,
+                            std::vector<LongSimplexId> &treeSimplexId) {
+      std::queue<ftm::idNode> queue;
+      queue.emplace(subtreeRoot);
+      while(!queue.empty()) {
+        ftm::idNode node = queue.front();
+        queue.pop();
+
+        retVec[treeSimplexId[node] * 2] += shift;
+
+        std::vector<ftm::idNode> children;
+        tree->getChildren(node, children);
+        for(auto &child : children)
+          queue.emplace(child);
+      }
+    }
+
+    // ========================================================================
+    // Merge Tree Planar Layout
+    // ========================================================================
     // TODO manage multi pers pairs
     template <class dataType>
     void treePlanarLayoutImpl(
@@ -302,6 +441,7 @@ namespace ttk {
       std::queue<ftm::idNode> queue;
       ftm::idNode const treeRoot = tree->getRoot();
       ftm::idNode const treeRootOrigin = tree->getNode(treeRoot)->getOrigin();
+      ftm::idNode const lowestNode = tree->getLowestNode<dataType>(treeRoot);
       queue.emplace(treeRoot);
       while(!queue.empty()) {
         ftm::idNode const node = queue.front();
@@ -370,8 +510,11 @@ namespace ttk {
       if(not rescaleTreesIndividually_) {
         // diff *= getNodePersistence<dataType>(tree, treeRoot) /
         // refPersistence;
-        diff = tree->getNodePersistence<dataType>(treeRoot);
-        offset = tree->getBirth<dataType>(treeRoot);
+        dataType rootVal = tree->getValue<dataType>(treeRoot);
+        dataType lowestNodeVal = tree->getValue<dataType>(lowestNode);
+        diff = (rootVal > lowestNodeVal ? rootVal - lowestNodeVal
+                                        : lowestNodeVal - rootVal);
+        offset = std::min(rootVal, lowestNodeVal);
       }
 
       for(int i = 0; i < outNumberOfPoints; i += 2) {
@@ -405,44 +548,28 @@ namespace ttk {
       }
 
       // ----------------------------------------------------
-      // Move nodes given scalars
-      // ----------------------------------------------------
-      Timer t_move;
-      printMsg("Move nodes given scalars", debug::Priority::VERBOSE);
-
-      float const rootY = retVec[treeSimplexId[treeRoot] * 2 + 1];
-      float const rootOriginY = retVec[treeSimplexId[treeRootOrigin] * 2 + 1];
-      float const rootYmin = std::min(rootY, rootOriginY);
-      float const rootYmax = std::max(rootY, rootOriginY);
-      auto rootBirthDeath = tree->getBirthDeath<dataType>(treeRoot);
-      const double rootBirth = std::get<0>(rootBirthDeath);
-      const double rootDeath = std::get<1>(rootBirthDeath);
-      for(size_t i = 0; i < tree->getNumberOfNodes(); ++i) {
-        retVec[treeSimplexId[i] * 2 + 1]
-          = (tree->getValue<dataType>(i) - rootBirth) / (rootDeath - rootBirth);
-        retVec[treeSimplexId[i] * 2 + 1]
-          = retVec[treeSimplexId[i] * 2 + 1] * (rootYmax - rootYmin) + rootYmin;
-      }
-
-      std::stringstream ss4;
-      ss4 << "MOVE SCALAR     = " << t_move.getElapsedTime();
-      printMsg(ss4.str(), debug::Priority::VERBOSE);
-
-      // ----------------------------------------------------
       // Scale pairs given persistence
       // ----------------------------------------------------
-      Timer t_scale;
-      printMsg("Scale pairs given persistence", debug::Priority::VERBOSE);
-
-      dataType rootPers = tree->getNodePersistence<dataType>(treeRoot);
-
+      // Sort leaves by branch depth
       std::vector<ftm::idNode> leaves;
       tree->getLeavesFromTree(leaves);
-      auto compLowerPers = [&](const ftm::idNode a, const ftm::idNode b) {
-        return tree->getNodePersistence<dataType>(a)
-               < tree->getNodePersistence<dataType>(b);
+      std::vector<int> allNodeLevel;
+      tree->getAllNodeLevel(allNodeLevel);
+      auto compLevel = [&](const ftm::idNode a, const ftm::idNode b) {
+        return allNodeLevel[tree->getNode(a)->getOrigin()]
+               > allNodeLevel[tree->getNode(b)->getOrigin()];
       };
-      std::sort(leaves.begin(), leaves.end(), compLowerPers);
+      std::sort(leaves.begin(), leaves.end(), compLevel);
+
+      // Init some variables
+      float rootY = retVec[treeSimplexId[treeRoot] * 2 + 1];
+      float rootOriginY = retVec[treeSimplexId[lowestNode] * 2 + 1];
+      float rootYmin = std::min(rootY, rootOriginY);
+      float rootYmax = std::max(rootY, rootOriginY);
+
+      Timer t_scale;
+      printMsg("Scale pairs given persistence", debug::Priority::VERBOSE);
+      dataType rootPers = tree->getNodePersistence<dataType>(treeRoot);
       std::stack<ftm::idNode> stack;
       for(auto node : leaves)
         stack.emplace(node);
@@ -451,11 +578,9 @@ namespace ttk {
         ftm::idNode const node = stack.top();
         stack.pop();
         nodeDone[node] = true;
-
         if(node == treeRoot or node == treeRootOrigin
            or tree->isNodeAlone(node))
           continue;
-
         dataType nodePers = tree->getNodePersistence<dataType>(node);
         ftm::idNode const nodeOrigin = tree->getNode(node)->getOrigin();
 
@@ -467,7 +592,6 @@ namespace ttk {
           auto inc = sign * nodePers / rootPers * (rootYmax - rootYmin) / 2;
           retVec[treeSimplexId[node] * 2]
             = retVec[treeSimplexId[nodeOrigin] * 2] + inc;
-
           // Push nodes in the branch to the stack
           ftm::idNode nodeParent = tree->getParentSafe(node);
           ftm::idNode oldNodeParent = -1;
@@ -486,7 +610,6 @@ namespace ttk {
             }
           }
         }
-
         // Manage saddle
         if(not tree->isLeaf(node) and not tree->isRoot(node)) {
           float const branchY
@@ -495,7 +618,6 @@ namespace ttk {
           retVec[treeSimplexId[node] * 2] = branchY;
         }
       }
-
       std::stringstream ss5;
       ss5 << "SCALE PERS.     = " << t_scale.getElapsedTime();
       printMsg(ss5.str(), debug::Priority::VERBOSE);
@@ -506,6 +628,7 @@ namespace ttk {
       Timer t_avoid;
       printMsg("Avoid edges crossing", debug::Priority::VERBOSE);
 
+      // Init some variables
       bool isJT = tree->isJoinTree<dataType>();
       auto compValue = [&](const ftm::idNode a, const ftm::idNode b) {
         return (isJT
@@ -519,8 +642,8 @@ namespace ttk {
       std::vector<int> allBranchOriginsSize(tree->getNumberOfNodes());
       std::queue<ftm::idNode> queueCrossing;
 
-      // ----- Get important and non-important pairs gap and store saddle nodes
-      // of each branch
+      // ----- Get important and non-important pairs gap and store branch
+      // origins of each branch
       int maxSize = std::numeric_limits<int>::lowest();
       for(auto leaf : leaves)
         queueCrossing.emplace(leaf);
@@ -673,11 +796,12 @@ namespace ttk {
       // ----- Correction of important/non-important pairs gap
       // TODO the gap between important pairs can be higher than the minimum gap
       // needed to avoid conflict. The gap is computed using the maximum number
-      // of non-important pairs attached to an inmportant pairs Unfortunately
+      // of non-important pairs attached to an important pairs. Unfortunately
       // the real gap can only be computed here, after the conflicts has been
       // avoided. The maximum real gap must be calculated and propagated to all
       // important branches and we also need to manage to avoid conflict with
-      // this new gap. Get real gap
+      // this new gap.
+      // Get real gap
       double realImportantPairsGap = std::numeric_limits<double>::lowest();
       /*if(customimportantPairsSpacing_)
         realImportantPairsGap = importantPairsGap;
@@ -743,6 +867,15 @@ namespace ttk {
       ss6 << "AVOID CROSSING  = " << t_avoid.getElapsedTime();
       printMsg(ss6.str(), debug::Priority::VERBOSE);
       printMsg(debug::Separator::L2, debug::Priority::VERBOSE);
+
+      // ----------------------------------------------------
+      // Call Path Planar Layout if asked
+      // ----------------------------------------------------
+      if(pathPlanarLayout_) {
+        pathPlanarLayout<dataType>(
+          tree, retVec, treeSimplexId, leaves, importantPairsGap);
+        return;
+      }
     }
 
     template <class dataType>
@@ -754,6 +887,9 @@ namespace ttk {
       treePlanarLayoutImpl<dataType>(tree, oldBounds, refPersistence, res);
     }
 
+    // ========================================================================
+    // Persistence Diagram Planar Layout
+    // ========================================================================
     template <class dataType>
     void persistenceDiagramPlanarLayout(ftm::FTMTree_MT *tree,
                                         std::vector<float> &res) {
@@ -780,9 +916,9 @@ namespace ttk {
       }
     }
 
-    // ==========================================================================
+    // ========================================================================
     // Bounds Utils
-    // ==========================================================================
+    // ========================================================================
     void printTuple(std::tuple<float, float, float, float> tup) {
       printMsg(debug::Separator::L2, debug::Priority::VERBOSE);
       std::stringstream ss;
@@ -970,7 +1106,7 @@ namespace ttk {
       return std::make_tuple(x_min, x_max, y_min, y_max, z_min, z_max);
     }
 
-    // ==========================================================================
+    // ========================================================================
     // Utils
     // ==========================================================================
     void parseExcludeImportantPairsString(std::string &excludeString,

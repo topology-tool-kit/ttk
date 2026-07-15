@@ -1,8 +1,10 @@
+#include <BranchMappingDistance.h>
 #include <FTMStructures.h>
 #include <FTMTree.h>
 #include <FTMTreeUtils.h>
 #include <MergeTreeUtils.h>
 #include <MergeTreeVisualization.h>
+#include <PathMappingDistance.h>
 #include <ttkMergeTreeClustering.h>
 #include <ttkMergeTreeUtils.h>
 #include <ttkMergeTreeVisualization.h>
@@ -128,11 +130,39 @@ int ttkMergeTreeClustering::RequestData(vtkInformation *ttkNotUsed(request),
     baseModule = 0;
   }
 
-  // filter out new backends (not yet supported)
-  if(baseModule != 0) {
-    printErr("Invalid Backend chosen. Path Mapping Distance and Branch Mapping "
-             "Distance not yet supported. Canceling computation.");
-    return 1;
+  // filter out backends (not yet supported)
+  if(baseModule == 1 && ComputeBarycenter) {
+    printErr("Invalid Backend chosen. Branch Mapping Distance not yet "
+             "supported for Barycenter computation. Canceling computation.");
+    return -1;
+  }
+  if(Backend == 1 && ComputeBarycenter) {
+    printErr("Invalid Backend chosen. Edit Distance is not yet supported for "
+             "Barycenter computation. Canceling computation.");
+    return -1;
+  }
+  if(Backend == 2) {
+    if(ComputeBarycenter) {
+      if(not BranchDecomposition) {
+        printErr(
+          "Invalid Backend chosen. Custom Backend without Branch "
+          "Decomposition is not yet supported for Barycenter computation. "
+          "Canceling computation.");
+        return -1;
+      }
+      if(KeepSubtree) {
+        printErr(
+          "Invalid Backend chosen. Custom Backend with Keep Subtree is not yet "
+          "supported for Barycenter computation. Canceling computation.");
+        return -1;
+      }
+    }
+    if(not BranchDecomposition and NormalizedWasserstein) {
+      printErr(
+        "Invalid Backend chosen. Custom Backend with Normalized Wasserstein "
+        "and without Branch Decomposition is not yet. Canceling computation.");
+      return -1;
+    }
   }
 
   // ------------------------------------------------------------------------------------
@@ -218,26 +248,17 @@ int ttkMergeTreeClustering::runCompute(
     BranchDecomposition = false;
     NormalizedWasserstein = false;
     KeepSubtree = true;
-    ComputeBarycenter = false;
+  } else if(Backend == 3) {
+    BranchDecomposition = false;
+    NormalizedWasserstein = false;
+    KeepSubtree = false;
+  } else if(Backend == 4) {
+    BranchDecomposition = false;
+    NormalizedWasserstein = false;
+    KeepSubtree = false;
   }
   if(IsPersistenceDiagram) {
     BranchDecomposition = true;
-  }
-  if(ComputeBarycenter) {
-    if(not BranchDecomposition)
-      printMsg("BranchDecomposition is set to true since the barycenter "
-               "computation is asked.");
-    BranchDecomposition = true;
-    if(KeepSubtree)
-      printMsg("KeepSubtree is set to false since the barycenter computation "
-               "is asked.");
-    KeepSubtree = false;
-  }
-  if(not BranchDecomposition) {
-    if(NormalizedWasserstein)
-      printMsg("NormalizedWasserstein is set to false since branch "
-               "decomposition is not asked.");
-    NormalizedWasserstein = false;
   }
   EpsilonTree2 = EpsilonTree1;
   Epsilon2Tree2 = Epsilon2Tree1;
@@ -248,32 +269,101 @@ int ttkMergeTreeClustering::runCompute(
 
   // Call base
   if(not ComputeBarycenter) {
-    MergeTreeDistance mergeTreeDistance;
-    mergeTreeDistance.setAssignmentSolver(AssignmentSolver);
-    mergeTreeDistance.setEpsilonTree1(EpsilonTree1);
-    mergeTreeDistance.setEpsilonTree2(EpsilonTree2);
-    mergeTreeDistance.setEpsilon2Tree1(Epsilon2Tree1);
-    mergeTreeDistance.setEpsilon2Tree2(Epsilon2Tree2);
-    mergeTreeDistance.setEpsilon3Tree1(Epsilon3Tree1);
-    mergeTreeDistance.setEpsilon3Tree2(Epsilon3Tree2);
-    mergeTreeDistance.setBranchDecomposition(BranchDecomposition);
-    mergeTreeDistance.setPersistenceThreshold(PersistenceThreshold);
-    mergeTreeDistance.setNormalizedWasserstein(NormalizedWasserstein);
-    mergeTreeDistance.setKeepSubtree(KeepSubtree);
-    mergeTreeDistance.setUseMinMaxPair(UseMinMaxPair);
-    mergeTreeDistance.setCleanTree(true);
-    mergeTreeDistance.setPostprocess(OutputTrees);
-    mergeTreeDistance.setDeleteMultiPersPairs(DeleteMultiPersPairs);
-    mergeTreeDistance.setEpsilon1UseFarthestSaddle(Epsilon1UseFarthestSaddle);
-    mergeTreeDistance.setIsPersistenceDiagram(IsPersistenceDiagram);
-    mergeTreeDistance.setNonMatchingWeight(NonMatchingWeight);
-    mergeTreeDistance.setThreadNumber(this->threadNumber_);
-    mergeTreeDistance.setDebugLevel(this->debugLevel_);
+    if(baseModule == 0) {
+      MergeTreeDistance mergeTreeDistance;
+      mergeTreeDistance.setAssignmentSolver(AssignmentSolver);
+      mergeTreeDistance.setEpsilonTree1(EpsilonTree1);
+      mergeTreeDistance.setEpsilonTree2(EpsilonTree2);
+      mergeTreeDistance.setEpsilon2Tree1(Epsilon2Tree1);
+      mergeTreeDistance.setEpsilon2Tree2(Epsilon2Tree2);
+      mergeTreeDistance.setEpsilon3Tree1(Epsilon3Tree1);
+      mergeTreeDistance.setEpsilon3Tree2(Epsilon3Tree2);
+      mergeTreeDistance.setBranchDecomposition(BranchDecomposition);
+      mergeTreeDistance.setPersistenceThreshold(PersistenceThreshold);
+      mergeTreeDistance.setNormalizedWasserstein(NormalizedWasserstein);
+      mergeTreeDistance.setKeepSubtree(KeepSubtree);
+      mergeTreeDistance.setUseMinMaxPair(UseMinMaxPair);
+      mergeTreeDistance.setCleanTree(true);
+      mergeTreeDistance.setPostprocess(OutputTrees);
+      mergeTreeDistance.setDeleteMultiPersPairs(DeleteMultiPersPairs);
+      mergeTreeDistance.setEpsilon1UseFarthestSaddle(Epsilon1UseFarthestSaddle);
+      mergeTreeDistance.setIsPersistenceDiagram(IsPersistenceDiagram);
+      mergeTreeDistance.setNonMatchingWeight(NonMatchingWeight);
+      mergeTreeDistance.setThreadNumber(this->threadNumber_);
+      mergeTreeDistance.setDebugLevel(this->debugLevel_);
 
-    distance = mergeTreeDistance.execute<dataType>(
-      intermediateMTrees[0], intermediateMTrees[1], outputMatching);
-    trees1NodeCorrMesh = mergeTreeDistance.getTreesNodeCorr();
-    finalDistances = std::vector<double>{distance};
+      distance = mergeTreeDistance.execute<dataType>(
+        intermediateMTrees[0], intermediateMTrees[1], outputMatching);
+      trees1NodeCorrMesh = mergeTreeDistance.getTreesNodeCorr();
+      finalDistances = std::vector<double>{distance};
+    } else if(baseModule == 1) {
+      BranchMappingDistance branchDist;
+      branchDist.setBaseMetric(branchMetric);
+      branchDist.setAssignmentSolver(AssignmentSolver);
+      branchDist.setSquared(false);
+      branchDist.setComputeMapping(true);
+      branchDist.setPreprocess(true);
+      branchDist.setBranchDecomposition(false);
+      // branchDist.setWriteBD(false);
+      branchDist.setWriteBD(true);
+
+      branchDist.setEpsilonTree1(EpsilonTree1);
+      branchDist.setEpsilonTree2(EpsilonTree2);
+      branchDist.setPersistenceThreshold(PersistenceThreshold);
+      // branchDist.setUseMinMaxPair(UseMinMaxPair);
+      branchDist.setCleanTree(true);
+      branchDist.setDeleteMultiPersPairs(DeleteMultiPersPairs);
+      // branchDist.setEpsilon1UseFarthestSaddle(Epsilon1UseFarthestSaddle);
+      branchDist.setPersistenceThreshold(PersistenceThreshold);
+      branchDist.setThreadNumber(this->threadNumber_);
+      branchDist.setDebugLevel(this->debugLevel_);
+
+      distance = branchDist.execute<dataType>(
+        intermediateMTrees[0], intermediateMTrees[1], &outputMatching);
+
+      std::vector<ttk::SimplexId> nodeCorr1(
+        intermediateTrees[0]->getNumberOfNodes());
+      std::vector<ttk::SimplexId> nodeCorr2(
+        intermediateTrees[1]->getNumberOfNodes());
+      for(unsigned int i = 0; i < nodeCorr1.size(); i++)
+        nodeCorr1[i] = i;
+      for(unsigned int i = 0; i < nodeCorr2.size(); i++)
+        nodeCorr2[i] = i;
+      trees1NodeCorrMesh = branchDist.getTreesNodeCorr();
+      finalDistances = std::vector<double>{distance};
+    } else {
+      PathMappingDistance pathDist;
+      pathDist.setBaseMetric(pathMetric);
+      pathDist.setAssignmentSolver(AssignmentSolver);
+      pathDist.setSquared(false);
+      pathDist.setComputeMapping(true);
+      pathDist.setPreprocess(true);
+      pathDist.setBranchDecomposition(false);
+
+      pathDist.setEpsilonTree1(EpsilonTree1);
+      pathDist.setEpsilonTree2(EpsilonTree2);
+      pathDist.setPersistenceThreshold(PersistenceThreshold);
+      // pathDist.setUseMinMaxPair(UseMinMaxPair);
+      pathDist.setCleanTree(true);
+      pathDist.setDeleteMultiPersPairs(DeleteMultiPersPairs);
+      // pathDist.setEpsilon1UseFarthestSaddle(Epsilon1UseFarthestSaddle);
+      pathDist.setPersistenceThreshold(PersistenceThreshold);
+      pathDist.setThreadNumber(this->threadNumber_);
+      pathDist.setDebugLevel(this->debugLevel_);
+
+      distance = pathDist.execute<dataType>(
+        intermediateMTrees[0], intermediateMTrees[1], &outputMatching);
+      trees1NodeCorrMesh = pathDist.getTreesNodeCorr();
+
+      // std::vector<ttk::SimplexId>
+      // nodeCorr1(intermediateTrees[0]->getNumberOfNodes());
+      // std::vector<ttk::SimplexId>
+      // nodeCorr2(intermediateTrees[1]->getNumberOfNodes()); for(ttk::SimplexId
+      // i=0; i<nodeCorr1.size(); i++) nodeCorr1[i] = i; for(ttk::SimplexId i=0;
+      // i<nodeCorr2.size(); i++) nodeCorr2[i] = i; trees1NodeCorrMesh =
+      // std::vector<std::vector<ttk::SimplexId>>{nodeCorr1,nodeCorr2};
+      finalDistances = std::vector<double>{distance};
+    }
   } else {
     if(NumberOfBarycenters == 1) { // and numInputs2==0){
       MergeTreeBarycenter mergeTreeBarycenter;
@@ -284,31 +374,51 @@ int ttkMergeTreeClustering::runCompute(
       mergeTreeBarycenter.setEpsilon2Tree2(Epsilon2Tree2);
       mergeTreeBarycenter.setEpsilon3Tree1(Epsilon3Tree1);
       mergeTreeBarycenter.setEpsilon3Tree2(Epsilon3Tree2);
-      mergeTreeBarycenter.setBranchDecomposition(BranchDecomposition);
-      mergeTreeBarycenter.setPersistenceThreshold(PersistenceThreshold);
-      mergeTreeBarycenter.setNormalizedWasserstein(NormalizedWasserstein);
-      mergeTreeBarycenter.setKeepSubtree(KeepSubtree);
-      mergeTreeBarycenter.setUseMinMaxPair(UseMinMaxPair);
-      mergeTreeBarycenter.setAddNodes(AddNodes);
-      mergeTreeBarycenter.setDeterministic(Deterministic);
-      mergeTreeBarycenter.setBarycenterSizeLimitPercent(
-        BarycenterSizeLimitPercent);
-      mergeTreeBarycenter.setAlpha(Alpha);
-      mergeTreeBarycenter.setPostprocess(OutputTrees);
-      mergeTreeBarycenter.setDeleteMultiPersPairs(DeleteMultiPersPairs);
-      mergeTreeBarycenter.setEpsilon1UseFarthestSaddle(
-        Epsilon1UseFarthestSaddle);
-      mergeTreeBarycenter.setIsPersistenceDiagram(IsPersistenceDiagram);
       mergeTreeBarycenter.setThreadNumber(this->threadNumber_);
       mergeTreeBarycenter.setDebugLevel(this->debugLevel_);
+      mergeTreeBarycenter.setBaseModule(this->baseModule);
+      mergeTreeBarycenter.setIsPersistenceDiagram(IsPersistenceDiagram);
+      mergeTreeBarycenter.setAlpha(Alpha);
+      mergeTreeBarycenter.setDeterministic(Deterministic);
+      mergeTreeBarycenter.setPersistenceThreshold(PersistenceThreshold);
+      mergeTreeBarycenter.setUseFixedInit(useFixedInit);
+      mergeTreeBarycenter.setFixedInitNumber(fixedInitNumber);
+      // mergeTreeBarycenter.setUseEarlyOut(useEarlyOut);
+      mergeTreeBarycenter.setIterationLimit(iterationLimit);
+      if(baseModule == 2) {
+        mergeTreeBarycenter.setPathMetric(this->pathMetric);
+        mergeTreeBarycenter.setBranchDecomposition(false);
+        mergeTreeBarycenter.setNormalizedWasserstein(false);
+        mergeTreeBarycenter.setKeepSubtree(false);
+        // mergeTreeBarycenter.setUseMinMaxPair(false);
+        mergeTreeBarycenter.setAddNodes(false);
+        mergeTreeBarycenter.setPostprocess(false);
+        mergeTreeBarycenter.setUseMedianBarycenter(useMedianBarycenter);
+      } else {
+        mergeTreeBarycenter.setBranchDecomposition(BranchDecomposition);
+        mergeTreeBarycenter.setNormalizedWasserstein(NormalizedWasserstein);
+        mergeTreeBarycenter.setKeepSubtree(KeepSubtree);
+        mergeTreeBarycenter.setUseMinMaxPair(UseMinMaxPair);
+        mergeTreeBarycenter.setAddNodes(AddNodes);
+        mergeTreeBarycenter.setBarycenterSizeLimitPercent(
+          BarycenterSizeLimitPercent);
+        mergeTreeBarycenter.setPostprocess(OutputTrees);
+        mergeTreeBarycenter.setDeleteMultiPersPairs(DeleteMultiPersPairs);
+        mergeTreeBarycenter.setEpsilon1UseFarthestSaddle(
+          Epsilon1UseFarthestSaddle);
+      }
 
       mergeTreeBarycenter.execute<dataType>(
-        intermediateMTrees, outputMatchingBarycenter[0], barycenters[0]);
+        intermediateMTrees, outputMatchingBarycenter[0],
+        outputMatchings_path[0], barycenters[0]);
       trees1NodeCorrMesh = mergeTreeBarycenter.getTreesNodeCorr();
       finalDistances = mergeTreeBarycenter.getFinalDistances();
+
     } else {
       MergeTreeClustering<dataType> mergeTreeClustering;
       mergeTreeClustering.setAssignmentSolver(AssignmentSolver);
+      mergeTreeClustering.setBaseModule(this->baseModule);
+      mergeTreeClustering.setPathMetric(this->pathMetric);
       mergeTreeClustering.setEpsilonTree1(EpsilonTree1);
       mergeTreeClustering.setEpsilonTree2(EpsilonTree2);
       mergeTreeClustering.setEpsilon2Tree1(Epsilon2Tree1);
@@ -508,6 +618,7 @@ int ttkMergeTreeClustering::runOutput(
       visuMaker.setOutputSegmentation(OutputSegmentation);
       visuMaker.setDimensionSpacing(DimensionSpacing);
       visuMaker.setDimensionToShift(DimensionToShift);
+      visuMaker.setDimensionsShift(XShift, YShift, ZShift);
       visuMaker.setImportantPairs(ImportantPairs);
       visuMaker.setMaximumImportantPairs(MaximumImportantPairs);
       visuMaker.setMinimumImportantPairs(MinimumImportantPairs);
@@ -517,6 +628,8 @@ int ttkMergeTreeClustering::runOutput(
       visuMaker.setExcludeImportantPairsHigher(ExcludeImportantPairsHigher);
       visuMaker.setExcludeImportantPairsLower(ExcludeImportantPairsLower);
       visuMaker.setIsPersistenceDiagram(IsPersistenceDiagram);
+      visuMaker.setPathPlanarLayout(PathPlanarLayout);
+      // visuMaker.setPathPlanarLayout(baseModule == 2);
 
       nodeCorr.clear();
       // First tree
@@ -621,6 +734,8 @@ int ttkMergeTreeClustering::runOutput(
       visuMakerMatching.setVtkOutputNode1(vtkOutputNode2);
       visuMakerMatching.setNodeCorr1(nodeCorr);
       visuMakerMatching.setDebugLevel(this->debugLevel_);
+      visuMakerMatching.setPathPlanarLayout(PathPlanarLayout);
+      // visuMakerMatching.setPathPlanarLayout(baseModule == 2);
 
       visuMakerMatching.makeMatchingOutput<dataType>(tree1, tree2);
 
@@ -672,9 +787,9 @@ int ttkMergeTreeClustering::runOutput(
         }
       }
       for(unsigned int c = 0; c < NumberOfBarycenters; ++c) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
-#endif
+        /*#ifdef TTK_ENABLE_OPENMP
+        #pragma omp parallel for schedule(dynamic)
+        num_threads(this->threadNumber_) #endif*/
         for(int i = 0; i < numInputs; ++i) {
           if(clusteringAssignment[i] != (int)c)
             continue;
@@ -697,6 +812,7 @@ int ttkMergeTreeClustering::runOutput(
           visuMaker.setOutputSegmentation(OutputSegmentation);
           visuMaker.setDimensionSpacing(DimensionSpacing);
           visuMaker.setDimensionToShift(DimensionToShift);
+          visuMaker.setDimensionsShift(XShift, YShift, ZShift);
           visuMaker.setImportantPairs(ImportantPairs);
           visuMaker.setMaximumImportantPairs(MaximumImportantPairs);
           visuMaker.setMinimumImportantPairs(MinimumImportantPairs);
@@ -718,11 +834,15 @@ int ttkMergeTreeClustering::runOutput(
           visuMaker.setVtkOutputSegmentation(vtkOutputSegmentation);
           visuMaker.setClusteringAssignment(clusteringAssignment);
           visuMaker.setOutputMatchingBarycenter(outputMatchingBarycenter);
+          visuMaker.setPathMatchings(outputMatchings_path);
           visuMaker.setPrintTreeId(i);
           visuMaker.setPrintClusterId(c);
           visuMaker.setDebugLevel(this->debugLevel_);
           visuMaker.setIsPersistenceDiagram(IsPersistenceDiagram);
           visuMaker.setIsPDSadMax(JoinSplitMixtureCoefficient == 0);
+          visuMaker.setPathPlanarLayout(PathPlanarLayout);
+          visuMaker.setEnableBarycenterAlignment(baseModule == 2);
+          // visuMaker.setPathPlanarLayout(baseModule == 2);
 
           visuMaker.makeTreesOutput<dataType>(
             intermediateTrees, barycentersTree);
@@ -808,6 +928,7 @@ int ttkMergeTreeClustering::runOutput(
         visuMakerBary.setOutputSegmentation(false);
         visuMakerBary.setDimensionSpacing(DimensionSpacing);
         visuMakerBary.setDimensionToShift(DimensionToShift);
+        visuMakerBary.setDimensionsShift(XShift, YShift, ZShift);
         visuMakerBary.setImportantPairs(ImportantPairs);
         visuMakerBary.setMaximumImportantPairs(MaximumImportantPairs);
         visuMakerBary.setMinimumImportantPairs(MinimumImportantPairs);
@@ -830,6 +951,7 @@ int ttkMergeTreeClustering::runOutput(
         visuMakerBary.setVtkOutputSegmentation(vtkOutputSegmentation);
         visuMakerBary.setClusteringAssignment(clusteringAssignment);
         visuMakerBary.setOutputMatchingBarycenter(outputMatchingBarycenter);
+        visuMakerBary.setPathMatchings(outputMatchings_path);
         visuMakerBary.setPrintTreeId(c);
         visuMakerBary.setPrintClusterId(c);
         if(numInputs == 2 and NumberOfBarycenters == 1) {
@@ -839,6 +961,9 @@ int ttkMergeTreeClustering::runOutput(
         visuMakerBary.setDebugLevel(this->debugLevel_);
         visuMakerBary.setIsPersistenceDiagram(IsPersistenceDiagram);
         visuMakerBary.setIsPDSadMax(JoinSplitMixtureCoefficient == 0);
+        visuMakerBary.setPathPlanarLayout(PathPlanarLayout);
+        visuMakerBary.setEnableBarycenterAlignment(baseModule == 2);
+        // visuMakerBary.setPathPlanarLayout(baseModule == 2);
 
         visuMakerBary.makeTreesOutput<dataType>(
           intermediateTrees, barycentersTree);
@@ -914,6 +1039,8 @@ int ttkMergeTreeClustering::runOutput(
           visuMakerMatching.setPrintTreeId(i);
           visuMakerMatching.setPrintClusterId(c);
           visuMakerMatching.setDebugLevel(this->debugLevel_);
+          visuMakerMatching.setPathPlanarLayout(PathPlanarLayout);
+          // visuMakerMatching.setPathPlanarLayout(baseModule == 2);
 
           visuMakerMatching.makeMatchingOutput<dataType>(
             intermediateTrees, barycentersTree);

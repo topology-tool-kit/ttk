@@ -21,6 +21,11 @@ Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.
 Proc. of IEEE VIS 2021.
 IEEE Transactions on Visualization and Computer Graphics, 2021
 
+'Merge Tree Geodesics and Barycenters with Path Mappings'
+F. Wetzels, M. Pont, J. Tierny and C. Garth.
+Proc. of IEEE VIS 2023.
+IEEE Transactions on Visualization and Computer Graphics, 2024
+
 Online examples:
 - https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/
       </Documentation>
@@ -76,11 +81,29 @@ Online examples:
                 </DoubleVectorProperty> 
                 
                 <IntVectorProperty
+                name="UsePathMappings"
+                command="SetUsePathMappings"
+                label="Use Path Mapping Distance"
+                number_of_elements="1"
+                default_values="0">
+                  <Documentation>
+                    Use the path mapping distance instead of wasserstein distance.
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
+                </IntVectorProperty>
+                
+                <IntVectorProperty
                 name="UseCustomTimeVariable"
                 command="SetUseCustomTimeVariable"
                 label="Use custom time variable"
                 number_of_elements="1"
                 default_values="0">
+                  <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator"
+                                            mode="visibility"
+                                            property="UsePathMappings"
+                                            value="0" />
+                  </Hints>
                   <Documentation>
                     Allows to use a custom time variable for each data in input. By default the nth input is considered to be the timestep n.
                   </Documentation>
@@ -121,6 +144,12 @@ Online examples:
                 number_of_elements="1"
                 default_values="0"
                 panel_visibility="advanced">
+                  <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator"
+                                            mode="visibility"
+                                            property="UsePathMappings"
+                                            value="0" />
+                  </Hints>
                   <Documentation>
                     Use the L2 distance and L2 barycenter of the original data to compute the reduction (needs to have the Segmentation output of FTMTree).
                   </Documentation>
@@ -130,6 +159,7 @@ Online examples:
             <PropertyGroup panel_widget="Line" label="Input options">
               <Property name="AssignmentSolver"/>
               <Property name="RemovalPercentage"/>
+              <Property name="UsePathMappings"/>
               <Property name="UseCustomTimeVariable"/>
               <Property name="TimeVariableName"/>
               <Property name="UseL2Distance"/>

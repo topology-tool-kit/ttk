@@ -77,6 +77,7 @@ private:
   // --- Merge Tree Planar Layout
   bool InputIsAMergeTree = false;
   bool BranchDecompositionPlanarLayout = false;
+  bool PathPlanarLayout = false;
   double BranchSpacing = 1.;
   double ImportantPairs = 10.; // important pairs threshold
   int MaximumImportantPairs = 0;
@@ -112,6 +113,9 @@ public:
 
   vtkSetMacro(BranchDecompositionPlanarLayout, bool);
   vtkGetMacro(BranchDecompositionPlanarLayout, bool);
+
+  vtkSetMacro(PathPlanarLayout, bool);
+  vtkGetMacro(PathPlanarLayout, bool);
 
   vtkSetMacro(BranchSpacing, double);
   vtkGetMacro(BranchSpacing, double);
