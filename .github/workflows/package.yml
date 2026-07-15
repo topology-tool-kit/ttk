@@ -43,17 +43,12 @@ jobs:
           libtbb-dev \
           libgl1-mesa-dev \
           libwebsocketpp-dev \
+          libzfp-dev \
           graphviz \
           python3-sklearn \
           zlib1g-dev \
           libqhull-dev \
           dpkg-dev
-
-    - name: Install optional Spectra dependency
-      uses: ./.github/actions/install-spectra-unix
-
-    - name: Install optional ZFP dependency
-      uses: ./.github/actions/install-zfp-unix
 
     - name: Install Ubuntu Torch
       if: matrix.os != 'ubuntu-24.04'
