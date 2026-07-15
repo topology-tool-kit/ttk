@@ -199,7 +199,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-14, macos-15]
+        os: [macos-14, macos-15, macos-26]
     env:  
       DYLD_LIBRARY_PATH: /usr/local/lib
 
@@ -288,7 +288,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-14, macos-15]
+        os: [macos-14, macos-15, macos-26]
     env:
       DYLD_LIBRARY_PATH: /usr/local/lib
     steps:
@@ -380,7 +380,7 @@ jobs:
   # Build Windows #
   # --------------#
   build-windows:
-    runs-on: windows-2022
+    runs-on: windows-latest
     env:
       PV_DIR: C:\Program Files\TTK-ParaView
       TTK_DIR: C:\Program Files (x86)\ttk
@@ -397,7 +397,7 @@ jobs:
         conda install -c conda-forge "qt>=5.12" \
           libboost-devel glew eigen spectralib zfp \
           sqlite scikit-learn graphviz ninja python=3.10 zlib qhull \
-          llvm-openmp clangxx=18
+          llvm-openmp clangxx=18 ninja
         # add TTK & ParaView install folders to PATH
         echo "$PV_DIR/bin" >> $GITHUB_PATH
         echo "$TTK_DIR/bin" >> $GITHUB_PATH
@@ -417,9 +417,10 @@ jobs:
       run: |
         ttk-paraview-${{ env.PV_TAG }}.exe /S
 
-    - name: Fetch Visual C++ redistribuable run-time
-      run: |
-        curl.exe -OL https://aka.ms/vs/16/release/vc_redist.x64.exe
+    - name: Set up MSVC dev environment
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
 
     - name: Create & configure TTK build directory
       shell: cmd
@@ -452,19 +453,13 @@ jobs:
           -DTTK_ENABLE_OPENMP=TRUE ^
           -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE ^
           -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE ^
-          -GNinja ^
+          -G "Ninja" ^
           ..
-
-    - name: Fix clang-cl OpenMP flags in build.ninja
-      shell: bash
-      run: |
-        sed -i 's/-Xclang -fopenmp/-openmp/' build/build.ninja
 
     - name: Build TTK
       shell: cmd
       run: |
         cd build
-        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         cmake --build . --config Release --parallel
 
     - name: Package TTK
@@ -484,7 +479,7 @@ jobs:
   # -------------#
   test-windows:
     needs: build-windows
-    runs-on: windows-2022
+    runs-on: windows-latest
     env:
       PV_DIR: C:\Program Files\TTK-ParaView
       TTK_DIR: C:\Program Files\TTK
@@ -501,7 +496,7 @@ jobs:
         conda install -c conda-forge "qt>=5.12" \
           libboost-devel glew eigen spectralib zfp \
           sqlite scikit-learn graphviz ninja python=3.10 zlib qhull \
-          llvm-openmp clangxx=18
+          llvm-openmp clangxx=18 ninja
         # add TTK & ParaView install folders to PATH
         echo "$PV_DIR/bin" >> $GITHUB_PATH
         echo "$TTK_DIR/bin" >> $GITHUB_PATH
@@ -533,12 +528,14 @@ jobs:
         echo "$PV_DIR/bin" >> $GITHUB_PATH
         echo "$TTK_DIR/bin" >> $GITHUB_PATH
 
+    - name: Set up MSVC dev environment
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+
     - name: Test C++ example
       shell: cmd
       run: |
-        set CC=clang-cl.exe
-        set CXX=clang-cl.exe
-        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
         cd %GITHUB_WORKSPACE%\examples\c++
         mkdir build
@@ -550,9 +547,6 @@ jobs:
     - name: Test VTK-C++ example
       shell: cmd
       run: |
-        set CC=clang-cl.exe
-        set CXX=clang-cl.exe
-        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         mkdir build
@@ -699,6 +693,15 @@ jobs:
         tag: ${{ github.ref }}
         file: ttk-macos-15.tar.gz/ttk.tar.gz
         asset_name: ttk-$tag-macos-15.tar.gz
+
+    - name: Upload MacOS 26 binary archives as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-macos-26.tar.gz/ttk.tar.gz
+        asset_name: ttk-$tag-macos-26.tar.gz
+
 
     - name: Upload Windows .exe as Release Asset
       uses: svenstaro/upload-release-action@v2
