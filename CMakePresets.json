@@ -5,15 +5,14 @@
             "name": "TTK-Default",
             "hidden": true,
             "binaryDir": "build",
-            "generator": "Unix Makefiles",
+            "generator": "Ninja",
             "cacheVariables": {
-                "TTK_ENABLE_DOUBLE_TEMPLATING": "OFF"
+                "TTK_ENABLE_DOUBLE_TEMPLATING": "ON"
             }
         },
         {
             "name": "TTK-Release",
             "inherits": "TTK-Default",
-            "binaryDir": "build/release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "TTK_ENABLE_CPU_OPTIMIZATION": "OFF",
@@ -33,7 +32,6 @@
         {
             "name": "TTK-Debug",
             "inherits": "TTK-Default",
-            "binaryDir": "build/debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "TTK_ENABLE_KAMIKAZE": "OFF"
