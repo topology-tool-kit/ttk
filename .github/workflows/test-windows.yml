@@ -103,7 +103,7 @@ jobs:
     - name: Build & install TTK
       shell: cmd
       run: |
-        cd ..\build
+        cd build
         cmake --build . --config Release --parallel --target install
 
     - name: Test C++ example
