@@ -44,6 +44,12 @@
 ///
 /// \b Online \b examples: \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeBarycenter_branchMapping/">Merge
+///   Tree Branch Mapping example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeBarycenter_pathMapping/">Merge
+///   Tree Path Mapping example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
 ///   Tree Clustering example</a> \n
 ///   - <a
