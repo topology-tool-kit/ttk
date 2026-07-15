@@ -1,4 +1,3 @@
-
 <ServerManagerConfiguration>
   <!-- This is the server manager configuration XML. It defines the interface to
        our new filter. As a rule of thumb, try to locate the configuration for
@@ -94,25 +93,45 @@ by a list of scalar fields) and which computes a tracking mesh."
         <DoubleRangeDomain name="range" min="0" max="100" />
       </DoubleVectorProperty>
 
-
-
-
-
       <IntVectorProperty
-      name="Assignment method"
-      label="Assignment method"
+      name="Backend"
+      label="Backend"
       command="SetPVAlgorithm"
-      number_of_elements="1"
-      default_values="0">
+        number_of_elements="1"
+        default_values="2"
+        >
         <EnumerationDomain name="enum">
-          <Entry value="0" text="ttk: sparse Munkres (Wasserstein), Gabow-Tarjan (Bottleneck)"/>
-        </EnumerationDomain>
+          <Entry value="0" text="ttk: Sparse Munkres (Wasserstein)"/>
+          <Entry value="1" text="ttk: Gabow-Tarjan (Bottleneck)"/>
+          <Entry value="2" text="ttk: Tracking from Critical Points"/>
+        </EnumerationDomain>                      
         <Documentation>
           Method for computing matchings.
         </Documentation>
       </IntVectorProperty>
 
-      <!-- Bottleneck options -->
+      <IntVectorProperty
+        name="AssignmentMethod"
+        label="Assignment Method"
+        command="SetAssignmentMethod"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Auction solver"/>
+          <Entry value="1" text="Munkres solver"/>
+        </EnumerationDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Backend"
+                                   value="2" />
+        </Hints>
+        <Documentation>
+          Assignment algorithm used betweem each time step.
+        </Documentation>
+      </IntVectorProperty>
+
       <StringVectorProperty
         name="n"
         label="p parameter"
@@ -125,6 +144,26 @@ by a list of scalar fields) and which computes a tracking mesh."
         </Documentation>
       </StringVectorProperty>
 
+      <DoubleVectorProperty
+        name="epsilon"
+        label="Relative destruction cost"
+        command="SetRelativeDestructionCost"
+        number_of_elements="1"
+        default_values="0.1"
+        panel_visibility="advanced">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                               mode="visibility"
+                               property="Backend"
+                               value="2" />                                                 
+        </Hints>
+        <Documentation>
+        Relative cost (with regard to the data span, between 0 and 1) associated with the destruction of a critical point. Set this parameter to larger values to allow for larger displacements for a critical point from one time step to another. Set this parameter to smaller values to prevent a critical point from jumping too far from one time step to another.
+        </Documentation>
+        <DoubleRangeDomain name="range" min="0" max="1" />
+      </DoubleVectorProperty>
+
+      
 
       <DoubleVectorProperty
         name="spe"
@@ -134,6 +173,20 @@ by a list of scalar fields) and which computes a tracking mesh."
         default_values="1"
         panel_visibility="advanced">
         <DoubleRangeDomain name="spe" min="0.0" max="1.0"/>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="or">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                    mode="visibility"
+                                    property="Backend"
+                                    value="0" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                    mode="visibility"
+                                    property="Backend"
+                                    value="1" />
+            </Expression>
+          </PropertyWidgetDecorator> 
+        </Hints>
         <Documentation>Importance weight for extrema.</Documentation>
       </DoubleVectorProperty>
 
@@ -145,6 +198,20 @@ by a list of scalar fields) and which computes a tracking mesh."
         default_values="1"
         panel_visibility="advanced">
         <DoubleRangeDomain name="sps" min="0.0" max="1.0"/>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="or">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                    mode="visibility"
+                                    property="Backend"
+                                    value="0" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                    mode="visibility"
+                                    property="Backend"
+                                    value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>                                                      
+        </Hints>
         <Documentation>Importance weight for saddles.</Documentation>
       </DoubleVectorProperty>
 
@@ -153,11 +220,11 @@ by a list of scalar fields) and which computes a tracking mesh."
         label="X weight"
         command="SetPX"
         number_of_elements="1"
-        default_values="0"
+        default_values="1"
         panel_visibility="advanced">
         <DoubleRangeDomain name="spx" min="0.0" max="1.0"/>
         <Documentation>Importance weight for the X component of
-the extremum</Documentation>
+the critical point.</Documentation>
       </DoubleVectorProperty>
 
       <DoubleVectorProperty
@@ -165,11 +232,11 @@ the extremum</Documentation>
         label="Y weight"
         command="SetPY"
         number_of_elements="1"
-        default_values="0"
+        default_values="1"
         panel_visibility="advanced">
         <DoubleRangeDomain name="spy" min="0.0" max="1.0"/>
         <Documentation>Importance weight for the Y component of
-the extremum</Documentation>
+the critical point.</Documentation>
       </DoubleVectorProperty>
 
       <DoubleVectorProperty
@@ -177,15 +244,58 @@ the extremum</Documentation>
         label="Z weight"
         command="SetPZ"
         number_of_elements="1"
-        default_values="0"
+        default_values="1"
         panel_visibility="advanced">
         <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
         <Documentation>Importance weight for the Z component of
-the extremum</Documentation>
+the critical point.</Documentation>
       </DoubleVectorProperty>
 
+      <DoubleVectorProperty
+        name="spf"
+        label="F weight"
+        command="SetPF"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Backend"
+                                   value="2" />
+        </Hints>
+        <Documentation>Importance weight for the function value of the critical point.</Documentation>
+      </DoubleVectorProperty>
 
-      <IntVectorProperty
+      <DoubleVectorProperty
+        name="deltalim"
+        label="Assignment Precision"
+        command="SetAssignmentPrecision"
+        number_of_elements="1"
+        default_values="0.01"
+        panel_visibility="advanced">
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Backend"
+                                       value="2" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="AssignmentMethod"
+                                       value="0" />
+              </Expression>
+            </PropertyWidgetDecorator>                          
+          </Hints>
+          <Documentation>
+            Set the relative precision for the optimal assignment approximation solver (auction algorithm).
+          </Documentation>
+          <DoubleRangeDomain name="range" min="0.000001" max="1" />
+        </DoubleVectorProperty>
+  
+		<IntVectorProperty
       name="Use spacing"
       command="SetUseGeometricSpacing"
       label="Force Z-translation"
@@ -251,6 +361,359 @@ the extremum</Documentation>
         </Documentation>
       </DoubleVectorProperty>-->
 
+	  <IntVectorProperty
+        name="EnablePostProc"
+        command="SetEnablePostProc"
+        label="Enable post-processing"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Turn on the post-processing stage: linearize tracked trajectories,
+          optionally chain them, and optionally attach per-trajectory surface
+          statistics from a per-frame merge-tree segmentation. When off, the
+          filter outputs the raw tracking mesh.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="DoStartFrame"
+        command="SetDoStartFrame"
+        label="Change start timestep"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced"
+        >
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DoLinearize"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Change starting timestep of each trajectories 
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="StartFrame"
+        command="SetStartFrame"
+        label="StartFrame"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced"
+        >
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DoStartFrame"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+         	Start Frame of each trajectory 
+        </Documentation>
+	</IntVectorProperty>
+
+
+      <IntVectorProperty
+        name="DoLinearize"
+        command="SetDoLinearize"
+        label="Trajectory linear regression"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="EnablePostProc"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          Fit a 2D line (x(t)=ax*t+bx, y(t)=ay*t+by) through each trajectory
+          point cloud.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="DoFusion"
+        command="SetDoFusion"
+        label="Trajectory merging"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="EnablePostProc"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          Greedily chain temporally-adjacent, directionally-consistent
+          linearized segments into longer trajectories.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+        name="CosColDegrees"
+        command="SetCosColDegrees"
+        label="Maximum angle (°)"
+        number_of_elements="1"
+        default_values="20.0"
+        panel_visibility="advanced"
+        >
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DoFusion"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Maximum angular deviation (degrees) between two trajectory segments
+          allowed for chaining.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="MaxLinkRadius"
+        command="SetMaxLinkRadius"
+        label="Maximum distance (px)"
+        number_of_elements="1"
+        default_values="225.0"
+        panel_visibility="advanced"
+        >
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DoFusion"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Maximum squared pixel distance between segment i's extrapolated end
+          and segment j's start frame for a valid chain link.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+        name="MaxFrameDist"
+        command="SetMaxFrameDist"
+        label="Maximum frame gap"
+        number_of_elements="1"
+        default_values="30"
+        panel_visibility="advanced">
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DoFusion"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Maximum temporal gap (frames) between the end of segment i and the
+          start of segment j for a valid chain link.
+        </Documentation>
+      </IntVectorProperty>
+
+
+      <IntVectorProperty
+        name="LinearizeFuse"
+        command="SetLinearizeFuse"
+        label="Merged trajectory linear regression"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DoFusion"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Each fused chain is refit as a single global line.
+        </Documentation>
+      </IntVectorProperty>
+
+
+
+
+      <IntVectorProperty
+        name="DoMergeTree"
+        command="SetDoMergeTree"
+        label="Compute merge-tree segmentation"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="EnablePostProc"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          Compute a per-frame merge tree  and
+          associate each trajectory to its surface segment at each frame.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="UseSplitTree"
+        command="SetUseSplitTree"
+        label="Merge-tree type"
+        number_of_elements="1"
+        default_values="0"
+        >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Join tree"/>
+          <Entry value="1" text="Split tree"/>
+  	  <Entry value="2" text="both"/>
+  	</EnumerationDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DoMergeTree"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Merge-tree variant used for the per-frame segmentation.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="MaxSurfSize"
+        command="SetMaxSurfSize"
+        label="Max surface size"
+        number_of_elements="1"
+        default_values="10000"
+        panel_visibility="advanced"
+        >
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DoMergeTree"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Segmentations larger than this vertex count are discarded as likely
+          noise or background artifacts.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="UseOtsuSimplification"
+        command="SetUseOtsuSimplification"
+        label="Otsu boundary adjustment"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="DoMergeTree"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Run a local Otsu thresholding on each surface segment to discard dark
+          background vertices before accumulating statistics.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="OtsuBins"
+        command="SetOtsuBins"
+        label="Otsu bin number"
+        number_of_elements="1"
+        default_values="40"
+        panel_visibility="advanced">
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="EnablePostProc"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="UseOtsuSimplification"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Number of histogram bins for the local Otsu thresholding.
+        </Documentation>
+      </IntVectorProperty>
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="StartTimestep" />
         <Property name="EndTimestep" />
@@ -264,12 +727,31 @@ the extremum</Documentation>
 <!--         <Property name="Do post-proc" /> -->
 <!--         <Property name="Post-proc threshold" /> -->
       </PropertyGroup>
+	  
+	  <PropertyGroup panel_widget="Line" label="Post-processing">
+      <Property name="EnablePostProc" />
+		<Property name="DoStartFrame" />
+		<Property name="StartFrame" />
+        <Property name="DoLinearize" />
+		<Property name="DoFusion" />
+		<Property name="CosColDegrees" />
+		<Property name="MaxLinkRadius" />
+		<Property name="MaxFrameDist" />
+        <Property name="LinearizeFuse" />
+        <Property name="DoMergeTree" />
+        <Property name="UseSplitTree" />
+        <Property name="MaxSurfSize" />
+        <Property name="UseOtsuSimplification" />
+        <Property name="OtsuBins" />
+	  </PropertyGroup>
 
       <!-- TTK internals -->
         ${DEBUG_WIDGETS}
 
-      <!-- Outputs -->
+		<!-- Outputs -->
+		<OutputPort name="Tracking" index="0" id="port0"/>
       <OutputPort name="Persistence Mesh" index="2" id="port3"/>
+      <OutputPort name="Segmentation" index="1" id="port_seg"/>
 
       <Hints>
         <ShowInMenu category="TTK - Time-varying Scalar Data" />

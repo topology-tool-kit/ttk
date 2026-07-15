@@ -142,8 +142,7 @@ namespace ttk {
 
         const IT nVertices = triangulation->getNumberOfVertices();
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads( \
-  this->threadNumber_) if(nAuthorizedExtremaIndices > 1000)
+#pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
         for(IT i = 0; i < nAuthorizedExtremaIndices; i++)
           authorizationMask[authorizedExtremaIndices[i]] = -2;
@@ -887,7 +886,13 @@ namespace ttk {
             }
           }
 
-          containsResidualExtrema = nResidualMinima > 0 || nResidualMaxima > 0;
+          // perform another iteration iff
+          // (i) there are residual maxima, OR
+          // (ii) there are residual minima and there exists a boundary on which
+          //      they can be placed
+          containsResidualExtrema
+            = nResidualMaxima > 0
+              || (nResidualMinima > 0 && boundaryWriteIdx > 0);
 
           if(containsResidualExtrema && boundary.size() == 0) {
             boundary.resize(boundaryWriteIdx);

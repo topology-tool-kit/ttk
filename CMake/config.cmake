@@ -46,7 +46,7 @@ if (TTK_ENABLE_MPI)
   option(TTK_ENABLE_MPI_TIME "Enable time measuring for MPI computation" FALSE)
   mark_as_advanced(TTK_ENABLE_MPI_TIME)
   option(TTK_ENABLE_MPI_RANK_ID_INT "Enable rank ids of type int (default char) for distributed sort" FALSE)
-  mark_as_advanced(TTK_ENABLE_MPI_RANK_ID_TIME)
+  mark_as_advanced(TTK_ENABLE_MPI_RANK_ID_INT)
 
 endif()
 
@@ -116,7 +116,7 @@ mark_as_advanced(TTK_IMPLICIT_PRECONDITIONS_THRESHOLD)
 option(TTK_ENABLE_DOUBLE_TEMPLATING "Use double templating for bivariate data" OFF)
 mark_as_advanced(TTK_ENABLE_DOUBLE_TEMPLATING)
 
-option(TTK_REDUCE_TEMPLATE_INSTANTIATIONS "Use a reduced list of template instatiations to fasten build times" OFF)
+option(TTK_REDUCE_TEMPLATE_INSTANTIATIONS "Use a reduced list of template instantiations to fasten build times" OFF)
 mark_as_advanced(TTK_REDUCE_TEMPLATE_INSTANTIATIONS)
 
 option(TTK_TIME_TARGETS "Print targets build time" OFF)
@@ -146,7 +146,7 @@ list(INSERT CMAKE_MODULE_PATH 0
 
 # mandatory packages
 
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED CONFIG)
 if(Boost_FOUND)
   message(STATUS "Found Boost ${Boost_VERSION} (${Boost_INCLUDE_DIR})")
 endif()
@@ -160,6 +160,15 @@ if(TORCH_FOUND)
 else()
   option(TTK_ENABLE_TORCH "Enable Torch support" OFF)
   message(STATUS "Torch not found, disabling Torch support in TTK.")
+endif()
+
+find_package(CGAL QUIET)
+if(CGAL_FOUND)
+  option(TTK_ENABLE_CGAL "Enable CGAL support" ON)
+  message(STATUS "Found CGAL ${CGAL_VERSION} (${CGAL_DIR})")
+else()
+  option(TTK_ENABLE_CGAL "Enable CGAL support" OFF)
+  message(STATUS "CGAL not found, disabling CGAL support in TTK.")
 endif()
 
 find_package(ZLIB QUIET)
@@ -198,6 +207,15 @@ else()
   message(STATUS "SQLite3 not found, disabling SQLite3 support in TTK.")
 endif()
 
+find_package(TBB QUIET)
+if (TBB_FOUND)
+  option(TTK_ENABLE_TBB "Enable TBB support" ON)
+  message(STATUS "Found TBB ${TBB_VERSION} (${TBB_DIR})")
+else()
+  option(TTK_ENABLE_TBB "Enable TBB support" OFF)
+  message(STATUS "TBB not found, disabling TBB support in TTK.")
+endif()
+
 find_package(ZFP QUIET)
 if(ZFP_INCLUDE_DIRS)
   option(TTK_ENABLE_ZFP "Enable ZFP support" ON)
@@ -214,8 +232,8 @@ if(NOT TTK_ENABLE_ZFP)
   find_package(ZFP QUIET)
 endif()
 
-find_package(Eigen3 3.3 QUIET NO_MODULE)
-if(EIGEN3_FOUND)
+find_package(Eigen3 QUIET NO_MODULE)
+if(Eigen3_FOUND)
   option(TTK_ENABLE_EIGEN "Enable Eigen3 support" ON)
   message(STATUS "Found Eigen ${Eigen3_VERSION} (${EIGEN3_INCLUDE_DIR})")
 

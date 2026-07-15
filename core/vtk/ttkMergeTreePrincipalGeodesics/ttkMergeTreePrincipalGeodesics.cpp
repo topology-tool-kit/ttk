@@ -154,10 +154,10 @@ int ttkMergeTreePrincipalGeodesics::runCompute(
   std::vector<ttk::ftm::MergeTree<dataType>> intermediateMTrees,
     intermediateMTrees2;
 
-  bool const useSadMaxPairs = (mixtureCoefficient_ == 0);
+  bool const useSecondPairsType = (mixtureCoefficient_ == 0);
   isPersistenceDiagram_ = ttk::ftm::constructTrees<dataType>(
     inputTrees, intermediateMTrees, treesNodes, treesArcs, treesSegmentation,
-    useSadMaxPairs);
+    useSecondPairsType, DiagramPairTypes);
   // If merge trees are provided in input and normalization is not asked
   convertToDiagram_
     = (not isPersistenceDiagram_ and not normalizedWasserstein_);
@@ -169,9 +169,9 @@ int ttkMergeTreePrincipalGeodesics::runCompute(
      or (mixtureCoefficient_ != 0 and mixtureCoefficient_ != 1)) {
     auto &inputTrees2ToUse
       = (not isPersistenceDiagram_ ? inputTrees2 : inputTrees);
-    ttk::ftm::constructTrees<dataType>(inputTrees2ToUse, intermediateMTrees2,
-                                       treesNodes2, treesArcs2,
-                                       treesSegmentation2, !useSadMaxPairs);
+    ttk::ftm::constructTrees<dataType>(
+      inputTrees2ToUse, intermediateMTrees2, treesNodes2, treesArcs2,
+      treesSegmentation2, !useSecondPairsType, DiagramPairTypes);
   }
   isPersistenceDiagram_ |= (not normalizedWasserstein_);
 
@@ -329,6 +329,10 @@ int ttkMergeTreePrincipalGeodesics::runOutput(
     array->InsertNextTuple1(getParamValueFromName(paramName));
     output_coef->GetFieldData()->AddArray(array);
   }
+  vtkNew<vtkIntArray> diagramPairTypesArray{};
+  diagramPairTypesArray->SetName("DiagramPairTypes");
+  diagramPairTypesArray->InsertNextTuple1(DiagramPairTypes);
+  output_coef->GetFieldData()->AddArray(diagramPairTypesArray);
 
   // ------------------------------------------
   // --- Geodesics Vectors
@@ -385,7 +389,7 @@ int ttkMergeTreePrincipalGeodesics::runOutput(
 
   // Tree matching
   std::vector<std::vector<ttk::ftm::idNode>> matchingMatrix;
-  getMatchingMatrix(
+  ttk::axa::getMatchingMatrix(
     barycenter_, intermediateDTrees, baryMatchings_, matchingMatrix);
   if(not normalizedWasserstein_)
     for(unsigned int j = 0; j < inputTrees.size(); ++j)

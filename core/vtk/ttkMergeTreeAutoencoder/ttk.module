@@ -2,10 +2,10 @@ NAME
   ttkMergeTreeAutoencoder
 SOURCES
   ttkMergeTreeAutoencoder.cpp
-  ttkMergeTreeAutoencoderUtils.cpp
+  ttkMergeTreeNeuralNetworkUtils.cpp
 HEADERS
   ttkMergeTreeAutoencoder.h
-  ttkMergeTreeAutoencoderUtils.h
+  ttkMergeTreeNeuralNetworkUtils.h
 DEPENDS
   mergeTreeAutoencoder
   ttkMergeTree

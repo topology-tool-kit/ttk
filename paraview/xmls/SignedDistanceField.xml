@@ -20,6 +20,12 @@ A Fast Marching Level Set Method for Monotonically Advancing Fronts,
 Proc. Natl. Acad. Sci., 93, 4, pp.1591--1595, 1996
 
 - The fast marching band backend, a variant of the fast marching for which all the vertices being not yet updated and nearest the input surface are updated (instead of just one in the fast marching backend). It results in a faster method (due to parallelism) but is a rougher approximation.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/topologicalOptimization_pegasus/
+
+        - https://topology-tool-kit.github.io/examples/topologicalOptimization_torus/
       </Documentation>
       
 

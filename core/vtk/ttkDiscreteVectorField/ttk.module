@@ -1,0 +1,9 @@
+NAME
+  ttkDiscreteVectorField
+SOURCES
+  ttkDiscreteVectorField.cpp
+HEADERS
+  ttkDiscreteVectorField.h
+DEPENDS
+  discreteVectorField
+  ttkAlgorithm

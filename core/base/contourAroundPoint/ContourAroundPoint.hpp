@@ -251,9 +251,9 @@ int ttk::ContourAroundPoint::execute() const {
 
   // The following open-mp processing is only relevant for
   // embarrassingly parallel algorithms.
-  //#ifdef TTK_ENABLE_OPENMP
-  //#pragma omp parallel for num_threads(threadNumber_)
-  //#endif
+  // #ifdef TTK_ENABLE_OPENMP
+  // #pragma omp parallel for num_threads(threadNumber_)
+  // #endif
   for(size_t p = 0; p < _inpPtsNum; ++p) {
     handleOneInpPt<scalarT>(
       findInpFldVert(p), _inpPtsIsovals[p], _inpPtsFlags[p], _inpPtsScalars[p]);

@@ -21,6 +21,11 @@ data a scalar field that represent the vertex identifiers of the sources in
 the input geometry (use the Identifiers plugin prior to the selection of the
 sources if necessary to create such an identifier field).
 
+      Online examples:
+
+      - https://topology-tool-kit.github.io/examples/mpiExample/
+
+
       </Documentation>
 
       <InputProperty

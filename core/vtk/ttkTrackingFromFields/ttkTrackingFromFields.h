@@ -26,15 +26,24 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/timeTracking/">Time
 ///   tracking example</a>
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/trackingFromCriticalPoints/">Tracking
+///   From Critical Points example</a>
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/trackingPostProcessing/">Tracking
+///   post-processing example</a>
 ///
 
 #pragma once
 
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkUnstructuredGrid.h>
 
 // VTK Module
+#include <TrackingFromCriticalPoints.h>
 #include <TrackingFromFields.h>
+#include <TrackingPostProcessing.h>
 #include <ttkAlgorithm.h>
 #include <ttkTrackingFromFieldsModule.h>
 
@@ -73,6 +82,13 @@ public:
   /// @{
   vtkSetMacro(Tolerance, double);
   vtkGetMacro(Tolerance, double);
+
+  vtkSetMacro(RelativeDestructionCost, double);
+  vtkGetMacro(RelativeDestructionCost, double);
+  /// @}
+
+  vtkSetMacro(AssignmentPrecision, double);
+  vtkGetMacro(AssignmentPrecision, double);
   /// @}
 
   /// @brief Importance weight for the X component of the extremum.
@@ -105,6 +121,12 @@ public:
   vtkGetMacro(PS, double);
   /// @}
 
+  /// @brief Importance weight for function values.
+  /// @{
+  vtkSetMacro(PF, double);
+  vtkGetMacro(PF, double);
+  /// @}
+
   /// @brief Value of the parameter p for the Wp (p-th Wasserstein) distance
   /// computation (type "inf" for the Bottleneck distance).
   /// @{
@@ -121,6 +143,9 @@ public:
   /// @{
   vtkSetMacro(PVAlgorithm, int);
   vtkGetMacro(PVAlgorithm, int);
+
+  vtkSetMacro(AssignmentMethod, int);
+  vtkGetMacro(AssignmentMethod, int);
   /// @}
 
   /// @brief For the translation of the second set of critical points even the
@@ -151,11 +176,105 @@ public:
   vtkGetMacro(PostProcThresh, double);
   /// @}
 
+  /// @brief Run the trajectory post-processing (linearization,
+  /// fusion, merge-tree surface stats) after the tracking stage.
+  /// @{
+  vtkSetMacro(EnablePostProc, bool);
+  vtkGetMacro(EnablePostProc, bool);
+  /// @}
+
+  /// @brief Linearize each tracked trajectory (least-squares line fit).
+  /// @{
+  vtkSetMacro(DoLinearize, bool);
+  vtkGetMacro(DoLinearize, bool);
+  /// @}
+
+  /// @brief Chain temporally-adjacent, directionally-consistent linearized
+  /// segments into longer trajectories.
+  /// @{
+  vtkSetMacro(DoFusion, bool);
+  vtkGetMacro(DoFusion, bool);
+  /// @}
+
+  /// @brief When on, fused chains are refit as a single global line. When off,
+  /// the original linearized segments are preserved and (N-1) explicit
+  /// junction segments are inserted between them; junctions carry
+  /// ConnectedComponentId = -1
+  /// @{
+  vtkSetMacro(LinearizeFuse, bool);
+  vtkGetMacro(LinearizeFuse, bool);
+  /// @}
+
+  /// @brief When on, change the starting Frame of each trajectory
+  /// i.e. change z value for the first point of each line in
+  /// trajectory output
+  /// @{
+  vtkSetMacro(DoStartFrame, bool);
+  vtkGetMacro(DoStartFrame, bool);
+  /// @}
+
+  /// @brief Starting Frame value if DoStartFrame==1
+  /// @{
+  vtkSetMacro(StartFrame, int);
+  vtkGetMacro(StartFrame, int);
+  /// @}
+
+  /// @brief Run per-frame merge-tree segmentation and attach surface
+  /// statistics (min/max/mean pixel-cell count) to each trajectory cell.
+  /// @{
+  vtkSetMacro(DoMergeTree, bool);
+  vtkGetMacro(DoMergeTree, bool);
+  /// @}
+
+  /// @brief Select the merge-tree variant used for per-frame segmentation.
+  /// When off (default), a join tree is used
+  /// @{
+  vtkSetMacro(UseSplitTree, int);
+  vtkGetMacro(UseSplitTree, int);
+  /// @}
+
+  /// @brief When on, the merge-tree pipeline runs an Otsu-threshold pass on
+  /// the candidate surface segments before accumulating statistics.
+  /// @{
+  vtkSetMacro(UseOtsuSimplification, bool);
+  vtkGetMacro(UseOtsuSimplification, bool);
+  /// @}
+
+  vtkSetMacro(OtsuBins, int);
+  vtkGetMacro(OtsuBins, int);
+
+  vtkSetMacro(MaxSurfSize, int);
+  vtkGetMacro(MaxSurfSize, int);
+
+  /// @brief Max angular deviation (degrees) allowed between two segments
+  /// during fusion. Internally converted to a cosine threshold.
+  /// @{
+  vtkSetMacro(CosColDegrees, double);
+  vtkGetMacro(CosColDegrees, double);
+  /// @}
+
+  /// @brief Max squared pixel distance between segment i's extrapolated
+  /// end and segment j's start during fusion.
+  /// @{
+  vtkSetMacro(MaxLinkRadius, double);
+  vtkGetMacro(MaxLinkRadius, double);
+  /// @}
+
+  /// @brief Max temporal gap (in frames) between consecutive segments in a
+  /// fusion link.
+  /// @{
+  vtkSetMacro(MaxFrameDist, int);
+  vtkGetMacro(MaxFrameDist, int);
+  /// @}
+
 protected:
   ttkTrackingFromFields();
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestDataObject(vtkInformation *request,
+                        vtkInformationVector **inputVector,
+                        vtkInformationVector *outputVector) override;
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
@@ -170,9 +289,14 @@ private:
   double Tolerance{1};
   double PX{1};
   double PY{1};
-  double PZ{0};
+  double PZ{1};
   double PE{0};
   double PS{0};
+  double PF{0};
+
+  double RelativeDestructionCost{0.1};
+  double AssignmentPrecision{0.01};
+  int AssignmentMethod{0};
 
   // Bottleneck config.
   bool UseGeometricSpacing{false};
@@ -180,11 +304,43 @@ private:
   double PostProcThresh{0.0};
   double Spacing{1.0};
   std::string DistanceAlgorithm{"ttk"};
-  int PVAlgorithm{-1};
+  int PVAlgorithm{2};
   std::string WassersteinMetric{"2"};
+
+  // Post-processing config.
+  bool EnablePostProc{false};
+  bool DoLinearize{true};
+  bool DoFusion{true};
+  bool LinearizeFuse{true};
+  bool DoStartFrame{false};
+  int StartFrame{0};
+  bool DoMergeTree{false};
+  int UseSplitTree{2};
+  bool UseOtsuSimplification{false};
+  int OtsuBins{0};
+  int MaxSurfSize{10000};
+  double CosColDegrees{20.0};
+  double MaxLinkRadius{225.0};
+  int MaxFrameDist{30};
 
   template <class dataType, class triangulationType>
   int trackWithPersistenceMatching(vtkUnstructuredGrid *output,
                                    unsigned long fieldNumber,
                                    const triangulationType *triangulation);
+
+  template <class dataType, class triangulationType>
+  int trackWithCriticalPointMatching(vtkUnstructuredGrid *output,
+                                     unsigned long fieldNumber,
+                                     const triangulationType *triangulation);
+
+  template <class dataType, class triangulationType>
+  int applyPostProcessing(vtkUnstructuredGrid *output,
+                          vtkDataSet *segOutput,
+                          vtkDataSet *input,
+                          const std::vector<vtkDataArray *> &inputScalarFields,
+                          const triangulationType *triangulation);
+
+  void writeSegmentationArrays(
+    vtkDataSet *segOutput,
+    const std::vector<std::vector<int>> &vertexTrajPerFrame);
 };

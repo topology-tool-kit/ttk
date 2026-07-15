@@ -1,0 +1,4 @@
+NAME
+  ttkDelaunayRipsPersistenceGenerators
+DEPENDS
+  ttkAlgorithm

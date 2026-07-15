@@ -38,7 +38,8 @@ void ttk::PDBarycenter::runMatching(
 
   double local_cost = *total_cost;
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic, 1) reduction(+:local_cost)
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic, 1) \
+  reduction(+ : local_cost)
 #endif
   for(int i = 0; i < numberOfInputs_; i++) {
     PersistenceDiagramAuction auction(
@@ -87,7 +88,8 @@ void ttk::PDBarycenter::runMatchingAuction(
   bool actual_distance) {
   double local_cost = *total_cost;
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic, 1) reduction(+:local_cost)
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic, 1) \
+  reduction(+ : local_cost)
 #endif
   for(int i = 0; i < numberOfInputs_; i++) {
     PersistenceDiagramAuction auction(
@@ -171,6 +173,9 @@ double ttk::PDBarycenter::updateBarycenter(
   points_deleted_ = 0;
   double max_shift = 0;
 
+  std::vector<double> weight_diag_matchings(
+    n_goods); // Total weight for diagonal matchings for each point of the
+              // barycenter
   std::vector<size_t> count_diag_matchings(
     n_goods,
     0); // Number of diagonal matchings for each point of the barycenter
@@ -183,20 +188,24 @@ double ttk::PDBarycenter::updateBarycenter(
   std::vector<double> min_prices(
     n_diagrams, std::numeric_limits<double>::max());
 
-  std::vector<Bidder *>
-    points_to_append; // Will collect bidders linked to diagonal
+  // Will collect bidders linked to diagonal
+  // second value indicate the corresponding weight.
+  std::vector<std::pair<Bidder *, double>> points_to_append;
   std::vector<int> diagonalToNewGood;
   if(numberOfInputs_ == 2)
     diagonalToNewGood.resize(current_bidder_diagrams_[0].size()
                              + current_bidder_diagrams_[1].size());
+
   // 2. Preprocess the matchings
   for(size_t j = 0; j < matchings.size(); j++) {
+    double weight = useCustomWeights_ ? (*customWeights_)[j] : 0.0;
     for(size_t i = 0; i < matchings[j].size(); i++) {
       int const bidder_id = std::get<0>(matchings[j][i]);
       int const good_id = std::get<1>(matchings[j][i]);
       if(good_id < 0 && bidder_id >= 0) {
         // Future new barycenter point
-        points_to_append.push_back(&current_bidder_diagrams_[j].at(bidder_id));
+        points_to_append.emplace_back(
+          &current_bidder_diagrams_[j].at(bidder_id), weight);
         if(numberOfInputs_ == 2)
           diagonalToNewGood[-good_id - 1]
             = n_goods + points_to_append.size() - 1;
@@ -204,8 +213,13 @@ double ttk::PDBarycenter::updateBarycenter(
 
       else if(good_id >= 0 && bidder_id >= 0) {
         // Update coordinates (to be divided by the number of diagrams later on)
-        x[good_id] += current_bidder_diagrams_[j].at(bidder_id).x_;
-        y[good_id] += current_bidder_diagrams_[j].at(bidder_id).y_;
+        if(useCustomWeights_) {
+          x[good_id] += weight * current_bidder_diagrams_[j].at(bidder_id).x_;
+          y[good_id] += weight * current_bidder_diagrams_[j].at(bidder_id).y_;
+        } else {
+          x[good_id] += current_bidder_diagrams_[j].at(bidder_id).x_;
+          y[good_id] += current_bidder_diagrams_[j].at(bidder_id).y_;
+        }
         if(geometrical_factor_ < 1) {
           const auto &critical_coordinates = current_bidder_diagrams_[j]
                                                .at(bidder_id)
@@ -218,6 +232,10 @@ double ttk::PDBarycenter::updateBarycenter(
         // Counting the number of times this barycenter point is linked to the
         // diagonal
         count_diag_matchings[good_id] = count_diag_matchings[good_id] + 1;
+        if(useCustomWeights_) {
+          weight_diag_matchings[good_id]
+            = weight_diag_matchings[good_id] + weight;
+        }
       }
     }
   }
@@ -227,20 +245,42 @@ double ttk::PDBarycenter::updateBarycenter(
     if(count_diag_matchings[i] < n_diagrams) {
       // Barycenter point i is matched at least to one off-diagonal bidder
       // 3.1 Compute the arithmetic mean of off-diagonal bidders linked to it
-      double const x_bar
-        = x[i] / (double)(n_diagrams - count_diag_matchings[i]);
-      double const y_bar
-        = y[i] / (double)(n_diagrams - count_diag_matchings[i]);
+      double x_bar = 0;
+      double y_bar = 0;
+
+      if(useCustomWeights_) {
+        // weighted arithmetic mean of OFF-DIAGONAL points
+        // = sum_i weight[i]*x[i]  / sum_j weight[j]
+        // if sum_j weight[j] = 0 (matched to off-diagonal points with weight
+        // zero), then skip the computation
+        if(weight_diag_matchings[i] < 1) {
+          x_bar = x[i] / (1 - weight_diag_matchings[i]);
+          y_bar = y[i] / (1 - weight_diag_matchings[i]);
+        }
+      } else {
+        x_bar = x[i] / (double)(n_diagrams - count_diag_matchings[i]);
+        y_bar = y[i] / (double)(n_diagrams - count_diag_matchings[i]);
+      }
+
       // 3.2 Compute the new coordinates of the point (the more linked to the
       // diagonal it was, the closer to the diagonal it'll be)
-      double const new_x
-        = ((double)(n_diagrams - count_diag_matchings[i]) * x_bar
-           + (double)count_diag_matchings[i] * (x_bar + y_bar) / 2.)
-          / (double)n_diagrams;
-      double const new_y
-        = ((double)(n_diagrams - count_diag_matchings[i]) * y_bar
-           + (double)count_diag_matchings[i] * (x_bar + y_bar) / 2.)
-          / (double)n_diagrams;
+      double new_x = 0;
+      double new_y = 0;
+
+      if(useCustomWeights_) {
+        new_x = (1 - weight_diag_matchings[i]) * x_bar
+                + weight_diag_matchings[i] * (x_bar + y_bar) / 2.;
+        new_y = (1 - weight_diag_matchings[i]) * y_bar
+                + weight_diag_matchings[i] * (x_bar + y_bar) / 2.;
+      } else {
+        new_x = ((double)(n_diagrams - count_diag_matchings[i]) * x_bar
+                 + (double)count_diag_matchings[i] * (x_bar + y_bar) / 2.)
+                / (double)n_diagrams;
+        new_y = ((double)(n_diagrams - count_diag_matchings[i]) * y_bar
+                 + (double)count_diag_matchings[i] * (x_bar + y_bar) / 2.)
+                / (double)n_diagrams;
+      }
+
       // TODO Weight by persistence
       double const new_crit_coord_x
         = crit_coords_x[i] / (double)(n_diagrams - count_diag_matchings[i]);
@@ -299,11 +339,17 @@ double ttk::PDBarycenter::updateBarycenter(
   // 5. Append the new points to the barycenter
   for(size_t k = 0; k < points_to_append.size(); k++) {
     points_added_ += 1;
-    Bidder *b = points_to_append[k];
-    double const gx
+    Bidder *b = points_to_append[k].first;
+    double gx
       = (b->x_ + (n_diagrams - 1) * (b->x_ + b->y_) / 2.) / (n_diagrams);
-    double const gy
+    double gy
       = (b->y_ + (n_diagrams - 1) * (b->x_ + b->y_) / 2.) / (n_diagrams);
+    if(useCustomWeights_) {
+      // need to retrieve the correct weight here
+      double weight = points_to_append[k].second;
+      gx = weight * b->x_ + (1 - weight) * (b->x_ + b->y_) / 2.;
+      gy = weight * b->y_ + (1 - weight) * (b->x_ + b->y_) / 2.;
+    }
     const auto &critical_coordinates = b->GetCriticalCoordinates();
     for(size_t j = 0; j < n_diagrams; j++) {
       Good g = Good(gx, gy, false, barycenter_goods_[j].size());
@@ -653,9 +699,9 @@ std::vector<std::vector<ttk::MatchingType>>
     barycenter.clear();
     for(size_t j = 0; j < barycenter_goods_[0].size(); j++) {
       Good const &g = barycenter_goods_[0].at(j);
-      barycenter.emplace_back(PersistencePair{CriticalVertex{0, nt1_, g.x_, {}},
-                                              CriticalVertex{0, nt2_, g.y_, {}},
-                                              diagramType_, true});
+      barycenter.emplace_back(PersistencePair{
+        CriticalVertex{0, g.x_, {}, {}, nt1_},
+        CriticalVertex{0, g.y_, {}, {}, nt2_}, diagramType_, true});
     }
 
     bool const actual_distance = (numberOfInputs_ == 2);
@@ -704,9 +750,9 @@ std::vector<std::vector<ttk::MatchingType>>
   barycenter.resize(0);
   for(size_t j = 0; j < barycenter_goods_[0].size(); j++) {
     Good const &g = barycenter_goods_[0].at(j);
-    barycenter.emplace_back(PersistencePair{CriticalVertex{0, nt1_, g.x_, {}},
-                                            CriticalVertex{0, nt2_, g.y_, {}},
-                                            diagramType_, true});
+    barycenter.emplace_back(PersistencePair{
+      CriticalVertex{0, g.x_, {}, {}, nt1_},
+      CriticalVertex{0, g.y_, {}, {}, nt2_}, diagramType_, true});
   }
 
   cost_ = total_cost;

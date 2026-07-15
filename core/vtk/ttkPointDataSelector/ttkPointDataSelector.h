@@ -13,6 +13,12 @@
 ///
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
+///
+/// \b Online \b examples:\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mpiExample/">
+///   MPI example</a> \n
+
 #pragma once
 
 #include <array>
@@ -64,8 +70,9 @@ public:
   vtkDataArraySelection *GetRangeIds() {
     vtkDataArraySelection *arr = vtkDataArraySelection::New();
     arr->SetArraySetting("0", true);
+    const auto nFields = AvailableFields.size();
     arr->SetArraySetting(
-      std::to_string(AvailableFields.size() - 1).c_str(), true);
+      std::to_string(nFields == 0 ? 0 : nFields - 1).c_str(), true);
     return arr;
   }
 

@@ -39,11 +39,17 @@
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreeWAE/">Merge
 ///   tree Wasserstein Auto-Encoder example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/molecularVibration/">Molecular
+///   Vibration example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/">Nested
 ///   Tracking from Overlap example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramClustering/">Persistence
 ///   Diagram Clustering example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramDictionary/">Persistence
+///   Diagram Dictionary example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramDistance/">Persistence
 ///   Diagram Distance example</a> \n

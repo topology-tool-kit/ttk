@@ -249,6 +249,58 @@ int DiscreteGradient::setManifoldSize(
   return 0;
 }
 
+void DiscreteGradient::computeDerivatives(
+  const SimplexId &x,
+  const std::vector<SimplexId> &stencilIds,
+  const std::array<float, 3> &xCoords,
+  const std::vector<std::array<float, 3>> &stencilCoords,
+  double (&grad)[3]) {
+
+  const double *scalars
+    = static_cast<double const *>(this->inputScalarField_.first);
+  if(stencilIds[0] != -1 && stencilIds[1] != -1)
+    grad[0] = -(scalars[stencilIds[0]] - scalars[stencilIds[1]])
+              / std::abs(stencilCoords[0][0] - stencilCoords[1][0]);
+  else if(stencilIds[0] != -1 && stencilIds[1] == -1)
+    grad[0] = -(scalars[stencilIds[0]] - scalars[x])
+              / std::abs(stencilCoords[0][0] - xCoords[0]);
+  else if(stencilIds[1] != -1 && stencilIds[0] == -1)
+    grad[0] = -(scalars[x] - scalars[stencilIds[1]])
+              / std::abs(stencilCoords[1][0] - xCoords[0]);
+  if(stencilIds[2] != -1 && stencilIds[3] != -1)
+    grad[1] = -(scalars[stencilIds[2]] - scalars[stencilIds[3]])
+              / std::abs(stencilCoords[2][1] - stencilCoords[3][1]);
+  else if(stencilIds[2] != -1 && stencilIds[3] == -1)
+    grad[1] = -(scalars[stencilIds[2]] - scalars[x])
+              / std::abs(stencilCoords[2][1] - xCoords[1]);
+  else if(stencilIds[3] != -1 && stencilIds[2] == -1)
+    grad[1] = -(scalars[x] - scalars[stencilIds[3]])
+              / std::abs(stencilCoords[3][1] - xCoords[1]);
+  if(stencilIds[4] != -1 && stencilIds[5] != -1)
+    grad[2] = -(scalars[stencilIds[4]] - scalars[stencilIds[5]])
+              / std::abs(stencilCoords[4][2] - stencilCoords[5][2]);
+  else if(stencilIds[4] != -1 && stencilIds[5] == -1)
+    grad[2] = -(scalars[stencilIds[4]] - scalars[x])
+              / std::abs(stencilCoords[4][2] - xCoords[2]);
+  else if(stencilIds[5] != -1 && stencilIds[4] == -1)
+    grad[2] = -(scalars[x] - scalars[stencilIds[5]])
+              / std::abs(stencilCoords[5][2] - xCoords[2]);
+}
+
+int DiscreteGradient::getCriticalPointMap(
+  const vector<pair<SimplexId, char>> &criticalPoints, vector<char> &isPL) {
+  isPL.resize(numberOfVertices_);
+  std::fill(isPL.begin(), isPL.end(), 0);
+  for(pair<SimplexId, char> criticalPoint : criticalPoints) {
+    const SimplexId criticalPointId = criticalPoint.first;
+    const char criticalPointType = criticalPoint.second;
+
+    isPL[criticalPointId] = criticalPointType;
+  }
+
+  return 0;
+}
+
 #ifdef TTK_ENABLE_MPI
 void DiscreteGradient::setCellToGhost(const int cellDim,
                                       const SimplexId cellId) {

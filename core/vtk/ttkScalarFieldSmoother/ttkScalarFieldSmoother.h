@@ -43,15 +43,23 @@
 /// \sa ttk::ScalarFieldSmoother
 ///
 /// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cosmicWeb/">
+///   Cosmic Web example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/morsePersistence/">Morse
 ///   Persistence example</a> \n
 ///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mpiExample/">
+///   MPI example</a> \n
+///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_darkSky/">Persistent
 ///   Generators Dark Sky example</a> \n
 ///   - <a
-///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_darkSky//">Topological
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_darkSky/">Topological
 ///   Optimization DarkSky</a>\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_pegasus/">Topological
+///   Optimization for Pegasus Genus Repair example</a>\n
 
 #pragma once
 

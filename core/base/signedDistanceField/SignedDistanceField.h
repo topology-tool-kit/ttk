@@ -25,6 +25,14 @@
 /// all the vertices being not yet updated and nearest the input surface are
 /// updated (instead of just one in the fast marching backend). It results in a
 /// faster method (due to parallelism) but is a rougher approximation.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_pegasus/">Topological
+///   Optimization for Pegasus Genus Repair example</a>\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_torus/">Topological
+///   Optimization for Torus Repair example</a>\n
 
 #pragma once
 #include <iostream>

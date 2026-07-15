@@ -1,0 +1,10 @@
+NAME
+  ttkDelaunayRipsPersistenceDiagram
+SOURCES
+  ttkDelaunayRipsPersistenceDiagram.cpp
+HEADERS
+  ttkDelaunayRipsPersistenceDiagram.h
+DEPENDS
+  delaunayRipsPersistenceDiagram
+  ttkAlgorithm
+  ttkRipsPersistenceDiagram

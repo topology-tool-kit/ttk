@@ -9,7 +9,10 @@
 /// In distributed, using GlobalOrder set to True, this module will compute a
 /// global order, otherwise each process will locally compute its order.
 ///
-
+/// \b Online \b examples:\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mpiExample/">
+///   MPI example</a> \n
 #pragma once
 
 // ttk common includes
@@ -290,7 +293,9 @@ namespace ttk {
         std::vector<globalOrder::vertexToSort<DT>> verticesToSort;
         verticesToSort.reserve(nVerts);
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp declare reduction (merge : std::vector<globalOrder::vertexToSort<DT>> : omp_out.insert(omp_out.end(), omp_in.begin(), omp_in.end()))
+#pragma omp declare reduction(                                           \
+    merge : std::vector<globalOrder::vertexToSort<DT>> : omp_out.insert( \
+        omp_out.end(), omp_in.begin(), omp_in.end()))
 #pragma omp parallel for reduction(merge : verticesToSort) schedule(static)
 #endif
         for(size_t i = 0; i < nVerts; i++) {
@@ -339,9 +344,10 @@ namespace ttk {
 
         ttk::SimplexId verticesToSortSize = verticesToSort.size();
         // Compute the order of the first element of the current process
-        ttk::SimplexId orderOffset
-          = std::accumulate(vertexDistribution.begin(),
-                            vertexDistribution.begin() + ttk::MPIrank_, 0);
+        ttk::SimplexId orderOffset{0};
+        for(int i = 0; i < ttk::MPIrank_; i++) {
+          orderOffset += vertexDistribution[i];
+        }
         // nbChunk, rest and nbChunkTotal are used to compute the
         // post-processing bit by bit.
         ttk::SimplexId nbChunk = std::floor(verticesToSortSize / ChunkSize);
@@ -407,7 +413,7 @@ namespace ttk {
     }
 
   protected:
-    bool GlobalOrder{false};
+    bool GlobalOrder{true};
     // This value has been chosen for systems of 128 Gb of memory per computing
     // node. For systems with much smaller memory, it may be inadequate and
     // require a smaller value.

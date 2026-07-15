@@ -12,6 +12,8 @@
 #include <vtkStringArray.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <iostream>
+
 #ifdef TTK_ENABLE_MPI_TIME
 #include <mpi.h>
 #endif
@@ -281,6 +283,7 @@ void ttkUtils::SetVoidArray(vtkDataArray *array,
                             void *data,
                             vtkIdType size,
                             int save) {
+
   switch(array->GetDataType()) {
     vtkTemplateMacro(
       auto *aosArray = vtkAOSDataArrayTemplate<VTK_TT>::FastDownCast(array);
