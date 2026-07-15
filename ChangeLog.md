@@ -6,6 +6,7 @@
 - Separatrix stability, a.k.a., BondMatcher (IEEE TVCG 2025)
 - Discrete vector field topology! (IEEE VIS 2024)
 - Persistence Diagram Dictionaries (IEEE TVCG 2024)
+- Merge tree barycenters with path mapping (IEEE VIS 2023)
 - Fast DelaunayRips persistence computation for point cloud data
 - New backend for TrackingFromFields (critical point based)
 - Stochastic discrete gradient (IEEE VIS 2012)
