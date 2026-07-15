@@ -32,6 +32,18 @@ if(UNIX AND NOT APPLE)
       "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libtorch-dev")
   endif()
 endif()
+# adding libspectra-dev and libzfp-dev if not 22.04
+if(UNIX AND NOT APPLE)
+  execute_process(
+    COMMAND lsb_release -rs
+    OUTPUT_VARIABLE UBUNTU_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET)
+  if(NOT UBUNTU_VERSION STREQUAL "22.04")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS
+      "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libspectra-dev, libzfp-dev")
+  endif()
+endif()
 # autogenerate dependency information
 set (CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 # package will be installed under %ProgramFiles%\${CPACK_PACKAGE_INSTALL_DIRECTORY} on Windows
