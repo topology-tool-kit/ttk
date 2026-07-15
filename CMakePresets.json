@@ -1,5 +1,5 @@
 {
-    "version": 6,
+    "version": 2,
     "configurePresets": [
         {
             "name": "TTK-Default",
@@ -18,10 +18,8 @@
                 "CMAKE_BUILD_TYPE": "Release",
                 "TTK_ENABLE_CPU_OPTIMIZATION": "OFF",
                 "TTK_ENABLE_MPI": "OFF",
-                "TTK_ENABLE_KAMIKAZE": "ON",
-                "TTK_ENABLE_WEBSOCKETPP": "OFF",
-                "WEBSOCKETPP_DIR": "/home/wetzels/ttk/ttk-jonas/websocketpp/install/lib/cmake/websocketpp"
-            }
+                "TTK_ENABLE_KAMIKAZE": "ON"            
+        }
         },
         {
             "name": "TTK-PerformanceBenchmark",
@@ -40,22 +38,6 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "TTK_ENABLE_KAMIKAZE": "OFF"
             }
-        }
-    ],
-    "buildPresets": [
-        {
-            "name": "TTK-Release",
-            "description": "",
-            "displayName": "",
-            "configurePreset": "TTK-Release",
-            "jobs": 4
-        },
-        {
-            "name": "TTK-Debug",
-            "description": "",
-            "displayName": "",
-            "configurePreset": "TTK-Debug",
-            "jobs": 4
         }
     ]
 }
