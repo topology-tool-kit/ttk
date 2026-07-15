@@ -1,6 +1,8 @@
 ## TTK - ChangeLog
 =
 ### dev
+
+### 1.4.0
 - Cycle-aware dimensionality reduction (TopoAE++, IEEE TVCG 2026)
 - Reliable Tracking in HVI Fast Imaging (DebrisTracer)
 - Distributed computation of persistent homology! (IEEE TPDS 2025)
