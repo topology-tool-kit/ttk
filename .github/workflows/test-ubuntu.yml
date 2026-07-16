@@ -241,9 +241,9 @@ jobs:
 
         VERS=$(hostnamectl | grep "Operating System")
         if [[ "$VERS" == *"26.04"* ]]; then
-          rm ttk-data/python/contourTreeAlignment.py
-          rm ttk-data/python/geometryApproximation.py
-          rm ttk-data/python/harmonicSkeleton.py
+          rm python/contourTreeAlignment.py
+          rm python/geometryApproximation.py
+          rm python/harmonicSkeleton.py
         fi
 
         pvpython -u python/run.py
