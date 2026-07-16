@@ -68,16 +68,29 @@ def doIt(X, method, ncomponents, nneighbors, njobs, rstate, params):
             Y = lle.fit_transform(X)
         elif method == 2:
             mdsParams = params[2]
-            mds = manifold.MDS(
-                n_components=ncomponents,
-                metric=mdsParams[0],
-                n_init=mdsParams[1],
-                max_iter=mdsParams[2],
-                verbose=mdsParams[3],
-                eps=mdsParams[4],
-                dissimilarity=mdsParams[5],
-                n_jobs=njobs,
-            )
+            if version.parse(sklearn.__version__) >= version.parse("1.8.0"):
+                mds = manifold.MDS(
+                    n_components=ncomponents,
+                    metric_mds=mdsParams[0],
+                    n_init=mdsParams[1],
+                    max_iter=mdsParams[2],
+                    verbose=mdsParams[3],
+                    eps=mdsParams[4],
+                    metric=mdsParams[5],
+                    init="random",
+                    n_jobs=njobs,
+                )
+            else:
+                mds = manifold.MDS(
+                    n_components=ncomponents,
+                    metric=mdsParams[0],
+                    n_init=mdsParams[1],
+                    max_iter=mdsParams[2],
+                    verbose=mdsParams[3],
+                    eps=mdsParams[4],
+                    dissimilarity=mdsParams[5],
+                    n_jobs=njobs,
+                )
             Y = mds.fit_transform(X)
         elif method == 3:
             tsneParams = params[3]
