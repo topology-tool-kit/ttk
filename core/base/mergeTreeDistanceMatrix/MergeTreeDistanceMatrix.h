@@ -1,12 +1,40 @@
 /// \ingroup base
 /// \class ttk::MergeTreeDistanceMatrix
 /// \author Mathieu Pont <mathieu.pont@lip6.fr>
+/// \author Florian Wetzels (wetzels@cs.uni-kl.de)
 /// \date 2021.
 ///
 /// This VTK filter uses the ttk::MergeTreeDistanceMatrix module to compute the
 /// distance matrix of a group of merge trees.
 ///
+/// \b Related \b publication \n
+/// "Wasserstein Distances, Geodesics and Barycenters of Merge Trees" \n
+/// Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.\n
+/// Proc. of IEEE VIS 2021.\n
+/// IEEE Transactions on Visualization and Computer Graphics, 2021
+///
+/// \b Related \b publication \n
+/// "Edit Distance between Merge Trees" \n
+/// R. Sridharamurthy, T. B. Masood, A. Kamakshidasan and V. Natarajan. \n
+/// IEEE Transactions on Visualization and Computer Graphics, 2020.
+///
+/// \b Related \b publication \n
+/// "Branch Decomposition-Independent Edit Distances for Merge Trees." \n
+/// Florian Wetzels, Heike Leitte, and Christoph Garth. \n
+/// Computer Graphics Forum, 2022.
+///
+/// \b Related \b publication \n
+/// "A Deformation-based Edit Distance for Merge Trees" \n
+/// Florian Wetzels, Christoph Garth. \n
+/// TopoInVis 2022.
+///
 /// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeBarycenter_branchMapping/">Merge
+///   Tree Branch Mapping example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeBarycenter_pathMapping/">Merge
+///   Tree Path Mapping example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
 ///   Tree Clustering example</a> \n
@@ -70,55 +98,28 @@ namespace ttk {
     void execute(std::vector<ftm::MergeTree<dataType>> &trees,
                  std::vector<ftm::MergeTree<dataType>> &trees2,
                  std::vector<std::vector<double>> &distanceMatrix) {
+      treesNodeCorr_.resize(trees.size());
+      for(unsigned int i = 0; i < trees.size(); ++i) {
+        preprocessingPipeline<dataType>(
+          trees[i], epsilonTree2_, epsilon2Tree2_, epsilon3Tree2_,
+          baseModule_ == 0 ? branchDecomposition_ : false, useMinMaxPair_, true,
+          treesNodeCorr_[i], true, baseModule_ == 2);
+      }
       executePara<dataType>(trees, distanceMatrix);
       if(trees2.size() != 0) {
+        std::vector<std::vector<int>> trees2NodeCorr(trees2.size());
+        for(unsigned int i = 0; i < trees.size(); ++i) {
+          preprocessingPipeline<dataType>(
+            trees2[i], epsilonTree2_, epsilon2Tree2_, epsilon3Tree2_,
+            baseModule_ == 0 ? branchDecomposition_ : false, useMinMaxPair_,
+            true, treesNodeCorr_[i], true, baseModule_ == 2);
+        }
         useDoubleInput_ = true;
         std::vector<std::vector<double>> distanceMatrix2(
           trees2.size(), std::vector<double>(trees2.size()));
         executePara<dataType>(trees2, distanceMatrix2, false);
         mixDistancesMatrix(distanceMatrix, distanceMatrix2);
       }
-    }
-
-    template <class dataType>
-    void execute(std::vector<ftm::MergeTree<dataType>> &ftmtrees,
-                 std::vector<std::vector<double>> &distanceMatrix) {
-      for(unsigned int i = 0; i < distanceMatrix.size(); ++i) {
-        if(i % std::max(int(distanceMatrix.size() / 10), 1) == 0) {
-          std::stringstream stream;
-          stream << i << " / " << distanceMatrix.size();
-          printMsg(stream.str());
-        }
-
-        BranchMappingDistance branchDist;
-        branchDist.setBaseMetric(branchMetric_);
-        branchDist.setAssignmentSolver(assignmentSolverID_);
-        branchDist.setSquared(not distanceSquaredRoot_);
-        PathMappingDistance pathDist;
-        pathDist.setBaseMetric(pathMetric_);
-        pathDist.setAssignmentSolver(assignmentSolverID_);
-        pathDist.setSquared(not distanceSquaredRoot_);
-        pathDist.setComputeMapping(true);
-
-        distanceMatrix[i][i] = 0.0;
-        // compareTrees(trees[i],&(ftmtrees[i].tree));
-        for(unsigned int j = i + 1; j < distanceMatrix[0].size(); ++j) {
-          // Execute
-          if(baseModule_ == 0) {
-            distanceMatrix[i][j] = 0;
-          } else if(baseModule_ == 1) {
-            dataType dist = branchDist.editDistance_branch<dataType>(
-              &(ftmtrees[i].tree), &(ftmtrees[j].tree));
-            distanceMatrix[i][j] = static_cast<double>(dist);
-          } else if(baseModule_ == 2) {
-            dataType dist = pathDist.editDistance_path<dataType>(
-              &(ftmtrees[i].tree), &(ftmtrees[j].tree));
-            distanceMatrix[i][j] = static_cast<double>(dist);
-          }
-          // distance matrix is symmetric
-          distanceMatrix[j][i] = distanceMatrix[i][j];
-        } // end for j
-      } // end for i
     }
 
     template <class dataType>
@@ -173,7 +174,9 @@ namespace ttk {
               mergeTreeDistance.setKeepSubtree(keepSubtree_);
               mergeTreeDistance.setDistanceSquaredRoot(distanceSquaredRoot_);
               mergeTreeDistance.setUseMinMaxPair(useMinMaxPair_);
-              mergeTreeDistance.setSaveTree(true);
+              mergeTreeDistance.setPreprocess(false);
+              // mergeTreeDistance.setSaveTree(true);
+              mergeTreeDistance.setSaveTree(false);
               mergeTreeDistance.setCleanTree(true);
               mergeTreeDistance.setIsCalled(true);
               mergeTreeDistance.setPostprocess(false);
@@ -187,8 +190,41 @@ namespace ttk {
               std::vector<std::tuple<ftm::idNode, ftm::idNode>> outputMatching;
               distanceMatrix[i][j] = mergeTreeDistance.execute<dataType>(
                 trees[i], trees[j], outputMatching);
-            } else {
-              distanceMatrix[i][j] = 0;
+            } else if(baseModule_ == 1) {
+              BranchMappingDistance branchDist;
+              branchDist.setBaseMetric(branchMetric_);
+              branchDist.setAssignmentSolver(assignmentSolverID_);
+              branchDist.setSquared(distanceSquaredRoot_);
+              branchDist.setEpsilonTree1(epsilonTree1_);
+              branchDist.setEpsilonTree2(epsilonTree2_);
+              branchDist.setEpsilon2Tree1(epsilon2Tree1_);
+              branchDist.setEpsilon2Tree2(epsilon2Tree2_);
+              branchDist.setEpsilon3Tree1(epsilon3Tree1_);
+              branchDist.setEpsilon3Tree2(epsilon3Tree2_);
+              branchDist.setPersistenceThreshold(persistenceThreshold_);
+              branchDist.setPreprocess(false);
+              // branchDist.setSaveTree(true);
+              branchDist.setSaveTree(false);
+              dataType dist = branchDist.execute<dataType>(trees[i], trees[j]);
+              distanceMatrix[i][j] = static_cast<double>(dist);
+            } else if(baseModule_ == 2) {
+              PathMappingDistance pathDist;
+              pathDist.setBaseMetric(pathMetric_);
+              pathDist.setAssignmentSolver(assignmentSolverID_);
+              pathDist.setSquared(distanceSquaredRoot_);
+              pathDist.setComputeMapping(true);
+              pathDist.setEpsilonTree1(epsilonTree1_);
+              pathDist.setEpsilonTree2(epsilonTree2_);
+              pathDist.setEpsilon2Tree1(epsilon2Tree1_);
+              pathDist.setEpsilon2Tree2(epsilon2Tree2_);
+              pathDist.setEpsilon3Tree1(epsilon3Tree1_);
+              pathDist.setEpsilon3Tree2(epsilon3Tree2_);
+              pathDist.setPersistenceThreshold(persistenceThreshold_);
+              pathDist.setPreprocess(false);
+              // pathDist.setSaveTree(true);
+              pathDist.setSaveTree(false);
+              dataType dist = pathDist.execute<dataType>(trees[i], trees[j]);
+              distanceMatrix[i][j] = static_cast<double>(dist);
             }
             // distance matrix is symmetric
             distanceMatrix[j][i] = distanceMatrix[i][j];

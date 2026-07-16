@@ -28,6 +28,7 @@
 #include <vector>
 
 // ttk common includes
+#include "MergeTreeBase.h"
 #include <AssignmentAuction.h>
 #include <AssignmentExhaustive.h>
 #include <AssignmentMunkres.h>
@@ -36,13 +37,16 @@
 
 namespace ttk {
 
-  class PathMappingDistance : virtual public Debug {
+  class PathMappingDistance : virtual public Debug, public MergeTreeBase {
 
   private:
     int baseMetric_ = 0;
     int assignmentSolverID_ = 0;
     bool squared_ = false;
     bool computeMapping_ = false;
+
+    bool preprocess_ = true;
+    bool saveTree_ = false;
 
     template <class dataType>
     inline dataType editCost_Persistence(int n1,
@@ -84,7 +88,7 @@ namespace ttk {
       std::vector<std::vector<int>> &predecessors2,
       int depth1,
       int depth2,
-      dataType *memT,
+      std::vector<dataType> &memT,
       std::vector<std::pair<std::pair<ftm::idNode, ftm::idNode>,
                             std::pair<ftm::idNode, ftm::idNode>>> &mapping) {
 
@@ -184,6 +188,7 @@ namespace ttk {
             traceMapping_path(tree1, tree2, child12, 1, child22, 1,
                               predecessors1, predecessors2, depth1, depth2,
                               memT, mapping);
+            return;
           }
           if(memT[curr1 + l1 * dim2 + curr2 * dim3 + l2 * dim4]
              == memT[child11 + 1 * dim2 + child22 * dim3 + 1 * dim4]
@@ -331,10 +336,24 @@ namespace ttk {
       computeMapping_ = m;
     }
 
-    template <class dataType>
-    dataType editDistance_path(ftm::FTMTree_MT *tree1, ftm::FTMTree_MT *tree2) {
+    void setPreprocess(bool p) {
+      preprocess_ = p;
+    }
 
-      // initialize memoization tables
+    void setSaveTree(bool save) {
+      saveTree_ = save;
+    }
+
+    template <class dataType>
+    dataType computeDistance(
+      ftm::FTMTree_MT *tree1,
+      ftm::FTMTree_MT *tree2,
+      std::vector<std::pair<std::pair<ftm::idNode, ftm::idNode>,
+                            std::pair<ftm::idNode, ftm::idNode>>>
+        *outputMatching) {
+
+      // compute preorder of both trees (necessary for bottom-up dynamic
+      // programming)
 
       std::vector<std::vector<int>> predecessors1(tree1->getNumberOfNodes());
       std::vector<std::vector<int>> predecessors2(tree2->getNumberOfNodes());
@@ -385,6 +404,8 @@ namespace ttk {
         }
       }
 
+      // initialize memoization tables
+
       size_t nn1 = tree1->getNumberOfNodes();
       size_t nn2 = tree2->getNumberOfNodes();
       size_t const dim1 = 1;
@@ -392,6 +413,8 @@ namespace ttk {
       size_t const dim3 = (depth1 + 1) * dim2;
       size_t const dim4 = (nn2 + 1) * dim3;
 
+      // std::cout << (nn1 + 1) * (depth1 + 1) * (nn2 + 1) * (depth2 + 1) *
+      // sizeof(dataType) << std::endl;
       std::vector<dataType> memT((nn1 + 1) * (depth1 + 1) * (nn2 + 1)
                                  * (depth2 + 1));
 
@@ -621,7 +644,201 @@ namespace ttk {
       dataType res
         = memT[children1[0] + 1 * dim2 + children2[0] * dim3 + 1 * dim4];
 
+      if(computeMapping_ && outputMatching) {
+
+        outputMatching->clear();
+        traceMapping_path(tree1, tree2, children1[0], 1, children2[0], 1,
+                          predecessors1, predecessors2, depth1, depth2, memT,
+                          *outputMatching);
+      }
+
       return squared_ ? std::sqrt(res) : res;
+    }
+
+    template <class dataType>
+    dataType execute(ftm::MergeTree<dataType> &mTree1,
+                     ftm::MergeTree<dataType> &mTree2,
+                     std::vector<std::pair<std::pair<ftm::idNode, ftm::idNode>,
+                                           std::pair<ftm::idNode, ftm::idNode>>>
+                       *outputMatching) {
+
+      ftm::MergeTree<dataType> mTree1Copy;
+      ftm::MergeTree<dataType> mTree2Copy;
+      if(saveTree_) {
+        mTree1Copy = ftm::copyMergeTree<dataType>(mTree1);
+        mTree2Copy = ftm::copyMergeTree<dataType>(mTree2);
+      }
+      ftm::MergeTree<dataType> &mTree1Int = (saveTree_ ? mTree1Copy : mTree1);
+      ftm::MergeTree<dataType> &mTree2Int = (saveTree_ ? mTree2Copy : mTree2);
+      ftm::FTMTree_MT *tree1 = &(mTree1Int.tree);
+      ftm::FTMTree_MT *tree2 = &(mTree2Int.tree);
+
+      // optional preprocessing
+      if(preprocess_) {
+        treesNodeCorr_.resize(2);
+        preprocessingPipeline<dataType>(
+          mTree1Int, epsilonTree1_, epsilon2Tree1_, epsilon3Tree1_,
+          branchDecomposition_, useMinMaxPair_, cleanTree_, treesNodeCorr_[0],
+          true, true);
+        preprocessingPipeline<dataType>(
+          mTree2Int, epsilonTree2_, epsilon2Tree2_, epsilon3Tree2_,
+          branchDecomposition_, useMinMaxPair_, cleanTree_, treesNodeCorr_[1],
+          true, true);
+      }
+
+      tree1 = &(mTree1Int.tree);
+      tree2 = &(mTree2Int.tree);
+
+      return computeDistance<dataType>(tree1, tree2, outputMatching);
+    }
+
+    template <class dataType>
+    dataType
+      computeDistance(ftm::FTMTree_MT *tree1,
+                      ftm::FTMTree_MT *tree2,
+                      std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>
+                        *outputMatching) {
+
+      std::vector<int> matchedNodes(tree1->getNumberOfNodes(), -1);
+      std::vector<double> matchedCost(tree1->getNumberOfNodes(), -1);
+      std::vector<std::pair<std::pair<ftm::idNode, ftm::idNode>,
+                            std::pair<ftm::idNode, ftm::idNode>>>
+        mapping;
+      dataType res = computeDistance<dataType>(tree1, tree2, &mapping);
+      if(computeMapping_ && outputMatching) {
+        outputMatching->clear();
+        for(auto m : mapping) {
+          matchedNodes[m.first.first] = m.second.first;
+          matchedNodes[m.first.second] = m.second.second;
+          matchedCost[m.first.first] = editCost_Persistence<dataType>(
+            m.first.first, m.first.second, m.second.first, m.second.second,
+            tree1, tree2);
+          if(m.first.second == tree1->getRoot()) {
+            matchedCost[m.first.second] = matchedCost[m.first.first];
+          }
+        }
+        for(ftm::idNode i = 0; i < matchedNodes.size(); i++) {
+          if(matchedNodes[i] >= 0) {
+            outputMatching->emplace_back(
+              std::make_tuple(i, matchedNodes[i], matchedCost[i]));
+          }
+        }
+      }
+
+      return res;
+    }
+
+    template <class dataType>
+    dataType computeDistance(
+      ftm::FTMTree_MT *tree1,
+      ftm::FTMTree_MT *tree2,
+      std::vector<std::tuple<ftm::idNode, ftm::idNode, double>> *outputMatching,
+      std::vector<std::pair<std::pair<ftm::idNode, ftm::idNode>,
+                            std::pair<ftm::idNode, ftm::idNode>>>
+        *outputMatching_path) {
+
+      std::vector<int> matchedNodes(tree1->getNumberOfNodes(), -1);
+      std::vector<double> matchedCost(tree1->getNumberOfNodes(), -1);
+      dataType res
+        = computeDistance<dataType>(tree1, tree2, outputMatching_path);
+      if(computeMapping_ && outputMatching) {
+        outputMatching->clear();
+        for(auto m : *outputMatching_path) {
+          matchedNodes[m.first.first] = m.second.first;
+          matchedNodes[m.first.second] = m.second.second;
+          matchedCost[m.first.first] = editCost_Persistence<dataType>(
+            m.first.first, m.first.second, m.second.first, m.second.second,
+            tree1, tree2);
+          if(m.first.second == tree1->getRoot()) {
+            matchedCost[m.first.second] = matchedCost[m.first.first];
+          }
+        }
+        for(ftm::idNode i = 0; i < matchedNodes.size(); i++) {
+          if(matchedNodes[i] >= 0) {
+            outputMatching->emplace_back(
+              std::make_tuple(i, matchedNodes[i], matchedCost[i]));
+          }
+        }
+      }
+
+      return res;
+    }
+
+    template <class dataType>
+    dataType execute(ftm::MergeTree<dataType> &mTree1,
+                     ftm::MergeTree<dataType> &mTree2,
+                     std::vector<std::tuple<ftm::idNode, ftm::idNode, double>>
+                       *outputMatching) {
+
+      ftm::MergeTree<dataType> mTree1Copy;
+      ftm::MergeTree<dataType> mTree2Copy;
+      if(saveTree_) {
+        mTree1Copy = ftm::copyMergeTree<dataType>(mTree1);
+        mTree2Copy = ftm::copyMergeTree<dataType>(mTree2);
+      }
+      ftm::MergeTree<dataType> &mTree1Int = (saveTree_ ? mTree1Copy : mTree1);
+      ftm::MergeTree<dataType> &mTree2Int = (saveTree_ ? mTree2Copy : mTree2);
+      ftm::FTMTree_MT *tree1 = &(mTree1Int.tree);
+      ftm::FTMTree_MT *tree2 = &(mTree2Int.tree);
+
+      // optional preprocessing
+      if(preprocess_) {
+        treesNodeCorr_.resize(2);
+        preprocessingPipeline<dataType>(
+          mTree1Int, epsilonTree1_, epsilon2Tree1_, epsilon3Tree1_, false,
+          useMinMaxPair_, cleanTree_, treesNodeCorr_[0], true, true);
+        preprocessingPipeline<dataType>(
+          mTree2Int, epsilonTree2_, epsilon2Tree2_, epsilon3Tree2_, false,
+          useMinMaxPair_, cleanTree_, treesNodeCorr_[1], true, true);
+      }
+
+      tree1 = &(mTree1Int.tree);
+      tree2 = &(mTree2Int.tree);
+
+      return computeDistance<dataType>(tree1, tree2, outputMatching);
+    }
+
+    template <class dataType>
+    dataType computeDistance(ftm::FTMTree_MT *tree1, ftm::FTMTree_MT *tree2) {
+      return computeDistance<dataType>(
+        tree1, tree2,
+        (std::vector<std::pair<std::pair<ftm::idNode, ftm::idNode>,
+                               std::pair<ftm::idNode, ftm::idNode>>> *)nullptr);
+    }
+
+    template <class dataType>
+    dataType execute(ftm::MergeTree<dataType> &mTree1,
+                     ftm::MergeTree<dataType> &mTree2) {
+
+      ftm::MergeTree<dataType> mTree1Copy;
+      ftm::MergeTree<dataType> mTree2Copy;
+      if(saveTree_) {
+        mTree1Copy = ftm::copyMergeTree<dataType>(mTree1);
+        mTree2Copy = ftm::copyMergeTree<dataType>(mTree2);
+      }
+      ftm::MergeTree<dataType> &mTree1Int = (saveTree_ ? mTree1Copy : mTree1);
+      ftm::MergeTree<dataType> &mTree2Int = (saveTree_ ? mTree2Copy : mTree2);
+      ftm::FTMTree_MT *tree1 = &(mTree1Int.tree);
+      ftm::FTMTree_MT *tree2 = &(mTree2Int.tree);
+
+      // optional preprocessing
+      if(preprocess_) {
+        treesNodeCorr_.resize(2);
+        preprocessingPipeline<dataType>(
+          mTree1Int, epsilonTree1_, epsilon2Tree1_, epsilon3Tree1_, false,
+          useMinMaxPair_, cleanTree_, treesNodeCorr_[0], true, true);
+        preprocessingPipeline<dataType>(
+          mTree2Int, epsilonTree2_, epsilon2Tree2_, epsilon3Tree2_, false,
+          useMinMaxPair_, cleanTree_, treesNodeCorr_[1], true, true);
+      }
+
+      tree1 = &(mTree1Int.tree);
+      tree2 = &(mTree2Int.tree);
+
+      return computeDistance<dataType>(
+        tree1, tree2,
+        (std::vector<std::pair<std::pair<ftm::idNode, ftm::idNode>,
+                               std::pair<ftm::idNode, ftm::idNode>>> *)nullptr);
     }
   };
 } // namespace ttk
