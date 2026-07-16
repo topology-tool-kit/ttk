@@ -58,7 +58,7 @@ jobs:
       if: matrix.os == 'ubuntu-22.04'
       uses: ./.github/actions/install-spectra-unix
 
-    - name: Install spectra on ubuntu-22.04
+    - name: Install zfp on ubuntu-22.04
       if: matrix.os == 'ubuntu-22.04'
       uses: ./.github/actions/install-zfp-unix
 
@@ -139,17 +139,6 @@ jobs:
     - name: Install Ubuntu dependencies
       run: |
         sudo apt update
-
-    - name: Run sccache-cache
-      uses: mozilla-actions/sccache-action@v0.0.9
-
-    - name: Install spectra on ubuntu-22.04
-      if: matrix.os == 'ubuntu-22.04'
-      uses: ./.github/actions/install-spectra-unix
-
-    - name: Install spectra on ubuntu-22.04
-      if: matrix.os == 'ubuntu-22.04'
-      uses: ./.github/actions/install-zfp-unix
 
     - name: Install Official Torch
       if: matrix.os != 'ubuntu-26.04'
