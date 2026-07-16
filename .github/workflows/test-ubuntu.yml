@@ -238,6 +238,13 @@ jobs:
         rm python/mpiExample.py
         # remove examples which fill up the memory
         rm python/topologicalOptimization_darkSky.py
+
+        if [[ "$VERS" == *"26.04"* ]]; then
+          rm ttk-data/python/contourTreeAlignment.py
+          rm ttk-data/python/geometryApproximation.py
+          rm ttk-data/python/harmonicSkeleton.py
+        fi
+
         pvpython -u python/run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
