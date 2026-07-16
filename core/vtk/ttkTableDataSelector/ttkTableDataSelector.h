@@ -59,8 +59,9 @@ public:
   vtkDataArraySelection *GetRangeIds() {
     vtkDataArraySelection *arr = vtkDataArraySelection::New();
     arr->SetArraySetting("0", true);
+    const auto nFields = AvailableCols.size();
     arr->SetArraySetting(
-      std::to_string(AvailableCols.size() - 1).c_str(), true);
+      std::to_string(nFields == 0 ? 0 : nFields - 1).c_str(), true);
     return arr;
   }
 

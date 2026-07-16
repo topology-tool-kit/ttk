@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04]
     steps:
     - uses: actions/checkout@v4
       name: Checkout TTK-ParaView source code
@@ -75,7 +75,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-14, macos-15]
+        os: [macos-14, macos-15, macos-26]
     env:
       CCACHE_DIR: /Users/runner/work/ttk/.ccache
       CCACHE_MAXSIZE: 200M
@@ -139,7 +139,7 @@ jobs:
   # Windows #
   # ------- #
   build-windows:
-    runs-on: windows-2022
+    runs-on: windows-latest
     env:
       CONDA_ROOT: C:\Miniconda
 
@@ -152,12 +152,17 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge qt-main python=3.10
+        conda install -c conda-forge qt-main python=3.10 ninja
 
     - name: Remove hosted Python
       shell: bash
       run: |
         rm -rf C:/hostedtoolcache/windows/Python
+
+    - name: Set up MSVC dev environment
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
 
     - name: Create & configure ParaView build directory
       shell: cmd
@@ -169,8 +174,8 @@ jobs:
           -DPython3_ROOT_DIR="%CONDA_ROOT%" ^
           -DCMAKE_AUTOUIC=OFF ^
           -DCMAKE_BUILD_TYPE=Release ^
-          -DVTKm_MODULE_ENABLE_vtkm_filter_scalar_topology=NO ^
-          -G"Visual Studio 17 2022" ^
+          -DPARAVIEW_USE_VISKORES=OFF ^
+          -G "Ninja" ^
           %GITHUB_WORKSPACE%
 
     - name: Build ParaView
@@ -189,7 +194,7 @@ jobs:
     - name: Upload install executable
       uses: actions/upload-artifact@v4
       with:
-        name: ttk-paraview-windows-2022
+        name: ttk-paraview-windows-latest
         path: ttk-paraview.exe
 
 
@@ -247,6 +252,23 @@ jobs:
         file: ttk-paraview-ubuntu-24.04/ttk-paraview.deb
         asset_name: ttk-paraview-$tag-ubuntu-24.04.deb
 
+    - name: Upload Ubuntu Noble Numbat .deb as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-paraview-ubuntu-26.04/ttk-paraview.deb
+        asset_name: ttk-paraview-$tag-ubuntu-26.04.deb
+
+    - name: Upload MacOS 26 .tar.gz as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-paraview-macos-26/ttk-paraview.tar.gz
+        asset_name: ttk-paraview-$tag-macos-26.tar.gz
+
+
     - name: Upload MacOS 15 .tar.gz as Release Asset
       uses: svenstaro/upload-release-action@v2
       with:
@@ -268,7 +290,7 @@ jobs:
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ github.ref }}
-        file: ttk-paraview-windows-2022/ttk-paraview.exe
+        file: ttk-paraview-windows-latest/ttk-paraview.exe
         asset_name: ttk-paraview-$tag.exe
 
     - name: Delete package artifacts
