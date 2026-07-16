@@ -140,6 +140,8 @@ jobs:
       run: |
         sudo apt update
 
+    - name: Run sccache-cache
+      uses: mozilla-actions/sccache-action@v0.0.9
 
     - name: Install spectra on ubuntu-22.04
       if: matrix.os == 'ubuntu-22.04'
