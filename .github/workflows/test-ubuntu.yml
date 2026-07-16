@@ -239,6 +239,7 @@ jobs:
         # remove examples which fill up the memory
         rm python/topologicalOptimization_darkSky.py
 
+        VERS=$(hostnamectl | grep "Operating System")
         if [[ "$VERS" == *"26.04"* ]]; then
           rm ttk-data/python/contourTreeAlignment.py
           rm ttk-data/python/geometryApproximation.py
