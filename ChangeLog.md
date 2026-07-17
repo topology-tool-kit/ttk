@@ -1,8 +1,10 @@
 ## TTK - ChangeLog
 =
 ### dev
+
+### 1.4.0
 - Cycle-aware dimensionality reduction (TopoAE++, IEEE TVCG 2026)
-- Reliable Tracking in HVI Fast Imaging (DebrisTracer)
+- Reliable Tracking in HVI Fast Imaging (DebrisTracer, IEEE VIS 2026)
 - Distributed computation of persistent homology! (IEEE TPDS 2025)
 - Separatrix stability, a.k.a., BondMatcher (IEEE TVCG 2025)
 - Discrete vector field topology! (IEEE VIS 2024)
