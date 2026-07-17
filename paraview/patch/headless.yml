@@ -184,6 +184,12 @@ jobs:
         cd ..\b
         cmake --build . --config Release --parallel
 
+    - name: Install NSIS
+      shell: bash
+      run: |
+        choco install nsis -y
+        echo "C:\Program Files (x86)\NSIS" >> $GITHUB_PATH
+
     - name: Create ParaView package
       shell: bash
       run: |

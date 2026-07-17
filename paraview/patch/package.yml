@@ -164,12 +164,38 @@ jobs:
       with:
         arch: x64
 
+    # MSVC 14.50+ (Visual Studio 18) removed the non-standard
+    # stdext::checked_array_iterator APIs, but the Qt 5 headers shipped by
+    # conda still use them. Restore make_checked_array_iterator as a plain
+    # pointer pass-through (its release-mode behavior) and force-include the
+    # shim in every C++ translation unit.
+    - name: Add shim for stdext removal in MSVC 14.50+
+      shell: bash
+      run: |
+        cat > "$CONDA_ROOT/stdext_shim.h" << 'EOF'
+        #ifndef STDEXT_SHIM_H
+        #define STDEXT_SHIM_H
+        #if defined(_MSC_VER) && _MSC_VER >= 1950
+        #include <cstddef>
+        namespace stdext
+        {
+        template <class T>
+        constexpr T* make_checked_array_iterator(T* array, std::size_t, std::size_t index = 0)
+        {
+          return array + index;
+        }
+        }
+        #endif
+        #endif
+        EOF
+
     - name: Create & configure ParaView build directory
       shell: cmd
       run: |
         cd ..
         mkdir b
         cd b
+        set CXXFLAGS=/FI%CONDA_ROOT%\stdext_shim.h
         cmake ^
           -DPython3_ROOT_DIR="%CONDA_ROOT%" ^
           -DCMAKE_AUTOUIC=OFF ^
@@ -183,6 +209,12 @@ jobs:
       run: |
         cd ..\b
         cmake --build . --config Release --parallel
+
+    - name: Install NSIS
+      shell: bash
+      run: |
+        choco install nsis -y
+        echo "C:\Program Files (x86)\NSIS" >> $GITHUB_PATH
 
     - name: Create ParaView package
       shell: bash
