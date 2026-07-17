@@ -483,6 +483,8 @@ jobs:
       PV_DIR: C:\Program Files\TTK-ParaView
       TTK_DIR: C:\Program Files\TTK
       CONDA_ROOT: C:\Miniconda
+      CC: clang-cl.exe
+      CXX: clang-cl.exe
     steps:
     - uses: actions/checkout@v4
       name: Checkout TTK source code
