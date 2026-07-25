@@ -80,7 +80,7 @@ jobs:
       if: matrix.os == 'ubuntu-26.04'
       shell: bash
       run: |
-        sudo apt install -y libtorch-dev
+        # sudo apt install -y libtorch-dev
 
     - name: Fetch TTK-ParaView headless Debian package
       run: |
