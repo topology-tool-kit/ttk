@@ -37,6 +37,7 @@ jobs:
           libqt5x11extras5-dev \
           libqt5svg5-dev \
           libgl1-mesa-dev \
+          libosmesa-dev \
           libxcursor-dev \
           ninja-build \
           dpkg-dev
