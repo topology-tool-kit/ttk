@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkArrayPreconditioning"
+                 class="ttkArrayPreconditioning"
+                 label="TTK ArrayPreconditioning">
+      <Documentation
+          long_help="Array Preconditioning"
+          short_help="Array Preconditioning">
+        This filter preconditions a vtkDataSet by computing an input
+        order array for every selected scalar arrays.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/mpiExample/
+      </Documentation>
+
+      <InputProperty name="Input" command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet" />
+        </DataTypeDomain>
+        <InputArrayDomain name="input_array"
+                          attribute_type="point"
+                          number_of_components="1" />
+        <Documentation>
+          A vtkDataSet that has at least one point data scalar array.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+          name="SelectFieldsWithRegexp"
+          label="Select Fields with a Regexp"
+          command="SetSelectFieldsWithRegexp"
+          panel_visibility="advanced"
+          number_of_elements="1"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Select input scalar fields matching a regular expression.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+          name="PointDataArrays"
+          command="GetPointDataArraySelection"
+          number_of_elements_per_command="1"
+          repeat_command="1"
+          si_class="vtkSIDataArraySelectionProperty">
+        <ArrayListDomain name="array_list" input_domain_name="point_arrays">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the point data arrays to pass through
+        </Documentation>
+        <Hints>
+          <ArraySelectionWidget icon_type="point"/>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectFieldsWithRegexp"
+                                   value="0" />
+        </Hints>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+          name="Regexp"
+          command="SetRegexpString"
+          number_of_elements="1"
+          default_values=".*"
+          panel_visibility="advanced">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectFieldsWithRegexp"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          This regexp will be used to filter the chosen fields. Only
+          matching ones will be selected.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="GlobalOrder"
+        label="Global Order Array"
+        command="SetGlobalOrder"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        Request a global order array. By default, order arrays are computed locally on each process.
+        This forces the filter to compute an order for all processes. 
+        Requires MPI to have an effect. 
+        </Documentation>
+      </IntVectorProperty>    
+
+      <IntVectorProperty name="ChunkSize"
+        label="Chunk Size"
+        command="SetChunkSize"
+        number_of_elements="1"
+        default_values="1000000000"
+        panel_visibility="advanced">
+        <Documentation>
+        Sets the size for segmenting computation in case there is not enough memory
+        to do so at once. Requires MPI and GlobalOrder to be on to have an effect. 
+        </Documentation>
+      </IntVectorProperty> 
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input Options">
+        <Property name="SelectFieldsWithRegexp" />
+        <Property name="PointDataArrays" />
+        <Property name="Regexp" />
+        <Property name="GlobalOrder" />
+        <Property name="ChunkSize" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

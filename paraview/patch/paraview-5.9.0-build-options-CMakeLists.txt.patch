@@ -1,0 +1,28 @@
+diff --git a/CMake/ParaViewOptions.cmake b/CMake/ParaViewOptions.cmake
+index 5e402e9f..c8a0b5f2 100644
+--- a/CMake/ParaViewOptions.cmake
++++ b/CMake/ParaViewOptions.cmake
+@@ -99,7 +99,7 @@ option(PARAVIEW_USE_MPI "Enable MPI support for parallel computing" OFF)
+ option(PARAVIEW_USE_CUDA "Support CUDA compilation" OFF)
+ option(PARAVIEW_USE_VTKM "Enable VTK-m accelerated algorithms" "${PARAVIEW_ENABLE_NONESSENTIAL}")
+ 
+-vtk_deprecated_setting(python_default PARAVIEW_USE_PYTHON PARAVIEW_ENABLE_PYTHON OFF)
++vtk_deprecated_setting(python_default PARAVIEW_USE_PYTHON PARAVIEW_ENABLE_PYTHON ON)
+ option(PARAVIEW_USE_PYTHON "Enable/Disable Python scripting support" "${python_default}")
+ 
+ # Currently, we're making `PARAVIEW_USE_QT` available only when doing CANONICAL
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0f9ad4a2..792bfff6 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -52,8 +52,8 @@ endif ()
+ get_property(generator_is_multi_config GLOBAL
+   PROPERTY GENERATOR_IS_MULTI_CONFIG)
+ if (NOT CMAKE_BUILD_TYPE AND NOT generator_is_multi_config)
+-  message(STATUS "Setting build type to 'Debug' as none was specified.")
+-  set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
++  message(STATUS "Setting build type to 'Release' as none was specified.")
++  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+   # Set the possible values of build type for cmake-gui
+   set_property(CACHE CMAKE_BUILD_TYPE
+     PROPERTY

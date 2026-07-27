@@ -1,328 +1,608 @@
 #include <ttkCinemaWriter.h>
 
-#include <vtkVersion.h>
+#include <vtkInformation.h>
 
-#include <vtkDelimitedTextReader.h>
-#include <vtkDelimitedTextWriter.h>
+#include <vtkDataArray.h>
+#include <vtkDirectory.h>
 #include <vtkFieldData.h>
-#include <vtkMultiBlockDataSet.h>
+#include <vtkImageData.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 #include <vtkStdString.h>
 #include <vtkStringArray.h>
 #include <vtkTable.h>
-#include <vtkXMLMultiBlockDataWriter.h>
+
+// writers common
 #include <vtkZLibDataCompressor.h>
 
-#include <stdlib.h>
+// CSV writers
+#include <vtkDelimitedTextReader.h>
+#include <vtkDelimitedTextWriter.h>
+#include <vtkMultiBlockDataSet.h>
+
+// product writers
+#include <vtkPNGWriter.h>
+#include <vtkXMLDataObjectWriter.h>
+#include <vtkXMLMultiBlockDataWriter.h>
+
+// file lock
+#include <boost/interprocess/sync/file_lock.hpp>
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <vtkDirectory.h>
 
-using namespace std;
-using namespace ttk;
+vtkStandardNewMacro(ttkCinemaWriter);
 
-vtkStandardNewMacro(ttkCinemaWriter)
+ttkCinemaWriter::ttkCinemaWriter() {
+  this->setDebugMsgPrefix("CinemaWriter");
 
-  int ttkCinemaWriter::RequestData(vtkInformation *request,
-                                   vtkInformationVector **inputVector,
-                                   vtkInformationVector *outputVector) {
-  Timer t;
-  double t0 = 0;
-  Memory m;
-  struct stat info;
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
+}
 
-  // Print Status
-  {
-    stringstream msg;
-    msg << "==================================================================="
-           "============="
-        << endl;
-    msg << "[ttkCinemaWriter] RequestData" << endl;
-    msg << "[ttkCinemaWriter]     Path: " << this->DatabasePath << endl;
-    msg << "[ttkCinemaWriter] Override: "
-        << (this->OverrideDatabase ? "yes" : "no") << endl;
-    msg << "[ttkCinemaWriter] C. Level: " << this->GetCompressLevel() << endl;
-    msg << "[ttkCinemaWriter] "
-           "--------------------------------------------------------------"
-        << endl;
-    dMsg(cout, msg.str(), infoMsg);
+ttkCinemaWriter::~ttkCinemaWriter() = default;
+
+int ttkCinemaWriter::FillInputPortInformation(int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataObject");
+  } else {
+    return 0;
   }
+  return 1;
+}
 
-  // Copy Input to Output
-  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
-  auto input = inInfo->Get(vtkDataObject::DATA_OBJECT());
+int ttkCinemaWriter::FillOutputPortInformation(int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+  } else {
+    return 0;
+  }
+  return 1;
+}
 
-  auto inputIsAlreadyMB = input->IsA("vtkMultiBlockDataSet");
-  auto inputMB = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-
-  // If input is vtkMultiBlockDataSet then copy, otherwise add as single block
-  if(inputIsAlreadyMB)
-    inputMB->ShallowCopy(input);
+static int ensureFolder(const std::string &path) {
+  auto directory = vtkSmartPointer<vtkDirectory>::New();
+  if(directory->Open(path.data()) == 1
+     || vtkDirectory::MakeDirectory(path.data()) == 1)
+    return 1;
   else
-    inputMB->SetBlock(0, input);
+    return 0;
+}
 
-  // -------------------------------------------------------------------------
-  // Prepare Database
-  // -------------------------------------------------------------------------
-
-  // Check if database path exists and if it has the correct extension
+int ttkCinemaWriter::ValidateDatabasePath() {
   if(this->DatabasePath.length() < 4
      || this->DatabasePath.substr(this->DatabasePath.length() - 4, 4)
             .compare(".cdb")
           != 0) {
-    dMsg(cout,
-         "[ttkCinemaWriter] ERROR: Database path has to end with '.cdb'.\n",
-         fatalMsg);
+    this->printErr("Database path has to end with '.cdb'.");
     return 0;
   }
 
-  // Initialize path variables
-  string dataPrefix = "data/";
-  string pathPrefix = this->DatabasePath + "/" + dataPrefix;
-  string dataCsvPath = this->DatabasePath + "/data.csv";
-  string pathSuffix = ".vtm";
+  return 1;
+}
 
-  bool doTopologicalCompression
-    = input->IsA("vtkImageData") && this->UseTopologicalCompression;
+int ttkCinemaWriter::DeleteDatabase() {
+  ttk::Timer t;
+  this->printMsg("Deleting CDB: " + this->DatabasePath, 0,
+                 ttk::debug::LineMode::REPLACE, ttk::debug::Priority::DETAIL);
 
-  if(!doTopologicalCompression && this->UseTopologicalCompression) {
-    vtkErrorMacro("Cannot use Topological Compression without a vtkImageData");
+  this->Modified();
+  if(this->ValidateDatabasePath() == 0)
     return 0;
-  }
+  int const status = vtkDirectory::DeleteDirectory(this->DatabasePath.data());
 
-  if(doTopologicalCompression) {
-    pathSuffix = ".ttk";
-  }
+  this->printMsg("Deleting CDB: " + this->DatabasePath, 1, t.getElapsedTime());
 
-  // Create directory if it does not already exist
-  {
-    auto directory = vtkSmartPointer<vtkDirectory>::New();
-    int opened = directory->Open(this->DatabasePath.data());
-    if(!opened) {
-      int status = directory->MakeDirectory(this->DatabasePath.data());
-      if(status == 1)
-        dMsg(cout, "[ttkCinemaWriter] - Directory created\n", infoMsg);
-      else {
-        dMsg(cout,
-             "[ttkCinemaWriter] ERROR: Unable to create database directory.\n",
-             fatalMsg);
-        return 0;
-      }
-    }
-  }
+  return status;
+}
 
-  // If OverrideDatabase then delete old data products
-  if(this->OverrideDatabase) {
-    dMsg(cout, "[ttkCinemaWriter] - Deleting old data products        ... ",
-         timeMsg);
+int ttkCinemaWriter::GetLockFilePath(std::string &path) {
+  if(!this->ValidateDatabasePath())
+    return 0;
 
-    t0 = t.getElapsedTime();
+  path = this->DatabasePath + ".lockfile";
 
-    // Delete data.csv
-    remove(dataCsvPath.data());
+  return 1;
+}
 
-    // Delete data folder
-    auto directory = vtkSmartPointer<vtkDirectory>::New();
-    if(directory->Open(pathPrefix.data())
-       && directory->DeleteDirectory(pathPrefix.data()) == 0)
-      dMsg(cout,
-           "failed.\n[ttkCinemaWriter] ERROR: Unable to delete existing data "
-           "products.\n",
-           fatalMsg);
-    else {
-      stringstream msg;
-      msg << "done (" << (t.getElapsedTime() - t0) << " s).\n";
-      dMsg(cout, msg.str(), timeMsg);
-    }
-  }
+int ttkCinemaWriter::InitializeLockFile() {
+  std::string lockFilePath;
+  if(!this->GetLockFilePath(lockFilePath))
+    return 0;
 
-  // -------------------------------------------------------------------------
-  // Store Data products
-  // -------------------------------------------------------------------------
+  std::ofstream output(lockFilePath);
+  output.close();
 
-  // Determine unique path to new products (for now just generate random number)
-  string id;
-  string path;
-  bool unique = false;
+  return 1;
+}
 
-  while(!unique) {
-    id = to_string(rand() % 1000000);
-    path = pathPrefix + id + pathSuffix;
-    unique = stat(path.data(), &info) != 0;
-  }
+// =============================================================================
+// Process Request
+// =============================================================================
+int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
 
-  // Write input to disk
-  dMsg(cout, "[ttkCinemaWriter] - Writing new data products to disk ... ",
-       timeMsg);
-
-  t0 = t.getElapsedTime();
-
-  if(doTopologicalCompression) {
-    dMsg(cout, "\n", timeMsg);
-
-    // Create data sub-directory if it does not exist yet
-    vtkNew<vtkDirectory>()->MakeDirectory(pathPrefix.data());
-
-    // Fetch the scalar field array on which to perform Topological Compression
-    const auto ScalarFieldName = ttkCompWriter_->GetScalarField();
-    if(ScalarFieldName.empty()) {
-      vtkErrorMacro("Need a scalar field for Topological Compression");
-      return 0;
-    }
-    const auto inputData = vtkImageData::SafeDownCast(input);
-    const auto ScalarField
-      = inputData->GetPointData()->GetArray(ScalarFieldName.data());
-
-    // Check that input scalar field is indeed scalar
-    if(ScalarField->GetNumberOfComponents() != 1) {
-      vtkErrorMacro("Input scalar field should have only 1 component");
-      return 0;
-    }
-
-    this->ttkCompWriter_->SetFileName(path.data());
-    this->ttkCompWriter_->SetDebugLevel(debugLevel_);
-    this->ttkCompWriter_->execute(inputData);
-
-    dMsg(cout, "[ttkCinemaWriter] - Writing to disk                   ... ",
-         timeMsg);
+  // ---------------------------------------------------------------------------
+  // Get Correct Data Product Extension
+  // ---------------------------------------------------------------------------
+  vtkSmartPointer<vtkXMLWriter> xmlWriter;
+  if(input->IsA("vtkDataSet")) {
+    xmlWriter = vtkSmartPointer<vtkXMLWriter>::Take(
+      vtkXMLDataObjectWriter::NewWriter(input->GetDataObjectType()));
+  } else if(input->IsA("vtkMultiBlockDataSet")) {
+    xmlWriter = vtkSmartPointer<vtkXMLMultiBlockDataWriter>::New();
   } else {
-
-    auto mbWriter = vtkSmartPointer<vtkXMLMultiBlockDataWriter>::New();
-    mbWriter->SetFileName(path.data());
-    mbWriter->SetDataModeToAppended();
-    mbWriter->SetCompressorTypeToZLib();
-    vtkZLibDataCompressor::SafeDownCast(mbWriter->GetCompressor())
-      ->SetCompressionLevel(this->GetCompressLevel());
-    mbWriter->SetInputData(inputMB);
-    mbWriter->Write();
+    return 0;
   }
 
+  xmlWriter->SetDataModeToAppended();
+  xmlWriter->SetCompressorTypeToZLib();
+  const auto compressor
+    = vtkZLibDataCompressor::SafeDownCast(xmlWriter->GetCompressor());
+  if(compressor != nullptr)
+    compressor->SetCompressionLevel(this->CompressionLevel);
+
+  std::string const productExtension = this->Format == FORMAT::VTK
+                                         ? xmlWriter->GetDefaultFileExtension()
+                                       : this->Format == FORMAT::PNG ? "png"
+                                                                     : "ttk";
+
+  // -------------------------------------------------------------------------
+  // Prepare Field Data
+  // -------------------------------------------------------------------------
+  auto inputFD = vtkSmartPointer<vtkFieldData>::New();
+  inputFD->ShallowCopy(input->GetFieldData());
+  size_t nFields = inputFD->GetNumberOfArrays();
+
+  // -------------------------------------------------------------------------
+  // Ignore Meta Fields
+  // -------------------------------------------------------------------------
   {
-    stringstream msg;
-    msg << "done (" << (t.getElapsedTime() - t0) << " s).\n";
-    dMsg(cout, msg.str(), timeMsg);
+    std::vector<std::string> toIgnore;
+
+    // ignore file column
+    toIgnore.emplace_back("FILE");
+
+    // remove temporary columns
+    for(size_t i = 0; i < nFields; i++) {
+      std::string const name(inputFD->GetArrayName(i));
+      if(name.substr(0, 4).compare("_ttk") == 0)
+        toIgnore.emplace_back(name);
+    }
+
+    // delete columns from fd
+    for(const auto &name : toIgnore)
+      inputFD->RemoveArray(name.data());
+
+    nFields = inputFD->GetNumberOfArrays();
   }
 
-  // -------------------------------------------------------------------------
-  // Update 'data.csv' File
-  // -------------------------------------------------------------------------
+  // ===========================================================================
+  // Determine ProductId and collect values
+  // ===========================================================================
+  std::string productId;
+  std::string rDataProductPath;
+  std::vector<std::string> fields;
+  std::vector<std::string> values;
+  {
 
-  // Update data.csv file
-  dMsg(cout, "[ttkCinemaWriter] - Updating data.csv file            ... ",
-       timeMsg);
-  t0 = t.getElapsedTime();
+    if(nFields < 1) {
+      productId = "FILE";
+    } else {
+      for(size_t i = 0; i < nFields; i++) {
+        auto array = inputFD->GetAbstractArray(i);
+        auto n = array->GetNumberOfTuples();
+        auto m = array->GetNumberOfComponents();
+        std::string value;
+        if(n < 1) {
+          value = "null";
+        } else {
+          value = "";
+          for(int j = 0; j < n; j++) {
+            for(int k = 0; k < m; k++) {
+              value += array->GetVariantValue(j * m + k).ToString() + "|";
+            }
+            value = value.substr(0, value.size() - 1);
+            value += ";";
+          }
+          value = value.substr(0, value.size() - 1);
+        }
 
-  // Create data.csv file if it does not already exist
-  if(stat(dataCsvPath.data(), &info) != 0) {
-    vtkDataObject *firstBlock = inputMB->GetBlock(0);
+        fields.emplace_back(array->GetName());
+        values.emplace_back(value);
+      }
 
-    if(firstBlock != nullptr) {
-      // Open file
-      ofstream csvFile;
-      csvFile.open(dataCsvPath.data());
+      productId = values[0];
+      for(size_t i = 1; i < nFields; i++)
+        productId += "_" + values[i];
+    }
+
+    rDataProductPath = "data/" + productId + "." + productExtension;
+  }
+
+  // print keys
+  {
+    std::vector<std::vector<std::string>> rows(nFields + 1);
+    for(size_t i = 0; i < nFields; i++)
+      rows[i] = {fields[i], values[i]};
+    rows[nFields] = {"Key", productId};
+
+    this->printMsg(rows, ttk::debug::Priority::VERBOSE);
+  }
+
+  // ===========================================================================
+  // Update database
+  // ===========================================================================
+  {
+    // Initialize file lock for remaining operations
+    std::string lockFilePath;
+    if(!this->GetLockFilePath(lockFilePath))
+      return 0;
+
+    boost::interprocess::file_lock flock;
+    try {
+      flock = boost::interprocess::file_lock(lockFilePath.data());
+      flock.lock();
+    } catch(boost::interprocess::interprocess_exception &) {
+    }
+
+    std::string const csvPath = this->DatabasePath + "/data.csv";
+    struct stat info;
+
+    // -------------------------------------------------------------------------
+    // If data.csv file does not exist create it
+    // -------------------------------------------------------------------------
+    if(stat(csvPath.data(), &info) != 0) {
+      ttk::Timer t;
+      this->printMsg("Creating data.csv file", 0, ttk::debug::LineMode::REPLACE,
+                     ttk::debug::Priority::DETAIL);
+
+      std::ofstream csvFile;
+      csvFile.open(csvPath.data());
       if(!csvFile.is_open()) {
-        dMsg(cout,
-             "failed.\n[ttkCinemaWriter] ERROR: Unable to create 'data.csv' "
-             "file.\n",
-             fatalMsg);
+        this->printErr("Unable to create 'data.csv' file.");
         return 0;
       }
 
-      // Get column names
-      auto fieldData = firstBlock->GetFieldData();
-      size_t n = fieldData->GetNumberOfArrays();
-      for(size_t i = 0; i < n; i++) {
-        auto array = fieldData->GetAbstractArray(i);
-        string name = array->GetName();
-        if(array->GetNumberOfTuples() == 1 && name.compare("FILE") != 0)
-          csvFile << name << ",";
+      std::string header;
+      std::string firstRow;
+      for(size_t i = 0; i < nFields; i++) {
+        header += fields[i] + ",";
+        firstRow += values[i] + ",";
       }
-      csvFile << "FILE\n";
+      header += "FILE";
+      firstRow += rDataProductPath;
+
+      csvFile << header << endl << firstRow << endl;
 
       // Close file
       csvFile.close();
+
+      this->printMsg("Creating data.csv file", 1, t.getElapsedTime(),
+                     ttk::debug::LineMode::NEW, ttk::debug::Priority::DETAIL);
     }
-  }
 
-  // Read csv file
-  auto reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
-  reader->SetFileName(dataCsvPath.data());
-  reader->DetectNumericColumnsOff();
-  reader->SetHaveHeaders(true);
-  reader->SetFieldDelimiterCharacters(",");
-  reader->Update();
-  auto table = vtkTable::SafeDownCast(reader->GetOutput());
+    // -------------------------------------------------------------------------
+    // Update data.csv file
+    // -------------------------------------------------------------------------
 
-  int n = inputMB->GetNumberOfBlocks();
-  int offset = this->OverrideDatabase ? 0 : table->GetNumberOfRows();
-  if(this->OverrideDatabase)
-    table->SetNumberOfRows(n);
-  else
-    for(int i = 0; i < n;
-        i++) // SetNumberOfRows clears existing rows -> insert blank rows
-      table->InsertNextBlankRow();
+    // read data.csv file
+    auto csvTable = vtkSmartPointer<vtkTable>::New();
+    {
+      ttk::Timer t;
+      this->printMsg("Reading data.csv file", 0, ttk::debug::LineMode::REPLACE,
+                     ttk::debug::Priority::DETAIL);
 
-  for(int i = 0; i < n; i++) {
-    auto block = inputMB->GetBlock(i);
-    string blockExtension = "vtk";
-#if VTK_MAJOR_VERSION <= 7
-    stringstream msg;
-    msg << "failed." << endl
-        << "[ttkCinemaQuery] ERROR: VTK version too old." << endl
-        << "[ttkCinemaQuery]        This filter requires "
-           "vtkXMLPMultiBlockDataWriter"
-        << endl
-        << "[ttkCinemaQuery]        of version 7.0 or higher." << endl;
-    dMsg(cout, msg.str(), fatalMsg);
-    return 0;
-#else
-    blockExtension
-      = this->GetDefaultFileExtensionForDataSet(block->GetDataObjectType());
-#endif
+      auto reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
+      reader->SetFileName(csvPath.data());
+      reader->DetectNumericColumnsOff();
+      reader->SetHaveHeaders(true);
+      reader->SetFieldDelimiterCharacters(",");
+      reader->Update();
+      auto readerOutput = vtkTable::SafeDownCast(reader->GetOutput());
+      if(!readerOutput) {
+        this->printErr("Unable to read 'data.csv' file.");
+        return 0;
+      }
 
-    auto fieldData = block->GetFieldData();
+      csvTable->ShallowCopy(readerOutput);
 
-    for(int j = 0; j < table->GetNumberOfColumns(); j++) {
-      auto columnName = table->GetColumnName(j);
-      auto columnCSV = vtkStringArray::SafeDownCast(table->GetColumn(j));
-      if(string(columnName).compare("FILE") == 0)
-        if(this->UseTopologicalCompression) {
-          columnCSV->SetValue(offset + i, dataPrefix + id + pathSuffix);
-        } else {
-          columnCSV->SetValue(
-            offset + i, vtkStdString(dataPrefix + id + "/" + id + "_"
-                                     + to_string(i) + "." + blockExtension));
+      this->printMsg("Reading data.csv file", 1, t.getElapsedTime(),
+                     ttk::debug::LineMode::NEW, ttk::debug::Priority::DETAIL);
+    }
+
+    // check CSV file integrity
+    std::vector<vtkStringArray *> fieldToCSVColumnMap(nFields);
+    size_t const nRows = csvTable->GetNumberOfRows();
+    size_t const nColumns = csvTable->GetNumberOfColumns();
+    {
+      // Check If CSV file is empty
+      if(nColumns == 0) {
+        this->printErr(
+          "Empty 'data.csv' file (vtkDelimitedTextReader limitation).");
+        return 0;
+      }
+
+      // Check If CSV file contains columns not present in fields
+      for(size_t i = 0; i < nColumns; i++) {
+        std::string const columnName = csvTable->GetColumnName(i);
+
+        // skip FILE column
+        if(columnName.compare("FILE") == 0)
+          continue;
+
+        bool exist = false;
+        for(size_t j = 0; j < nFields; j++) {
+          if(fields[j].compare(columnName) == 0)
+            exist = true;
         }
-      else {
-        auto array = fieldData->GetAbstractArray(columnName);
-        string value = array->GetVariantValue(0).ToString();
-        columnCSV->SetValue(offset + i, value);
+        if(!exist) {
+          this->printErr("'data.csv' file contains column '" + columnName
+                         + "' not present in field data.");
+          this->printErr("Unable to insert data product into cinema database.");
+          return 0;
+        }
+      }
+
+      // check if data product has fields not present in the CSV file
+      for(size_t i = 0; i < nFields; i++) {
+        auto column = vtkStringArray::SafeDownCast(
+          csvTable->GetColumnByName(fields[i].data()));
+        if(!column) {
+          this->printErr("Data product has field data array '" + fields[i]
+                         + "' no recorded in the data.csv file.");
+          return 0;
+        }
+        fieldToCSVColumnMap[i] = column;
       }
     }
+
+    // TODO: make dynamic
+    auto fileColumn
+      = vtkStringArray::SafeDownCast(csvTable->GetColumnByName("FILE"));
+    if(!fileColumn) {
+      this->printErr("'data.csv' file has no 'FILE' column");
+      return 0;
+    }
+
+    // -------------------------------------------------------------------------
+    // delete products of the database with same keys
+    // -------------------------------------------------------------------------
+    {
+      std::vector<int> rowsToDelete;
+      for(size_t i = 0; i < nRows; i++) {
+        auto equal = true;
+        for(size_t j = 0; j < nFields; j++)
+          if(values[j].compare(fieldToCSVColumnMap[j]->GetValue(i)) != 0)
+            equal = false;
+        if(equal)
+          rowsToDelete.emplace_back(i);
+      }
+
+      if(rowsToDelete.size() > 0) {
+        ttk::Timer t;
+        this->printMsg("Deleting products with same keys", 0,
+                       ttk::debug::LineMode::REPLACE,
+                       ttk::debug::Priority::DETAIL);
+
+        for(int i = rowsToDelete.size() - 1; i >= 0; i--) {
+          auto path = fileColumn->GetValue(rowsToDelete[i]);
+
+          // Remove DataProduct
+          remove((this->DatabasePath + "/" + path).data());
+
+          // Remove Row from CSV
+          csvTable->RemoveRow(rowsToDelete[i]);
+        }
+
+        this->printMsg("Deleting products with same keys", 1,
+                       t.getElapsedTime(), ttk::debug::LineMode::NEW,
+                       ttk::debug::Priority::DETAIL);
+      }
+    }
+
+    // -----------------------------------------------------------------
+    // Update data.csv file
+    // -----------------------------------------------------------------
+    {
+      ttk::Timer t;
+      this->printMsg("Updating data.csv file", 0, ttk::debug::LineMode::REPLACE,
+                     ttk::debug::Priority::DETAIL);
+
+      size_t const rowIndex = csvTable->GetNumberOfRows();
+      csvTable->InsertNextBlankRow();
+
+      for(size_t j = 0; j < nFields; j++)
+        fieldToCSVColumnMap[j]->SetValue(rowIndex, values[j]);
+
+      fileColumn->SetValue(rowIndex, rDataProductPath);
+
+      // Write data.csv file
+      auto csvWriter = vtkSmartPointer<vtkDelimitedTextWriter>::New();
+      csvWriter->SetUseStringDelimiter(false);
+      csvWriter->SetFileName((this->DatabasePath + "/data.csv").data());
+      csvWriter->SetInputData(csvTable);
+      csvWriter->Write();
+
+      this->printMsg("Updating data.csv file", 1, t.getElapsedTime(),
+                     ttk::debug::LineMode::NEW, ttk::debug::Priority::DETAIL);
+    }
   }
 
-  // Write data.csv file
-  auto csvWriter = vtkSmartPointer<vtkDelimitedTextWriter>::New();
-  csvWriter->SetUseStringDelimiter(false);
-  csvWriter->SetFileName((this->DatabasePath + "/data.csv").data());
-  csvWriter->SetInputData(table);
-  csvWriter->Write();
-
+  // =========================================================================
+  // Store Data products
+  // =========================================================================
   {
-    stringstream msg;
-    msg << "done (" << (t.getElapsedTime() - t0) << " s).\n";
-    dMsg(cout, msg.str(), timeMsg);
+    // Write input to disk
+    ttk::Timer t;
+    this->printMsg("Writing data product to disk", 0,
+                   ttk::debug::LineMode::REPLACE, ttk::debug::Priority::DETAIL);
+
+    switch(this->Format) {
+
+      case FORMAT::VTK: {
+        xmlWriter->SetFileName(
+          (this->DatabasePath + "/" + rDataProductPath).data());
+        xmlWriter->SetInputData(input);
+        xmlWriter->Write();
+        break;
+      }
+      case FORMAT::PNG: {
+        auto inputAsID = vtkImageData::SafeDownCast(input);
+        if(!inputAsID) {
+          this->printErr("PNG format requires input of type 'vtkImageData'.");
+          return 0;
+        }
+
+        // search color array
+        {
+          bool found = false;
+          auto inputPD = inputAsID->GetPointData();
+          for(int i = 0; i < inputPD->GetNumberOfArrays(); i++) {
+            auto array = inputPD->GetAbstractArray(i);
+            if(array->IsA("vtkUnsignedCharArray")) {
+              inputPD->SetActiveScalars(inputPD->GetArrayName(i));
+              found = true;
+              break;
+            }
+          }
+
+          if(!found) {
+            this->printErr("Input image does not have any color array.");
+            return 0;
+          }
+        }
+
+        auto imageWriter = vtkSmartPointer<vtkPNGWriter>::New();
+        imageWriter->SetCompressionLevel(this->CompressionLevel);
+        imageWriter->SetFileName(
+          (this->DatabasePath + "/" + rDataProductPath).data());
+        imageWriter->SetInputData(inputAsID);
+        imageWriter->Write();
+        break;
+      }
+      case FORMAT::TTK: {
+        // Topological Compression
+        if(!input->IsA("vtkImageData")) {
+          vtkErrorMacro(
+            "Cannot use Topological Compression without a vtkImageData");
+          return 0;
+        }
+
+        const auto inputData = vtkImageData::SafeDownCast(input);
+        const auto sf = this->GetInputArrayToProcess(0, inputData);
+
+        vtkNew<ttkTopologicalCompressionWriter> topologicalCompressionWriter{};
+        topologicalCompressionWriter->SetInputArrayToProcess(
+          0, 0, 0, 0, sf->GetName());
+
+        topologicalCompressionWriter->SetTolerance(this->Tolerance);
+        topologicalCompressionWriter->SetMaximumError(this->MaximumError);
+        topologicalCompressionWriter->SetZFPTolerance(this->ZFPTolerance);
+        topologicalCompressionWriter->SetCompressionType(this->CompressionType);
+        topologicalCompressionWriter->SetSQMethodPV(this->SQMethodPV);
+        topologicalCompressionWriter->SetZFPOnly(this->ZFPOnly);
+        topologicalCompressionWriter->SetSubdivide(this->Subdivide);
+        topologicalCompressionWriter->SetUseTopologicalSimplification(
+          this->UseTopologicalSimplification);
+
+        // Check that input scalar field is indeed scalar
+        if(sf->GetNumberOfComponents() != 1) {
+          vtkErrorMacro("Input scalar field should have only 1 component");
+          return 0;
+        }
+        topologicalCompressionWriter->SetDebugLevel(this->debugLevel_);
+        topologicalCompressionWriter->SetFileName(
+          (this->DatabasePath + "/" + rDataProductPath).data());
+        topologicalCompressionWriter->SetInputData(inputData);
+        topologicalCompressionWriter->Write();
+        break;
+      }
+      default:
+        this->printErr("Unsupported Format");
+        return 0;
+    }
+
+    this->printMsg("Writing data product to disk", 1, t.getElapsedTime(),
+                   ttk::debug::LineMode::NEW, ttk::debug::Priority::DETAIL);
   }
+  this->printMsg("Wrote " + productId + "." + productExtension);
+  this->printMsg(ttk::debug::Separator::L2, ttk::debug::Priority::DETAIL);
+  return 1;
+}
+
+int ttkCinemaWriter::RequestData(vtkInformation *ttkNotUsed(request),
+                                 vtkInformationVector **inputVector,
+                                 vtkInformationVector *outputVector) {
+  ttk::Timer timer;
+
+  // Print Status
+  {
+    std::string format = this->Format == FORMAT::VTK   ? "VTK"
+                         : this->Format == FORMAT::PNG ? "PNG"
+                                                       : "TTK";
+    this->printMsg({{"Database", this->DatabasePath},
+                    {"C. Level", std::to_string(this->CompressionLevel)},
+                    {"Format", format},
+                    {"Iterate", this->IterateMultiBlock ? "Yes" : "No"}});
+    this->printMsg(ttk::debug::Separator::L1);
+  }
+
+  // -------------------------------------------------------------------------
+  // Copy Input to Output
+  // -------------------------------------------------------------------------
+  auto input = vtkDataObject::GetData(inputVector[0]);
+  auto output = vtkDataObject::GetData(outputVector);
+  if(this->ForwardInput)
+    output->ShallowCopy(input);
+
+  // -------------------------------------------------------------------------
+  // Prepare Database
+  // -------------------------------------------------------------------------
+  {
+    // Initialize file lock for remaining operations
+    std::string lockFilePath;
+    if(!this->GetLockFilePath(lockFilePath))
+      return 0;
+
+    boost::interprocess::file_lock flock;
+    try {
+      flock = boost::interprocess::file_lock(lockFilePath.data());
+      flock.lock();
+    } catch(boost::interprocess::interprocess_exception &) {
+    }
+
+    if(this->ValidateDatabasePath() == 0)
+      return 0;
+
+    if(ensureFolder(this->DatabasePath) == 0) {
+      this->printErr("Unable to open/create cinema database.");
+      return 0;
+    }
+
+    if(ensureFolder(this->DatabasePath + "/data") == 0) {
+      this->printErr("Unable to open/create cinema database.");
+      return 0;
+    }
+  }
+
+  auto inputAsMB = vtkMultiBlockDataSet::SafeDownCast(input);
+  if(this->IterateMultiBlock && inputAsMB) {
+    size_t const n = inputAsMB->GetNumberOfBlocks();
+    for(size_t i = 0; i < n; i++)
+      if(!this->ProcessDataProduct(inputAsMB->GetBlock(i)))
+        return 0;
+  } else if(!this->ProcessDataProduct(input))
+    return 0;
 
   // Output Performance
   {
-    stringstream msg;
-    msg << "[ttkCinemaWriter] "
-           "--------------------------------------------------------------"
-        << endl;
-    msg << "[ttkCinemaWriter]   Time: " << t.getElapsedTime() << " s." << endl;
-    msg << "[ttkCinemaWriter] Memory: " << m.getElapsedUsage() << " MB."
-        << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    std::string resultString = "Complete (#products: ";
+    resultString += !this->IterateMultiBlock || !inputAsMB
+                      ? "1"
+                      : std::to_string(inputAsMB->GetNumberOfBlocks());
+    resultString += ")";
+
+    // print stats
+    this->printMsg(resultString, 1, timer.getElapsedTime());
+    this->printMsg(ttk::debug::Separator::L1);
   }
 
   return 1;

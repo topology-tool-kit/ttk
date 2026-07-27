@@ -10,8 +10,7 @@
 ///
 /// \sa ttk::FTRGraph
 
-#ifndef GRAPH_H
-#define GRAPH_H
+#pragma once
 
 #include "FTRAtomicVector.h"
 #include "FTRCommon.h"
@@ -25,6 +24,8 @@
 #include <iostream>
 #endif
 
+#include <map>
+#include <random>
 #include <vector>
 
 namespace ttk {
@@ -37,9 +38,9 @@ namespace ttk {
     class Graph : public Allocable {
     private:
       // update operator =
-      AtomicVector<std::tuple<idVertex, bool>> leaves_;
-      AtomicVector<Node> nodes_;
-      AtomicVector<SuperArc> arcs_;
+      FTRAtomicVector<std::tuple<idVertex, bool>> leaves_;
+      FTRAtomicVector<Node> nodes_;
+      FTRAtomicVector<SuperArc> arcs_;
 
       std::vector<SegmInfo> segmentation_;
 
@@ -54,11 +55,11 @@ namespace ttk {
       std::vector<valence> valDown_, valUp_;
 
       Graph();
-      Graph(Graph &&other) = default;
+      Graph(Graph &&other) noexcept = default;
       Graph(const Graph &other) = delete;
-      virtual ~Graph();
+      ~Graph() override;
 
-      Graph &operator=(Graph &&other) {
+      Graph &operator=(Graph &&other) noexcept {
         if(this != &other) {
           leaves_ = std::move(other.leaves_);
           nodes_ = std::move(other.nodes_);
@@ -80,15 +81,15 @@ namespace ttk {
       // Accessor on structure
       // ---------------------
 
-      idNode getNumberOfNodes(void) const {
+      idNode getNumberOfNodes() const {
         return nodes_.size();
       }
 
-      idSuperArc getNumberOfArcs(void) const {
+      idSuperArc getNumberOfArcs() const {
         return arcs_.size();
       }
 
-      idSuperArc getNumberOfVisibleArcs(void) const {
+      idSuperArc getNumberOfVisibleArcs() const {
         idSuperArc res = 0;
         for(const auto &arc : arcs_) {
           if(arc.isVisible())
@@ -97,7 +98,7 @@ namespace ttk {
         return res;
       }
 
-      idNode getNumberOfLeaves(void) const {
+      idNode getNumberOfLeaves() const {
         return leaves_.size();
       }
 
@@ -264,7 +265,7 @@ namespace ttk {
       }
 
       idSuperArc openArc(const idNode downId, Propagation *p = nullptr) {
-        idSuperArc newArc = arcs_.getNext();
+        idSuperArc const newArc = arcs_.getNext();
         arcs_[newArc].setDownNodeId(downId);
         if(p) {
           arcs_[newArc].setUfProp(p->getId());
@@ -287,7 +288,7 @@ namespace ttk {
       }
 
       idSuperArc makeHiddenArc(Propagation *const lp) {
-        idSuperArc newArc = arcs_.getNext();
+        idSuperArc const newArc = arcs_.getNext();
         arcs_[newArc].hide();
         arcs_[newArc].setUfProp(lp->getId());
         return newArc;
@@ -306,18 +307,15 @@ namespace ttk {
               return s->isLower(std::get<0>(a), std::get<0>(b));
             };
         if(parallel) {
-          ::ttk::ftr::parallel_sort<decltype(leaves_.begin()),
-                                    std::tuple<idVertex, bool>>(
-            leaves_.begin(), leaves_.end(), compare_fun);
+          TTK_PSORT(
+            this->threadNumber_, leaves_.begin(), leaves_.end(), compare_fun);
         } else {
-          ::ttk::ftr::sort<decltype(leaves_.begin()),
-                           std::tuple<idVertex, bool>>(
-            leaves_.begin(), leaves_.end(), compare_fun);
+          std::sort(leaves_.begin(), leaves_.end(), compare_fun);
         }
       }
 
       void shuffleLeaves() {
-        std::random_shuffle(leaves_.begin(), leaves_.end());
+        std::shuffle(leaves_.begin(), leaves_.end(), std::random_device());
       }
 
       // some arc may be pending due to symbolic merge during computation
@@ -359,7 +357,7 @@ namespace ttk {
       // tools
 
       // ensure that main arc have valid up/down node even if the merge of
-      // the two arc occured during the computation, leaving some unfinished
+      // the two arc occurred during the computation, leaving some unfinished
       // arcs.
       template <typename ScalarType>
       void consolidateArc(const idSuperArc mainArc,
@@ -371,5 +369,3 @@ namespace ttk {
 } // namespace ttk
 
 #include "Graph_Template.h"
-
-#endif /* end of include guard: GRAPH_H */

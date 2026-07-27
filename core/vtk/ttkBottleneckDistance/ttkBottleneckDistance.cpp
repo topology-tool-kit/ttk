@@ -1,200 +1,239 @@
-#include "ttkBottleneckDistance.h"
+#include <ttkBottleneckDistance.h>
+#include <ttkBottleneckDistanceUtils.h>
+#include <ttkUtils.h>
 
-vtkStandardNewMacro(ttkBottleneckDistance)
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
+#include <vtkInformation.h>
+#include <vtkIntArray.h>
+#include <vtkMultiBlockDataSet.h>
+#include <vtkPointData.h>
+#include <vtkUnstructuredGrid.h>
 
-  int ttkBottleneckDistance::doBenchmark() {
-  using dataType = double;
+vtkStandardNewMacro(ttkBottleneckDistance);
 
-  std::vector<diagramTuple> CTDiagram1;
-  std::vector<diagramTuple> CTDiagram2;
+ttkBottleneckDistance::ttkBottleneckDistance() {
+  SetNumberOfInputPorts(1);
+  SetNumberOfOutputPorts(2);
+}
 
-  int benchmarkSize = BenchmarkSize;
-  int status = 0;
-  status = generatePersistenceDiagram<double>(CTDiagram1, benchmarkSize);
-  if(status < 0)
-    return status;
-  status = generatePersistenceDiagram<double>(CTDiagram2, 4 * benchmarkSize);
-  if(status < 0)
-    return status;
-
-  bottleneckDistance_.setPersistencePercentThreshold(Tolerance);
-  bottleneckDistance_.setPX(PX);
-  bottleneckDistance_.setPY(PY);
-  bottleneckDistance_.setPZ(PZ);
-  bottleneckDistance_.setPE(PE);
-  bottleneckDistance_.setPS(PS);
-  bottleneckDistance_.setCTDiagram1(&CTDiagram1);
-  bottleneckDistance_.setCTDiagram2(&CTDiagram2);
-
-  std::string wassersteinMetric = WassersteinMetric;
-  bottleneckDistance_.setWasserstein(wassersteinMetric);
-  std::string algorithm = DistanceAlgorithm;
-  bottleneckDistance_.setAlgorithm(algorithm);
-  int pvAlgorithm = PVAlgorithm;
-  bottleneckDistance_.setPVAlgorithm(pvAlgorithm);
-  bottleneckDistance_.setThreadNumber(ThreadNumber);
-
-  // Empty matchings.
-  auto matchings = new std::vector<diagramTuple>();
-  bottleneckDistance_.setOutputMatchings(matchings);
-
-  // Exec.
-  bool usePersistenceMetric = UsePersistenceMetric;
-  // double alpha = Alpha;
-  status = bottleneckDistance_.execute<dataType>(usePersistenceMetric);
-
-  if(status != 0) {
-    return status;
+int ttkBottleneckDistance::FillInputPortInformation(int port,
+                                                    vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkMultiBlockDataSet");
+    return 1;
   }
-
   return 0;
 }
 
-int ttkBottleneckDistance::doIt(std::vector<vtkDataSet *> &inputs,
-                                std::vector<vtkDataSet *> &outputs) {
-  using dataType = double;
+int ttkBottleneckDistance::FillOutputPortInformation(int port,
+                                                     vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+    return 1;
+  } else if(port == 1) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
+  }
+  return 0;
+}
 
-  int benchmarkSize = BenchmarkSize;
-  bool benchmark = benchmarkSize > 0;
-  if(benchmark) {
-    return doBenchmark();
+static int generateMatchings(vtkUnstructuredGrid *const outputCT3,
+                             const ttk::DiagramType &diagram1,
+                             const ttk::DiagramType &diagram2,
+                             const std::vector<ttk::MatchingType> &matchings,
+                             const std::array<double, 3> &distances,
+                             const double globalDist,
+                             const double spacing,
+                             const bool isBottleneck,
+                             const bool is2D0,
+                             const bool is2D1) {
+
+  vtkNew<vtkUnstructuredGrid> vtu{};
+
+  vtkNew<vtkPoints> points{};
+  points->SetNumberOfPoints(2 * matchings.size());
+  vtu->SetPoints(points);
+
+  vtkNew<vtkDoubleArray> costs{};
+  costs->SetName("Cost");
+  costs->SetNumberOfComponents(1);
+  costs->SetNumberOfTuples(matchings.size());
+  vtu->GetCellData()->AddArray(costs);
+
+  vtkNew<vtkIntArray> matchingIds{};
+  matchingIds->SetName("MatchingIdentifier");
+  matchingIds->SetNumberOfComponents(1);
+  matchingIds->SetNumberOfTuples(matchings.size());
+  vtu->GetCellData()->AddArray(matchingIds);
+
+  // Build matchings.
+  for(size_t i = 0; i < matchings.size(); ++i) {
+    const auto &t = matchings[i];
+    const auto n1 = std::get<0>(t);
+    const auto n2 = std::get<1>(t);
+
+    const auto &pair0 = diagram1[n1];
+    const auto &pair1 = diagram2[n2];
+
+    const auto pairPoint = [](const ttk::PersistencePair &pair, const bool is2D,
+                              const double zval) -> std::array<double, 3> {
+      if(is2D) {
+        return {pair.birth.sfValue, pair.death.sfValue, zval};
+      } else {
+        return {
+          pair.death.coords[0], pair.death.coords[1], pair.death.coords[2]};
+      }
+    };
+
+    const auto p0 = pairPoint(pair0, is2D0, -spacing / 2.0);
+    points->SetPoint(2 * i + 0, p0.data());
+    const auto p1 = pairPoint(pair1, is2D1, spacing / 2.0);
+    points->SetPoint(2 * i + 1, p1.data());
+
+    std::array<vtkIdType, 2> ids{
+      2 * static_cast<vtkIdType>(i) + 0,
+      2 * static_cast<vtkIdType>(i) + 1,
+    };
+    vtu->InsertNextCell(VTK_LINE, 2, ids.data());
+
+    costs->SetTuple1(i, std::get<2>(t));
+    matchingIds->SetTuple1(i, i);
   }
 
-  // Prepare IO
-  vtkDataSet *input1 = inputs[0];
-  vtkDataSet *input2 = inputs[1];
-  vtkDataSet *output1 = outputs[0];
-  vtkDataSet *output2 = outputs[1];
-  vtkDataSet *output3 = outputs[2];
+  // add distance results to output_matchings FieldData
+  vtkNew<vtkDoubleArray> minSad{};
+  minSad->SetName("MinSaddleCost");
+  minSad->SetNumberOfTuples(1);
+  minSad->SetTuple1(0, distances[0]);
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!input1 || !input2) {
-    cerr << "[ttkBottleneckDistance] Error: input pointer is NULL." << endl;
-    return -1;
+  vtkNew<vtkDoubleArray> sadSad{};
+  sadSad->SetName("SaddleSaddleCost");
+  sadSad->SetNumberOfTuples(1);
+  sadSad->SetTuple1(0, distances[1]);
+
+  vtkNew<vtkDoubleArray> sadMax{};
+  sadMax->SetName("SaddleMaxCost");
+  sadMax->SetNumberOfTuples(1);
+  sadMax->SetTuple1(0, distances[2]);
+
+  vtkNew<vtkDoubleArray> wass{};
+  wass->SetName(isBottleneck ? "BottleneckDistance" : "WassersteinDistance");
+  wass->SetNumberOfTuples(1);
+  wass->SetTuple1(0, globalDist);
+
+  vtu->GetFieldData()->AddArray(minSad);
+  vtu->GetFieldData()->AddArray(sadSad);
+  vtu->GetFieldData()->AddArray(sadMax);
+  vtu->GetFieldData()->AddArray(wass);
+
+  outputCT3->ShallowCopy(vtu);
+
+  return 1;
+}
+
+int ttkBottleneckDistance::RequestData(vtkInformation *ttkNotUsed(request),
+                                       vtkInformationVector **inputVector,
+                                       vtkInformationVector *outputVector) {
+
+  auto outputDiagrams = vtkMultiBlockDataSet::GetData(outputVector, 0);
+  auto outputMatchings = vtkUnstructuredGrid::GetData(outputVector, 1);
+
+  auto blocks = vtkMultiBlockDataSet::GetData(inputVector[0]);
+  std::vector<vtkUnstructuredGrid *> inputDiags{};
+
+  if(blocks == nullptr) {
+    this->printErr("No input diagrams");
+    return 0;
   }
 
-  if(!output1 || !output2 || !output3) {
-    cerr << "[ttkBottleneckDistance] Error: output pointer is NULL." << endl;
-    return -1;
+  for(size_t i = 0; i < blocks->GetNumberOfBlocks(); ++i) {
+    const auto diag = vtkUnstructuredGrid::SafeDownCast(blocks->GetBlock(i));
+    if(diag != nullptr) {
+      inputDiags.emplace_back(diag);
+    }
   }
 
-  if(input1->GetNumberOfPoints() == 0 || input2->GetNumberOfPoints() == 0) {
-    cerr << "[ttkBottleneckDistance] Error: input has no points." << endl;
-    return -1;
+  if(inputDiags.size() < 2) {
+    this->printErr("Less than two input diagrams");
+    return 0;
   }
-#endif
+  if(inputDiags.size() > 2) {
+    this->printWrn("More than two input diagrams: "
+                   + std::to_string(inputDiags.size()));
+  }
 
-  vtkUnstructuredGrid *outputCT1 = vtkUnstructuredGrid::SafeDownCast(output1);
-  vtkUnstructuredGrid *outputCT2 = vtkUnstructuredGrid::SafeDownCast(output2);
-  vtkUnstructuredGrid *outputCT3 = vtkUnstructuredGrid::SafeDownCast(output3);
+  const auto coords0 = vtkFloatArray::SafeDownCast(
+    inputDiags[0]->GetPointData()->GetArray("Coordinates"));
+  const auto coords1 = vtkFloatArray::SafeDownCast(
+    inputDiags[1]->GetPointData()->GetArray("Coordinates"));
 
-  // Wrap
-  bottleneckDistance_.setWrapper(this);
-  bottleneckDistance_.setPersistencePercentThreshold(Tolerance);
-  bottleneckDistance_.setPX(PX);
-  bottleneckDistance_.setPY(PY);
-  bottleneckDistance_.setPZ(PZ);
-  bottleneckDistance_.setPE(PE);
-  bottleneckDistance_.setPS(PS);
-
-  CTPersistenceDiagram1_ = vtkUnstructuredGrid::SafeDownCast(input1);
-  CTPersistenceDiagram2_ = vtkUnstructuredGrid::SafeDownCast(input2);
-
-  if(!CTPersistenceDiagram1_ || !CTPersistenceDiagram2_ || !outputCT3)
-    return -1;
-
-  int dataType1 = CTPersistenceDiagram1_->GetCellData()
-                    ->GetArray("Persistence")
-                    ->GetDataType();
-  int dataType2 = CTPersistenceDiagram2_->GetCellData()
-                    ->GetArray("Persistence")
-                    ->GetDataType();
-  if(dataType1 != dataType2)
-    return -1;
-
-  vtkDoubleArray *birthScalars1 = vtkDoubleArray::SafeDownCast(
-    CTPersistenceDiagram1_->GetPointData()->GetArray("Birth"));
-  vtkDoubleArray *deathScalars1 = vtkDoubleArray::SafeDownCast(
-    CTPersistenceDiagram1_->GetPointData()->GetArray("Death"));
-  vtkDoubleArray *birthScalars2 = vtkDoubleArray::SafeDownCast(
-    CTPersistenceDiagram1_->GetPointData()->GetArray("Birth"));
-  vtkDoubleArray *deathScalars2 = vtkDoubleArray::SafeDownCast(
-    CTPersistenceDiagram1_->GetPointData()->GetArray("Death"));
-  bool is2D1 = !deathScalars1 && !birthScalars1;
-  bool is2D2 = !deathScalars2 && !birthScalars2;
-  if(is2D1 != is2D2)
-    return -2;
-  bool is2D = is2D1;
+  const bool is2D0 = coords0 != nullptr;
+  const bool is2D1 = coords1 != nullptr;
 
   // Call package
   int status = 0;
 
-  //  switch (dataType1) {
-  //    vtkTemplateMacro(({
-  // TODO template my methods
-  std::vector<diagramTuple> CTDiagram1;
-  std::vector<diagramTuple> CTDiagram2;
+  ttk::DiagramType diagram0{}, diagram1{};
+  std::vector<ttk::MatchingType> matchings{};
 
-  status = getPersistenceDiagram<dataType>(
-    CTDiagram1, CTPersistenceDiagram1_, Spacing, 0);
+  status = VTUToDiagram(diagram0, inputDiags[0], *this);
   if(status < 0) {
-    return -2;
+    this->printErr("Could not extract diagram from first input data-set");
+    return 0;
   }
 
-  status = getPersistenceDiagram<dataType>(
-    CTDiagram2, CTPersistenceDiagram2_, Spacing, 1);
+  status = VTUToDiagram(diagram1, inputDiags[1], *this);
   if(status < 0) {
-    return -2;
+    this->printErr("Could not extract diagram from second input data-set");
+    return 0;
   }
-
-  bottleneckDistance_.setCTDiagram1(&CTDiagram1);
-  bottleneckDistance_.setCTDiagram2(&CTDiagram2);
-
-  std::string wassersteinMetric = WassersteinMetric;
-  bottleneckDistance_.setWasserstein(wassersteinMetric);
-  std::string algorithm = DistanceAlgorithm;
-  bottleneckDistance_.setAlgorithm(algorithm);
-  int pvAlgorithm = PVAlgorithm;
-  bottleneckDistance_.setPVAlgorithm(pvAlgorithm);
-
-  // Empty matchings.
-  std::vector<matchingTuple> matchings;
-  bottleneckDistance_.setOutputMatchings(&matchings);
 
   // Exec.
-  bool usePersistenceMetric = UsePersistenceMetric;
-  // double alpha = Alpha;
-  status = bottleneckDistance_.execute<dataType>(usePersistenceMetric);
-  if(status != 0)
-    return status;
-
-  // Apply results to outputs 0 and 1.
-  status = augmentPersistenceDiagrams<dataType>(
-    CTDiagram1, CTDiagram2, matchings, CTPersistenceDiagram1_,
-    CTPersistenceDiagram2_);
-
-  bool useOutputMatching = UseOutputMatching;
-  bool useGeometricSpacing = UseGeometricSpacing;
-
-  // Apply results to output 2.
-  if(useOutputMatching) {
-    status = getMatchingMesh<dataType>(
-      CTDiagram1, CTDiagram2, matchings, useGeometricSpacing, Spacing, is2D);
+  status = this->execute(diagram0, diagram1, matchings);
+  if(status != 0) {
+    this->printErr("Base layer failed with error status "
+                   + std::to_string(status));
+    return 0;
   }
 
-  if(status != 0)
-    return status;
-  //    }));
-  //  }
+  // Generate matchings
+  if(this->UseOutputMatching) {
+    status = generateMatchings(outputMatchings, diagram0, diagram1, matchings,
+                               this->costs_, this->distance_, this->Spacing,
+                               this->WassersteinMetric == "inf", is2D0, is2D1);
+
+    if(status != 1) {
+      this->printErr("Could not compute matchings");
+      return 0;
+    }
+  }
+
+  // Translate diagrams
+  vtkNew<vtkUnstructuredGrid> vtu0{}, vtu1{};
+  if(this->UseGeometricSpacing) {
+    vtu0->ShallowCopy(inputDiags[0]);
+    ResetDiagramPosition(vtu0, *this);
+    TranslateDiagram(vtu0, {0, 0, -this->Spacing});
+    vtu1->ShallowCopy(inputDiags[1]);
+    ResetDiagramPosition(vtu1, *this);
+    TranslateDiagram(vtu1, {0, 0, this->Spacing});
+  } else {
+    vtu0->ShallowCopy(inputDiags[0]);
+    vtu1->ShallowCopy(inputDiags[1]);
+  }
+
+  // Add matchings infos on diagrams
+  status = augmentDiagrams(matchings, vtu0, vtu1);
+  if(status != 1) {
+    this->printErr("Could not augment diagrams");
+    return 0;
+  }
 
   // Set output.
-  outputCT1->ShallowCopy(CTPersistenceDiagram1_);
-  outputCT2->DeepCopy(CTPersistenceDiagram2_);
-  if(UseGeometricSpacing)
-    translateSecondDiagram<dataType>(outputCT2, Spacing);
+  outputDiagrams->SetNumberOfBlocks(2);
+  outputDiagrams->SetBlock(0, vtu0);
+  outputDiagrams->SetBlock(1, vtu1);
 
-  if(UseOutputMatching)
-    outputCT3->ShallowCopy(CTPersistenceDiagram3_);
-
-  return status;
+  return 1;
 }

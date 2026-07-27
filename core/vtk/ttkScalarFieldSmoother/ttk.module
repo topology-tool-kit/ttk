@@ -1,0 +1,9 @@
+NAME
+  ttkScalarFieldSmoother
+SOURCES
+  ttkScalarFieldSmoother.cpp
+HEADERS
+  ttkScalarFieldSmoother.h
+DEPENDS
+  scalarFieldSmoother
+  ttkAlgorithm

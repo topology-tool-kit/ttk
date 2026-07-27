@@ -11,24 +11,8 @@
 
 #include <Debug.h>
 
-#ifdef __APPLE__
-#include <algorithm>
-#include <numeric>
-#else
-#ifdef _WIN32
-#include <algorithm>
-#include <numeric>
-#else
-#ifdef __clang__
-#include <algorithm>
-#include <numeric>
-#else
-#include <parallel/algorithm>
-#endif
-#endif
-#endif
-
 #include <iostream>
+#include <numeric>
 #include <vector>
 
 namespace ttk {
@@ -41,28 +25,26 @@ namespace ttk {
       bool advStats = true;
       int samplingLvl = 0;
 
-      idThread threadNumber = 1;
+      int threadNumber = 1;
       int debugLevel = 1;
 
       void printSelf() {
-        if(debugLevel) {
-          std::cout << "[FTR Graph]: thread number: " << threadNumber
-                    << std::endl;
-          std::cout << "[FTR Graph]: debug lvl: " << debugLevel << std::endl;
-          if(debugLevel > 2) {
-            std::cout << "[FTR Graph]: segmentation: " << std::boolalpha << segm
-                      << std::endl;
-            std::cout << "[FTR Graph]: sampling level: " << samplingLvl
-                      << std::endl;
-          }
-        }
+        Debug dbg{};
+        dbg.setDebugMsgPrefix("FTRGraph");
+        dbg.setDebugLevel(debugLevel);
+        dbg.printMsg(std::vector<std::vector<std::string>>{
+          {"#Threads", std::to_string(threadNumber)},
+          {"Debug level", std::to_string(debugLevel)},
+          {"Segmentation", std::to_string(segm)},
+          {"Sampling level", std::to_string(samplingLvl)},
+        });
       }
     };
 
     /// Force the class to use functions alloc and init
     /// alloc is used for all system allocation
     /// init is used to fill arrays that needs to be
-    class Allocable : public Debug {
+    class Allocable : virtual public Debug {
     protected:
       /// Allocation may depends on the number of vertices
       idVertex nbElmt_ = nullVertex;
@@ -88,46 +70,5 @@ namespace ttk {
       virtual void init() = 0;
     };
 
-    template <typename Iterator>
-    void parallel_sort(Iterator begin, Iterator end) {
-      // Sort the vertices array
-#ifdef TTK_ENABLE_OPENMP
-#ifdef _GLIBCXX_PARALLEL_FEATURES_H
-      ::__gnu_parallel::sort(begin, end);
-#else
-      std::cout << "Caution, sequential sort" << std::endl;
-      ::std::sort(begin, end);
-#endif
-#else
-      ::std::sort(begin, end);
-#endif
-    }
-
-    template <typename Iterator, typename el>
-    void parallel_sort(Iterator begin,
-                       Iterator end,
-                       std::function<bool(el, el)> comp) {
-      // Sort the vertices array
-#ifdef TTK_ENABLE_OPENMP
-#ifdef _GLIBCXX_PARALLEL_FEATURES_H
-      ::__gnu_parallel::sort(begin, end, comp);
-#else
-      std::cout << "Caution, sequential sort" << std::endl;
-      ::std::sort(begin, end, comp);
-#endif
-#else
-      ::std::sort(begin, end, comp);
-#endif
-    }
-
-    template <typename Iterator>
-    void sort(Iterator begin, Iterator end) {
-      ::std::sort(begin, end);
-    }
-
-    template <typename Iterator, typename el>
-    void sort(Iterator begin, Iterator end, std::function<bool(el, el)> comp) {
-      ::std::sort(begin, end, comp);
-    }
   } // namespace ftr
 } // namespace ttk

@@ -1,0 +1,9 @@
+NAME
+  ttkRipsComplex
+SOURCES
+  ttkRipsComplex.cpp
+HEADERS
+  ttkRipsComplex.h
+DEPENDS
+  ripsComplex
+  ttkAlgorithm

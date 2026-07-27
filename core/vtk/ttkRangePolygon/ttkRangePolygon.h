@@ -24,7 +24,7 @@
 /// \warning This feature will only work properly with the TTK-branded ParaView
 /// (ParaView sources need to be patched with TTK fixes, see the documentation)
 ///
-/// -
+/// .
 ///
 /// \param Input Input 2D selection, typically "Extract Selection" in ParaView
 /// (vtkUnstructuredGrid)
@@ -47,52 +47,29 @@
 /// \sa ttk::FiberSurface
 /// \sa vtkReebSpace
 ///
-#ifndef _TTK_RANGEPOLYGON_H
-#define _TTK_RANGEPOLYGON_H
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/builtInExample2/">
+///   Builtin example 2</a> \n
+
+#pragma once
 
 // VTK includes -- to adapt
-#include <vtkCleanPolyData.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDataSetSurfaceFilter.h>
-#include <vtkDataSetTriangleFilter.h>
-#include <vtkFeatureEdges.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkInformation.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnstructuredGrid.h>
+
+// VTK Module
+#include <ttkRangePolygonModule.h>
 
 // ttk code includes
 #include <ScalarFieldSmoother.h>
-#include <ttkWrapper.h>
+#include <ttkAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkRangePolygon
-#else
-class ttkRangePolygon
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class vtkUnstructuredGrid;
+
+class TTKRANGEPOLYGON_EXPORT ttkRangePolygon : public ttkAlgorithm {
 
 public:
   static ttkRangePolygon *New();
 
-  vtkTypeMacro(ttkRangePolygon, vtkDataSetAlgorithm);
-
-  // default ttk setters
-  vtkSetMacro(debugLevel_, int);
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
+  vtkTypeMacro(ttkRangePolygon, ttkAlgorithm);
 
   vtkGetMacro(ClosedLoop, bool);
   vtkSetMacro(ClosedLoop, bool);
@@ -100,25 +77,29 @@ public:
   vtkGetMacro(NumberOfIterations, int);
   vtkSetMacro(NumberOfIterations, int);
 
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-    return 1;
-  }
+  //   int FillOutputPortInformation(int port, vtkInformation *info) override {
+  //     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+  //     return 1;
+  //   }
 
 protected:
   ttkRangePolygon();
 
-  ~ttkRangePolygon();
+  ~ttkRangePolygon() override;
 
-  TTK_SETUP();
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
-  bool ClosedLoop;
-  int NumberOfIterations;
+  bool ClosedLoop{false};
+  int NumberOfIterations{0};
 
   int processPoints(vtkUnstructuredGrid *input, vtkUnstructuredGrid *output);
 
   int processTriangles(vtkUnstructuredGrid *input, vtkUnstructuredGrid *output);
 };
-
-#endif // _TTK_RANGEPOLYGON_H

@@ -1,0 +1,11 @@
+ttk_add_base_library(progressiveTopology
+  SOURCES
+    ProgressiveTopology.cpp
+  HEADERS
+    ProgressiveTopology.h
+  DEPENDS
+    multiresTriangulation
+    triangulation
+    dynamicTree
+    multiresTopology
+    )

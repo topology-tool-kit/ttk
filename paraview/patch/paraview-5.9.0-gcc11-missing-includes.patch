@@ -1,0 +1,60 @@
+diff --git c/VTK/Common/Core/vtkGenericDataArrayLookupHelper.h w/VTK/Common/Core/vtkGenericDataArrayLookupHelper.h
+index ab9d57248..202aaa27f 100644
+--- c/VTK/Common/Core/vtkGenericDataArrayLookupHelper.h
++++ w/VTK/Common/Core/vtkGenericDataArrayLookupHelper.h
+@@ -25,6 +25,7 @@
+ #include "vtkIdList.h"
+ #include <algorithm>
+ #include <cmath>
++#include <limits>
+ #include <unordered_map>
+ #include <vector>
+ 
+diff --git c/VTK/Common/DataModel/Testing/Cxx/UnitTestLine.cxx w/VTK/Common/DataModel/Testing/Cxx/UnitTestLine.cxx
+index 7823d618d..02f627d39 100644
+--- c/VTK/Common/DataModel/Testing/Cxx/UnitTestLine.cxx
++++ w/VTK/Common/DataModel/Testing/Cxx/UnitTestLine.cxx
+@@ -14,6 +14,7 @@
+ =========================================================================*/
+ 
+ #include <cmath>
++#include <limits>
+ 
+ #include "vtkLine.h"
+ #include "vtkMath.h"
+diff --git c/VTK/Common/DataModel/vtkPiecewiseFunction.cxx w/VTK/Common/DataModel/vtkPiecewiseFunction.cxx
+index 22eca0bc2..11086f1dc 100644
+--- c/VTK/Common/DataModel/vtkPiecewiseFunction.cxx
++++ w/VTK/Common/DataModel/vtkPiecewiseFunction.cxx
+@@ -22,6 +22,7 @@
+ #include <cassert>
+ #include <cmath>
+ #include <iterator>
++#include <limits>
+ #include <set>
+ #include <vector>
+ 
+diff --git c/VTK/Filters/HyperTree/vtkHyperTreeGridThreshold.cxx w/VTK/Filters/HyperTree/vtkHyperTreeGridThreshold.cxx
+index a16bb27fc..1052192c6 100644
+--- c/VTK/Filters/HyperTree/vtkHyperTreeGridThreshold.cxx
++++ w/VTK/Filters/HyperTree/vtkHyperTreeGridThreshold.cxx
+@@ -27,6 +27,7 @@
+ #include "vtkHyperTreeGridNonOrientedCursor.h"
+ 
+ #include <cmath>
++#include <limits>
+ 
+ vtkStandardNewMacro(vtkHyperTreeGridThreshold);
+ 
+diff --git c/VTK/Rendering/Core/vtkColorTransferFunction.cxx w/VTK/Rendering/Core/vtkColorTransferFunction.cxx
+index 55c046b4d..1be02919a 100644
+--- c/VTK/Rendering/Core/vtkColorTransferFunction.cxx
++++ w/VTK/Rendering/Core/vtkColorTransferFunction.cxx
+@@ -21,6 +21,7 @@
+ #include <algorithm>
+ #include <cmath>
+ #include <iterator>
++#include <limits>
+ #include <set>
+ #include <vector>
+ 

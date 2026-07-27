@@ -2,7 +2,7 @@
 +++ b/Qt/ApplicationComponents/pqExampleVisualizationsDialog.cxx	2016-12-16 15:35:38.997408484 +0100
 @@ -19,11 +19,11 @@
    ui->setupUi(this);
- 
+
    QObject::connect(
 -    this->ui->CanExampleButton, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
 +    this->ui->Example1Button, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
@@ -13,7 +13,7 @@
 -    this->ui->WaveletExampleButton, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
 +    this->ui->Example3Button, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
  }
- 
+
  //-----------------------------------------------------------------------------
 @@ -50,19 +50,19 @@
    {

@@ -1,0 +1,4 @@
+NAME
+  ttkScalarFieldCriticalPoints
+DEPENDS
+  ttkAlgorithm

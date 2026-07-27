@@ -16,30 +16,26 @@
 ///
 /// \sa FiberSurface.h %for a usage example.
 
-#ifndef _RANGE_DRIVEN_OCTREE_H
-#define _RANGE_DRIVEN_OCTREE_H
+#pragma once
 
 // base code includes
+#include <Debug.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 namespace ttk {
 
-  class RangeDrivenOctree : public Debug {
-
+  class RangeDrivenOctree : virtual public Debug {
   public:
     RangeDrivenOctree();
 
-    ~RangeDrivenOctree();
-
-    template <class dataTypeU, class dataTypeV>
-    inline int build();
+    template <class dataTypeU, class dataTypeV, typename triangulationType>
+    inline int build(const triangulationType *const triangulation);
 
     inline bool empty() const {
       return nodeList_.empty();
     }
 
-    int flush();
+    void flush();
 
     int getTet2NodeMap(std::vector<SimplexId> &map,
                        const bool &forSegmentation = false) const;
@@ -77,10 +73,6 @@ namespace ttk {
       v_ = v;
     }
 
-    inline void setTriangulation(const Triangulation *triangulation) {
-      triangulation_ = triangulation;
-    }
-
     inline void setVertexNumber(const SimplexId &vertexNumber) {
       vertexNumber_ = vertexNumber;
     }
@@ -90,18 +82,17 @@ namespace ttk {
     int statNode(const SimplexId &nodeId, std::ostream &stream);
 
   protected:
-    class OctreeNode {
-
-    public:
-      std::pair<std::pair<double, double>, std::pair<double, double>> rangeBox_;
-      std::vector<SimplexId> cellList_;
-      std::vector<SimplexId> childList_;
-      std::vector<std::pair<float, float>> domainBox_;
+    struct OctreeNode {
+      std::pair<std::pair<double, double>, std::pair<double, double>>
+        rangeBox_{};
+      std::vector<SimplexId> cellList_{};
+      std::vector<SimplexId> childList_{};
+      std::array<std::pair<float, float>, 3> domainBox_{};
     };
 
     template <class dataTypeU, class dataTypeV>
     int buildNode(const std::vector<SimplexId> &cellList,
-                  const std::vector<std::pair<float, float>> &domainBox,
+                  const std::array<std::pair<float, float>, 3> &domainBox,
                   const std::pair<std::pair<double, double>,
                                   std::pair<double, double>> &rangeBox,
                   SimplexId &nodeId);
@@ -116,43 +107,43 @@ namespace ttk {
                              const std::pair<double, double> &q0,
                              const std::pair<double, double> &q1) const;
 
-    const void *u_;
-    const void *v_;
-    const float *pointList_;
-    const SimplexId *cellList_;
-    float domainVolume_, leafMinimumDomainVolumeRatio_,
-      leafMinimumRangeAreaRatio_, rangeArea_;
-    SimplexId cellNumber_, vertexNumber_, leafMinimumCellNumber_, rootId_;
-    mutable SimplexId queryResultNumber_;
-    std::vector<OctreeNode> nodeList_;
-    std::vector<std::vector<std::pair<float, float>>> cellDomainBox_;
+    const void *u_{};
+    const void *v_{};
+    const float *pointList_{};
+    const SimplexId *cellList_{};
+    float domainVolume_{}, leafMinimumDomainVolumeRatio_{0.01F},
+      leafMinimumRangeAreaRatio_{0.01F}, rangeArea_{};
+    SimplexId cellNumber_{}, vertexNumber_{}, leafMinimumCellNumber_{6},
+      rootId_{};
+    mutable SimplexId queryResultNumber_{};
+    std::vector<OctreeNode> nodeList_{};
+    std::vector<std::array<std::pair<float, float>, 3>> cellDomainBox_{};
     std::vector<std::pair<std::pair<double, double>, std::pair<double, double>>>
-      cellRangeBox_;
-    const Triangulation *triangulation_;
+      cellRangeBox_{};
   };
 } // namespace ttk
 
 // if the package is not a template, comment the following line
 // #include                  <RangeDrivenOctree.cpp>
 
-template <class dataTypeU, class dataTypeV>
-int ttk::RangeDrivenOctree::build() {
+template <class dataTypeU, class dataTypeV, typename triangulationType>
+int ttk::RangeDrivenOctree::build(
+  const triangulationType *const triangulation) {
 
   Timer t;
-  Memory m;
 
-  dataTypeU *u = (dataTypeU *)u_;
-  dataTypeV *v = (dataTypeV *)v_;
+  const dataTypeU *u = (const dataTypeU *)u_;
+  const dataTypeV *v = (const dataTypeV *)v_;
 
-  if(triangulation_) {
-    cellNumber_ = triangulation_->getNumberOfCells();
+  if(triangulation) {
+    cellNumber_ = triangulation->getNumberOfCells();
   }
 
-  if(triangulation_) {
-    vertexNumber_ = triangulation_->getNumberOfVertices();
+  if(triangulation) {
+    vertexNumber_ = triangulation->getNumberOfVertices();
   }
 
-  cellDomainBox_.resize(cellNumber_, std::vector<std::pair<float, float>>(3));
+  cellDomainBox_.resize(cellNumber_);
 
   cellRangeBox_.resize(cellNumber_);
 
@@ -167,8 +158,8 @@ int ttk::RangeDrivenOctree::build() {
       cellDomainBox_[i][j].second = -FLT_MAX;
     }
 
-    const SimplexId *cell = NULL;
-    if(!triangulation_) {
+    const SimplexId *cell = nullptr;
+    if(!triangulation) {
       cell = &(cellList_[5 * i + 1]);
     }
 
@@ -177,15 +168,15 @@ int ttk::RangeDrivenOctree::build() {
       // update the domain bounding box for that tet
       SimplexId vertexId = 0;
 
-      if(triangulation_) {
-        triangulation_->getCellVertex(i, j, vertexId);
-      } else {
+      if(triangulation) {
+        triangulation->getCellVertex(i, j, vertexId);
+      } else if(cell != nullptr) {
         vertexId = cell[j];
       }
 
-      float p[3];
-      if(triangulation_) {
-        triangulation_->getVertexPoint(vertexId, p[0], p[1], p[2]);
+      std::array<float, 3> p{};
+      if(triangulation) {
+        triangulation->getVertexPoint(vertexId, p[0], p[1], p[2]);
       } else {
         p[0] = pointList_[3 * vertexId];
         p[1] = pointList_[3 * vertexId + 1];
@@ -239,15 +230,15 @@ int ttk::RangeDrivenOctree::build() {
     domain[i] = i;
 
   // get global bBoxes
-  std::vector<std::pair<float, float>> domainBox(3);
+  std::array<std::pair<float, float>, 3> domainBox{};
   std::pair<std::pair<double, double>, std::pair<double, double>> rangeBox;
 
   for(SimplexId i = 0; i < vertexNumber_; i++) {
 
     // domain one
-    float p[3];
-    if(triangulation_) {
-      triangulation_->getVertexPoint(i, p[0], p[1], p[2]);
+    std::array<float, 3> p{};
+    if(triangulation) {
+      triangulation->getVertexPoint(i, p[0], p[1], p[2]);
     } else {
       p[0] = pointList_[3 * i];
       p[1] = pointList_[3 * i + 1];
@@ -293,26 +284,13 @@ int ttk::RangeDrivenOctree::build() {
 
   leafMinimumDomainVolumeRatio_ = (1.0 / ((float)cellNumber_)) / 2.0;
 
-  {
-    std::stringstream msg;
-    msg << "[RangeDrivenOctree] Range area ratio: "
-        << leafMinimumRangeAreaRatio_ << std::endl;
-    dMsg(std::cout, msg.str(), 4);
-  }
+  this->printMsg(
+    "Range area ratio: " + std::to_string(leafMinimumRangeAreaRatio_),
+    debug::Priority::DETAIL);
+
   buildNode<dataTypeU, dataTypeV>(domain, domainBox, rangeBox, rootId_);
 
-  {
-    std::stringstream msg;
-    msg << "[RangeDrivenOctree] Octree built in " << t.getElapsedTime() << " s."
-        << std::endl;
-    dMsg(std::cout, msg.str(), 2);
-  }
-  {
-    std::stringstream msg;
-    msg << "[RangeDrivenOctree] Memory: " << m.getElapsedUsage() << " MB."
-        << std::endl;
-    dMsg(std::cout, msg.str(), memoryMsg);
-  }
+  this->printMsg("Octree built", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   // debug
   //   stats(std::cout);
@@ -324,24 +302,24 @@ int ttk::RangeDrivenOctree::build() {
 template <class dataTypeU, class dataTypeV>
 int ttk::RangeDrivenOctree::buildNode(
   const std::vector<SimplexId> &cellList,
-  const std::vector<std::pair<float, float>> &domainBox,
+  const std::array<std::pair<float, float>, 3> &domainBox,
   const std::pair<std::pair<double, double>, std::pair<double, double>>
     &rangeBox,
   SimplexId &nodeId) {
 
   nodeId = nodeList_.size();
 
-  nodeList_.resize(nodeList_.size() + 1);
+  nodeList_.emplace_back();
 
   nodeList_.back().rangeBox_ = rangeBox;
   nodeList_.back().domainBox_ = domainBox;
 
-  float rangeArea = (rangeBox.first.second - rangeBox.first.first)
-                    * (rangeBox.second.second - rangeBox.second.first);
+  float const rangeArea = (rangeBox.first.second - rangeBox.first.first)
+                          * (rangeBox.second.second - rangeBox.second.first);
 
-  float domainVolume = (domainBox[0].second - domainBox[0].first)
-                       * (domainBox[1].second - domainBox[1].first)
-                       * (domainBox[2].second - domainBox[2].first);
+  float const domainVolume = (domainBox[0].second - domainBox[0].first)
+                             * (domainBox[1].second - domainBox[1].first)
+                             * (domainBox[2].second - domainBox[2].first);
 
   if(((SimplexId)cellList.size() > leafMinimumCellNumber_)
      && (rangeArea > leafMinimumRangeAreaRatio_ * rangeArea_)
@@ -349,20 +327,18 @@ int ttk::RangeDrivenOctree::buildNode(
 
     nodeList_.back().childList_.resize(8);
 
-    std::vector<std::vector<std::pair<float, float>>> childDomainBox(8);
-    for(SimplexId i = 0; i < (SimplexId)childDomainBox.size(); i++) {
-      childDomainBox[i].resize(3);
-    }
-    std::vector<std::pair<std::pair<dataTypeU, dataTypeU>,
-                          std::pair<dataTypeV, dataTypeV>>>
-      childRangeBox(8);
-    std::vector<std::vector<SimplexId>> childCellList(8);
+    std::array<std::array<std::pair<float, float>, 3>, 8> childDomainBox{};
+    std::array<std::pair<std::pair<dataTypeU, dataTypeU>,
+                         std::pair<dataTypeV, dataTypeV>>,
+               8>
+      childRangeBox{};
+    std::array<std::vector<SimplexId>, 8> childCellList{};
 
-    float midX
+    float const midX
       = domainBox[0].first + (domainBox[0].second - domainBox[0].first) / 2.0;
-    float midY
+    float const midY
       = domainBox[1].first + (domainBox[1].second - domainBox[1].first) / 2.0;
-    float midZ
+    float const midZ
       = domainBox[2].first + (domainBox[2].second - domainBox[2].first) / 2.0;
 
     // 0 - - -
@@ -501,5 +477,3 @@ int ttk::RangeDrivenOctree::buildNode(
 
   return 0;
 }
-
-#endif // _RANGE_DRIVEN_OCTREE_H

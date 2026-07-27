@@ -1,0 +1,9 @@
+NAME
+  ttkTopologicalCompression
+SOURCES
+  ttkTopologicalCompression.cpp
+HEADERS
+  ttkTopologicalCompression.h
+DEPENDS
+  topologicalCompression
+  ttkAlgorithm

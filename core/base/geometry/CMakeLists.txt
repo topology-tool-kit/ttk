@@ -3,7 +3,6 @@ ttk_add_base_library(geometry
     Geometry.cpp
   HEADERS
     Geometry.h
-  LINK
+  DEPENDS
     common
     )
-

@@ -1,0 +1,8 @@
+NAME
+  ttkForEach
+SOURCES
+  ttkForEach.cpp
+HEADERS
+  ttkForEach.h
+DEPENDS
+  ttkExtract

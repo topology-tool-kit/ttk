@@ -5,8 +5,7 @@
 ///
 /// \brief Wrapper class to wrap ttk code.
 
-#ifndef _WRAPPER_H
-#define _WRAPPER_H
+#pragma once
 
 #include <Debug.h>
 
@@ -17,9 +16,9 @@ namespace ttk {
   public:
     Wrapper() {
       processingProgress_ = 0;
-    };
+    }
 
-    virtual ~Wrapper(){};
+    ~Wrapper() override = default;
 
     virtual bool needsToAbort() = 0;
 
@@ -29,5 +28,3 @@ namespace ttk {
     float processingProgress_;
   };
 } // namespace ttk
-
-#endif

@@ -1,0 +1,9 @@
+NAME
+  ttkBarycentricSubdivision
+SOURCES
+  ttkBarycentricSubdivision.cpp
+HEADERS
+  ttkBarycentricSubdivision.h
+DEPENDS
+  barycentricSubdivision
+  ttkAlgorithm

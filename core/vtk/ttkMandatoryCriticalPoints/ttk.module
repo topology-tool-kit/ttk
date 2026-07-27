@@ -1,0 +1,9 @@
+NAME
+  ttkMandatoryCriticalPoints
+SOURCES
+  ttkMandatoryCriticalPoints.cpp
+HEADERS
+  ttkMandatoryCriticalPoints.h
+DEPENDS
+  mandatoryCriticalPoints
+  ttkAlgorithm

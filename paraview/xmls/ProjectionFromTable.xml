@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Add widgets to the ParaView UI that control the member variables of the vtk filter -->
+<!-- NOTE: Unfortunately the widget types and their properties are not well documented. -->
+<!--       The best thing you can do is to look at filters that have similar widgets you require and copy their source code. -->
+<!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkProjectionFromTable" class="ttkProjectionFromTable" label="TTK ProjectionFromTable">
+      <Documentation long_help="ProjectionFromTable Long" short_help="ProjectionFromTable Short">This filter projects on a surface points in a vtkTable.
+
+      Online examples:
+
+      - https://topology-tool-kit.github.io/examples/mergeTreePGA/
+
+      - https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/
+      </Documentation>
+
+      <!-- INPUT DATA OBJECTS -->
+      <InputProperty
+        name="Surface"
+        port_index="0"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Surface" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          
+        </Documentation>
+      </InputProperty>
+      
+      <InputProperty
+        name="Coefficients"
+        port_index="1"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable"/>
+        </DataTypeDomain>
+        <Documentation>
+          
+        </Documentation>
+)      </InputProperty>
+
+      <!-- INPUT PARAMETER WIDGETS -->
+      <StringVectorProperty
+        name="InputSurfaceXArray"
+        command="SetInputArrayToProcess"
+        label="Input Surface X Array"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Surface" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the input surface X array.
+        </Documentation>
+      </StringVectorProperty>
+      
+      <StringVectorProperty
+        name="InputSurfaceYArray"
+        command="SetInputArrayToProcess"
+        label="Input Surface Y Array"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Surface" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the input surface Y array.
+        </Documentation>
+      </StringVectorProperty>
+
+      <!-- OUTPUT PARAMETER WIDGETS -->
+      
+      <!-- Create a UI group that contains all input parameter widgets -->
+      <PropertyGroup panel_widget="Line" label="Input Options">
+        <Property name="InputSurfaceXArray" />
+        <Property name="InputSurfaceYArray" />
+      </PropertyGroup>
+
+      <!-- Create a UI group that contains all output parameter widgets -->
+      <PropertyGroup panel_widget="Line" label="Output Options">
+        
+      </PropertyGroup>
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - Domain" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

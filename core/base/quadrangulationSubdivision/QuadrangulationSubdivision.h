@@ -10,40 +10,49 @@
 ///
 ///
 /// \sa ttkQuadrangulationSubdivision.cpp % for a usage example.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/">Morse-Smale
+///   Quadrangulation example</a> \n
 
 #pragma once
 
 // base code includes
+#include <Dijkstra.h>
+#include <Geometry.h>
+#include <Quadrangulation.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
+
+#include <limits>
 #include <set>
-#include <tuple>
 
 namespace ttk {
 
-  class QuadrangulationSubdivision : public Debug {
+  class QuadrangulationSubdivision : virtual public Debug {
 
   public:
+    QuadrangulationSubdivision() {
+      this->setDebugMsgPrefix("QuadrangulationSubdivision");
+    }
+
     inline void setSubdivisionLevel(const unsigned int value) {
-      subdivisionLevel_ = value;
+      SubdivisionLevel = value;
     }
     inline void setRelaxationIterations(const unsigned int value) {
-      relaxationIterations_ = value;
+      RelaxationIterations = value;
     }
     inline void setLockInputExtrema(const bool value) {
-      lockInputExtrema = value;
+      LockInputExtrema = value;
     }
     inline void setLockAllInputVertices(const bool value) {
-      lockAllInputVertices = value;
-    }
-    inline void setReverseProjection(const bool value) {
-      reverseProjection_ = value;
+      LockAllInputVertices = value;
     }
     inline void setShowResError(const bool value) {
-      showResError_ = value;
+      ShowResError = value;
     }
     inline void setHausdorffLevel(const float value) {
-      hausdorffLevel_ = value;
+      HausdorffLevel = value;
     }
     inline void setInputQuads(void *const address, unsigned int size) {
       inputQuads_ = static_cast<Quad *>(address);
@@ -61,68 +70,20 @@ namespace ttk {
         nearestVertexIdentifier_[i] = inputVertexIdentifiers[i];
       }
     }
-    inline void setupTriangulation(Triangulation *const triangl) {
-      triangulation_ = triangl;
-      if(triangulation_ != nullptr) {
-        vertexNumber_ = triangulation_->getNumberOfVertices();
-        triangulation_->preprocessVertexNeighbors();
-        triangulation_->preprocessVertexTriangles();
+    inline void
+      preconditionTriangulation(AbstractTriangulation *const triangl) {
+      if(triangl != nullptr) {
+        vertexNumber_ = triangl->getNumberOfVertices();
+        SurfaceGeometrySmoother{}.preconditionTriangulationSurface(triangl);
       }
     }
-    int execute();
 
-    inline long long *getQuadBuf() {
-      return reinterpret_cast<long long *>(outputQuads_.data());
-    }
-    inline size_t getQuadNumber() const {
-      return outputQuads_.size();
-    }
-    inline float *getPointsBuf() {
-      return reinterpret_cast<float *>(outputPoints_.data());
-    }
-    inline size_t getPointsNumber() const {
-      return outputPoints_.size();
-    }
+    template <typename triangulationType = AbstractTriangulation>
+    int execute(const triangulationType &triangulation);
 
   private:
-    // vtkPoint instance with interleaved coordinates (AoS)
-    struct Point {
-      float x;
-      float y;
-      float z;
-      Point operator+(const Point other) const {
-        Point res{};
-        res.x = x + other.x;
-        res.y = y + other.y;
-        res.z = z + other.z;
-        return res;
-      }
-      Point operator*(const float scalar) const {
-        Point res{};
-        res.x = x * scalar;
-        res.y = y * scalar;
-        res.z = z * scalar;
-        return res;
-      }
-      Point operator-(Point other) const {
-        return *this + other * (-1);
-      }
-      Point operator/(const float scalar) const {
-        return (*this * (1.0F / scalar));
-      }
-      friend std::ostream &operator<<(std::ostream &stream, const Point &pt) {
-        stream << pt.x << " " << pt.y << " " << pt.z;
-        return stream;
-      }
-    };
-    // VTK_QUAD representation with vtkIdType
-    struct Quad {
-      long long n; // number of vertices, 4
-      long long i; // index of first vertex
-      long long j; // second vertex
-      long long k; // third vertex
-      long long l; // fourth vertex
-    };
+    using Point = Quadrangulation::Point;
+    using Quad = Quadrangulation::Quad;
 
     /**
      * @brief Subdivise a quadrangular mesh
@@ -139,69 +100,8 @@ namespace ttk {
      *
      * @return 0 in case of success
      */
-    int subdivise();
-
-    /**
-     * @brief Project a generated quadrangle vertex into the
-     * triangular input mesh
-     *
-     * Project a subset of the current quadrangular mesh onto the
-     * triangular input mesh.
-     *
-     * @param[in] filtered Set of indices that should not be projected
-     * @param[in] lastIter Indicate last projection iteration for
-     * post-processing
-     * @return 0 in case of success
-     */
-    int project(const std::set<size_t> &filtered, bool lastIter = false);
-
-    /**
-     * @brief Relax every generated point of a quadrangular mesh
-     *
-     * Take every generated point of the current quadrangular mesh,
-     * and move its position to the barycenter of its neighbors.
-     *
-     * @param[in] filtered Set of indices that should not be projected
-     * @return 0 in case of success
-     */
-    int relax(const std::set<size_t> &filtered);
-
-    /**
-     * @brief Store for every quad vertex its neighbors
-     *
-     * Each quad vertex should be linked to four other vertices. This
-     * functions stores into the quadNeighbors_ member this relation.
-     *
-     * @param[in] quads Quadrangular mesh to find neighbors in
-     * @param[in] secondNeighbors Also store secondary neighbors (quad third
-     * vertex)
-     *
-     * @return 0 in case of success
-     */
-    int getQuadNeighbors(const std::vector<Quad> &quads,
-                         std::vector<std::set<size_t>> &neighbors,
-                         bool secondNeighbors = false) const;
-
-    /**
-     * @brief Compute the normal of the quadrangulation at point a
-     *
-     * @param[in] a input index of quadrangle vertex
-     *
-     * @return normal to quad surface at point a
-     */
-    Point getQuadNormal(size_t a) const;
-
-    /**
-     * @brief Compute the projection in the nearest triangle
-     *
-     * @param[in] a input index of quadrangle vertex
-     * @param[in] forceReverseProj Try reverse projection
-     *
-     * @return (coordinates of projection, nearest vertex id, number
-     * of triangles checked for result, projection id)
-     */
-    std::tuple<Point, SimplexId, size_t, SimplexId>
-      findProjection(size_t a, bool forceReverseProj) const;
+    template <typename triangulationType>
+    int subdivise(Quadrangulation &qd, const triangulationType &triangulation);
 
     /**
      * @brief Find the middle of a quad edge using Dijkstra
@@ -214,62 +114,51 @@ namespace ttk {
      *
      * @return TTK identifier of potential edge middle
      */
-    SimplexId findEdgeMiddle(size_t a, size_t b) const;
+    template <typename triangulationType>
+    SimplexId findEdgeMiddle(const std::array<SimplexId, 2> &e,
+                             const triangulationType &triangulation) const;
 
     /**
      * @brief Find a quad barycenter using Dijkstra
      *
      * Minimize the sum of the distance to every vertex of the current quad.
      *
-     * @param[in] quadVertices Vector of quad vertices point ids in which to
+     * @param[in] quad Vector of quad vertices point ids in which to
      * find a barycenter
      *
      * @return TTK identifier of potential barycenter
      */
-    SimplexId findQuadBary(const std::vector<size_t> &quadVertices) const;
-
-    /**
-     * @brief Find input vertices with more than 4 neighbors
-     *
-     * @param[out] output Output set of input extraordinary point indices
-     *
-     * @return 0 in case of success
-     */
-    int findExtraordinaryVertices(std::set<size_t> &output) const;
-
-    /**
-     * @brief Compute statistics on generated quadrangles
-     *
-     * Computes:
-     * - quadrangle area
-     * - diagonals ratio
-     * - ratio between the shortest and the longest edges
-     * - ratio between the smallest and the biggest angles
-     */
-    void quadStatistics();
+    SimplexId findQuadBary(std::vector<float> &sum, const Quad &quad) const;
 
     /**
      * @brief Clear buffers
      */
     void clearData();
 
+    template <typename triangulationType>
+    float getBoundingBoxDiagonal(const triangulationType &triangulation) const;
+
+    template <typename triangulationType>
+    void computeHausdorff(std::vector<float> &hausdorff,
+                          const Quadrangulation &qd,
+                          const triangulationType &triangulation) const;
+
+  protected:
     // number of vertices in the mesh
     SimplexId vertexNumber_{};
 
-    // wanted number of subdivisions of the input quadrangles
-    unsigned int subdivisionLevel_{1};
+    // number of subdivisions of the input quadrangles
+    unsigned int SubdivisionLevel{1};
     // number of relaxation iterations
-    unsigned int relaxationIterations_{10};
+    unsigned int RelaxationIterations{10};
     // lock input extrema
-    bool lockInputExtrema{false};
+    bool LockInputExtrema{false};
     // lock all input vertices
-    bool lockAllInputVertices{false};
-    // projection method
-    bool reverseProjection_{false};
+    bool LockAllInputVertices{false};
     // display result despite error
-    bool showResError_{false};
+    bool ShowResError{false};
     // Hausdorff warning level
-    float hausdorffLevel_{200.F};
+    float HausdorffLevel{200.F};
 
     // number of input quadrangles
     unsigned int inputQuadNumber_{};
@@ -281,23 +170,25 @@ namespace ttk {
     // input quadrangle vertices (3D coordinates)
     Point *inputVertices_{};
 
-    // input triangulation
-    Triangulation *triangulation_{};
-
     // array of output quadrangles
     std::vector<Quad> outputQuads_{};
     // array of output quadrangle vertices
     std::vector<Point> outputPoints_{};
     // array mapping quadrangle neighbors
-    std::vector<std::set<size_t>> quadNeighbors_{};
+    FlatJaggedArray quadNeighbors_{};
     // array of nearest input vertex TTK identifier
     std::vector<SimplexId> nearestVertexIdentifier_{};
     // holds geodesic distance to every other quad vertex sharing a quad
     std::vector<std::vector<float>> vertexDistance_{};
 
-  public:
     // array of output quadrangle vertex valences
     std::vector<SimplexId> outputValences_{};
+    // density around vertices (exp minus euclidean distance between
+    // vertex and its closest neighbor)
+    std::vector<float> outputDensity_{};
+    // quad mesh difformity around vertices (exp minus ratio between
+    // smallest and largest euclidean distance to neighbors)
+    std::vector<float> outputDifformity_{};
     // array of output quadrangle vertex type
     // 0 - input (critical) point
     // 1 - edge middle
@@ -305,14 +196,6 @@ namespace ttk {
     std::vector<SimplexId> outputVertType_{};
     // array of output vertex subdivision level
     std::vector<SimplexId> outputSubdivision_{};
-    // number of triangles checked per quad vertex for the last projection
-    std::vector<SimplexId> trianglesChecked_{};
-    // last projection success per quad vertex
-    // 0 - not projected (critical point)
-    // 1 - projection alongside quadrangle normal
-    // 2 - projection alongside triangle normal
-    // 3 - failed projection
-    std::vector<SimplexId> projSucceeded_{};
 
     // quadrangles statistics
     std::vector<float> quadArea_{};
@@ -325,3 +208,385 @@ namespace ttk {
 
 // if the package is a pure template typename, uncomment the following line
 // #include                  <QuadrangulationSubdivision.cpp>
+
+template <typename triangulationType>
+ttk::SimplexId ttk::QuadrangulationSubdivision::findEdgeMiddle(
+  const std::array<SimplexId, 2> &e,
+  const triangulationType &triangulation) const {
+
+  SimplexId midId{};
+  float minValue{std::numeric_limits<float>::infinity()};
+
+  // euclidean barycenter of a and b
+  Point edgeEuclBary = (outputPoints_[e[0]] + outputPoints_[e[1]]) * 0.5F;
+
+  for(size_t i = 0; i < vertexDistance_[e[0]].size(); ++i) {
+    float const m = vertexDistance_[e[0]][i];
+    float const n = vertexDistance_[e[1]][i];
+    // stay on the shortest path between a and b
+    float sum = m + n;
+
+    // skip further computation
+    if(sum > minValue) {
+      continue;
+    }
+
+    if(m != std::numeric_limits<float>::infinity()
+       && n != std::numeric_limits<float>::infinity()) {
+      // try to get the middle of the shortest path
+      sum += std::abs(m - n);
+    }
+
+    // get the euclidean distance to AB
+    Point curr{};
+    triangulation.getVertexPoint(i, curr[0], curr[1], curr[2]);
+    // try to minimize the euclidean distance to AB too
+    sum += Geometry::distance(curr.data(), edgeEuclBary.data());
+
+    // search for the minimizing index
+    if(sum < minValue) {
+      minValue = sum;
+      midId = i;
+    }
+  }
+
+  return midId;
+}
+
+template <typename triangulationType>
+int ttk::QuadrangulationSubdivision::subdivise(
+  Quadrangulation &qd, const triangulationType &triangulation) {
+
+  // temp storage for quad subdivision
+  std::vector<Quad> tmp{};
+
+  Timer tm;
+
+  // avoid reallocation in loop, causing invalid pointers
+  outputPoints_.reserve(outputPoints_.size() * 5);
+
+  vertexDistance_.resize(outputPoints_.size());
+
+  // set & precondition quadrangulation object
+  qd.setInputPoints(this->outputPoints_.size(), this->outputPoints_.data());
+  qd.setInputCells(this->outputQuads_.size(), this->outputQuads_.data());
+  qd.preconditionEdges();
+  qd.preconditionVertexStars();
+
+  // compute shortest distance from every vertex to all other that share a quad
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < outputPoints_.size(); ++i) {
+
+    // skip if already computed on a coarser subdivision
+    if(vertexDistance_[i].empty()) {
+
+      // do not propagate on the whole mesh
+      std::set<SimplexId> bounds{};
+      const auto ns{qd.getVertexStarNumber(i)};
+      for(SimplexId j = 0; j < ns; ++j) {
+        const auto cid{qd.getVertexStar(i, j)};
+        for(const auto v : this->outputQuads_[cid]) {
+          if(v == static_cast<LongSimplexId>(i)) {
+            continue;
+          }
+          bounds.emplace(nearestVertexIdentifier_[v]);
+        }
+      }
+
+      Dijkstra::shortestPath(nearestVertexIdentifier_[i], triangulation,
+                             vertexDistance_[i],
+                             {bounds.begin(), bounds.end()});
+    }
+  }
+
+  std::vector<SimplexId> quadBaryId(this->outputQuads_.size());
+  std::vector<float> sum{};
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_) firstprivate(sum)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < this->outputQuads_.size(); ++i) {
+    quadBaryId[i] = this->findQuadBary(sum, this->outputQuads_[i]);
+  }
+
+  std::vector<SimplexId> edgeMidId(qd.getNumberOfEdges());
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(SimplexId i = 0; i < qd.getNumberOfEdges(); ++i) {
+    edgeMidId[i] = this->findEdgeMiddle(qd.getEdge(i), triangulation);
+  }
+
+  std::vector<SimplexId> processedEdges(qd.getNumberOfEdges(), -1);
+
+  for(size_t a = 0; a < this->outputQuads_.size(); ++a) {
+    const auto &q{this->outputQuads_[a]};
+
+    const auto processEdge = [&](const SimplexId e) -> SimplexId {
+      if(processedEdges[e] == -1) {
+        const auto midab{edgeMidId[e]};
+        Point pt{};
+        triangulation.getVertexPoint(midab, pt[0], pt[1], pt[2]);
+        /* add new point 3d coordinates to vector of output points */
+        this->outputPoints_.emplace_back(pt);
+        /* new point is an edge middle */
+        this->outputVertType_.emplace_back(1);
+        /* store also TTK identifier of triangular mesh vertex */
+        this->nearestVertexIdentifier_.emplace_back(midab);
+        // store in map
+        processedEdges[e] = this->outputPoints_.size() - 1;
+      }
+      return processedEdges[e];
+    };
+
+    const auto ij{processEdge(qd.getCellEdge(a, 0))};
+    const auto jk{processEdge(qd.getCellEdge(a, 1))};
+    const auto kl{processEdge(qd.getCellEdge(a, 2))};
+    const auto li{processEdge(qd.getCellEdge(a, 3))};
+
+    // barycenter TTK identifier
+    const auto baryid = quadBaryId[a];
+    // barycenter 3D coordinates
+    Point bary{};
+    triangulation.getVertexPoint(baryid, bary[0], bary[1], bary[2]);
+
+    // barycenter index in outputPoints_
+    const LongSimplexId baryIdx = outputPoints_.size();
+    outputPoints_.emplace_back(bary);
+    outputVertType_.emplace_back(2);
+    nearestVertexIdentifier_.emplace_back(baryid);
+
+    // add the four new quads
+    tmp.emplace_back(Quad{q[0], ij, baryIdx, li});
+    tmp.emplace_back(Quad{q[1], jk, baryIdx, ij});
+    tmp.emplace_back(Quad{q[2], kl, baryIdx, jk});
+    tmp.emplace_back(Quad{q[3], li, baryIdx, kl});
+  }
+
+  // output subdivision level
+  auto currSubd = outputSubdivision_.back() + 1;
+  auto subdBeg = outputSubdivision_.size();
+  outputSubdivision_.resize(outputPoints_.size());
+  std::fill(
+    outputSubdivision_.begin() + subdBeg, outputSubdivision_.end(), currSubd);
+
+  this->printMsg("Subdivised " + std::to_string(outputQuads_.size())
+                   + " quads into " + std::to_string(tmp.size())
+                   + " new quads (" + std::to_string(outputPoints_.size())
+                   + " points)",
+                 1.0, tm.getElapsedTime(), this->threadNumber_);
+
+  outputQuads_ = std::move(tmp);
+
+  return 0;
+}
+
+template <typename triangulationType>
+float ttk::QuadrangulationSubdivision::getBoundingBoxDiagonal(
+  const triangulationType &triangulation) const {
+
+  std::array<float, 3> pmin{std::numeric_limits<float>::max(),
+                            std::numeric_limits<float>::max(),
+                            std::numeric_limits<float>::max()};
+  std::array<float, 3> pmax{std::numeric_limits<float>::min(),
+                            std::numeric_limits<float>::min(),
+                            std::numeric_limits<float>::min()};
+
+  for(SimplexId i = 0; i < triangulation.getNumberOfVertices(); ++i) {
+    std::array<float, 3> p{};
+    triangulation.getVertexPoint(i, p[0], p[1], p[2]);
+    pmax[0] = std::max(pmax[0], p[0]);
+    pmax[1] = std::max(pmax[1], p[1]);
+    pmax[2] = std::max(pmax[2], p[2]);
+    pmin[0] = std::min(pmin[0], p[0]);
+    pmin[1] = std::min(pmin[1], p[1]);
+    pmin[2] = std::min(pmin[2], p[2]);
+  }
+
+  return Geometry::distance(pmin.data(), pmax.data());
+}
+
+template <typename triangulationType>
+void ttk::QuadrangulationSubdivision::computeHausdorff(
+  std::vector<float> &hausdorff,
+  const Quadrangulation &qd,
+  const triangulationType &triangulation) const {
+
+  Timer tm{};
+
+  hausdorff.resize(qd.getNumberOfVertices());
+
+  // compute the minimal distance from every triangulation point to
+  // every quadrangulation point
+
+  // compute triangulation bounding box diagonal
+  const auto bboxDiag = getBoundingBoxDiagonal(triangulation);
+
+  // closest quadrangulation vertex for every triangulation vertex
+  std::vector<SimplexId> nearestQuadVert(triangulation.getNumberOfVertices());
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->getThreadNumber())
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < nearestQuadVert.size(); ++i) {
+    float minDist{std::numeric_limits<float>::infinity()};
+    std::array<float, 3> p{};
+    triangulation.getVertexPoint(i, p[0], p[1], p[2]);
+
+    for(SimplexId j = 0; j < qd.getNumberOfVertices(); ++j) {
+      std::array<float, 3> q{};
+      qd.getVertexPoint(j, q[0], q[1], q[2]);
+      auto dist = Geometry::distance(p.data(), q.data());
+      if(dist < minDist) {
+        minDist = dist;
+        nearestQuadVert[i] = j;
+      }
+    }
+  }
+
+  // nearest triangulation vertices for each quadrangulation vertex
+  std::vector<std::vector<SimplexId>> nearestTriVerts(qd.getNumberOfVertices());
+  for(SimplexId i = 0; i < triangulation.getNumberOfVertices(); ++i) {
+    nearestTriVerts[nearestQuadVert[i]].emplace_back(i);
+  }
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->getThreadNumber())
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < nearestTriVerts.size(); ++i) {
+    std::array<float, 3> q{};
+    qd.getVertexPoint(i, q[0], q[1], q[2]);
+    float maxDist{};
+    for(const auto v : nearestTriVerts[i]) {
+      std::array<float, 3> p{};
+      triangulation.getVertexPoint(v, p[0], p[1], p[2]);
+      const auto dist = Geometry::distance(p.data(), q.data());
+      if(dist > maxDist) {
+        maxDist = dist;
+      }
+    }
+    hausdorff[i] = maxDist / bboxDiag / nearestQuadVert.size() * 1e8;
+  }
+
+  this->printMsg("Computed Hausdorff distance", 1.0, tm.getElapsedTime(),
+                 this->threadNumber_, debug::LineMode::NEW,
+                 debug::Priority::DETAIL);
+}
+
+// main routine
+template <typename triangulationType>
+int ttk::QuadrangulationSubdivision::execute(
+  const triangulationType &triangulation) {
+
+  this->printMsg("Beginning computation...");
+  Timer tm;
+
+  // clear output variables
+  clearData();
+
+  // ensure consistency of dependent options
+  if(LockAllInputVertices) {
+    LockInputExtrema = true;
+  }
+
+  // store input points (MSC critical points)
+  for(size_t i = 0; i < inputVertexNumber_; i++) {
+    outputPoints_.emplace_back(inputVertices_[i]);
+  }
+
+  // copy input quads into vector
+  for(size_t i = 0; i < inputQuadNumber_; i++) {
+    outputQuads_.emplace_back(inputQuads_[i]);
+  }
+
+  // fill outputInfos_ with input data (critical points)
+  outputVertType_.resize(outputPoints_.size());
+  std::fill(outputVertType_.begin(), outputVertType_.end(), 0);
+
+  // fill outputSubdivision with input data
+  outputSubdivision_.resize(outputPoints_.size());
+  std::fill(outputSubdivision_.begin(), outputSubdivision_.end(), 0);
+
+  Quadrangulation qd{};
+  qd.setThreadNumber(this->threadNumber_);
+  qd.setDebugLevel(this->debugLevel_);
+
+  // main loop
+  for(size_t i = 0; i < SubdivisionLevel; i++) {
+    // subdivise each quadrangle by creating five new points, at the
+    // center of each edge (4) and at the barycenter of the four
+    // vertices (1).
+    subdivise(qd, triangulation);
+  }
+
+  qd.setInputPoints(this->outputPoints_.size(), this->outputPoints_.data());
+  qd.setInputCells(this->outputQuads_.size(), this->outputQuads_.data());
+
+  // also needed by computeStatistics
+  qd.preconditionVertexNeighbors();
+  qd.preconditionVertexStars();
+
+  if(this->RelaxationIterations > 0) {
+
+    // smoother mask
+    std::vector<char> mask(this->outputPoints_.size(), 1);
+    if(this->LockAllInputVertices) {
+      // all input vertices (before subdivision)
+      for(size_t i = 0; i < this->inputVertexNumber_; ++i) {
+        mask[i] = 0;
+      }
+    } else if(this->LockInputExtrema) {
+      // extraordinary vertices only (valence != 4)
+      for(SimplexId i = 0; i < qd.getNumberOfVertices(); ++i) {
+        if(qd.isVertexExtraordinary(i)) {
+          mask[i] = 0;
+        }
+      }
+    }
+
+    SurfaceGeometrySmoother worker{};
+    worker.setDebugLevel(this->debugLevel_);
+    worker.setThreadNumber(this->threadNumber_);
+    worker.execute(reinterpret_cast<float *>(this->outputPoints_.data()),
+                   reinterpret_cast<float *>(this->outputPoints_.data()),
+                   mask.data(), this->nearestVertexIdentifier_.data(),
+                   this->RelaxationIterations, qd, triangulation);
+  }
+
+  qd.computeStatistics(this->outputValences_, this->outputDensity_,
+                       this->outputDifformity_, this->quadArea_,
+                       this->quadDiagsRatio_, this->quadEdgesRatio_,
+                       this->quadAnglesRatio_);
+  this->computeHausdorff(this->hausdorff_, qd, triangulation);
+
+  bool criterion = false;
+  for(size_t i = 0; i < outputPoints_.size(); ++i) {
+    if(outputValences_[i] > 4) {
+      continue;
+    }
+    if(hausdorff_[i] > HausdorffLevel) {
+      criterion = true;
+      break;
+    }
+  }
+
+  if(criterion) {
+    // log, clean & early return
+    this->printErr("The output quadrangulation exceeds the provided Haussdorff "
+                   "distance tolerance");
+    if(!ShowResError) {
+      clearData();
+      return 1;
+    }
+  }
+
+  this->printMsg("Produced " + std::to_string(outputQuads_.size())
+                   + " quadrangles with " + std::to_string(outputPoints_.size())
+                   + " points",
+                 1.0, tm.getElapsedTime(), this->threadNumber_);
+
+  return 0;
+}

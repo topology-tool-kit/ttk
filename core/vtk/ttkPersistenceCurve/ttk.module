@@ -1,0 +1,10 @@
+NAME
+  ttkPersistenceCurve
+SOURCES
+  ttkPersistenceCurve.cpp
+HEADERS
+  ttkPersistenceCurve.h
+DEPENDS
+  persistenceCurve
+  ttkAlgorithm
+  ttkPersistenceDiagram

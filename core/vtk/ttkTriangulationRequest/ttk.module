@@ -1,0 +1,9 @@
+NAME
+  ttkTriangulationRequest
+SOURCES
+  ttkTriangulationRequest.cpp
+HEADERS
+  ttkTriangulationRequest.h
+DEPENDS
+  triangulation
+  ttkAlgorithm

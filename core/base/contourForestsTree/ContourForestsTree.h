@@ -17,9 +17,9 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef _CONTOURTREE_H
-#define _CONTOURTREE_H
+#pragma once
 
+#include <memory>
 #include <queue>
 #include <set>
 
@@ -38,7 +38,7 @@ namespace ttk {
       friend class ContourForests;
 
     protected:
-      MergeTree *jt_, *st_;
+      MergeTree jt_, st_;
 
     public:
       // -----------------
@@ -46,11 +46,10 @@ namespace ttk {
       // -----------------
       // {
 
-      ContourForestsTree(Params *const params,
-                         Triangulation *mesh,
-                         Scalars *const scalars,
+      ContourForestsTree(const std::shared_ptr<Params> &params,
+                         const std::shared_ptr<Scalars> &scalars,
                          idPartition part = nullPartition);
-      virtual ~ContourForestsTree();
+      ~ContourForestsTree() override;
 
       // }
       // -----------------
@@ -58,10 +57,10 @@ namespace ttk {
       // -----------------
       // {
 
-      void flush(void) {
+      void flush() {
         MergeTree::flush();
-        jt_->flush();
-        st_->flush();
+        jt_.flush();
+        st_.flush();
       }
 
       // }
@@ -70,12 +69,12 @@ namespace ttk {
       // -----------------
       // {
 
-      inline MergeTree *getJoinTree(void) const {
-        return jt_;
+      inline MergeTree *getJoinTree() {
+        return &jt_;
       }
 
-      inline MergeTree *getSplitTree(void) const {
-        return st_;
+      inline MergeTree *getSplitTree() {
+        return &st_;
       }
 
       inline MergeTree *getTree(const TreeType &tt) {
@@ -101,7 +100,9 @@ namespace ttk {
       // {
 
       /// \brief Combine tree with Natarajan's algorithm
-      int combine(const SimplexId &seed0, const SimplexId &seed1);
+      int combine(const SimplexId &seed0,
+                  const SimplexId &seed1,
+                  std::list<std::vector<std::pair<SimplexId, bool>>> &storage);
 
     private:
       // -----------------
@@ -111,11 +112,9 @@ namespace ttk {
 
       /// \brief initialize data of the Merge Trees jt & st
       template <typename scalarType>
-      void initDataMT(void);
+      void initDataMT();
 
       // }
     };
   } // namespace cf
 } // namespace ttk
-
-#endif // CONTOURTREE_H

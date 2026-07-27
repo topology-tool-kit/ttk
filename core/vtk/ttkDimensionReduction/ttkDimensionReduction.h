@@ -1,11 +1,12 @@
-/// \ingroup vtk
 /// \class ttkDimensionReduction
-/// \author Your Name Here <Your Email Address Here>
-/// \date The Date Here.
+/// \ingroup vtk
+/// \author GuillaumeFavelier <guillaume.favelier@gmail.com>
+/// \date September 2018.
 ///
-/// \brief TTK VTK-filter that wraps the dimensionReduction processing package.
+/// \brief TTK VTK-filter that wraps the ttk::DimensionReduction
+/// processing package.
 ///
-/// VTK wrapping code for the @DimensionReduction package.
+/// VTK wrapping code for the ttk::DimensionReduction package.
 ///
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output scalar field (vtkDataSet)
@@ -17,69 +18,84 @@
 /// VTK pipeline.
 ///
 /// \sa ttk::DimensionReduction
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/1manifoldLearning/">1-Manifold
+///   Learning example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/">
+///   Clustering Kelvin Helmholtz Instabilities example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/">Karhunen-Love
+///   Digits 64-Dimensions example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
+///   Tree Clustering example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
+///   Tree Principal Geodesic Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/">Persistence
+///   Diagram Principal Geodesic Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_householdAnalysis/">Persistent
+///   Generators Household Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/">Persistent
+///   Generators Periodic Picture example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topoAEppTeaser/">Topological
+///   Autoencoders++ Teaser example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topoMapTeaser/">TopoMap
+///   Teaser example</a> \n
+///
+
+/// \b Related \b publication: \n
+/// "Topomap: A 0-dimensional homology preserving projection of high-dimensional
+/// data"\n Harish Doraiswamy, Julien Tierny, Paulo J. S. Silva, Luis Gustavo
+/// Nonato, and Claudio Silva\n Proc. of IEEE VIS 2020.\n IEEE Transactions on
+/// Visualization and Computer Graphics 27(2): 561-571, 2020. \n
+///
+/// "Topological Autoencoders" \n
+/// Michael Moor, Max Horn, Bastian Rieck, Karsten Borgwardt, \n
+/// Proceedings of the 37th International Conference on Machine Learning,
+/// 2020. \n
+///
+/// "Optimizing persistent homology-based functions" \n
+/// Mathieu Carriere, Frederic Chazal, Marc Glisse, Yuichi Ike,
+/// Hariprasad Kannan, Yuhei Umeda, \n
+/// Proceedings of the 38th International Conference on Machine Learning,
+/// 2021. \n
+///
+/// "Topological Autoencoders++: Fast and Accurate Cycle-Aware Dimensionality
+/// Reduction" \n
+/// MattÃ©o ClÃ©mot, Julie Digne, Julien Tierny, \n
+/// IEEE Transactions on Visualization and Computer Graphics.
+/// Accepted, to be presented at IEEE VIS 2026.
+
 #pragma once
 
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-#include <vtkTable.h>
-#include <vtkTableAlgorithm.h>
+// VTK Module
+#include <ttkDimensionReductionModule.h>
 
+// TTK includes
 #include <DimensionReduction.h>
-#include <ttkWrapper.h>
+#include <TopoMap.h>
+#include <TopologicalDimensionReduction.h>
+#include <ttkAlgorithm.h>
+#include <ttkMacros.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkDimensionReduction
-#else
-class ttkDimensionReduction
-#endif
-  : public vtkTableAlgorithm,
-    public ttk::Wrapper {
+class TTKDIMENSIONREDUCTION_EXPORT ttkDimensionReduction
+  : public ttkAlgorithm,
+    protected ttk::DimensionReduction {
+
 public:
-  enum Method {
-    SpectralEmbedding = 0,
-    LocallyLinearEmbedding,
-    MDS,
-    TSNE,
-    Isomap,
-    PCA
-  };
-
   static ttkDimensionReduction *New();
-  vtkTypeMacro(ttkDimensionReduction, vtkTableAlgorithm)
+  vtkTypeMacro(ttkDimensionReduction, ttkAlgorithm);
 
-    // default ttk setters
-    vtkSetMacro(debugLevel_, int);
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetThreads() {
-    if(!UseAllCores)
-      threadNumber_ = ThreadNumber;
-    else {
-      threadNumber_ = ttk::OsCall::getNumberOfCores();
-    }
-    Modified();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  void SetScalarFields(std::string s) {
+  void SetScalarFields(const std::string &s) {
     ScalarFields.push_back(s);
     Modified();
   }
@@ -93,8 +109,24 @@ public:
   vtkSetMacro(SelectFieldsWithRegexp, bool);
   vtkGetMacro(SelectFieldsWithRegexp, bool);
 
-  vtkSetMacro(RegexpString, std::string);
+  vtkSetMacro(RegexpString, const std::string &);
   vtkGetMacro(RegexpString, std::string);
+
+  void SetInitializationFields(const std::string &s) {
+    InitializationFields.push_back(s);
+    Modified();
+  }
+
+  void ClearInitializationFields() {
+    InitializationFields.clear();
+    Modified();
+  }
+
+  vtkSetMacro(SelectInitializationFieldsWithRegexp, bool);
+  vtkGetMacro(SelectInitializationFieldsWithRegexp, bool);
+
+  vtkSetMacro(InitializationRegexpString, const std::string &);
+  vtkGetMacro(InitializationRegexpString, std::string);
 
   vtkSetMacro(NumberOfComponents, int);
   vtkGetMacro(NumberOfComponents, int);
@@ -105,31 +137,35 @@ public:
   vtkSetMacro(IsDeterministic, int);
   vtkGetMacro(IsDeterministic, int);
 
-  vtkSetMacro(Method, int);
-  vtkGetMacro(Method, int);
+  ttkSetEnumMacro(Method, METHOD);
+  vtkGetEnumMacro(Method, METHOD);
 
-  vtkSetMacro(KeepAllDataArrays, int);
-  vtkGetMacro(KeepAllDataArrays, int);
+  vtkSetMacro(KeepAllDataArrays, bool);
+  vtkGetMacro(KeepAllDataArrays, bool);
 
   // SE && MDS
-  vtkSetMacro(InputIsADistanceMatrix, bool);
+  void SetInputIsADistanceMatrix(const bool b) {
+    this->InputIsADistanceMatrix = b;
+    this->setIsInputDistanceMatrix(b);
+    Modified();
+  }
   vtkGetMacro(InputIsADistanceMatrix, bool);
 
   // SE
-  vtkSetMacro(se_Affinity, std::string);
+  vtkSetMacro(se_Affinity, const std::string &);
   vtkGetMacro(se_Affinity, std::string);
 
   vtkSetMacro(se_Gamma, float);
   vtkGetMacro(se_Gamma, float);
 
-  vtkSetMacro(se_EigenSolver, std::string);
+  vtkSetMacro(se_EigenSolver, const std::string &);
   vtkGetMacro(se_EigenSolver, std::string);
 
   // LLE
   vtkSetMacro(lle_Regularization, float);
   vtkGetMacro(lle_Regularization, float);
 
-  vtkSetMacro(lle_EigenSolver, std::string);
+  vtkSetMacro(lle_EigenSolver, const std::string &);
   vtkGetMacro(lle_EigenSolver, std::string);
 
   vtkSetMacro(lle_Tolerance, float);
@@ -138,7 +174,7 @@ public:
   vtkSetMacro(lle_MaxIteration, int);
   vtkGetMacro(lle_MaxIteration, int);
 
-  vtkSetMacro(lle_Method, std::string);
+  vtkSetMacro(lle_Method, const std::string &);
   vtkGetMacro(lle_Method, std::string);
 
   vtkSetMacro(lle_HessianTolerance, float);
@@ -147,7 +183,7 @@ public:
   vtkSetMacro(lle_ModifiedTolerance, float);
   vtkGetMacro(lle_ModifiedTolerance, float);
 
-  vtkSetMacro(lle_NeighborsAlgorithm, std::string);
+  vtkSetMacro(lle_NeighborsAlgorithm, const std::string &);
   vtkGetMacro(lle_NeighborsAlgorithm, std::string);
 
   // MDS
@@ -185,23 +221,23 @@ public:
   vtkSetMacro(tsne_GradientThreshold, float);
   vtkGetMacro(tsne_GradientThreshold, float);
 
-  vtkSetMacro(tsne_Metric, std::string);
+  vtkSetMacro(tsne_Metric, const std::string &);
   vtkGetMacro(tsne_Metric, std::string);
 
-  vtkSetMacro(tsne_Init, std::string);
+  vtkSetMacro(tsne_Init, const std::string &);
   vtkGetMacro(tsne_Init, std::string);
 
   vtkSetMacro(tsne_Verbose, int);
   vtkGetMacro(tsne_Verbose, int);
 
-  vtkSetMacro(tsne_Method, std::string);
+  vtkSetMacro(tsne_Method, const std::string &);
   vtkGetMacro(tsne_Method, std::string);
 
   vtkSetMacro(tsne_Angle, float);
   vtkGetMacro(tsne_Angle, float);
 
   // Iso
-  vtkSetMacro(iso_EigenSolver, std::string);
+  vtkSetMacro(iso_EigenSolver, const std::string &);
   vtkGetMacro(iso_EigenSolver, std::string);
 
   vtkSetMacro(iso_Tolerance, float);
@@ -210,11 +246,14 @@ public:
   vtkSetMacro(iso_MaxIteration, int);
   vtkGetMacro(iso_MaxIteration, int);
 
-  vtkSetMacro(iso_PathMethod, std::string);
+  vtkSetMacro(iso_PathMethod, const std::string &);
   vtkGetMacro(iso_PathMethod, std::string);
 
-  vtkSetMacro(iso_NeighborsAlgorithm, std::string);
+  vtkSetMacro(iso_NeighborsAlgorithm, const std::string &);
   vtkGetMacro(iso_NeighborsAlgorithm, std::string);
+
+  vtkSetMacro(iso_Metric, const std::string &);
+  vtkGetMacro(iso_Metric, std::string);
 
   // PCA
   vtkSetMacro(pca_Copy, bool);
@@ -223,178 +262,107 @@ public:
   vtkSetMacro(pca_Whiten, bool);
   vtkGetMacro(pca_Whiten, bool);
 
-  vtkSetMacro(pca_SVDSolver, std::string);
+  vtkSetMacro(pca_SVDSolver, const std::string &);
   vtkGetMacro(pca_SVDSolver, std::string);
 
   vtkSetMacro(pca_Tolerance, float);
   vtkGetMacro(pca_Tolerance, float);
 
-  vtkSetMacro(pca_MaxIteration, std::string);
+  vtkSetMacro(pca_MaxIteration, const std::string &);
   vtkGetMacro(pca_MaxIteration, std::string);
 
+  // TopoMap
+  vtkSetMacro(topomap_AngularSampleNb, unsigned long int);
+  vtkGetMacro(topomap_AngularSampleNb, unsigned long int);
+
+  vtkSetMacro(topomap_CheckMST, bool);
+  vtkGetMacro(topomap_CheckMST, bool);
+
+  ttkSetEnumMacro(topomap_Strategy, ttk::TopoMap::STRATEGY);
+  vtkGetEnumMacro(topomap_Strategy, ttk::TopoMap::STRATEGY);
+
+  // AutoEncoder
+  vtkSetMacro(ae_CUDA, bool);
+  vtkGetMacro(ae_CUDA, bool);
+
+  vtkSetMacro(ae_Deterministic, bool);
+  vtkGetMacro(ae_Deterministic, bool);
+
+  vtkSetMacro(ae_Seed, int);
+  vtkGetMacro(ae_Seed, int);
+
+  vtkSetMacro(ae_Epochs, int);
+  vtkGetMacro(ae_Epochs, int);
+
+  vtkSetMacro(ae_LearningRate, double);
+  vtkGetMacro(ae_LearningRate, double);
+
+  ttkSetEnumMacro(ae_Method, ttk::TopologicalDimensionReduction::REGUL);
+  vtkGetEnumMacro(ae_Method, ttk::TopologicalDimensionReduction::REGUL);
+
+  ttkSetEnumMacro(ae_Optimizer, ttk::TopologicalDimensionReduction::OPTIMIZER);
+  vtkGetEnumMacro(ae_Optimizer, ttk::TopologicalDimensionReduction::OPTIMIZER);
+
+  ttkSetEnumMacro(ae_Model, ttk::TopologicalDimensionReduction::MODEL);
+  vtkGetEnumMacro(ae_Model, ttk::TopologicalDimensionReduction::MODEL);
+
+  vtkSetMacro(ae_Architecture, const std::string &);
+  vtkGetMacro(ae_Architecture, std::string);
+
+  vtkSetMacro(ae_Activation, const std::string &);
+  vtkGetMacro(ae_Activation, std::string);
+
+  vtkSetMacro(ae_BatchSize, int);
+  vtkGetMacro(ae_BatchSize, int);
+
+  vtkSetMacro(ae_BatchNormalization, bool);
+  vtkGetMacro(ae_BatchNormalization, bool);
+
+  vtkSetMacro(ae_RegCoefficient, double);
+  vtkGetMacro(ae_RegCoefficient, double);
+
+  vtkSetMacro(IsInputImages, bool);
+  vtkGetMacro(IsInputImages, bool);
+
+  vtkSetMacro(ae_PreOptimize, bool);
+  vtkGetMacro(ae_PreOptimize, bool);
+
+  vtkSetMacro(ae_PreOptimizeEpochs, int);
+  vtkGetMacro(ae_PreOptimizeEpochs, int);
+
   // testing
-  vtkSetMacro(ModulePath, std::string);
+  vtkSetMacro(ModulePath, const std::string &);
   vtkGetMacro(ModulePath, std::string);
 
-  vtkSetMacro(ModuleName, std::string);
+  vtkSetMacro(ModuleName, const std::string &);
   vtkGetMacro(ModuleName, std::string);
 
-  vtkSetMacro(FunctionName, std::string);
+  vtkSetMacro(FunctionName, const std::string &);
   vtkGetMacro(FunctionName, std::string);
 
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-        break;
-    }
-
-    return 1;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-        break;
-    }
-
-    return 1;
-  }
-
 protected:
-  ttkDimensionReduction() {
-    NumberOfComponents = 2;
-    NumberOfNeighbors = 5;
-    Method = 2;
+  ttkDimensionReduction();
 
-    se_Affinity = "nearest_neighbors";
-    se_Gamma = 1;
-    se_EigenSolver = "auto";
-
-    lle_Regularization = 1e-3;
-    lle_EigenSolver = "auto";
-    lle_Tolerance = 1e-3;
-    lle_MaxIteration = 300;
-    lle_Method = "standard";
-    lle_HessianTolerance = 1e-3;
-    lle_ModifiedTolerance = 1e-3;
-    lle_NeighborsAlgorithm = "auto";
-
-    mds_Metric = true;
-    mds_Init = 4;
-    mds_MaxIteration = 300;
-    mds_Verbose = 0;
-    mds_Epsilon = 0;
-
-    tsne_Perplexity = 30;
-    tsne_Exaggeration = 12;
-    tsne_LearningRate = 200;
-    tsne_MaxIteration = 1000;
-    tsne_MaxIterationProgress = 300;
-    tsne_GradientThreshold = 1e-7;
-    tsne_Metric = "euclidean";
-    tsne_Init = "random";
-    tsne_Verbose = 0;
-    tsne_Method = "barnes_hut";
-    tsne_Angle = 0.5;
-
-    iso_EigenSolver = "auto";
-    iso_Tolerance = 1e-3;
-    iso_MaxIteration = 300;
-    iso_PathMethod = "auto";
-    iso_NeighborsAlgorithm = "auto";
-
-    pca_Copy = true;
-    pca_Whiten = false;
-    pca_SVDSolver = "auto";
-    pca_Tolerance = 0;
-    pca_MaxIteration = "auto";
-
-    UseAllCores = true;
-  }
-
-  ~ttkDimensionReduction() {
-  }
-
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
 private:
-  int doIt(vtkTable *input, vtkTable *output);
-  bool needsToAbort() override;
-  int updateProgress(const float &progress) override;
-
   // default
   bool SelectFieldsWithRegexp{false};
   std::string RegexpString{".*"};
-  int NumberOfComponents;
-  int NumberOfNeighbors;
-  int Method;
-  int IsDeterministic;
-  bool KeepAllDataArrays;
+  std::vector<std::string> ScalarFields{};
+
+  bool SelectInitializationFieldsWithRegexp{false};
+  std::string InitializationRegexpString{".*"};
+  std::vector<std::string> InitializationFields{};
+
+  bool KeepAllDataArrays{true};
 
   // mds && se
   bool InputIsADistanceMatrix{false};
 
-  // se
-  std::string se_Affinity;
-  float se_Gamma;
-  std::string se_EigenSolver;
-
-  // lle
-  float lle_Regularization;
-  std::string lle_EigenSolver;
-  float lle_Tolerance;
-  int lle_MaxIteration;
-  std::string lle_Method;
-  float lle_HessianTolerance;
-  float lle_ModifiedTolerance;
-  std::string lle_NeighborsAlgorithm;
-
-  // mds
-  bool mds_Metric;
-  int mds_Init;
-  int mds_MaxIteration;
-  int mds_Verbose;
-  float mds_Epsilon;
-
-  // tsne
-  float tsne_Perplexity;
-  float tsne_Exaggeration;
-  float tsne_LearningRate;
-  int tsne_MaxIteration;
-  int tsne_MaxIterationProgress;
-  float tsne_GradientThreshold;
-  std::string tsne_Metric;
-  std::string tsne_Init;
-  int tsne_Verbose;
-  std::string tsne_Method;
-  float tsne_Angle;
-
-  // iso
-  std::string iso_EigenSolver;
-  float iso_Tolerance;
-  int iso_MaxIteration;
-  std::string iso_PathMethod;
-  std::string iso_NeighborsAlgorithm;
-
-  // pca
-  bool pca_Copy;
-  bool pca_Whiten;
-  std::string pca_SVDSolver;
-  float pca_Tolerance;
-  std::string pca_MaxIteration;
-
-  // testing
-  std::string ModulePath;
-  std::string ModuleName;
-  std::string FunctionName;
-  bool UseAllCores;
-  ttk::ThreadId ThreadNumber;
-  ttk::DimensionReduction dimensionReduction_;
-
-  std::vector<std::string> ScalarFields;
   std::vector<std::vector<double>> outputData_{};
 };

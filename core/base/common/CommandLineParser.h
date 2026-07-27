@@ -5,8 +5,7 @@
 ///
 /// \brief Basic command line parsing.
 
-#ifndef _COMMAND_LINE_PARSER_H
-#define _COMMAND_LINE_PARSER_H
+#pragma once
 
 #include <Debug.h>
 
@@ -20,70 +19,80 @@ namespace ttk {
 
     public:
       CommandLineArgument() {
-        boolValue_ = NULL;
-        intValue_ = NULL;
-        intValueList_ = NULL;
-        doubleValue_ = NULL;
-        doubleValueList_ = NULL;
-        stringValue_ = NULL;
-        stringValueList_ = NULL;
+        boolValue_ = nullptr;
+        intValue_ = nullptr;
+        intValueList_ = nullptr;
+        doubleValue_ = nullptr;
+        doubleValueList_ = nullptr;
+        stringValue_ = nullptr;
+        stringValueList_ = nullptr;
         isSet_ = false;
-      };
 
-      int print(std::stringstream &s) const {
-        s << "[CommandLine]   ";
+        setDebugMsgPrefix("CMD");
+      }
+
+      int print(std::ostream &stream) const {
+        std::string s;
+        s = "   ";
         if((isAnOption_) || (isOptional_)) {
-          s << "[";
+          s += "[";
         }
 
-        s << "-" << key_;
+        s += "-";
+        s += key_;
 
         if(isAnOption_)
-          s << ":";
+          s += ":";
 
-        s << " ";
+        s += " ";
         if(!isAnOption_) {
-          s << "<";
+          s += "<";
           if((stringValueList_) || (intValueList_) || (doubleValueList_)) {
-            s << "{";
+            s += "{";
           }
         }
 
         if(description_.length()) {
-          s << description_;
+          s += description_;
         } else {
-          s << "no description";
+          s += "no description";
         }
 
         if((stringValue_) || (intValue_) || (doubleValue_)) {
-          s << " (default: ";
-          if(stringValue_)
-            s << "`" << *stringValue_ << "'";
+          s += " (default: ";
+          if(stringValue_) {
+            s += "`";
+            s += *stringValue_;
+            s += "'";
+          }
           if(intValue_)
-            s << *intValue_;
+            s += std::to_string(*intValue_);
           if(doubleValue_)
-            s << *doubleValue_;
-          s << ")";
+            s += std::to_string(*doubleValue_);
+          s += ")";
         }
 
         if(isAnOption_) {
-          s << " (default: " << *boolValue_ << ")";
+          s += " (default: ";
+          s += std::to_string(*boolValue_);
+          s += ")";
         }
 
         if(!isAnOption_) {
           if((stringValueList_) || (intValueList_) || (doubleValueList_)) {
-            s << "}";
+            s += "}";
           }
-          s << ">";
+          s += ">";
         }
 
         if((isAnOption_) || (isOptional_)) {
-          s << "]";
+          s += "]";
         }
-        s << std::endl;
+
+        printMsg(s, debug::Priority::ERROR, debug::LineMode::NEW, stream);
 
         return 0;
-      };
+      }
 
       bool isOptional_, isAnOption_, isSet_;
       bool *boolValue_;
@@ -99,11 +108,16 @@ namespace ttk {
     };
 
     CommandLineParser() {
+      // running from the command line, add a default value.
+      ttk::globalDebugLevel_ = 3;
       setArgument("d", &(ttk::globalDebugLevel_), "Global debug level", true);
       setArgument("t", &ttk::globalThreadNumber_, "Global thread number", true);
-    };
+      debugLevel_ = (int)(debug::Priority::INFO);
 
-    ~CommandLineParser(){};
+      setDebugMsgPrefix("CMD");
+    }
+
+    ~CommandLineParser() override = default;
 
     // 2) functions
     int parse(int argc, char **argv) {
@@ -162,81 +176,90 @@ namespace ttk {
       for(int i = 0; i < (int)arguments_.size(); i++) {
         if(!arguments_[i].isOptional_) {
           if(!arguments_[i].isSet_) {
-            std::stringstream msg;
-            msg << "[CommandLine] Missing mandatory argument:" << std::endl;
-            arguments_[i].print(msg);
-            dMsg(std::cerr, msg.str(), 1);
+            printMsg(
+              "", debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+            printMsg("Missing mandatory argument:", debug::Priority::ERROR,
+                     debug::LineMode::NEW, std::cerr);
+            arguments_[i].print(std::cerr);
             printUsage(argv[0]);
           }
         }
       }
 
+      setDebugLevel(ttk::globalDebugLevel_);
+
       return 0;
-    };
+    }
 
     int printArgs(std::ostream &o = std::cout) const {
 
-      o << "[CommandLine] Options and arguments:" << std::endl;
+      printMsg("Options and arguments:", debug::Priority::INFO,
+               debug::LineMode::NEW, o);
       for(int i = 0; i < (int)arguments_.size(); i++) {
-        o << "[CommandLine]   -" << arguments_[i].key_;
-        o << ": ";
+        std::string s;
+        s += "   -";
+        s += arguments_[i].key_;
+        s += ": ";
 
         if(arguments_[i].isAnOption_) {
           if(arguments_[i].boolValue_) {
             if(*(arguments_[i].boolValue_))
-              o << "true";
+              s += "true";
             else
-              o << "false";
+              s += "false";
           } else {
-            o << "(not set)";
+            s += "(not set)";
           }
         } else if(arguments_[i].stringValue_) {
           if(arguments_[i].isSet_) {
-            o << *(arguments_[i].stringValue_);
+            s += *(arguments_[i].stringValue_);
           } else {
-            o << "(not set)";
+            s += "(not set)";
           }
         } else if(arguments_[i].stringValueList_) {
           if(!arguments_[i].isSet_) {
-            o << "(not set)";
+            s += "(not set)";
           } else {
             for(int j = 0; j < (int)arguments_[i].stringValueList_->size();
                 j++) {
-              o << (*(arguments_[i].stringValueList_))[j] << " ";
+              s += (*(arguments_[i].stringValueList_))[j];
+              s += " ";
             }
           }
         } else if(arguments_[i].intValue_) {
           if(!arguments_[i].isSet_) {
-            o << "(not set)";
+            s += "(not set)";
           } else {
-            o << *(arguments_[i].intValue_);
+            s += std::to_string(*(arguments_[i].intValue_));
           }
         } else if(arguments_[i].intValueList_) {
           if(!arguments_[i].isSet_) {
-            o << "(not set)";
+            s += "(not set)";
           } else {
             for(int j = 0; j < (int)arguments_[i].intValueList_->size(); j++) {
-              o << (*(arguments_[i].intValueList_))[j] << " ";
+              s += std::to_string((*(arguments_[i].intValueList_))[j]);
+              s += " ";
             }
           }
         } else if(arguments_[i].doubleValue_) {
           if(!arguments_[i].isSet_) {
-            o << "(not set)";
+            s += "(not set)";
           } else {
-            o << *(arguments_[i].doubleValue_);
+            s += std::to_string(*(arguments_[i].doubleValue_));
           }
         } else if(arguments_[i].doubleValueList_) {
           if(!arguments_[i].isSet_) {
-            o << "(not set)";
+            s += "(not set)";
           } else {
             for(int j = 0; j < (int)arguments_[i].doubleValueList_->size();
                 j++) {
-              o << (*(arguments_[i].doubleValueList_))[j] << " ";
+              s += std::to_string((*(arguments_[i].doubleValueList_))[j]);
+              s += " ";
             }
           }
         }
 
-        o << std::endl;
+        printMsg(s, debug::Priority::INFO, debug::LineMode::NEW, o);
       }
 
       return 0;
@@ -244,28 +267,31 @@ namespace ttk {
 
     int printUsage(const std::string &binPath) const {
 
-      std::stringstream msg;
-      msg << "[CommandLine]" << std::endl;
-      msg << "[CommandLine] Usage:" << std::endl;
-      msg << "[CommandLine]   " << binPath << std::endl;
-      msg << "[CommandLine] Argument(s):" << std::endl;
+      printMsg("", debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+      printMsg(
+        "Usage:", debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+      printMsg("  " + binPath, debug::Priority::ERROR, debug::LineMode::NEW,
+               std::cerr);
+
+      printMsg("Argument(s):", debug::Priority::ERROR, debug::LineMode::NEW,
+               std::cerr);
       for(int i = 0; i < (int)arguments_.size(); i++) {
         if(!arguments_[i].isAnOption_) {
-          arguments_[i].print(msg);
-        }
-      }
-      msg << "[CommandLine] Option(s):" << std::endl;
-      for(int i = 0; i < (int)arguments_.size(); i++) {
-        if(arguments_[i].isAnOption_) {
-          arguments_[i].print(msg);
+          arguments_[i].print(std::cerr);
         }
       }
 
-      dMsg(std::cerr, msg.str(), 1);
+      printMsg(
+        "Option(s):", debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+      for(int i = 0; i < (int)arguments_.size(); i++) {
+        if(arguments_[i].isAnOption_) {
+          arguments_[i].print(std::cerr);
+        }
+      }
 
       exit(0);
       return 0;
-    };
+    }
 
     int setOption(const std::string &key,
                   bool *value,
@@ -282,7 +308,7 @@ namespace ttk {
       arguments_.back().isAnOption_ = true;
 
       return 0;
-    };
+    }
 
     int setArgument(const std::string &key,
                     double *value,
@@ -300,7 +326,7 @@ namespace ttk {
       arguments_.back().isAnOption_ = false;
 
       return 0;
-    };
+    }
 
     int setArgument(const std::string &key,
                     std::vector<double> *value,
@@ -318,7 +344,7 @@ namespace ttk {
       arguments_.back().isAnOption_ = false;
 
       return 0;
-    };
+    }
 
     inline int setArgument(const std::string &key,
                            int *value,
@@ -336,7 +362,7 @@ namespace ttk {
       arguments_.back().isAnOption_ = false;
 
       return 0;
-    };
+    }
 
     int setArgument(const std::string &key,
                     std::vector<int> *value,
@@ -354,7 +380,7 @@ namespace ttk {
       arguments_.back().isAnOption_ = false;
 
       return 0;
-    };
+    }
 
     int setArgument(const std::string &key,
                     std::string *value,
@@ -372,7 +398,7 @@ namespace ttk {
       arguments_.back().isAnOption_ = false;
 
       return 0;
-    };
+    }
 
     int setArgument(const std::string &key,
                     std::vector<std::string> *value,
@@ -390,11 +416,9 @@ namespace ttk {
       arguments_.back().isAnOption_ = false;
 
       return 0;
-    };
+    }
 
   protected:
     std::vector<CommandLineArgument> arguments_;
   };
 } // namespace ttk
-
-#endif

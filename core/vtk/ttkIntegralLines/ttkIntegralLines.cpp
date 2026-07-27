@@ -1,29 +1,31 @@
+#include "Triangulation.h"
+#include <string>
 #include <ttkIntegralLines.h>
+#include <ttkMacros.h>
+#include <ttkUtils.h>
 
-using namespace std;
-using namespace ttk;
+#include <ArrayLinkedList.h>
+#include <vtkCellData.h>
+#include <vtkDataArray.h>
+#include <vtkDataObject.h>
+#include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
+#include <vtkInformation.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkPointSet.h>
+#include <vtkUnstructuredGrid.h>
 
-vtkStandardNewMacro(ttkIntegralLines)
+#include <array>
 
-  ttkIntegralLines::ttkIntegralLines()
-  : hasUpdatedMesh_{false}, inputScalars_{nullptr}, offsets_{nullptr},
-    inputOffsets_{nullptr}, identifiers_{nullptr} {
-  Direction = 0;
-  SetNumberOfInputPorts(2);
-  triangulation_ = NULL;
+vtkStandardNewMacro(ttkIntegralLines);
 
-  OffsetScalarFieldId = -1;
-  ForceInputOffsetScalarField = false;
-  OffsetScalarFieldName = ttk::OffsetScalarFieldName;
-  ForceInputVertexScalarField = false;
-  InputVertexScalarFieldName = ttk::VertexScalarFieldName;
-  UseAllCores = true;
+ttkIntegralLines::ttkIntegralLines() {
+  this->SetNumberOfInputPorts(2);
+  this->SetNumberOfOutputPorts(1);
 }
 
-ttkIntegralLines::~ttkIntegralLines() {
-  if(offsets_)
-    offsets_->Delete();
-}
+ttkIntegralLines::~ttkIntegralLines() = default;
 
 int ttkIntegralLines::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0)
@@ -42,323 +44,399 @@ int ttkIntegralLines::FillOutputPortInformation(int port,
   return 1;
 }
 
-int ttkIntegralLines::getTriangulation(vtkDataSet *input) {
-
-  triangulation_ = ttkTriangulation::getTriangulation(input);
-
-  if(!triangulation_)
-    return -1;
-
-  triangulation_->setWrapper(this);
-  integralLines_.setWrapper(this);
-
-  integralLines_.setupTriangulation(triangulation_);
-  Modified();
-  hasUpdatedMesh_ = true;
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  // allocation problem
-  if(triangulation_->isEmpty()) {
-    cerr << "[ttkIntegralLines] Error : ttkTriangulation allocation problem."
-         << endl;
-    return -1;
-  }
+template <typename triangulationType>
+int ttkIntegralLines::getTrajectories(
+  vtkDataSet *input,
+  const triangulationType *triangulation,
+  const std::vector<
+    ttk::ArrayLinkedList<ttk::intgl::IntegralLine, INTEGRAL_LINE_TABULAR_SIZE>>
+    &integralLines,
+#ifdef TTK_ENABLE_MPI
+  const std::vector<ttk::SimplexId> &globalVertexId,
+  const std::vector<ttk::SimplexId> &globalCellId,
 #endif
-
-  return 0;
-}
-
-int ttkIntegralLines::getScalars(vtkDataSet *input) {
-  vtkPointData *pointData = input->GetPointData();
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!pointData) {
-    cerr << "[ttkIntegralLines] Error : input has no point data." << endl;
-    return -1;
+  vtkUnstructuredGrid *output) {
+  if(input == nullptr || output == nullptr
+     || input->GetPointData() == nullptr) {
+    this->printErr("Null pointers in getTrajectories parameters");
+    return 0;
   }
 
-  if(!ScalarField.length()) {
-    cerr << "[ttkIntegralLines] Error : scalar field has no name." << endl;
-    return -1;
-  }
+  vtkNew<vtkUnstructuredGrid> ug{};
+  vtkNew<vtkPoints> pts{};
+  vtkNew<vtkDoubleArray> dist{};
+  vtkNew<vtkIdTypeArray> identifier{};
+#ifdef TTK_ENABLE_MPI
+  vtkNew<vtkIdTypeArray> vtkEdgeIdentifiers{};
+  vtkNew<vtkIdTypeArray> vtkVertexGlobalIdArray{};
+  vtkNew<vtkIntArray> vtkVertexRankArray{};
+  vtkNew<vtkIntArray> vtkEdgeRankArray{};
 #endif
+  vtkNew<vtkIdTypeArray> vtkForkIdentifiers{};
+  vtkNew<vtkUnsignedCharArray> outputMaskField{};
 
-  inputScalars_ = pointData->GetArray(ScalarField.data());
+  outputMaskField->SetNumberOfComponents(1);
+  outputMaskField->SetName(ttk::MaskScalarFieldName);
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputScalars_) {
-    cerr << "[ttkIntegralLines] Error : input scalar field pointer is null."
-         << endl;
-    return -1;
-  }
-#endif
-
-  return 0;
-}
-
-int ttkIntegralLines::getOffsets(vtkDataSet *input) {
-  if(ForceInputOffsetScalarField and OffsetScalarFieldName.length()) {
-    inputOffsets_
-      = input->GetPointData()->GetArray(OffsetScalarFieldName.data());
-  } else if(OffsetScalarFieldId != -1
-            and input->GetPointData()->GetArray(OffsetScalarFieldId)) {
-    inputOffsets_ = input->GetPointData()->GetArray(OffsetScalarFieldId);
-  } else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)) {
-    inputOffsets_ = input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
-  } else {
-    if(hasUpdatedMesh_ and offsets_) {
-      offsets_->Delete();
-      offsets_ = nullptr;
-      hasUpdatedMesh_ = false;
-    }
-
-    if(!offsets_) {
-      const SimplexId numberOfPoints = input->GetNumberOfPoints();
-
-      offsets_ = ttkSimplexIdTypeArray::New();
-      offsets_->SetNumberOfComponents(1);
-      offsets_->SetNumberOfTuples(numberOfPoints);
-      offsets_->SetName(ttk::OffsetScalarFieldName);
-      for(SimplexId i = 0; i < numberOfPoints; ++i)
-        offsets_->SetTuple1(i, i);
-    }
-
-    inputOffsets_ = offsets_;
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  // allocation problem
-  if(!inputOffsets_) {
-    cerr << "[ttkIntegralLines] Error : wrong input offset scalar field."
-         << endl;
-    return -1;
-  }
-#endif
-
-  return 0;
-}
-
-int ttkIntegralLines::getIdentifiers(vtkPointSet *input) {
-  if(ForceInputVertexScalarField and InputVertexScalarFieldName.length())
-    identifiers_
-      = input->GetPointData()->GetArray(InputVertexScalarFieldName.data());
-  else if(input->GetPointData()->GetArray(ttk::VertexScalarFieldName))
-    identifiers_ = input->GetPointData()->GetArray(ttk::VertexScalarFieldName);
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  // allocation problem
-  if(!identifiers_) {
-    cerr << "[ttkIntegralLines] Error : wrong input vertex identifier scalar "
-            "field."
-         << endl;
-    return -1;
-  }
-#endif
-
-  return 0;
-}
-
-int ttkIntegralLines::getTrajectories(vtkDataSet *input,
-                                      vector<vector<SimplexId>> &trajectories,
-                                      vtkUnstructuredGrid *output) {
-  vtkSmartPointer<vtkUnstructuredGrid> ug
-    = vtkSmartPointer<vtkUnstructuredGrid>::New();
-  vtkSmartPointer<vtkPoints> pts = vtkSmartPointer<vtkPoints>::New();
-  vtkSmartPointer<vtkFloatArray> dist = vtkSmartPointer<vtkFloatArray>::New();
   dist->SetNumberOfComponents(1);
   dist->SetName("DistanceFromSeed");
+  identifier->SetNumberOfComponents(1);
+  identifier->SetName("SeedIdentifier");
+  vtkForkIdentifiers->SetNumberOfComponents(1);
+  vtkForkIdentifiers->SetName("ForkIdentifiers");
 
-  // here, copy the original scalars
-  int numberOfArrays = input->GetPointData()->GetNumberOfArrays();
+#ifdef TTK_ENABLE_MPI
+  vtkVertexGlobalIdArray->SetNumberOfComponents(1);
+  vtkVertexGlobalIdArray->SetName("GlobalPointIds");
+  vtkEdgeIdentifiers->SetNumberOfComponents(1);
+  vtkEdgeIdentifiers->SetName("GlobalCellIds");
+  vtkEdgeRankArray->SetNumberOfComponents(1);
+  vtkEdgeRankArray->SetName("RankArray");
+  vtkVertexRankArray->SetNumberOfComponents(1);
+  vtkVertexRankArray->SetName("RankArray");
+#endif
+  const auto numberOfArrays = input->GetPointData()->GetNumberOfArrays();
 
-  vector<vtkDataArray *> scalarArrays;
+  std::vector<vtkDataArray *> scalarArrays{};
+  scalarArrays.reserve(numberOfArrays);
   for(int k = 0; k < numberOfArrays; ++k) {
-    auto a = input->GetPointData()->GetArray(k);
-
-    if(a->GetNumberOfComponents() == 1)
+    const auto a = input->GetPointData()->GetArray(k);
+    if(a->GetNumberOfComponents() == 1) {
+      // only keep scalar arrays
       scalarArrays.push_back(a);
+    }
   }
-  // not efficient, implicit conversion to double
-  vector<vtkSmartPointer<vtkDoubleArray>> inputScalars(scalarArrays.size());
-  for(unsigned int k = 0; k < scalarArrays.size(); ++k) {
-    inputScalars[k] = vtkSmartPointer<vtkDoubleArray>::New();
+
+  std::vector<vtkSmartPointer<vtkDataArray>> inputScalars(scalarArrays.size());
+  for(size_t k = 0; k < scalarArrays.size(); ++k) {
+    inputScalars[k]
+      = vtkSmartPointer<vtkDataArray>::Take(scalarArrays[k]->NewInstance());
     inputScalars[k]->SetNumberOfComponents(1);
     inputScalars[k]->SetName(scalarArrays[k]->GetName());
   }
+  std::array<float, 3> p;
+  std::array<vtkIdType, 2> ids;
+#ifdef TTK_ENABLE_MPI
+  ttk::SimplexId vertexCounter = 0;
+  ttk::SimplexId edgeCounter = 0;
+#endif
+  for(int thread = 0; thread < threadNumber_; thread++) {
+    auto integralLine = integralLines[thread].list_.begin();
+    while(integralLine != integralLines[thread].list_.end()) {
+      for(int i = 0; i < INTEGRAL_LINE_TABULAR_SIZE; i++) {
+        if(integralLine->at(i).trajectory.size() > 0) {
+          ttk::SimplexId vertex = integralLine->at(i).trajectory.at(0);
+          triangulation->getVertexPoint(vertex, p[0], p[1], p[2]);
+          ids[0] = pts->InsertNextPoint(p.data());
+          // distanceScalars
+          dist->InsertNextTuple1(integralLine->at(i).distanceFromSeed.at(0));
+#ifdef TTK_ENABLE_MPI
+          outputMaskField->InsertNextTuple1(0);
+          vtkVertexGlobalIdArray->InsertNextTuple1(
+            globalVertexId.at(vertexCounter));
+          vertexCounter++;
+          vtkVertexRankArray->InsertNextTuple1(
+            triangulation->getVertexRank(vertex));
+#else
+          outputMaskField->InsertNextTuple1(0);
+#endif
+          identifier->InsertNextTuple1(integralLine->at(i).seedIdentifier);
+          vtkForkIdentifiers->InsertNextTuple1(
+            integralLine->at(i).forkIdentifier);
+          // inputScalars
+          for(size_t k = 0; k < scalarArrays.size(); ++k) {
+            inputScalars[k]->InsertNextTuple1(
+              scalarArrays[k]->GetTuple1(vertex));
+          }
+          for(size_t j = 1; j < integralLine->at(i).trajectory.size(); ++j) {
+            vertex = integralLine->at(i).trajectory.at(j);
+#ifdef TTK_ENABLE_MPI
+            vtkVertexGlobalIdArray->InsertNextTuple1(
+              globalVertexId.at(vertexCounter));
+            vertexCounter++;
+            vtkEdgeIdentifiers->InsertNextTuple1(globalCellId.at(edgeCounter));
+            edgeCounter++;
+            vtkEdgeRankArray->InsertNextTuple1(triangulation->getVertexRank(
+              integralLine->at(i).trajectory.at(j - 1)));
+            vtkVertexRankArray->InsertNextTuple1(
+              triangulation->getVertexRank(vertex));
+#endif
+            outputMaskField->InsertNextTuple1(1);
+            vtkForkIdentifiers->InsertNextTuple1(
+              integralLine->at(i).forkIdentifier);
+            triangulation->getVertexPoint(vertex, p[0], p[1], p[2]);
+            ids[1] = pts->InsertNextPoint(p.data());
+            // distanceScalars
+            dist->InsertNextTuple1(integralLine->at(i).distanceFromSeed.at(j));
+            identifier->InsertNextTuple1(integralLine->at(i).seedIdentifier);
+            // inputScalars
+            for(unsigned int k = 0; k < scalarArrays.size(); ++k)
+              inputScalars[k]->InsertNextTuple1(
+                scalarArrays[k]->GetTuple1(vertex));
+            ug->InsertNextCell(VTK_LINE, 2, ids.data());
+            // iteration
+            ids[0] = ids[1];
+          }
+          outputMaskField->SetTuple1(
+            outputMaskField->GetNumberOfTuples() - 1, 0);
+        } else {
+          break;
+        }
+      }
+      integralLine++;
+    }
+  }
 
-  float p0[3];
-  float p1[3];
-  vtkIdType ids[2];
-  for(SimplexId i = 0; i < (SimplexId)trajectories.size(); ++i) {
-    if(trajectories[i].size()) {
-      SimplexId vertex = trajectories[i][0];
-      // init
-      triangulation_->getVertexPoint(vertex, p0[0], p0[1], p0[2]);
-      ids[0] = pts->InsertNextPoint(p0);
-      // distanceScalars
-      float distanceFromSeed{};
-      dist->InsertNextTuple1(distanceFromSeed);
-      // inputScalars
-      for(unsigned int k = 0; k < scalarArrays.size(); ++k)
-        inputScalars[k]->InsertNextTuple1(scalarArrays[k]->GetTuple1(vertex));
+  ug->SetPoints(pts);
+  ug->GetPointData()->AddArray(dist);
+  ug->GetPointData()->AddArray(identifier);
+  ug->GetPointData()->AddArray(vtkForkIdentifiers);
+  ug->GetPointData()->AddArray(outputMaskField);
 
-      for(SimplexId j = 1; j < (SimplexId)trajectories[i].size(); ++j) {
-        vertex = trajectories[i][j];
-        triangulation_->getVertexPoint(vertex, p1[0], p1[1], p1[2]);
-        ids[1] = pts->InsertNextPoint(p1);
-        // distanceScalars
-        distanceFromSeed += Geometry::distance(p0, p1, 3);
-        dist->InsertNextTuple1(distanceFromSeed);
-        // inputScalars
-        for(unsigned int k = 0; k < scalarArrays.size(); ++k)
-          inputScalars[k]->InsertNextTuple1(scalarArrays[k]->GetTuple1(vertex));
+  for(unsigned int k = 0; k < scalarArrays.size(); ++k) {
+    ug->GetPointData()->AddArray(inputScalars[k]);
+  }
+#ifdef TTK_ENABLE_MPI
+  ug->GetPointData()->AddArray(vtkVertexRankArray);
+  ug->GetCellData()->AddArray(vtkEdgeRankArray);
+  ug->GetCellData()->SetGlobalIds(vtkEdgeIdentifiers);
+  ug->GetPointData()->SetGlobalIds(vtkVertexGlobalIdArray);
+#endif
+  output->ShallowCopy(ug);
 
-        ug->InsertNextCell(VTK_LINE, 2, ids);
+  return 1;
+}
 
-        // iteration
-        ids[0] = ids[1];
-        p0[0] = p1[0];
-        p0[1] = p1[1];
-        p0[2] = p1[2];
+int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
+                                  vtkInformationVector **inputVector,
+                                  vtkInformationVector *outputVector) {
+
+  vtkDataSet *domain = vtkDataSet::GetData(inputVector[0], 0);
+  vtkPointSet *seeds = vtkPointSet::GetData(inputVector[1], 0);
+  vtkUnstructuredGrid *output = vtkUnstructuredGrid::GetData(outputVector, 0);
+
+  ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(domain);
+  vtkDataArray *inputScalars = this->GetInputArrayToProcess(0, domain);
+
+  int const keepGoing = checkEmptyMPIInput<ttk::Triangulation>(triangulation);
+  if(keepGoing < 2) {
+    return keepGoing;
+  }
+  vtkDataArray *inputOffsets = this->GetOrderArray(
+    domain, 0, triangulation, false, 1, ForceInputOffsetScalarField);
+
+  const ttk::SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
+  this->setVertexNumber(numberOfPointsInDomain);
+  int numberOfPointsInSeeds = seeds->GetNumberOfPoints();
+#ifndef TTK_ENABLE_KAMIKAZE
+  int totalSeeds;
+#else
+#ifdef TTK_ENABLE_MPI
+  int totalSeeds;
+#endif
+#endif
+
+#ifdef TTK_ENABLE_MPI_TIME
+  ttk::Timer t_mpi;
+  ttk::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+#endif
+#ifdef TTK_ENABLE_MPI
+  // Necessary when using MPI
+  std::vector<ttk::SimplexId> inputIdentifiers{};
+  if(ttk::MPIsize_ > 1) {
+    MPI_Reduce(&numberOfPointsInSeeds, &totalSeeds, 1, MPI_INTEGER, MPI_SUM, 0,
+               ttk::MPIcomm_);
+    int isDistributed;
+
+    if(ttk::MPIrank_ == 0) {
+      isDistributed = numberOfPointsInSeeds != totalSeeds;
+    }
+    MPI_Bcast(&isDistributed, 1, MPI_INTEGER, 0, ttk::MPIcomm_);
+    MPI_Bcast(&totalSeeds, 1, MPI_INTEGER, 0, ttk::MPIcomm_);
+
+    if(!isDistributed) {
+      this->setGlobalElementCounter(totalSeeds);
+      vtkDataArray *globalSeedsId;
+      if(ttk::MPIrank_ == 0) {
+        globalSeedsId = seeds->GetPointData()->GetArray("GlobalPointIds");
+      } else {
+        globalSeedsId = vtkDataArray::CreateDataArray(VTK_ID_TYPE);
+      }
+
+      if(ttk::MPIrank_ != 0) {
+        globalSeedsId->SetNumberOfComponents(1);
+        globalSeedsId->SetNumberOfTuples(totalSeeds);
+      }
+      ttk::LongSimplexId id = 0;
+      MPI_Bcast(ttkUtils::GetPointer<ttk::LongSimplexId>(globalSeedsId),
+                totalSeeds, ttk::getMPIType(id), 0, ttk::MPIcomm_);
+      ttk::SimplexId localId = -1;
+      for(int i = 0; i < totalSeeds; i++) {
+        localId = triangulation->getVertexLocalId(globalSeedsId->GetTuple1(i));
+
+        if(localId != -1
+           && triangulation->getVertexRank(localId) == ttk::MPIrank_) {
+          inputIdentifiers.push_back(localId);
+        }
+      }
+      numberOfPointsInSeeds = inputIdentifiers.size();
+    } else {
+      std::vector<ttk::SimplexId> idSpareStorage{};
+      ttk::SimplexId *inputIdentifierGlobalId;
+      inputIdentifierGlobalId = this->GetIdentifierArrayPtr(
+        ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds,
+        idSpareStorage);
+      ttk::SimplexId localId = 0;
+      for(int i = 0; i < numberOfPointsInSeeds; i++) {
+        localId = triangulation->getVertexLocalId(inputIdentifierGlobalId[i]);
+        if(localId != -1) {
+          inputIdentifiers.push_back(localId);
+        }
+      }
+      numberOfPointsInSeeds = inputIdentifiers.size();
+      MPI_Allreduce(&numberOfPointsInSeeds, &totalSeeds, 1, MPI_INTEGER,
+                    MPI_SUM, ttk::MPIcomm_);
+      this->setGlobalElementCounter(totalSeeds);
+    }
+  } else {
+    this->setGlobalElementCounter(numberOfPointsInSeeds);
+    inputIdentifiers.resize(numberOfPointsInSeeds);
+    totalSeeds = numberOfPointsInSeeds;
+    std::vector<ttk::SimplexId> idSpareStorage{};
+    ttk::SimplexId *inputIdentifierGlobalId;
+    inputIdentifierGlobalId = this->GetIdentifierArrayPtr(
+      ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds,
+      idSpareStorage);
+    for(int i = 0; i < numberOfPointsInSeeds; i++) {
+      inputIdentifiers.at(i)
+        = triangulation->getVertexLocalId(inputIdentifierGlobalId[i]);
+    }
+  }
+#else
+  std::vector<ttk::SimplexId> idSpareStorage{};
+  ttk::SimplexId *identifiers = this->GetIdentifierArrayPtr(
+    ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds,
+    idSpareStorage);
+  std::unordered_set<ttk::SimplexId> isSeed;
+  for(ttk::SimplexId k = 0; k < numberOfPointsInSeeds; ++k) {
+    isSeed.insert(identifiers[k]);
+  }
+  std::vector<ttk::SimplexId> inputIdentifiers(isSeed.begin(), isSeed.end());
+#ifndef TTK_ENABLE_KAMIKAZE
+  totalSeeds = inputIdentifiers.size();
+#endif
+  isSeed.clear();
+#endif
+
+  std::vector<
+    ttk::ArrayLinkedList<ttk::intgl::IntegralLine, INTEGRAL_LINE_TABULAR_SIZE>>
+    integralLines(
+      threadNumber_, ttk::ArrayLinkedList<ttk::intgl::IntegralLine,
+                                          INTEGRAL_LINE_TABULAR_SIZE>());
+
+  this->setVertexNumber(numberOfPointsInDomain);
+  this->setSeedNumber(numberOfPointsInSeeds);
+  this->setDirection(Direction);
+  this->setInputScalarField(inputScalars->GetVoidPointer(0));
+  this->setInputOffsets(ttkUtils::GetPointer<ttk::SimplexId>(inputOffsets));
+  this->setVertexIdentifierScalarField(&inputIdentifiers);
+  this->setOutputIntegralLines(&integralLines);
+  this->preconditionTriangulation(triangulation);
+  this->setChunkSize(
+    std::max(std::max(std::min(1000, (int)numberOfPointsInSeeds),
+                      (int)numberOfPointsInSeeds / (threadNumber_ * 100)),
+             1));
+#ifdef TTK_ENABLE_MPI
+  std::vector<std::vector<std::vector<ttk::intgl::ElementToBeSent>>> toSend(
+    ttk::MPIsize_);
+  this->setNeighbors(triangulation->getNeighborRanks());
+  if(ttk::MPIsize_ > 1) {
+    toSend.resize(this->neighborNumber_);
+    for(int i = 0; i < this->neighborNumber_; i++) {
+      toSend[i].resize(this->threadNumber_);
+      for(int j = 0; j < this->threadNumber_; j++) {
+        toSend[i][j].reserve((int)numberOfPointsInSeeds * 0.005
+                             / this->threadNumber_);
       }
     }
   }
-  ug->SetPoints(pts);
-  ug->GetPointData()->AddArray(dist);
-  for(unsigned int k = 0; k < scalarArrays.size(); ++k)
-    ug->GetPointData()->AddArray(inputScalars[k]);
-
-  output->ShallowCopy(ug);
-
-  return 0;
-}
-
-template <typename VTK_TT>
-int ttkIntegralLines::dispatch() {
-  int ret = 0;
-  if(inputOffsets_->GetDataType() == VTK_INT) {
-    ret = integralLines_.execute<VTK_TT, int>();
-  }
-  if(inputOffsets_->GetDataType() == VTK_ID_TYPE) {
-    ret = integralLines_.execute<VTK_TT, vtkIdType>();
-  }
-  return ret;
-}
-
-int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
-                           vector<vtkDataSet *> &outputs) {
-  //                            vtkPointSet* seeds, vtkUnstructuredGrid*
-  //                            output){
-
-  Memory m;
-
-  vtkDataSet *domain = inputs[0];
-  vtkPointSet *seeds = vtkPointSet::SafeDownCast(inputs[1]);
-  vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
-
-  int ret{};
-
-  ret = getTriangulation(domain);
-#ifndef TTK_ENABLE_KAMIKAZE
-  // triangulation problem
-  if(ret) {
-    cerr << "[ttkIntegralLines] Error : wrong triangulation." << endl;
-    return -1;
+  this->setToSend(&toSend);
+  this->createMessageType();
+#endif
+#ifdef TTK_ENABLE_MPI_TIME
+  double elapsedTime = ttk::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+  if(ttk::MPIrank_ == 0) {
+    printMsg("Preparation performed using " + std::to_string(ttk::MPIsize_)
+             + " MPI processes lasted: " + std::to_string(elapsedTime));
   }
 #endif
-
-  ret = getScalars(domain);
 #ifndef TTK_ENABLE_KAMIKAZE
   // field problem
-  if(ret) {
-    cerr << "[ttkIntegralLines] Error : wrong scalar field." << endl;
+  if(!inputScalars) {
+    this->printErr("wrong scalar field.");
     return -1;
   }
-#endif
-
-  ret = getOffsets(domain);
-#ifndef TTK_ENABLE_KAMIKAZE
   // field problem
-  if(ret) {
-    cerr << "[ttkIntegralLines] Error : wrong offsets." << endl;
+  if(inputOffsets->GetDataType() != VTK_INT
+     and inputOffsets->GetDataType() != VTK_ID_TYPE) {
+    this->printErr("input offset field type not supported.");
     return -1;
   }
 
-  if(inputOffsets_->GetDataType() != VTK_INT
-     and inputOffsets_->GetDataType() != VTK_ID_TYPE) {
-    cerr << "[ttkIntegralLines] Error : input offset field type not supported."
-         << endl;
-    return -1;
-  }
-#endif
-
-  ret = getIdentifiers(seeds);
-#ifndef TTK_ENABLE_KAMIKAZE
-  // field problem
-  if(ret) {
-    cerr << "[ttkIntegralLines] Error : wrong identifiers." << endl;
-    return -1;
-  }
-#endif
-
-  const SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
-#ifndef TTK_ENABLE_KAMIKAZE
   // no points.
   if(numberOfPointsInDomain <= 0) {
-    cerr << "[ttkIntegralLines] Error : domain has no points." << endl;
+    this->printErr("domain has no points.");
     return -1;
   }
-#endif
-
-  const SimplexId numberOfPointsInSeeds = seeds->GetNumberOfPoints();
-#ifndef TTK_ENABLE_KAMIKAZE
   // no points.
-  if(numberOfPointsInSeeds <= 0) {
-    cerr << "[ttkIntegralLines] Error : seeds have no points." << endl;
+  if(totalSeeds <= 0) {
+    this->printErr("seeds have no points.");
     return -1;
   }
 #endif
+#ifdef TTK_ENABLE_MPI_TIME
+  ttk::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+#endif
+  int status = 0;
+  ttkTemplateMacro(triangulation->getType(),
+                   (status = this->execute<TTK_TT>(
+                      static_cast<TTK_TT *>(triangulation->getData()))));
 
-  vector<vector<SimplexId>> trajectories;
-
-  integralLines_.setVertexNumber(numberOfPointsInDomain);
-  integralLines_.setSeedNumber(numberOfPointsInSeeds);
-  integralLines_.setDirection(Direction);
-  integralLines_.setInputScalarField(inputScalars_->GetVoidPointer(0));
-  integralLines_.setInputOffsets(inputOffsets_->GetVoidPointer(0));
-
-  integralLines_.setVertexIdentifierScalarField(
-    identifiers_->GetVoidPointer(0));
-  integralLines_.setOutputTrajectories(&trajectories);
-
-  switch(inputScalars_->GetDataType()) {
-    vtkTemplateMacro(ret = dispatch<VTK_TT>());
-  }
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
-  if(ret) {
-    cerr << "[ttkIntegralLines] IntegralLines.execute() error code : " << ret
-         << endl;
-    return -1;
+  if(status != 0) {
+    this->printErr("IntegralLines.execute() error code : "
+                   + std::to_string(status));
+    return 0;
   }
 #endif
-
+#ifdef TTK_ENABLE_MPI
+  std::vector<ttk::SimplexId> globalVertexId;
+  std::vector<ttk::SimplexId> globalCellId;
+  ttkTemplateMacro(triangulation->getType(),
+                   (getGlobalIdentifiers<TTK_TT>(
+                     globalVertexId, globalCellId, integralLines,
+                     static_cast<TTK_TT *>(triangulation->getData()))));
+#ifdef TTK_ENABLE_MPI_TIME
+  elapsedTime = ttk::endMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
+  if(ttk::MPIrank_ == 0) {
+    printMsg("Computation performed using " + std::to_string(ttk::MPIsize_)
+             + " MPI processes lasted: " + std::to_string(elapsedTime));
+  }
+#endif
+#endif
   // make the vtk trajectories
-  ret = getTrajectories(domain, trajectories, output);
-#ifndef TTK_ENABLE_KAMIKAZE
-  // trajectories problem
-  if(ret) {
-    cerr << "[ttkIntegralLines] Error : wrong trajectories." << endl;
-    return -1;
-  }
+#ifdef TTK_ENABLE_MPI
+  ttkTemplateMacro(triangulation->getType(),
+                   (getTrajectories<TTK_TT>(
+                     domain, static_cast<TTK_TT *>(triangulation->getData()),
+                     integralLines, globalVertexId, globalCellId, output)));
+#else
+  ttkTemplateMacro(triangulation->getType(),
+                   (getTrajectories<TTK_TT>(
+                     domain, static_cast<TTK_TT *>(triangulation->getData()),
+                     integralLines, output)));
 #endif
 
-  {
-    stringstream msg;
-    msg << "[ttkIntegralLines] Memory usage: " << m.getElapsedUsage() << " MB."
-        << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
-  return ret;
+  return (int)(status == 0);
 }

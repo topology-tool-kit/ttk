@@ -1,0 +1,63 @@
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy
+     name="ttkBarycentricSubdivision"
+     class="ttkBarycentricSubdivision"
+     label="TTK BarycentricSubdivision">
+     <Documentation
+        long_help="TTK barycentricSubdivision plugin."
+        short_help="TTK barycentricSubdivision plugin.">
+       BarycentricSubdivision generates a new, finer triangulation
+       from an input triangulation. Every triangle is divided in six
+       new triangles using the 3 edges middles and the triangle
+       barycenter.
+       Scalar data on vertices (point data) with continuous values
+       (float/double) can be interpolated on the new
+       triangulation. Scalar data on input triangles can be replicated
+       on the new triangles.
+     </Documentation>
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+          name="SubdivisionLevel"
+          label="Level of subdivisions"
+          command="SetSubdivisionLevel"
+          number_of_elements="1"
+          default_values="1">
+        <Documentation>
+          Number of subdivisions of the original triangulation.
+        </Documentation>
+      </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="SubdivisionLevel" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Domain" />
+      </Hints>
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

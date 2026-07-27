@@ -1,0 +1,231 @@
+name: check_code
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+env:
+  PV_TAG: v6.1.1-headless
+  PV_REPO: topology-tool-kit/ttk-paraview
+
+
+jobs:
+
+  # ----------------------- #
+  # Check source formatting #
+  # ----------------------- #
+  check-formatting:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install latest clang-format
+      run: |
+        sudo apt update
+        sudo apt install -y clang-format
+
+    - name: Use clang-format to detect formatting issues
+      run: |
+        git ls-files | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" | xargs clang-format -n -Werror
+
+    - name: Check line endings (Unix rather than DOS)
+      run: |
+        ! git ls-files | xargs file "{}" ";" | grep CRLF
+
+    - name: Check files not ending with a newline [NOT ENFORCED]
+      run: |
+        for f in $(git ls-files | grep -Ev 'png$|ico$' ); do
+          test $(tail -c 1 $f | wc -l) -eq 0 && echo $f || true
+        done
+
+    - name: Check non-standard C++ file extensions [NOT ENFORCED]
+      run: |
+        git ls-files | grep -E "\.cxx$|\.cc$|\.hpp$|\.hxx$|\.txx$|\.tpp$|\.inl$" || true
+
+    - name: Check for files containing Unicode characters [NOT ENFORCED]
+      run: |
+        git ls-files | xargs file | grep Unicode || true
+
+    - name: Check for empty files
+      run: |
+        ! git ls-files | xargs file | grep empty
+
+    - name: Check for VTK includes in the base layer
+      run: |
+        ! git ls-files \
+          | grep "core/base" \
+          | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" \
+          | xargs grep -e "^#include.*vtk"
+
+    - name: No "using namespace" directive in header files
+      run: |
+        ! git ls-files \
+          | grep -E "\.h$|\.hpp$" \
+          | xargs grep "using namespace"
+
+
+  # ------------- #
+  # Code lint job #
+  # ------------- #
+  lint-code:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        config:
+          - {tidy: true, sa: false, dox: false}
+          - {tidy: false, sa: true, dox: false}
+          - {tidy: false, sa: false, dox: true}
+    env:
+      CMAKE_EXPORT_COMPILE_COMMANDS: ON
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Ubuntu dependencies
+      run: |
+        sudo apt update
+        # TTK dependencies
+        sudo apt install -y \
+          libboost-system-dev \
+          libcgal-dev \
+          libeigen3-dev \
+          libgraphviz-dev \
+          libosmesa-dev \
+          libsqlite3-dev \
+          libwebsocketpp-dev \
+          graphviz \
+          python3-sklearn \
+          zlib1g-dev \
+          libqhull-dev \
+          doxygen \
+          clang-tidy
+
+    - name: Install optional Spectra dependency
+      uses: ./.github/actions/install-spectra-unix
+
+    - name: Install optional ZFP dependency
+      uses: ./.github/actions/install-zfp-unix
+
+    - name: Fetch TTK-ParaView headless Debian package
+      run: |
+        wget -O ttk-paraview-headless.deb \
+          https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless-ubuntu-22.04.deb
+
+    - name: Install ParaView .deb
+      run: |
+        sudo apt install ./ttk-paraview-headless.deb
+
+    - name: Create & configure TTK build directory
+      run: |
+        mkdir build
+        cd build
+        cmake \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
+          -DTTK_BUILD_VTK_WRAPPERS=TRUE \
+          -DTTK_BUILD_STANDALONE_APPS=TRUE \
+          -DTTK_ENABLE_OPENMP=FALSE \
+          -DTTK_ENABLE_MPI=TRUE \
+          -DTTK_BUILD_DOCUMENTATION=TRUE \
+          $GITHUB_WORKSPACE
+
+    - name: Use clang-tidy to lint code
+      if: matrix.config.tidy
+      run: |
+        git ls-files \
+        | grep core \
+        | grep -E "\.cpp$|\.cxx$" \
+        | xargs -n1 -P$(nproc) clang-tidy -p build --warnings-as-errors="*" 2> /dev/null
+
+    - name: Use Clang static analyzer
+      if: matrix.config.sa
+      # "FastRipsPersistenceDiagram2.cpp" is excluded because static analysis fails on CGAL's "Mpzf.h" file
+      run: |
+        git ls-files \
+        | grep core \
+        | grep -E "\.cpp$|\.cxx$" \
+        | grep -v "FastRipsPersistenceDiagram2.cpp" \
+        | xargs -n1 -P$(nproc) clang-tidy -p build --checks="-*,clang-analyzer-*" --warnings-as-errors="*" 2> /dev/null
+
+    - name: Check Doxygen documentation warnings
+      if: matrix.config.dox
+      continue-on-error: true
+      run: |
+        cd build
+        ! cmake --build . --target doc |& grep warning
+
+
+  # ----------------------- #
+  # Check compiler warnings #
+  # ----------------------- #
+  check-warnings:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        kamikaze: [KAMIKAZE=TRUE, KAMIKAZE=FALSE]
+        omp: [OPENMP=TRUE, OPENMP=FALSE]
+        simplexId: [64BIT_IDS=TRUE, 64BIT_IDS=FALSE]
+        opt: [Debug, Release]
+        mpi: [MPI=TRUE, MPI=FALSE]
+    env:
+      CMAKE_EXPORT_COMPILE_COMMANDS: ON
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Ubuntu dependencies
+      run: |
+        sudo apt update
+        # TTK dependencies
+        sudo apt install -y \
+          libboost-system-dev \
+          libcgal-dev \
+          libeigen3-dev \
+          libgraphviz-dev \
+          libosmesa-dev \
+          libsqlite3-dev \
+          libwebsocketpp-dev \
+          graphviz \
+          python3-sklearn \
+          zlib1g-dev \
+          libqhull-dev \
+          clang-tools \
+          libomp-dev
+
+    - name: Install optional Spectra dependency
+      uses: ./.github/actions/install-spectra-unix
+
+    - name: Install optional ZFP dependency
+      uses: ./.github/actions/install-zfp-unix
+
+    - name: Fetch TTK-ParaView headless Debian package
+      run: |
+        wget -O ttk-paraview-headless.deb \
+          https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless-ubuntu-24.04.deb
+
+    - name: Install ParaView .deb
+      run: |
+        sudo apt install ./ttk-paraview-headless.deb
+
+    - name: Create & configure TTK build directory
+      run: |
+        mkdir build
+        cd build
+        cmake \
+          -DCMAKE_BUILD_TYPE=${{ matrix.opt }} \
+          -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE \
+          -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
+          -DTTK_BUILD_VTK_WRAPPERS=TRUE \
+          -DTTK_BUILD_STANDALONE_APPS=TRUE \
+          -DTTK_ENABLE_${{ matrix.kamikaze }} \
+          -DTTK_ENABLE_${{ matrix.omp }} \
+          -DTTK_ENABLE_${{ matrix.mpi }} \
+          -DTTK_ENABLE_${{ matrix.simplexId }} \
+          $GITHUB_WORKSPACE
+
+    - name: Use clang-check for compiler warnings
+      run: |
+        git ls-files \
+        | grep core \
+        | grep -E "\.cpp$|\.cxx$" \
+        | xargs -n1 -P$(nproc) clang-check -p build --extra-arg=-Werror

@@ -1,5 +1,5 @@
 /// \ingroup base
-/// \class ttk::FTMTree
+/// \class ttk::ftm::FTMTree
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date December 2016.
 ///
@@ -11,14 +11,33 @@
 /// etc.).
 ///
 /// \sa ttkFTMTree.cpp %for a usage example.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/contourTreeAlignment/">Contour
+///   Tree Alignment example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/ctBones/">CT Bones
+///   example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
+///   example</a>\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
+///   Interaction sites</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
+///   Tree Clustering example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
+///   Tree Principal Geodesic Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/">Merge
+///   Tree Temporal Reduction</a> \n
 
-#ifndef FTMTREE_H
-#define FTMTREE_H
+#pragma once
 
 // base code includes
 #include <Geometry.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 #include "FTMDataTypes.h"
 #include "FTMTree_CT.h"
@@ -38,7 +57,7 @@ namespace ttk {
       // -----------------
 
       FTMTree();
-      virtual ~FTMTree();
+      ~FTMTree() override = default;
 
       // -------
       // PROCESS
@@ -46,13 +65,11 @@ namespace ttk {
 
       // Initialize structures then build tree
       // Need triangulation, scalars and all params set before call
-      template <typename scalarType, typename idType>
-      void build(void);
+      template <typename scalarType, class triangulationType>
+      void build(const triangulationType *mesh);
     };
 
 #include "FTMTree_Template.h"
 
   } // namespace ftm
 } // namespace ttk
-
-#endif // TASKEDTREE_H

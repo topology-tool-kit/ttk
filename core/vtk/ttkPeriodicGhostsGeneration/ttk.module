@@ -1,0 +1,8 @@
+NAME
+  ttkPeriodicGhostsGeneration
+SOURCES
+  ttkPeriodicGhostsGeneration.cpp
+HEADERS
+  ttkPeriodicGhostsGeneration.h
+DEPENDS
+  ttkAlgorithm

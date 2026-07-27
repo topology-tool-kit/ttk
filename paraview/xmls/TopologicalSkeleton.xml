@@ -1,0 +1,326 @@
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkTopologicalSkeleton"
+      class="ttkTopologicalSkeleton"
+      label="TTK TopologicalSkeleton">
+      <Documentation
+        long_help="TTK topologicalSkeleton plugin."
+        short_help="TTK topologicalSkeleton plugin.">
+        TTK plugin for the computation of discrete Topological Skeleton.
+
+        Topological Skeleton is a useful topological abstraction of vector
+        fields for data segmentation, feature extraction, etc.
+
+        Related publication:
+        'Localized Evaluation for Constructing Discrete Vector Fields'
+        Tanner Finken, Julien Tierny, Joshua A. Levine \n
+        IEEE VIS 2024.
+
+        Online examples:
+
+        https://topology-tool-kit.github.io/examples/discreteVectorFieldTopology/
+
+      </Documentation>
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_vectors" attribute_type="point"  number_of_components="3">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+        name="Vector Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        default_values="0"
+        number_of_elements="5"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          attribute_type="Vectors"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the vector field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+       <IntVectorProperty name="ComputeCriticalPoints"
+         label="Critical Points"
+         command="SetComputeCriticalPoints"
+         number_of_elements="1"
+         default_values="1"
+         panel_visibility="default">
+         <BooleanDomain name="bool"/>
+         <Documentation>
+           Whether Critical Points should be computed.
+         </Documentation>
+       </IntVectorProperty>
+
+       <IntVectorProperty name="ComputeAscendingSeparatrices1"
+         label="Ascending 1-Separatrices"
+         command="SetComputeAscendingSeparatrices1"
+         number_of_elements="1"
+         default_values="1"
+         panel_visibility="default">
+         <BooleanDomain name="bool"/>
+         <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ComputeCriticalPoints"
+            value="1" />
+        </Hints>
+         <Documentation>
+           Whether Ascending Separatrices (extending from saddles) should be computed.
+         </Documentation>
+       </IntVectorProperty>
+
+       <IntVectorProperty name="ComputeDescendingSeparatrices1"
+         label="Descending 1-Separatrices"
+         command="SetComputeDescendingSeparatrices1"
+         number_of_elements="1"
+         default_values="1"
+         panel_visibility="default">
+         <BooleanDomain name="bool"/>
+         <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ComputeCriticalPoints"
+            value="1" />
+        </Hints>
+         <Documentation>
+           Whether Descending Separatrices (extending from saddles) should be computed.
+         </Documentation>
+       </IntVectorProperty>
+
+       <!-- <IntVectorProperty name="ComputeSaddleConnectors"
+         label="Saddle Connectors"
+         command="SetComputeSaddleConnectors"
+         number_of_elements="1"
+         default_values="0"
+         panel_visibility="default">
+         <BooleanDomain name="bool"/>
+         <Hints>
+            <WarnOnPropertyChange onlyonce="true">
+              <Text title="Usage Warning">
+            This computation has not been extensively tested in 3D especially with a lot of rotation.
+              </Text>
+            </WarnOnPropertyChange>
+          </Hints>
+         <Documentation>
+           Whether saddle-1 to saddle-2 lines should be computed.
+         </Documentation>
+       </IntVectorProperty> -->
+
+       <IntVectorProperty name="ComputeAttractingCycles1"
+         label="Attracting 1-Cycles"
+         command="SetComputeAttractingCycles1"
+         number_of_elements="1"
+         default_values="1"
+         panel_visibility="default">
+         <BooleanDomain name="bool"/>
+         <Documentation>
+           Whether all attracting cycles should be computed.
+         </Documentation>
+       </IntVectorProperty>
+
+       <IntVectorProperty name="ComputeRepellingCycles1"
+         label="Repelling 1-Cycles"
+         command="SetComputeRepellingCycles1"
+         number_of_elements="1"
+         default_values="1"
+         panel_visibility="default">
+         <BooleanDomain name="bool"/>
+         <Documentation>
+           Whether all repelling cycles should be computed.
+         </Documentation>
+       </IntVectorProperty>
+
+       <!-- <IntVectorProperty name="ComputeAscendingSeparatrices2"
+         label="Ascending 2-Separatrices"
+         command="SetComputeAscendingSeparatrices2"
+         number_of_elements="1"
+         default_values="0"
+         panel_visibility="default">
+         <BooleanDomain name="bool"/>
+         <Documentation>
+           Whether the ascending 2 separatrices (surfaces) should be computed.
+         </Documentation>
+       </IntVectorProperty>
+
+       <IntVectorProperty name="ComputeDescendingSeparatrices2"
+         label="Descending 2-Separatrices"
+         command="SetComputeDescendingSeparatrices2"
+         number_of_elements="1"
+         default_values="0"
+         panel_visibility="default">
+         <BooleanDomain name="bool"/>
+         <Documentation>
+           Whether the descending 2 separatrices (surfaces) should be computed.
+         </Documentation>
+       </IntVectorProperty> -->
+
+       <IntVectorProperty name="ComputeAscendingSegmentation"
+         label="Ascending Segmentation"
+         command="SetComputeAscendingSegmentation"
+         number_of_elements="1"
+         default_values="1"
+         panel_visibility="default">
+         <BooleanDomain name="bool"/>
+         <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ComputeCriticalPoints"
+            value="1" />
+        </Hints>
+         <Documentation>
+           Whether the domain should be segmented based on ascending paths.
+         </Documentation>
+       </IntVectorProperty>
+
+       <IntVectorProperty name="ComputeDescendingSegmentation"
+         label="Descending Segmentation"
+         command="SetComputeDescendingSegmentation"
+         number_of_elements="1"
+         default_values="1"
+         panel_visibility="default">
+         <BooleanDomain name="bool"/>
+         <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ComputeCriticalPoints"
+            value="1" />
+        </Hints>
+         <Documentation>
+           Whether the domain should be segmented based on descending paths.
+         </Documentation>
+       </IntVectorProperty>
+
+       <IntVectorProperty name="ComputeFinalSegmentation"
+         label="Intersecting Segmentation"
+         command="SetComputeFinalSegmentation"
+         number_of_elements="1"
+         default_values="1"
+         panel_visibility="default">
+         <BooleanDomain name="bool"/>
+         <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ComputeDescendingSegmentation"
+            value="1" />
+          <PropertyWidgetDecorator type="GenericDecorator"
+          mode="visibility"
+          property="ComputeAscendingSegmentation"
+          value="1" />
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ComputeCriticalPoints"
+            value="1" />
+        </Hints>
+         <Documentation>
+           Whether the domain should be segmented based on the intersection 
+           of ascending and descending paths (similar to Morse-Smale).
+         </Documentation>
+       </IntVectorProperty>
+
+       <IntVectorProperty name="RunSimplification"
+         label="Run Simplification"
+         command="SetRunSimplification"
+         number_of_elements="1"
+         default_values="0"
+         panel_visibility="advanced">
+         <BooleanDomain name="bool"/>
+         <Documentation>
+           Whether to run simplification on the underlying discrete vector field.
+         </Documentation>
+       </IntVectorProperty>
+
+       <DoubleVectorProperty name="SimplificationThreshold"
+         label="Simplification Threshold"
+         command="SetSimplificationThreshold"
+         number_of_elements="1"
+         default_values="0"
+         panel_visibility="advanced">
+         <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="RunSimplification"
+            value="1" />
+        </Hints>
+         <Documentation>
+           Simplification Threshold for number of critical points to simplify to.
+         </Documentation>
+       </DoubleVectorProperty>
+
+       <IntVectorProperty name="ReverseFullOrbit"
+         label="Simplify Full Orbit"
+         command="SetReverseFullOrbit"
+         number_of_elements="1"
+         default_values="1"
+         panel_visibility="advanced">
+         <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="RunSimplification"
+            value="1" />
+        </Hints>
+         <BooleanDomain name="bool"/>
+         <Documentation>
+           Whether to trace and reverse the entire orbit while simplifying.
+         </Documentation>
+       </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="Vector Field" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="ComputeCriticalPoints"/>
+        <Property name="ComputeAscendingSeparatrices1"/>
+        <Property name="ComputeDescendingSeparatrices1"/>
+        <!-- <Property name="ComputeSaddleConnectors"/>  -->
+        <Property name="ComputeAttractingCycles1" />
+        <Property name="ComputeRepellingCycles1" />
+        <!-- <Property name="ComputeAscendingSeparatrices2"/> -->
+        <!-- <Property name="ComputeDescendingSeparatrices2"/> -->
+        <Property name="ComputeAscendingSegmentation"/>
+        <Property name="ComputeDescendingSegmentation"/>
+        <Property name="ComputeFinalSegmentation"/>
+        <Property name="RunSimplification"/>
+        <Property name="SimplificationThreshold"/>
+        <Property name="ReverseFullOrbit" />
+      </PropertyGroup>
+
+      <OutputPort name="Critical Points" index="0" id="port0"/>
+      <OutputPort name="1-Separatrices" index="1" id="port1"/>
+      <OutputPort name="2-Separatrices" index="2" id="port2"/>
+      <OutputPort name="Segmentation" index="3" id="port3"/>
+
+      <Hints>
+        <ShowInMenu category="TTK - Vector Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

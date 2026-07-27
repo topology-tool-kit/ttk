@@ -20,52 +20,69 @@
 ///
 /// \sa vtkScalarFieldSmoother
 /// \sa ttk::ScalarFieldSmoother
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/1manifoldLearning/">1-Manifold
+///   Learning example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/2manifoldLearning/">
+///   2-Manifold Learning example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cosmicWeb/">
+///   Cosmic Web example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
+/// example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/harmonicSkeleton/">
+///   Harmonic Skeleton example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
+///   Interaction sites example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
+///   Tree Principal Geodesic Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/molecularVibration/">Molecular
+///   Vibration example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseMolecule/">
+///   Morse Molecule example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseSmaleSegmentation_at/">Morse-Smale
+///   segmentation example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mpiExample/">
+///   MPI example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/">Persistence
+///   Diagram Principal Geodesic Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_pegasus/">Topological
+///   Optimization for Pegasus Genus Repair example</a>\n
+///
 
-#ifndef _TTK_GEOMETRY_SMOOTHER_H
-#define _TTK_GEOMETRY_SMOOTHER_H
+#pragma once
 
-// VTK includes
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkInformation.h>
-#include <vtkObjectFactory.h>
-#include <vtkSmartPointer.h>
-
-// ttk code includes
 #include <ScalarFieldSmoother.h>
-#include <ttkWrapper.h>
+#include <ttkAlgorithm.h>
+#include <ttkGeometrySmootherModule.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkGeometrySmoother
-#else
-class ttkGeometrySmoother
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKGEOMETRYSMOOTHER_EXPORT ttkGeometrySmoother
+  : public ttkAlgorithm,
+    protected ttk::ScalarFieldSmoother {
+
+private:
+  int NumberOfIterations{1};
+  bool UseMaskScalarField{true};
+  int MaskIdentifier{0};
+  bool ForceInputMaskScalarField{false};
 
 public:
-  static ttkGeometrySmoother *New();
-
-  vtkTypeMacro(ttkGeometrySmoother, vtkDataSetAlgorithm);
-
-  // default ttk setters
-  vtkSetMacro(debugLevel_, int);
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
   vtkSetMacro(NumberOfIterations, int);
   vtkGetMacro(NumberOfIterations, int);
+
+  vtkSetMacro(UseMaskScalarField, bool);
+  vtkGetMacro(UseMaskScalarField, bool);
 
   vtkSetMacro(MaskIdentifier, int);
   vtkGetMacro(MaskIdentifier, int);
@@ -73,23 +90,17 @@ public:
   vtkSetMacro(ForceInputMaskScalarField, bool);
   vtkGetMacro(ForceInputMaskScalarField, bool);
 
-  vtkSetMacro(InputMask, std::string);
-  vtkGetMacro(InputMask, std::string);
+  vtkTypeMacro(ttkGeometrySmoother, ttkAlgorithm);
+  static ttkGeometrySmoother *New();
 
 protected:
   ttkGeometrySmoother();
+  ~ttkGeometrySmoother() override;
 
-  ~ttkGeometrySmoother();
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
-  TTK_SETUP();
-
-private:
-  int NumberOfIterations;
-  int MaskIdentifier;
-  bool ForceInputMaskScalarField;
-  std::string InputMask;
-
-  ttk::ScalarFieldSmoother smoother_;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 };
-
-#endif // _TTK_GEOMETRY_SMOOTHER_H

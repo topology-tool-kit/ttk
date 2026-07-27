@@ -4,10 +4,9 @@
 /// \date February 2017.
 ///
 /// \brief Base editor class for standalone programs. This class parses the
-/// the comamnd line, execute the TTK module and takes care of the IO.
+/// the command line, execute the TTK module and takes care of the IO.
 
-#ifndef EDITOR_BASE_H
-#define EDITOR_BASE_H
+#pragma once
 
 // base code includes
 #include <CommandLineParser.h>
@@ -23,10 +22,10 @@ namespace ttk {
       ttk::globalDebugLevel_ = 3;
 
       outputPath_ = "output";
-      ttkModule_ = NULL;
+      ttkModule_ = nullptr;
     }
 
-    virtual ~ProgramBase(){};
+    ~ProgramBase() override = default;
 
     virtual int init(int &argc, char **argv) {
 
@@ -41,9 +40,8 @@ namespace ttk {
         "o", &outputPath_, "Output file name base (no extension)", true);
 
       parser_.parse(argc, argv);
-      debugLevel_ = ttk::globalDebugLevel_;
-
-      threadNumber_ = ttk::globalThreadNumber_;
+      setDebugLevel(ttk::globalDebugLevel_);
+      setThreadNumber(ttk::globalThreadNumber_);
 
       int ret = 0;
       ret = load(inputPaths);
@@ -84,17 +82,11 @@ namespace ttk {
 
   template <class ttkModule>
   class Program : public ProgramBase {
+    ttkModule module_{};
 
   public:
     Program() {
-      ttkModule_ = new ttkModule;
-    }
-
-    ~Program() {
-      if(ttkModule_)
-        delete ttkModule_;
+      ttkModule_ = &module_;
     }
   };
 } // namespace ttk
-
-#endif // EDITOR_BASE_H

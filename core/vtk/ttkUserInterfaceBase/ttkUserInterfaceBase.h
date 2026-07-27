@@ -5,10 +5,10 @@
 ///
 /// \brief Interactions and rendering.
 
-#ifndef _TTK_USERINTERFACE_BASE_H
-#define _TTK_USERINTERFACE_BASE_H
+#pragma once
 
 #include <ttkProgramBase.h>
+#include <ttkUserInterfaceBaseModule.h>
 
 // VTK includes
 #include <ttkTextureMapFromField.h>
@@ -28,14 +28,15 @@
 class ttkUserInterfaceBase;
 
 // Custom interactors
-class ttkCustomInteractor : public vtkInteractorStyleTrackballCamera {
+class TTKUSERINTERFACEBASE_EXPORT ttkCustomInteractor
+  : public vtkInteractorStyleTrackballCamera {
 
 public:
   static ttkCustomInteractor *New();
 
   vtkTypeMacro(ttkCustomInteractor, vtkInteractorStyleTrackballCamera);
 
-  virtual void OnKeyPress() override;
+  void OnKeyPress() override;
 
   inline int setUserInterface(ttkUserInterfaceBase *userInterface) {
 
@@ -47,7 +48,7 @@ protected:
   ttkUserInterfaceBase *userInterface_;
 };
 
-class ttkKeyHandler : public ttk::Debug {
+class TTKUSERINTERFACEBASE_EXPORT ttkKeyHandler : public ttk::Debug {
 
 public:
   virtual int OnKeyPress(vtkRenderWindowInteractor *interactor,
@@ -55,12 +56,12 @@ public:
     = 0;
 };
 
-class VTKFILTERSCORE_EXPORT ttkUserInterfaceBase : public ttkProgramBase {
+class TTKUSERINTERFACEBASE_EXPORT ttkUserInterfaceBase : public ttkProgramBase {
 
 public:
   ttkUserInterfaceBase();
 
-  virtual ~ttkUserInterfaceBase();
+  ~ttkUserInterfaceBase() override;
 
   int exportScene(const std::string &fileName = "output.wrl") const;
 
@@ -85,11 +86,11 @@ public:
     return 0;
   }
 
-  int init(int &argc, char **argv);
+  int init(int &argc, char **argv) override;
 
   int refresh();
 
-  int run();
+  int run() override;
 
   int setKeyHandler(ttkKeyHandler *handler) {
     keyHandler_ = handler;
@@ -130,15 +131,9 @@ public:
     ttkModule_ = (Debug *)ttkObject_.GetPointer();
   };
 
-  virtual int run() {
-
-    ttkObject_->setDebugLevel(ttk::globalDebugLevel_);
-    ttkObject_->setThreadNumber(ttk::globalThreadNumber_);
-
+  int run() override {
     return ttkUserInterfaceBase::run();
   }
 
   vtkSmartPointer<ttkModule> ttkObject_;
 };
-
-#endif //_TTK_USERINTERFACE_BASE_H

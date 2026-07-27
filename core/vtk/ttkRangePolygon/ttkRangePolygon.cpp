@@ -1,26 +1,58 @@
 #include <ttkRangePolygon.h>
 
+#include <vtkCleanPolyData.h>
+#include <vtkDataSetSurfaceFilter.h>
+#include <vtkDataSetTriangleFilter.h>
+#include <vtkFeatureEdges.h>
+#include <vtkInformation.h>
+#include <vtkPointData.h>
+#include <vtkUnstructuredGrid.h>
+
+#include <ttkMacros.h>
+#include <ttkUtils.h>
+
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkRangePolygon)
+vtkStandardNewMacro(ttkRangePolygon);
 
-  ttkRangePolygon::ttkRangePolygon() {
+ttkRangePolygon::ttkRangePolygon() {
 
-  ClosedLoop = false;
-  NumberOfIterations = 0;
-  UseAllCores = true;
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
+
+  setDebugMsgPrefix("RangePolygon");
+
+  vtkWarningMacro("`TTK RangePolygon' is now deprecated. Please use instead "
+                  "`Poly Line Source' followed by `Resample With Dataset'.");
 }
 
-ttkRangePolygon::~ttkRangePolygon() {
+ttkRangePolygon::~ttkRangePolygon() = default;
+
+int ttkRangePolygon::FillInputPortInformation(int port, vtkInformation *info) {
+  if(port == 0)
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+  else
+    return 0;
+
+  return 1;
 }
-//
 
-int ttkRangePolygon::doIt(vector<vtkDataSet *> &inputs,
-                          vector<vtkDataSet *> &outputs) {
+int ttkRangePolygon::FillOutputPortInformation(int port, vtkInformation *info) {
+  if(port == 0)
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+  else
+    return 0;
 
-  vtkUnstructuredGrid *input = vtkUnstructuredGrid::SafeDownCast(inputs[0]);
-  vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
+  return 1;
+}
+
+int ttkRangePolygon::RequestData(vtkInformation *ttkNotUsed(request),
+                                 vtkInformationVector **inputVector,
+                                 vtkInformationVector *outputVector) {
+
+  vtkUnstructuredGrid *input = vtkUnstructuredGrid::GetData(inputVector[0]);
+  vtkUnstructuredGrid *output = vtkUnstructuredGrid::GetData(outputVector);
 
   if(input->GetNumberOfCells()) {
 
@@ -33,7 +65,9 @@ int ttkRangePolygon::doIt(vector<vtkDataSet *> &inputs,
     processPoints(input, output);
   }
 
-  return 0;
+  this->printMsg(ttk::debug::Separator::L1);
+
+  return 1;
 }
 
 int ttkRangePolygon::processPoints(vtkUnstructuredGrid *input,
@@ -41,15 +75,15 @@ int ttkRangePolygon::processPoints(vtkUnstructuredGrid *input,
 
   Timer t;
 
-  vtkSmartPointer<vtkPoints> pointSet = vtkSmartPointer<vtkPoints>::New();
+  vtkSmartPointer<vtkPoints> const pointSet = vtkSmartPointer<vtkPoints>::New();
   output->SetPoints(pointSet);
 
   output->GetPoints()->ShallowCopy(input->GetPoints());
   output->GetPointData()->ShallowCopy(input->GetPointData());
 
-  vtkSmartPointer<vtkCellArray> edgeArray
+  vtkSmartPointer<vtkCellArray> const edgeArray
     = vtkSmartPointer<vtkCellArray>::New();
-  vtkSmartPointer<vtkIdList> idList = vtkSmartPointer<vtkIdList>::New();
+  vtkSmartPointer<vtkIdList> const idList = vtkSmartPointer<vtkIdList>::New();
   idList->SetNumberOfIds(2);
 
   for(SimplexId i = 0; i < input->GetNumberOfPoints(); i++) {
@@ -68,12 +102,8 @@ int ttkRangePolygon::processPoints(vtkUnstructuredGrid *input,
 
   output->SetCells(VTK_LINE, edgeArray);
 
-  {
-    stringstream msg;
-    msg << "[ttkRangePolygon] Range polygon extracted in " << t.getElapsedTime()
-        << " s. (" << output->GetNumberOfCells() << " edge(s))" << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg(std::to_string(output->GetNumberOfCells()) + " edges extracted", 1,
+           t.getElapsedTime(), threadNumber_);
 
   return 0;
 }
@@ -81,20 +111,19 @@ int ttkRangePolygon::processPoints(vtkUnstructuredGrid *input,
 int ttkRangePolygon::processTriangles(vtkUnstructuredGrid *input,
                                       vtkUnstructuredGrid *output) {
 
-  Memory m;
   Timer t;
 
-  vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceMaker
+  vtkSmartPointer<vtkDataSetSurfaceFilter> const surfaceMaker
     = vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
 
   surfaceMaker->SetInputData(input);
 
-  vtkSmartPointer<vtkCleanPolyData> surfaceCleaner
+  vtkSmartPointer<vtkCleanPolyData> const surfaceCleaner
     = vtkSmartPointer<vtkCleanPolyData>::New();
 
   surfaceCleaner->SetInputConnection(surfaceMaker->GetOutputPort());
 
-  vtkSmartPointer<vtkFeatureEdges> featureEdges
+  vtkSmartPointer<vtkFeatureEdges> const featureEdges
     = vtkSmartPointer<vtkFeatureEdges>::New();
 
   featureEdges->SetBoundaryEdges(true);
@@ -104,7 +133,7 @@ int ttkRangePolygon::processTriangles(vtkUnstructuredGrid *input,
   featureEdges->SetColoring(false);
   featureEdges->SetInputConnection(surfaceCleaner->GetOutputPort());
 
-  vtkSmartPointer<vtkDataSetTriangleFilter> triangleMaker
+  vtkSmartPointer<vtkDataSetTriangleFilter> const triangleMaker
     = vtkSmartPointer<vtkDataSetTriangleFilter>::New();
 
   triangleMaker->SetInputConnection(featureEdges->GetOutputPort());
@@ -115,51 +144,39 @@ int ttkRangePolygon::processTriangles(vtkUnstructuredGrid *input,
   if(NumberOfIterations > 0) {
 
     // set up the triangulation
-    Triangulation *triangulation = ttkTriangulation::getTriangulation(output);
-    triangulation->setWrapper(this);
+    Triangulation *triangulation = ttkAlgorithm::GetTriangulation(output);
 
     ScalarFieldSmoother smoother;
-    smoother.setWrapper(this);
     smoother.setDimensionNumber(3);
     smoother.setInputDataPointer(output->GetPoints()->GetVoidPointer(0));
     smoother.setOutputDataPointer(output->GetPoints()->GetVoidPointer(0));
-    smoother.setupTriangulation(triangulation);
+    smoother.preconditionTriangulation(triangulation);
 
     switch(output->GetPoints()->GetDataType()) {
-      vtkTemplateMacro(smoother.smooth<VTK_TT>(NumberOfIterations));
+      vtkTemplateMacro(
+        smoother.smooth<VTK_TT>(triangulation, NumberOfIterations));
     }
 
     for(int i = 0; i < output->GetPointData()->GetNumberOfArrays(); i++) {
       vtkDataArray *field = output->GetPointData()->GetArray(i);
 
-      smoother.setWrapper(this);
       smoother.setDebugLevel(0);
 
       smoother.setDimensionNumber(field->GetNumberOfComponents());
       smoother.setInputDataPointer(field->GetVoidPointer(0));
 
       smoother.setOutputDataPointer(field->GetVoidPointer(0));
-      smoother.setupTriangulation(triangulation);
+      smoother.preconditionTriangulation(triangulation);
 
       switch(field->GetDataType()) {
-        vtkTemplateMacro(smoother.smooth<VTK_TT>(NumberOfIterations));
+        vtkTemplateMacro(
+          smoother.smooth<VTK_TT>(triangulation, NumberOfIterations));
       }
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[ttkRangePolygon] Range polygon extracted in " << t.getElapsedTime()
-        << " s. (" << output->GetNumberOfCells() << " edge(s))" << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
-
-  {
-    stringstream msg;
-    msg << "[ttkRangePolygon] Memory usage: " << m.getElapsedUsage() << " MB."
-        << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
+  printMsg(std::to_string(output->GetNumberOfCells()) + " edges extracted", 1,
+           t.getElapsedTime(), threadNumber_);
 
   return 0;
 }

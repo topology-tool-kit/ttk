@@ -6,8 +6,7 @@
 /// \brief Class to answer range minimum queries in an array in constant time
 /// after a linearithmic time preprocess.
 
-#ifndef RANGEMINIMUMQUERY_H
-#define RANGEMINIMUMQUERY_H
+#pragma once
 
 #include <Debug.h>
 
@@ -20,11 +19,10 @@
 namespace ttk {
 
   template <class DataType>
-  class RangeMinimumQuery : public Debug {
+  class RangeMinimumQuery : virtual public Debug {
   public:
     RangeMinimumQuery();
     RangeMinimumQuery(std::vector<DataType> &input);
-    ~RangeMinimumQuery();
 
     inline void setVector(std::vector<DataType> &input) {
       input_ = input.data();
@@ -36,11 +34,11 @@ namespace ttk {
 
   protected:
     // Input vector
-    DataType *input_;
-    DataType *input_end_;
+    DataType *input_{};
+    DataType *input_end_{};
 
     // Sparse Table
-    std::vector<std::vector<int>> table_;
+    std::vector<std::vector<int>> table_{};
   };
 
 } // namespace ttk
@@ -50,18 +48,13 @@ namespace ttk {
 // Constructors
 template <class DataType>
 ttk::RangeMinimumQuery<DataType>::RangeMinimumQuery() {
-  input_ = nullptr;
-  input_end_ = nullptr;
+  this->setDebugMsgPrefix("RangeMinimumQuery");
 }
 template <class DataType>
 ttk::RangeMinimumQuery<DataType>::RangeMinimumQuery(
   std::vector<DataType> &input) {
   setVector(input);
 }
-
-// Destructor
-template <class DataType>
-ttk::RangeMinimumQuery<DataType>::~RangeMinimumQuery(){};
 
 // Preprocessing
 template <class DataType>
@@ -70,8 +63,9 @@ int ttk::RangeMinimumQuery<DataType>::preprocess(const bool silent) {
   Timer t;
 
   // Compute the size of the matrix
-  int sizeOfArray = static_cast<int>(input_end_ - input_);
-  int numberOfBlocs = static_cast<unsigned int>(log2(sizeOfArray + 1)) + 1;
+  int const sizeOfArray = static_cast<int>(input_end_ - input_);
+  int const numberOfBlocs
+    = static_cast<unsigned int>(log2(sizeOfArray + 1)) + 1;
 
   // Init the matrix
   table_.resize(sizeOfArray);
@@ -96,11 +90,8 @@ int ttk::RangeMinimumQuery<DataType>::preprocess(const bool silent) {
     }
   }
   // Debug messages
-  if(!silent && (debugLevel_ > timeMsg)) {
-    std::stringstream msg;
-    msg << "[RangeMinimumQuery] Preprocessed queries in " << t.getElapsedTime()
-        << "s." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+  if(!silent) {
+    this->printMsg("Preprocessed queries.", 1.0, t.getElapsedTime(), 1);
   }
   return 0;
 }
@@ -116,7 +107,7 @@ int ttk::RangeMinimumQuery<DataType>::query(int i, int j) const {
 #endif
 
   // Compute size of blocs (2^k) to use
-  int k = static_cast<int>(log2(j - i + 1));
+  int const k = static_cast<int>(log2(j - i + 1));
   // Compute the range minimum
   if(input_[table_[i][k]] <= input_[table_[j - (1 << k) + 1][k]]) {
     return table_[i][k];
@@ -124,5 +115,3 @@ int ttk::RangeMinimumQuery<DataType>::query(int i, int j) const {
     return table_[j - (1 << k) + 1][k];
   }
 }
-
-#endif

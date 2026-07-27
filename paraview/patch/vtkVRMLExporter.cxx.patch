@@ -1,9 +1,9 @@
 --- a/VTK/IO/Export/vtkVRMLExporter.cxx	2015-02-22 12:45:13.145026211 +0100
 +++ b/VTK/IO/Export/vtkVRMLExporter.cxx.orig	2016-05-25 18:10:45.731031246 +0200
 @@ -38,6 +38,8 @@
- 
+
  vtkStandardNewMacro(vtkVRMLExporter);
- 
+
 +vtkPolyData *exportPolyData_ = NULL;
 +
  vtkVRMLExporter::vtkVRMLExporter()
@@ -18,11 +18,11 @@
 +//   vtkCamera *cam;
 +//   double *tempd;
    FILE *fp;
- 
+
    // make sure the user specified a FileName or FilePointer
 @@ -131,28 +133,31 @@
    // End of Background
- 
+
    // do the camera
 -  cam = ren->GetActiveCamera();
 -  fprintf(fp,"    Viewpoint\n      {\n      fieldOfView %f\n",
@@ -56,7 +56,7 @@
 +//   tempd = cam->GetOrientationWXYZ();
 +//   fprintf(fp,"      orientation %g %g %g %g\n      }\n", tempd[1], tempd[2],
 +//           tempd[3], tempd[0]*vtkMath::Pi()/180.0);
-+// 
++//
 +//   // do the lights first the ambient then the others
 +//   fprintf(fp,
 +//     "    NavigationInfo {\n      type [\"EXAMINE\",\"FLY\"]\n      speed %f\n",
@@ -70,12 +70,12 @@
 +//     fprintf(fp,"      headlight FALSE}\n\n");
 +//     }
 +  // end of BUG fix
-+    
++
    fprintf(fp,
      "    DirectionalLight { ambientIntensity 1 intensity 0 # ambient light\n");
    fprintf(fp,"      color %f %f %f }\n\n", ren->GetAmbient()[0],
 @@ -237,6 +242,9 @@
- 
+
  void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp)
  {
 +
@@ -88,17 +88,17 @@
      anActor->GetMapper()->Update();
      pd = static_cast<vtkPolyData *>(inputDO);
      }
-+    
++
 +  // BUG fix
 +  exportPolyData_ = static_cast<vtkPolyData *>(pd);
 +  // end of BUG fix
- 
+
    pm = vtkPolyDataMapper::New();
    pm->SetInputData(pd);
 @@ -714,6 +726,23 @@
      fprintf(fp,"          }\n");
      }
- 
+
 +  // BUG fix here.
 +  if(exportPolyData_){
 +    fprintf(fp,"          texCoordIndex[\n");
@@ -115,7 +115,7 @@
 +    fprintf(fp,"          ]\n");
 +  }
 +  // end of BUG fix here.
-+    
++
    // write out the point data
    if (colors)
      {

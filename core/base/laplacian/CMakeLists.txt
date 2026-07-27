@@ -3,7 +3,12 @@ ttk_add_base_library(laplacian
     Laplacian.cpp
   HEADERS
     Laplacian.h
-  LINK
+  DEPENDS
     geometry
     triangulation
     )
+
+if(TTK_ENABLE_EIGEN)
+  target_compile_definitions(laplacian PRIVATE TTK_ENABLE_EIGEN)
+  target_link_libraries(laplacian PRIVATE Eigen3::Eigen)
+endif()

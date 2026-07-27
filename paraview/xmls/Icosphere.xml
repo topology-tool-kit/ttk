@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="sources">
+        <SourceProxy name="ttkIcosphere" class="ttkIcosphere" label="TTK Icosphere">
+            <Documentation long_help="TTK filter that creates an Icosphere" short_help="TTK filter that creates an Icosphere">
+                This filter creates an Icosphere with a specified radius, center, and number of subdivisions. Alternatively, by providing an optional input, the filter will automatically determine the radius and center such that the resulting Icosphere encapsulates the input object. In this case, the entered radius parameter is used as a scaling factor.
+            </Documentation>
+
+            <IntVectorProperty name="NumberOfSubdivisions" label="Subdivisions" command="SetNumberOfSubdivisions" number_of_elements="1" default_values="0">
+                <Documentation>Number of subdevisions.</Documentation>
+            </IntVectorProperty>
+            <DoubleVectorProperty name="Radius" label="Radius" command="SetRadius" number_of_elements="1" default_values="1">
+                <Documentation>Radius in world coordinates. If an input is provided then the radius is used as a scaling factor of the resulting bounding icosphere.</Documentation>
+            </DoubleVectorProperty>
+            <DoubleVectorProperty name="Center" label="Center" command="SetCenter" number_of_elements="3" default_values="0 0 0">
+                <Documentation>Center of the icosphere. If an input is provided this parameter will be overwritten.</Documentation>
+            </DoubleVectorProperty>
+            <IntVectorProperty name="ComputeNormals" label="Compute Normals" number_of_elements="1" default_values="0" command="SetComputeNormals" >
+                <BooleanDomain name="bool" />
+                <Documentation>Controls if the output contains normals at the vertices.</Documentation>
+            </IntVectorProperty>
+
+            <PropertyGroup panel_widget="Line" label="Output Options">
+                <Property name="NumberOfSubdivisions" />
+                <Property name="Radius" />
+                <Property name="Center" />
+                <Property name="ComputeNormals" />
+            </PropertyGroup>
+
+            ${DEBUG_WIDGETS}
+
+            <Hints>
+                <ShowInMenu category="TTK" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

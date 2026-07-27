@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="ttkCinemaImaging" class="ttkCinemaImaging" label="TTK CinemaImaging">
+            <Documentation long_help="TTK CinemaImaging" short_help="TTK CinemaImaging">
+                This filter takes images of a vtkDataObject (first input) from angles specified on a vtkPointSet (second input). Each image will be a block of a vtkMultiBlockDataSet where block order corresponds to point order. Each sample point can optionally have vtkDoubleArrays to override the default rendering parameters, i.e, the resolution, camera direction, clipping planes, and viewport height.
+            
+                Online examples:
+
+                - https://topology-tool-kit.github.io/examples/geometryApproximation/
+
+            </Documentation>
+
+            <!-- Inputs -->
+            <InputProperty name="Dataset" port_index="0" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkMultiBlockDataSet" />
+                    <DataType value="vtkUnstructuredGrid" />
+                    <DataType value="vtkPolyData" />
+                </DataTypeDomain>
+                <Documentation>Triangulation that is going to be depicted.</Documentation>
+            </InputProperty>
+            <InputProperty name="SamplingGrid" port_index="1" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkPointSet" />
+                </DataTypeDomain>
+                <Documentation>vtkPointSet that represents the camera sampling locations.</Documentation>
+            </InputProperty>
+
+            <!-- GLOBAL OPTIONS -->
+            <IntVectorProperty name="Resolution" label="Resolution" command="SetResolution" number_of_elements="2" default_values="256 256">
+                <Documentation>Image Resolution</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="Backend" label="Backend" command="SetBackend" number_of_elements="1" default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="VTK OpenGL"/>
+                    <Entry value="1" text="Embree"/>
+                    <Entry value="2" text="Native"/>
+                </EnumerationDomain>
+                <Documentation>Rendering Backend</Documentation>
+            </IntVectorProperty>
+
+            <!-- PROJECTION -->
+            <IntVectorProperty name="ProjectionMode" command="SetProjectionMode" number_of_elements="1" default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Orthographic"/>
+                    <Entry value="1" text="Perspective"/>
+                </EnumerationDomain>
+                <Documentation>Use orthographic or perspective camera projection.</Documentation>
+            </IntVectorProperty>
+
+
+            <!-- FOCAL POINT -->
+            <IntVectorProperty name="AutoFocalPoint" command="SetAutoFocalPoint" number_of_elements="1" default_values="1">
+                <BooleanDomain name="bool" />
+                <Documentation>Automatically set focus to sampling grid center.</Documentation>
+            </IntVectorProperty>
+            <DoubleVectorProperty name="FocalPoint" command="SetFocalPoint" number_of_elements="3" default_values="0 0 0">
+                <Documentation>Camera FocalPoint.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="AutoFocalPoint" value="0" />
+                </Hints>
+            </DoubleVectorProperty>
+
+            <!-- NEAR FAR -->
+            <IntVectorProperty name="AutoNearFar" command="SetAutoNearFar" number_of_elements="1" default_values="1">
+                <BooleanDomain name="bool" />
+                <Documentation>Automatically set camera near-far plane settings based on grid and object bounds.</Documentation>
+            </IntVectorProperty>
+            <DoubleVectorProperty name="NearFar" command="SetNearFar" number_of_elements="2" default_values="0.1 1">
+                <Documentation>Near/Far plane settings.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="AutoNearFar" value="0" />
+                </Hints>
+            </DoubleVectorProperty>
+
+            <!-- HEIGHT -->
+            <IntVectorProperty name="AutoHeight" command="SetAutoHeight" number_of_elements="1" default_values="1">
+                <BooleanDomain name="bool" />
+                <Documentation>Automatically set camera height to sampling grid diameter.</Documentation>
+            </IntVectorProperty>
+            <DoubleVectorProperty name="Height" command="SetHeight" number_of_elements="1" default_values="1">
+                <Documentation>Height of the camera in world coordinates.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="AutoHeight" value="0" />
+                </Hints>
+            </DoubleVectorProperty>
+
+            <!-- ANGLE -->
+            <DoubleVectorProperty name="Angle" command="SetAngle" number_of_elements="1" default_values="90">
+                <DoubleRangeDomain name="range" min="1" max="180" />
+                <Documentation>Camera Angle.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ProjectionMode" value="1" />
+                </Hints>
+            </DoubleVectorProperty>
+
+            <!-- Groups -->
+            <PropertyGroup panel_widget="Line" label="Render Options">
+                <Property name="Resolution" />
+                <Property name="Backend" />
+            </PropertyGroup>
+            <PropertyGroup panel_widget="Line" label="Camera Options">
+                <Property name="ProjectionMode" />
+                <Property name="AutoFocalPoint" />
+                <Property name="FocalPoint" />
+                <Property name="AutoNearFar" />
+                <Property name="NearFar" />
+                <Property name="AutoHeight" />
+                <Property name="Height" />
+                <Property name="Angle" />
+            </PropertyGroup>
+
+            ${DEBUG_WIDGETS}
+
+            <Hints>
+                <RepresentationType view="RenderView" type="Surface"/>
+                <ShowInMenu category="TTK - Cinema" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

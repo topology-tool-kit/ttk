@@ -1,30 +1,60 @@
+// VTK includes
+#include <vtkActor.h>
+#include <vtkActorCollection.h>
+#include <vtkAssemblyPath.h>
+#include <vtkCamera.h>
+#include <vtkCellArray.h>
+#include <vtkCompositeDataGeometryFilter.h>
+#include <vtkDataArray.h>
+#include <vtkDataObject.h>
+#include <vtkGeometryFilter.h>
+#include <vtkLightCollection.h>
+#include <vtkMapper.h>
+#include <vtkMath.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkPoints.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderer.h>
+#include <vtkRendererCollection.h>
+#include <vtkSmartPointer.h>
+#include <vtkTransform.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkVRMLExporter.h>
+#include <vtkVersionMacros.h>
+
+// base code includes
+#include <Debug.h>
+
 #include <ttkWRLExporter.h>
 
-using namespace std;
-using namespace ttk;
+/// @cond
 
-vtkPolyData *ttkWRLExporterPolyData_ = NULL;
+TTKWRLEXPORTER_EXPORT vtkPolyData *ttkWRLExporterPolyData_ = nullptr;
 
 // Over-ride the appropriate functions of the vtkVRMLExporter class.
-void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
+TTKWRLEXPORTER_EXPORT void vtkVRMLExporter::WriteAnActor(vtkActor *anActor,
+                                                         FILE *fp) {
 
-  {
-    ttk::Debug debugInfo;
-    stringstream msg;
-    msg << "[ttkWRLExporter] Using TTK fix for VRML export..." << endl;
-    debugInfo.dMsg(cout, msg.str(), 2);
-  }
+  ttk::Debug debugInfo;
+  debugInfo.setDebugMsgPrefix("WRLExporter");
+  debugInfo.printWrn("Using TTK fix for VRML export...");
 
   vtkSmartPointer<vtkPolyData> pd;
   vtkPointData *pntData;
   vtkPoints *points;
-  vtkDataArray *normals = NULL;
-  vtkDataArray *tcoords = NULL;
+  vtkDataArray *normals = nullptr;
+  vtkDataArray *tcoords = nullptr;
   int i, i1, i2;
   double *tempd;
   vtkCellArray *cells;
   vtkIdType npts = 0;
-  vtkIdType *indx = 0;
+#ifdef VTK_CELL_ARRAY_V2
+  vtkIdType const *indx = nullptr;
+#else
+  vtkIdType *indx = nullptr;
+#endif
   int pointDataWritten = 0;
   vtkPolyDataMapper *pm;
   vtkUnsignedCharArray *colors;
@@ -33,7 +63,7 @@ void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
   vtkTransform *trans;
 
   // see if the actor has a mapper. it could be an assembly
-  if(anActor->GetMapper() == NULL) {
+  if(anActor->GetMapper() == nullptr) {
     return;
   }
 
@@ -58,7 +88,7 @@ void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
 
   vtkDataObject *inputDO = anActor->GetMapper()->GetInputDataObject(0, 0);
 
-  if(inputDO == NULL) {
+  if(inputDO == nullptr) {
     return;
   }
 
@@ -116,7 +146,12 @@ void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
     fprintf(fp, "            solid FALSE\n");
 
     if(!pointDataWritten) {
+
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 4, 20250513)
+      this->WritePointData(points, normals, tcoords, colors, false, fp);
+#else
       this->WritePointData(points, normals, tcoords, colors, fp);
+#endif
       pointDataWritten = 1;
     } else {
       fprintf(fp, "            coord  USE VTKcoordinates\n");
@@ -160,7 +195,13 @@ void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
     fprintf(fp, "          geometry IndexedFaceSet {\n");
 
     if(!pointDataWritten) {
+
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 4, 20250513)
+      this->WritePointData(points, normals, tcoords, colors, false, fp);
+#else
       this->WritePointData(points, normals, tcoords, colors, fp);
+#endif
+
       pointDataWritten = 1;
     } else {
       fprintf(fp, "            coord  USE VTKcoordinates\n");
@@ -209,7 +250,12 @@ void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
     fprintf(fp, "          geometry IndexedLineSet {\n");
 
     if(!pointDataWritten) {
-      this->WritePointData(points, NULL, NULL, colors, fp);
+
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 4, 20250513)
+      this->WritePointData(points, nullptr, nullptr, colors, false, fp);
+#else
+      this->WritePointData(points, nullptr, nullptr, colors, fp);
+#endif
     } else {
       fprintf(fp, "            coord  USE VTKcoordinates\n");
 
@@ -286,7 +332,7 @@ void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
   pm->Delete();
 }
 
-void vtkVRMLExporter::WriteData() {
+TTKWRLEXPORTER_EXPORT void vtkVRMLExporter::WriteData() {
 
   vtkRenderer *ren;
   vtkActorCollection *ac;
@@ -298,7 +344,7 @@ void vtkVRMLExporter::WriteData() {
   FILE *fp;
 
   // make sure the user specified a FileName or FilePointer
-  if(!this->FilePointer && (this->FileName == NULL)) {
+  if(!this->FilePointer && (this->FileName == nullptr)) {
     vtkErrorMacro(<< "Please specify FileName to use");
     return;
   }
@@ -406,11 +452,15 @@ void vtkVRMLExporter::WriteData() {
   }
 }
 
-void vtkVRMLExporter::WritePointData(vtkPoints *points,
-                                     vtkDataArray *normals,
-                                     vtkDataArray *tcoords,
-                                     vtkUnsignedCharArray *colors,
-                                     FILE *fp) {
+TTKWRLEXPORTER_EXPORT void
+  vtkVRMLExporter::WritePointData(vtkPoints *points,
+                                  vtkDataArray *normals,
+                                  vtkDataArray *tcoords,
+                                  vtkUnsignedCharArray *colors,
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 4, 20250513)
+                                  bool vtkNotUsed(cellData),
+#endif
+                                  FILE *fp) {
 
   double *p;
   unsigned char *c;
@@ -454,7 +504,11 @@ void vtkVRMLExporter::WritePointData(vtkPoints *points,
       fprintf(fp, "          texCoordIndex[\n");
       vtkCellArray *cells = ttkWRLExporterPolyData_->GetPolys();
       vtkIdType npts = 0;
-      vtkIdType *indx = NULL;
+#ifdef VTK_CELL_ARRAY_V2
+      vtkIdType const *indx = nullptr;
+#else
+      vtkIdType *indx = nullptr;
+#endif
       for(cells->InitTraversal(); cells->GetNextCell(npts, indx);) {
         fprintf(fp, "            ");
         for(int i = 0; i < npts; i++) {
@@ -480,3 +534,5 @@ void vtkVRMLExporter::WritePointData(vtkPoints *points,
     fprintf(fp, "          }\n");
   }
 }
+
+/// @endcond

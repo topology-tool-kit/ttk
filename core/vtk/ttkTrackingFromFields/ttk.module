@@ -1,0 +1,12 @@
+NAME
+  ttkTrackingFromFields
+SOURCES
+  ttkTrackingFromFields.cpp
+HEADERS
+  ttkTrackingFromFields.h
+DEPENDS
+  trackingFromCriticalPoints
+  trackingFromFields
+  trackingFromPersistenceDiagrams
+  trackingPostProcessing
+  ttkAlgorithm

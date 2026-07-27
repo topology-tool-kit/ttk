@@ -1,0 +1,95 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkMarchingTetrahedra"
+      class="ttkMarchingTetrahedra"
+      label="TTK MarchingTetrahedra">
+      <Documentation
+        long_help="TTK marchingTetrahedra plugin."
+        short_help="TTK marchingTetrahedra plugin.">
+        Given an input point data array and triangulation this class executes the marching tetrahedra/triangles algorithm. It has three options that either separate each label with a single separating geometry inbetween two labels, or a separating geometry enclosing each label (detailed and fast mode).
+
+        Related publication:
+        "Parallel Computation of Piecewise Linear Morse-Smale Segmentations"
+        Robin G. C. Maack, Jonas Lukasczyk, Julien Tierny, Hans Hagen, Ross Maciejewski, Christoph Garth
+        IEEE Transactions on Visualization and Computer Graphics \n
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/morseSmaleSegmentation_at/
+
+      </Documentation>
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" attribute_type="point" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+          TTK assumes that the input dataset is made of only one connected component.
+          If it's not the case, you can use the filter "Connectivity" (and select "Extract Largest Region").
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+        name="Scalar Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        default_values="0"
+        number_of_elements="5"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+       <IntVectorProperty
+        name="SurfaceType"
+        label="Surface Type"
+        command="SetSurfaceMode"
+        number_of_elements="1"
+        default_values="0">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Separators"/>
+          <Entry value="1" text="Boundaries"/>
+          <Entry value="2" text="Detailed Boundaries"/>
+        </EnumerationDomain>
+        <Documentation>
+          Select the compute mode for the basin separating surfaces.
+        </Documentation>
+      </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="Scalar Field" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="SurfaceType"/>
+      </PropertyGroup>
+
+      <OutputPort name="Sepators" index="0" id="port0"/>
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="MorphologicalOperators" class="ttkMorphologicalOperators" label="TTK MorphologicalOperators">
+            <Documentation long_help="TTK morphologicalOperators" short_help="TTK morphologicalOperators">
+This filter either a) dilates a specified label by assigning the label of a corresponding vertex to all its neighbors, or b) erodes a specified label by assigning to a corresponding vertex the largest label among its neighbors.
+            </Documentation>
+
+            <InputProperty name="Input" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkDataSet" />
+                </DataTypeDomain>
+                <InputArrayDomain name="input_array" attribute_type="point"/>
+                <Documentation>Input vtkDataSet.</Documentation>
+            </InputProperty>
+
+            <StringVectorProperty name="Labels" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+                <ArrayListDomain name="array_list" attribute_type="Scalars">
+                    <RequiredProperties>
+                        <Property function="Input" name="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>The array that will be dilated or eroded.</Documentation>
+            </StringVectorProperty>
+
+            <IntVectorProperty name="Mode" command="SetMode" number_of_elements="1" default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Dilate"/>
+                    <Entry value="1" text="Erode"/>
+                    <Entry value="2" text="Open"/>
+                    <Entry value="3" text="Close"/>
+                </EnumerationDomain>
+                <Documentation>This option controls if the filter dilates or erodes the input array.</Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty name="Iterations" command="SetIterations" number_of_elements="1" default_values="1">
+              <IntRangeDomain name="range" min="1" max="10" />
+              <Documentation>Number of dilate/erode iterations.</Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty name="Grayscale"
+                               label="Use Grayscale Operators"
+                               command="SetGrayscale"
+                               number_of_elements="1"
+                               default_values="0"
+                               panel_visibility="default">
+              <BooleanDomain name="bool"/>
+              <Documentation>
+                Use the grayscale version of the morphological operators
+              </Documentation>
+            </IntVectorProperty>
+
+            <StringVectorProperty name="PivotLabel" command="SetPivotLabel" number_of_elements="1" animateable="0" default_values="0">
+                <Documentation>The value that will be dialted or eroded.</Documentation>
+                <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="Grayscale"
+                                           value="0" />
+                </Hints>
+            </StringVectorProperty>
+
+            <PropertyGroup panel_widget="Line" label="Input Options">
+                <Property name="Labels" />
+            </PropertyGroup>
+            <PropertyGroup panel_widget="Line" label="Output Options">
+                <Property name="Mode" />
+                <Property name="Iterations" />
+                <Property name="Grayscale" />
+                <Property name="PivotLabel" />
+            </PropertyGroup>
+
+            ${DEBUG_WIDGETS}
+
+            <Hints>
+                <ShowInMenu category="TTK - Scalar Data" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

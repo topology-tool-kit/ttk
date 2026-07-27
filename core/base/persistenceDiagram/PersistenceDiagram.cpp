@@ -5,13 +5,11 @@ using namespace ttk;
 
 using namespace ftm;
 
-PersistenceDiagram::PersistenceDiagram()
-  : ComputeSaddleConnectors{},
-
-    triangulation_{}, inputScalars_{}, CTDiagram_{} {
-}
-
-PersistenceDiagram::~PersistenceDiagram() {
+PersistenceDiagram::PersistenceDiagram() {
+  setDebugMsgPrefix("PersistenceDiagram");
+#ifdef TTK_ENABLE_MPI
+  hasMPISupport_ = true;
+#endif
 }
 
 CriticalType PersistenceDiagram::getNodeType(FTMTree_MT *tree,
@@ -27,7 +25,7 @@ CriticalType PersistenceDiagram::getNodeType(FTMTree_MT *tree,
     upDegree = node->getNumberOfDownSuperArcs();
     downDegree = node->getNumberOfUpSuperArcs();
   }
-  int degree = upDegree + downDegree;
+  int const degree = upDegree + downDegree;
 
   // saddle point
   if(degree > 1) {
@@ -43,4 +41,14 @@ CriticalType PersistenceDiagram::getNodeType(FTMTree_MT *tree,
     else
       return CriticalType::Local_maximum;
   }
+}
+
+void ttk::PersistenceDiagram::sortPersistenceDiagram(
+  std::vector<PersistencePair> &diagram, const SimplexId *const offsets) const {
+
+  auto cmp = [offsets](const PersistencePair &a, const PersistencePair &b) {
+    return offsets[a.birth.id] < offsets[b.birth.id];
+  };
+
+  std::sort(diagram.begin(), diagram.end(), cmp);
 }

@@ -1,0 +1,8 @@
+NAME
+  ttkFlattenMultiBlock
+SOURCES
+  ttkFlattenMultiBlock.cpp
+HEADERS
+  ttkFlattenMultiBlock.h
+DEPENDS
+  ttkAlgorithm

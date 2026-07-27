@@ -6,9 +6,9 @@
 /// \brief TTK VTK-filter that computes the overlap between labeled
 /// vtkPointSets.
 ///
-/// VTK wrapping code for the @TrackingFromOverlap package.
+/// VTK wrapping code for the ttk::TrackingFromOverlap package.
 ///
-/// This filter identifies and tracks labled vtkPointSets across time (and
+/// This filter identifies and tracks labeled vtkPointSets across time (and
 /// optionally levels) based on spatial overlap, where two points overlap iff
 /// their corresponding coordinates are equal. This filter can be executed
 /// iteratively and can generate nested tracking graphs.
@@ -32,7 +32,12 @@
 /// holds all timesteps of level \b j. \param Output A \b vtkUnstructuredGrid
 /// that represents the (nested) tracking graph embedded in the spatial domain.
 ///
-/// sa ttk::TrackingFromOverlap
+/// \sa ttk::TrackingFromOverlap
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/">Nested
+///   Tracking from Overlap example</a> \n
 
 #pragma once
 
@@ -42,77 +47,29 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGridAlgorithm.h>
 
+// VTK Module
+#include <ttkTrackingFromOverlapModule.h>
+
 // TTK includes
 #include <TrackingFromOverlap.h>
-#include <ttkWrapper.h>
+#include <ttkAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTrackingFromOverlap
-#else
-class ttkTrackingFromOverlap
-#endif
-  : public vtkUnstructuredGridAlgorithm,
-    public ttk::Wrapper {
+class TTKTRACKINGFROMOVERLAP_EXPORT ttkTrackingFromOverlap
+  : public ttkAlgorithm,
+    protected ttk::TrackingFromOverlap {
 
 public:
   static ttkTrackingFromOverlap *New();
-  vtkTypeMacro(ttkTrackingFromOverlap, vtkUnstructuredGridAlgorithm)
+  vtkTypeMacro(ttkTrackingFromOverlap, ttkAlgorithm);
 
-    vtkSetMacro(LabelFieldName, string);
-  vtkGetMacro(LabelFieldName, string);
-
-  // default ttk setters
-  vtkSetMacro(debugLevel_, int);
-  void SetThreads() {
-    threadNumber_
-      = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
-    Modified();
-  }
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
+  vtkSetMacro(LabelFieldName, const std::string &);
+  vtkGetMacro(LabelFieldName, std::string);
 
 protected:
   ttkTrackingFromOverlap() {
-    SetLabelFieldName("RegionId");
-
-    UseAllCores = false;
-
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkTrackingFromOverlap(){};
-
-  bool UseAllCores;
-  int ThreadNumber;
 
   int reset();
 
@@ -134,23 +91,39 @@ protected:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
+  int FillInputPortInformation(int port, vtkInformation *info) override {
+    switch(port) {
+      case 0:
+        info->Remove(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE());
+        info->Append(
+          vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkMultiBlockDataSet");
+        info->Append(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+        break;
+      default:
+        return 0;
+    }
+    return 1;
+  }
+
+  int FillOutputPortInformation(int port, vtkInformation *info) override {
+    switch(port) {
+      case 0:
+        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+        break;
+      default:
+        return 0;
+    }
+    return 1;
+  }
+
 private:
   int LabelDataType;
-  string LabelFieldName;
-  ttk::TrackingFromOverlap trackingFromOverlap;
+  std::string LabelFieldName{"RegionId"};
 
   vtkSmartPointer<vtkMultiBlockDataSet> previousIterationData;
 
   // Containers for nodes and edges
-  vector<vector<Nodes>> levelTimeNodesMap; // N
-  vector<vector<Edges>> levelTimeEdgesTMap; // E_T
-  vector<vector<Edges>> timeLevelEdgesNMap; // E_N
-
-  bool needsToAbort() override {
-    return GetAbortExecute();
-  };
-  int updateProgress(const float &progress) override {
-    UpdateProgress(progress);
-    return 0;
-  };
+  std::vector<std::vector<Nodes>> levelTimeNodesMap; // N
+  std::vector<std::vector<Edges>> levelTimeEdgesTMap; // E_T
+  std::vector<std::vector<Edges>> timeLevelEdgesNMap; // E_N
 };

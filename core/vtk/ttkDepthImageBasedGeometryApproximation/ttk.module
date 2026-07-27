@@ -1,0 +1,9 @@
+NAME
+  ttkDepthImageBasedGeometryApproximation
+SOURCES
+  ttkDepthImageBasedGeometryApproximation.cpp
+HEADERS
+  ttkDepthImageBasedGeometryApproximation.h
+DEPENDS
+  depthImageBasedGeometryApproximation
+  ttkAlgorithm

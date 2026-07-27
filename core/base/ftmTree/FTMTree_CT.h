@@ -12,8 +12,7 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef FTMTREE_CT_H
-#define FTMTREE_CT_H
+#pragma once
 
 #include <queue>
 #include <set>
@@ -21,7 +20,6 @@
 // base code includes
 #include <Geometry.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 #include "FTMDataTypes.h"
 #include "FTMTree_MT.h"
@@ -31,28 +29,27 @@ namespace ttk {
 
     class FTMTree_CT : public FTMTree_MT {
     protected:
-      FTMTree_MT *jt_, *st_;
+      FTMTree_MT jt_, st_;
 
     public:
       // -----------------
       // Constructors
       // -----------------
 
-      FTMTree_CT(Params *const params,
-                 Triangulation *mesh,
-                 Scalars *const scalars);
-      virtual ~FTMTree_CT();
+      FTMTree_CT(const std::shared_ptr<Params> &params,
+                 const std::shared_ptr<Scalars> &scalars);
+      ~FTMTree_CT() override = default;
 
       // -----------------
       // ACCESSOR
       // -----------------
 
-      inline FTMTree_MT *getJoinTree(void) const {
-        return jt_;
+      inline FTMTree_MT *getJoinTree() {
+        return &jt_;
       }
 
-      inline FTMTree_MT *getSplitTree(void) const {
-        return st_;
+      inline FTMTree_MT *getSplitTree() {
+        return &st_;
       }
 
       inline FTMTree_MT *getTree(const TreeType tt) {
@@ -67,30 +64,29 @@ namespace ttk {
             return this;
             break;
           default:
-            return this;
             break;
         }
         return this;
       }
 
-      inline void setupTriangulation(Triangulation *m,
-                                     const bool preproc = true) {
-        FTMTree_MT::setupTriangulation(m, preproc);
-        jt_->setupTriangulation(m, false);
-        st_->setupTriangulation(m, false);
+      inline void preconditionTriangulation(AbstractTriangulation *tri,
+                                            const bool preproc = true) {
+        FTMTree_MT::preconditionTriangulation(tri, preproc);
+        jt_.preconditionTriangulation(tri, false);
+        st_.preconditionTriangulation(tri, false);
       }
 
-      inline int setDebugLevel(const int &d) {
+      inline int setDebugLevel(const int &d) override {
         Debug::setDebugLevel(d);
-        jt_->setDebugLevel(d);
-        st_->setDebugLevel(d);
+        jt_.setDebugLevel(d);
+        st_.setDebugLevel(d);
         return 0;
       }
 
-      inline int setThreadNumber(const int n) {
+      inline int setThreadNumber(const int n) override {
         Debug::setThreadNumber(n);
-        jt_->setThreadNumber(n);
-        st_->setThreadNumber(n);
+        jt_.setThreadNumber(n);
+        st_.setThreadNumber(n);
         return 0;
       }
 
@@ -98,9 +94,11 @@ namespace ttk {
       // PROCESS
       // -----------------
 
-      int leafSearch();
+      template <class triangulationType>
+      int leafSearch(const triangulationType *mesh);
 
-      void build(TreeType tt);
+      template <class triangulationType>
+      void build(const triangulationType *mesh, TreeType tt);
 
       void insertNodes();
 
@@ -112,10 +110,10 @@ namespace ttk {
                                    const bool isJT,
                                    idSuperArc xtArc);
 
-      void finalizeSegmentation(void);
+      void finalizeSegmentation();
     };
 
   } // namespace ftm
 } // namespace ttk
 
-#endif // CONTOURTREE_H
+#include <FTMTree_CT_Template.h>

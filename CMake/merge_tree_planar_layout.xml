@@ -1,0 +1,216 @@
+<IntVectorProperty
+name="BranchDecompositionPlanarLayout"
+command="SetBranchDecompositionPlanarLayout"
+label="Branch Decomposition Planar Layout"
+number_of_elements="1"
+default_values="0"
+panel_visibility="advanced">
+  <Hints>
+  <PropertyWidgetDecorator type="GenericDecorator"
+                           mode="visibility"
+                           property="MergeTreePlanarLayout"
+                           value="1" />
+  </Hints>
+  <Documentation>
+    Display a planar layout of the branch decomposition (each node is a branch in the original tree).
+  </Documentation>
+  <BooleanDomain name="bool"/>
+</IntVectorProperty>
+
+<IntVectorProperty
+name="PathPlanarLayout"
+command="SetPathPlanarLayout"
+label="Path Planar Layout"
+number_of_elements="1"
+default_values="0"
+panel_visibility="advanced">
+  <Hints>
+  <PropertyWidgetDecorator type="GenericDecorator"
+                           mode="visibility"
+                           property="MergeTreePlanarLayout"
+                           value="1" />
+  </Hints>
+  <Documentation>
+    
+  </Documentation>
+  <BooleanDomain name="bool"/>
+</IntVectorProperty>
+
+<DoubleVectorProperty
+name="BranchSpacing"
+command="SetBranchSpacing"
+label="Branch Spacing"
+number_of_elements="1"
+default_values="1">
+  <Hints>
+  <PropertyWidgetDecorator type="GenericDecorator"
+                           mode="visibility"
+                           property="MergeTreePlanarLayout"
+                           value="1" />
+  <PropertyWidgetDecorator type="GenericDecorator"
+                           mode="visibility"
+                           property="BranchDecompositionPlanarLayout"
+                           value="1" />
+  </Hints>
+  <Documentation>
+    Manage the distance between branch in the branch decomposition planar layout.
+  </Documentation>
+</DoubleVectorProperty>
+
+<DoubleVectorProperty
+name="ImportantPairs"
+command="SetImportantPairs"
+label="Important Pairs (%)"
+number_of_elements="1"
+default_values="10">
+  <Hints>
+  <PropertyWidgetDecorator type="GenericDecorator"
+                           mode="visibility"
+                           property="MergeTreePlanarLayout"
+                           value="1" />
+  </Hints>
+  <Documentation>
+    Threshold to consider a persistence pair as important. They will be displayed such that they are much more visible than the other pairs.
+  </Documentation>
+  <DoubleRangeDomain name="range" min="0" max="100" />
+</DoubleVectorProperty>
+
+<IntVectorProperty
+name="MaximumImportantPairs"
+command="SetMaximumImportantPairs"
+label="Maximum Number of Important Pairs"
+number_of_elements="1"
+default_values="0"
+panel_visibility="advanced">
+  <Hints>
+  <PropertyWidgetDecorator type="GenericDecorator"
+                          mode="visibility"
+                          property="MergeTreePlanarLayout"
+                          value="1" />
+  </Hints>
+  <Documentation>
+    Maximum number of important pairs for each tree.
+  </Documentation>
+</IntVectorProperty>
+
+<IntVectorProperty
+name="MinimumImportantPairs"
+command="SetMinimumImportantPairs"
+label="Minimum Number of Important Pairs"
+number_of_elements="1"
+default_values="0"
+panel_visibility="advanced">
+  <Hints>
+  <PropertyWidgetDecorator type="GenericDecorator"
+                          mode="visibility"
+                          property="MergeTreePlanarLayout"
+                          value="1" />
+  </Hints>
+  <Documentation>
+    Minimum number of important pairs for each tree.
+  </Documentation>
+</IntVectorProperty>
+
+<StringVectorProperty
+name="ExcludeImportantPairsLower"
+command="SetExcludeImportantPairsLower"
+label="Exclude Important Pairs Lower"
+number_of_elements="1"
+default_values=""
+panel_visibility="advanced">
+  <Hints>
+  <PropertyWidgetDecorator type="GenericDecorator"
+                          mode="visibility"
+                          property="MergeTreePlanarLayout"
+                          value="1" />
+  </Hints>
+  <Documentation>
+    Allows to forbid some pairs to be treated as important using intervals of relative persistence. This parameter is a string containing all lower bounds separated with a comma (",").
+    For example, when setting this parameter to "0, 20" and the ExcludeImportantPairsHigher parameter to "10, 30", then persistence pairs having a persistence in the range 0%-10% and in the range 20%-30% of the maximum persistence will not be treated as important no matter the value of ImportantPairsThreshold.
+  </Documentation>
+</StringVectorProperty>
+
+<StringVectorProperty
+name="ExcludeImportantPairsHigher"
+command="SetExcludeImportantPairsHigher"
+label="Exclude Important Pairs Higher"
+number_of_elements="1"
+default_values=""
+panel_visibility="advanced">
+  <Hints>
+  <PropertyWidgetDecorator type="GenericDecorator"
+                          mode="visibility"
+                          property="MergeTreePlanarLayout"
+                          value="1" />
+  </Hints>
+  <Documentation>
+    Allows to forbid some pairs to be treated as important using intervals of relative persistence. This parameter is a string containing all higher bounds separated with a comma (",").
+    For example, when setting the ExcludeImportantPairsLower parameter to "0, 20" and this parameter to "10, 30", then persistence pairs having a persistence in the range 0%-10% and in the range 20%-30% of the maximum persistence will not be treated as important no matter the value of ImportantPairsThreshold.
+  </Documentation>
+</StringVectorProperty>
+
+<DoubleVectorProperty
+name="ImportantPairsSpacing"
+command="SetImportantPairsSpacing"
+label="Important Pairs Spacing"
+number_of_elements="1"
+default_values="1">
+  <Hints>
+  <PropertyWidgetDecorator type="GenericDecorator"
+                           mode="visibility"
+                           property="MergeTreePlanarLayout"
+                           value="1" />
+  </Hints>
+  <Documentation>
+    Manage the distance of the important pairs with each other.
+  </Documentation>
+</DoubleVectorProperty>
+
+<DoubleVectorProperty
+name="NonImportantPairsSpacing"
+command="SetNonImportantPairsSpacing"
+label="Non Important Pairs Spacing"
+number_of_elements="1"
+default_values="0.1">
+  <Hints>
+  <PropertyWidgetDecorator type="GenericDecorator"
+                           mode="visibility"
+                           property="MergeTreePlanarLayout"
+                           value="1" />
+  </Hints>
+  <Documentation>
+    Manage the distance of the non-important pairs with each other.
+  </Documentation>
+</DoubleVectorProperty>
+
+<DoubleVectorProperty
+name="NonImportantPairsProximity"
+command="SetNonImportantPairsProximity"
+label="Non Important Pairs Proximity"
+number_of_elements="1"
+default_values="0.05">
+  <Hints>
+  <PropertyWidgetDecorator type="GenericDecorator"
+                           mode="visibility"
+                           property="MergeTreePlanarLayout"
+                           value="1" />
+  </Hints>
+  <Documentation>
+    Manage the distance of the non-important pairs to the important pairs they are attached to.
+  </Documentation>
+  <DoubleRangeDomain name="range" min="0" max="1" />
+</DoubleVectorProperty>
+
+<PropertyGroup panel_widget="Line" label="Output options">
+  <Property name="BranchDecompositionPlanarLayout"/>
+  <Property name="PathPlanarLayout"/>
+  <Property name="BranchSpacing"/>
+  <Property name="ImportantPairs"/>
+  <Property name="MaximumImportantPairs"/>
+  <Property name="MinimumImportantPairs"/>
+  <Property name="ExcludeImportantPairsHigher"/>
+  <Property name="ExcludeImportantPairsLower"/>
+  <Property name="ImportantPairsSpacing"/>
+  <Property name="NonImportantPairsSpacing"/>
+  <Property name="NonImportantPairsProximity"/>
+</PropertyGroup>

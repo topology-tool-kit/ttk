@@ -13,25 +13,34 @@
 /// IEEE Transactions on Visualization and Computer Graphics, 2008.
 ///
 /// \sa ttkContinuousScatterPlot.cpp %for a usage example.
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/builtInExample2/">
+///   Builtin example 2</a> \n
 
-#ifndef _CONTINUOUSSCATTERPLOT_H
-#define _CONTINUOUSSCATTERPLOT_H
+#pragma once
+
+#include <array>
+#include <limits>
 
 // base code includes
 #include <Geometry.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 namespace ttk {
 
-  class ContinuousScatterPlot : public Debug {
+  class ContinuousScatterPlot : virtual public Debug {
 
   public:
     ContinuousScatterPlot();
-    ~ContinuousScatterPlot();
+    ~ContinuousScatterPlot() override;
 
-    template <typename dataType1, typename dataType2>
-    int execute() const;
+    template <typename dataType1,
+              typename dataType2,
+              class triangulationType = AbstractTriangulation>
+    int execute(const dataType1 *,
+                const dataType2 *,
+                const triangulationType *) const;
 
     inline int setVertexNumber(const SimplexId &vertexNumber) {
       vertexNumber_ = vertexNumber;
@@ -46,11 +55,6 @@ namespace ttk {
       return 0;
     }
 
-    inline int setTriangulation(Triangulation *triangulation) {
-      triangulation_ = triangulation;
-      return 0;
-    }
-
     inline int setResolutions(const SimplexId &resolutionX,
                               const SimplexId &resolutionY) {
       resolutions_[0] = resolutionX;
@@ -58,22 +62,12 @@ namespace ttk {
       return 0;
     }
 
-    inline int setInputScalarField1(void *data) {
-      inputScalarField1_ = data;
-      return 0;
-    }
-
-    inline int setInputScalarField2(void *data) {
-      inputScalarField2_ = data;
-      return 0;
-    }
-
-    inline int setScalarMin(double *scalarMin) {
+    inline int setScalarMin(const std::array<double, 2> &scalarMin) {
       scalarMin_ = scalarMin;
       return 0;
     }
 
-    inline int setScalarMax(double *scalarMax) {
+    inline int setScalarMax(const std::array<double, 2> &scalarMax) {
       scalarMax_ = scalarMax;
       return 0;
     }
@@ -90,49 +84,46 @@ namespace ttk {
 
   protected:
     SimplexId vertexNumber_;
-    Triangulation *triangulation_;
     bool withDummyValue_;
     double dummyValue_;
     SimplexId resolutions_[2];
-    void *inputScalarField1_;
-    void *inputScalarField2_;
-    double *scalarMin_;
-    double *scalarMax_;
+    std::array<double, 2> scalarMin_{0, 0};
+    std::array<double, 2> scalarMax_{0, 0};
     std::vector<std::vector<double>> *density_;
     std::vector<std::vector<char>> *validPointMask_;
   };
 } // namespace ttk
 
-template <typename dataType1, typename dataType2>
-int ttk::ContinuousScatterPlot::execute() const {
+template <typename dataType1, typename dataType2, class triangulationType>
+int ttk::ContinuousScatterPlot::execute(
+  const dataType1 *scalars1,
+  const dataType2 *scalars2,
+  const triangulationType *triangulation) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputScalarField1_)
+  if(!scalars1)
     return -1;
-  if(!inputScalarField2_)
+  if(!scalars2)
     return -2;
-  if(!triangulation_)
+  if(!triangulation)
     return -3;
   if(!density_)
     return -4;
 
-  if(triangulation_->getNumberOfCells() <= 0) {
-    std::cerr << "[ContinuousScatterPlot] Error : no cells." << std::endl;
+  if(triangulation->getNumberOfCells() <= 0) {
+    this->printErr("no cells.");
     return -5;
   }
 
-  if(triangulation_->getCellVertexNumber(0) != 4) {
-    std::cerr << "[ContinuousScatterPlot] Error : no tetrahedra." << std::endl;
+  if(triangulation->getCellVertexNumber(0) != 4) {
+    this->printErr("no tetrahedra.");
     return -6;
   }
 #endif
 
-  dataType1 *scalars1 = static_cast<dataType1 *>(inputScalarField1_);
-  dataType2 *scalars2 = static_cast<dataType2 *>(inputScalarField2_);
-
   Timer t;
 
   // helpers:
-  const SimplexId numberOfCells = triangulation_->getNumberOfCells();
+  const SimplexId numberOfCells = triangulation->getNumberOfCells();
 
   // rendering helpers:
   // constant ray direction (ortho)
@@ -143,8 +134,10 @@ int ttk::ContinuousScatterPlot::execute() const {
     delta[0] / resolutions_[0], delta[1] / resolutions_[1]};
   const double epsilon{0.000001};
 
+  std::vector<std::array<SimplexId, 3>> triangles{};
+
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel for num_threads(threadNumber_) firstprivate(triangles)
 #endif
   for(SimplexId cell = 0; cell < numberOfCells; ++cell) {
     bool isDummy{};
@@ -158,7 +151,7 @@ int ttk::ContinuousScatterPlot::execute() const {
     // for each triangle
     for(int k = 0; k < 4; ++k) {
       // get indices
-      triangulation_->getCellVertex(cell, k, vertex[k]);
+      triangulation->getCellVertex(cell, k, vertex[k]);
 
       // get scalars
       data[k][0] = scalars1[vertex[k]];
@@ -182,8 +175,7 @@ int ttk::ContinuousScatterPlot::execute() const {
         localScalarMax[1] = data[k][1];
 
       // get positions
-
-      triangulation_->getVertexPoint(
+      triangulation->getVertexPoint(
         vertex[k], position[k][0], position[k][1], position[k][2]);
     }
     if(isDummy)
@@ -215,14 +207,14 @@ int ttk::ContinuousScatterPlot::execute() const {
       Geometry::crossProduct(v13, v12, a);
       Geometry::crossProduct(v12, v14, b);
       Geometry::crossProduct(v14, v13, c);
-      double det = Geometry::dotProduct(v14, a);
+      const double det = Geometry::dotProduct(v14, a);
       if(det == 0.) {
         for(int k = 0; k < 3; ++k) {
           g0[k] = 0.0;
           g1[k] = 0.0;
         }
       } else {
-        double invDet = 1.0 / det;
+        const double invDet = 1.0 / det;
         for(int k = 0; k < 3; ++k) {
           g0[k] = (s14[0] * a[k] + s13[0] * b[k] + s12[0] * c[k]) * invDet;
           g1[k] = (s14[1] * a[k] + s13[1] * b[k] + s12[1] * c[k]) * invDet;
@@ -241,53 +233,86 @@ int ttk::ContinuousScatterPlot::execute() const {
         isLimit = true;
     }
 
-    // classification:
+    // Classify tetrahedron based on their projection in the data domain,
+    // following Shirley & Tuchman algorithm
+
+    // Class 0 tetras have either 1 or 3 visible faces, so geometrically one
+    // point is in the triangle made by the 3 other in the 2D data domain.
+    // Testing if one point is inside the triangle made by the others is
+    // equivalent to testing the quadrilateral convexity property. Thus, for
+    // class 0, we cannot find a convex quadrilateral in the 2D plane out of
+    // these 4 points. Using the signs of cross products along the Z axis of
+    // consecutive edge vectors, we can find whether or not a convex quad can be
+    // found.
+
     int index[4]{0, 1, 2, 3};
-    bool isInTriangle{};
-    if(Geometry::isPointInTriangle(data[0], data[1], data[2], data[3]))
+    bool isInTriangle{}; // True if the tetra is class 0
+
+    const bool zCrossProductsSigns[4]
+      = {(data[1][0] - data[0][0]) * (data[2][1] - data[0][1])
+             - (data[1][1] - data[0][1]) * (data[2][0] - data[0][0])
+           > 0,
+         (data[2][0] - data[1][0]) * (data[3][1] - data[1][1])
+             - (data[2][1] - data[1][1]) * (data[3][0] - data[1][0])
+           > 0,
+         (data[3][0] - data[2][0]) * (data[0][1] - data[2][1])
+             - (data[3][1] - data[2][1]) * (data[0][0] - data[2][0])
+           > 0,
+         (data[0][0] - data[3][0]) * (data[1][1] - data[3][1])
+             - (data[0][1] - data[3][1]) * (data[1][0] - data[3][0])
+           > 0};
+
+    // For class 0, the quad is not convex, which means
+    // all but one consecutive edge vector cross-product Z coordinate have the
+    // same sign.
+    if((zCrossProductsSigns[0] != zCrossProductsSigns[1])
+       != (zCrossProductsSigns[2] != zCrossProductsSigns[3])) {
       isInTriangle = true;
-    else if(Geometry::isPointInTriangle(data[0], data[1], data[3], data[2])) {
-      isInTriangle = true;
-      index[0] = 0;
-      index[1] = 1;
-      index[2] = 3;
-      index[3] = 2;
-    } else if(Geometry::isPointInTriangle(data[0], data[2], data[3], data[1])) {
-      isInTriangle = true;
-      index[0] = 0;
-      index[1] = 2;
-      index[2] = 3;
-      index[3] = 1;
-    } else if(Geometry::isPointInTriangle(data[1], data[2], data[3], data[0])) {
-      isInTriangle = true;
-      index[0] = 1;
-      index[1] = 2;
-      index[2] = 3;
-      index[3] = 0;
+      if(zCrossProductsSigns[1] == zCrossProductsSigns[2]
+         && zCrossProductsSigns[2] == zCrossProductsSigns[3]) {
+        index[0] = 0;
+        index[1] = 2;
+        index[2] = 3;
+        index[3] = 1;
+      } else if(zCrossProductsSigns[0] == zCrossProductsSigns[2]
+                && zCrossProductsSigns[2] == zCrossProductsSigns[3]) {
+        index[0] = 0;
+        index[1] = 1;
+        index[2] = 3;
+        index[3] = 2;
+      } else if(zCrossProductsSigns[0] == zCrossProductsSigns[1]
+                && zCrossProductsSigns[1] == zCrossProductsSigns[2]) {
+        index[0] = 1;
+        index[1] = 2;
+        index[2] = 3;
+        index[3] = 0;
+      }
     }
 
     // projection:
     double density{};
-    std::vector<std::vector<SimplexId>> triangles;
-    double imaginaryPosition[3]{};
-    std::vector<SimplexId> triangle(3);
-    // class 0
+    double imaginaryPosition[3]{0, 0, 0};
+    triangles.clear();
+    std::array<SimplexId, 3> triangle{};
+
+    // class 0 projection : 3 triangles
     if(isInTriangle) {
       // mass density
       double massDensity{};
       {
-        double A;
+        double fullArea{};
 
         Geometry::computeTriangleArea(
-          data[index[0]], data[index[1]], data[index[2]], A);
-        double invA = 1.0 / A;
-        if(A == 0.) {
-          invA = 0.0;
+          data[index[0]], data[index[1]], data[index[2]], fullArea);
+
+        double invArea{};
+        if(fullArea == 0.) {
+          invArea = 0.0;
           isLimit = true;
+        } else {
+          invArea = 1.0 / fullArea;
         }
-
         double alpha, beta, gamma;
-
         Geometry::computeTriangleArea(
           data[index[1]], data[index[2]], data[index[3]], alpha);
 
@@ -297,19 +322,21 @@ int ttk::ContinuousScatterPlot::execute() const {
         Geometry::computeTriangleArea(
           data[index[0]], data[index[1]], data[index[3]], gamma);
 
-        alpha *= invA;
-        beta *= invA;
-        gamma *= invA;
+        alpha *= invArea;
+        beta *= invArea;
+        gamma *= invArea;
 
-        double p0[3];
-        double p1[3];
+        double centralPoint[3];
+        double interpolatedPoint[3]; // Coordinates of the point on the opposite
+                                     // face that has the same isovalue as the
+                                     // central point
         for(int k = 0; k < 3; ++k) {
-          p0[k] = position[index[3]][k];
-
-          p1[k] = alpha * position[index[0]][k] + beta * position[index[1]][k]
-                  + gamma * position[index[2]][k];
+          centralPoint[k] = position[index[3]][k];
+          interpolatedPoint[k] = alpha * position[index[0]][k]
+                                 + beta * position[index[1]][k]
+                                 + gamma * position[index[2]][k];
         }
-        massDensity = Geometry::distance(p0, p1);
+        massDensity = Geometry::distance(centralPoint, interpolatedPoint);
       }
 
       if(isLimit)
@@ -332,45 +359,57 @@ int ttk::ContinuousScatterPlot::execute() const {
       triangle[2] = vertex[index[2]];
       triangles.push_back(triangle);
     }
-    // class 1
+    // class 1 projection : 4 triangles using an "imaginary point"
     else {
       double massDensity{};
-      double p[3]{0, 0, 0};
-      if(Geometry::computeSegmentIntersection(
-           data[0][0], data[0][1], data[1][0], data[1][1], data[2][0],
-           data[2][1], data[3][0], data[3][1], p[0], p[1])) {
-        index[0] = 0;
-        index[1] = 1;
-        index[2] = 2;
-        index[3] = 3;
-      } else if(Geometry::computeSegmentIntersection(
-                  data[0][0], data[0][1], data[2][0], data[2][1], data[1][0],
-                  data[1][1], data[3][0], data[3][1], p[0], p[1])) {
-        index[0] = 0;
-        index[1] = 2;
-        index[2] = 1;
-        index[3] = 3;
-      } else if(Geometry::computeSegmentIntersection(
-                  data[0][0], data[0][1], data[3][0], data[3][1], data[1][0],
-                  data[1][1], data[2][0], data[2][1], p[0], p[1])) {
+
+      // We know that a convex quad can be made out of the 4 points in the data
+      // domain Still using cross-product signs, we find a point order where the
+      // quad is not self-intersecting A non self-intersecting quad would have
+      // the same cross-product signs for all 4 consecutive edge pairs
+      if(zCrossProductsSigns[0] != zCrossProductsSigns[1]) {
         index[0] = 0;
         index[1] = 3;
         index[2] = 1;
         index[3] = 2;
+        Geometry::computeSegmentIntersection(
+          data[0][0], data[0][1], data[3][0], data[3][1], data[1][0],
+          data[1][1], data[2][0], data[2][1], imaginaryPosition[0],
+          imaginaryPosition[1]);
+      } else if(zCrossProductsSigns[2] != zCrossProductsSigns[1]) {
+        index[0] = 0;
+        index[1] = 1;
+        index[2] = 2;
+        index[3] = 3;
+        Geometry::computeSegmentIntersection(
+          data[0][0], data[0][1], data[1][0], data[1][1], data[2][0],
+          data[2][1], data[3][0], data[3][1], imaginaryPosition[0],
+          imaginaryPosition[1]);
+      } else {
+        index[0] = 0;
+        index[1] = 2;
+        index[2] = 1;
+        index[3] = 3;
+        Geometry::computeSegmentIntersection(
+          data[0][0], data[0][1], data[2][0], data[2][1], data[1][0],
+          data[1][1], data[3][0], data[3][1], imaginaryPosition[0],
+          imaginaryPosition[1]);
       }
 
-      double a = Geometry::distance(data[index[0]], p);
-      double b = Geometry::distance(data[index[0]], data[index[1]]);
-      double r0 = a / b;
+      double distanceToIntersection
+        = Geometry::distance(data[index[0]], imaginaryPosition);
+      double diagonalLength
+        = Geometry::distance(data[index[0]], data[index[1]]);
+      const double r0 = distanceToIntersection / diagonalLength;
 
-      a = Geometry::distance(data[index[2]], p);
-      b = Geometry::distance(data[index[2]], data[index[3]]);
-      double r1 = a / b;
+      distanceToIntersection
+        = Geometry::distance(data[index[2]], imaginaryPosition);
+      diagonalLength = Geometry::distance(data[index[2]], data[index[3]]);
+      const double r1 = distanceToIntersection / diagonalLength;
 
       double p0[3];
       double p1[3];
       for(int k = 0; k < 3; ++k) {
-
         p0[k] = position[index[0]][k]
                 + r0 * (position[index[1]][k] - position[index[0]][k]);
 
@@ -383,10 +422,6 @@ int ttk::ContinuousScatterPlot::execute() const {
         density = std::numeric_limits<decltype(density)>::max();
       else
         density = massDensity / volume;
-
-      imaginaryPosition[0] = p[0];
-      imaginaryPosition[1] = p[1];
-      imaginaryPosition[2] = 0;
 
       // four triangles projection
       triangle[0] = -1; // new geometry
@@ -466,25 +501,14 @@ int ttk::ContinuousScatterPlot::execute() const {
 
               // triangle/ray intersection below
 #ifdef TTK_ENABLE_OPENMP
-#ifdef _WIN32
-#pragma omp atomic
-#else
 #pragma omp atomic update
-#endif
 #endif
             (*density_)[i][j] += (1.0 - u - v) * density;
 
 #ifdef TTK_ENABLE_OPENMP
-#ifdef _WIN32
-#pragma omp atomic
-            (*validPointMask_)[i][j] += 1;
-#else
 #pragma omp atomic write
-            (*validPointMask_)[i][j] = 1;
 #endif
-#else
             (*validPointMask_)[i][j] = 1;
-#endif
             break;
           }
         }
@@ -494,13 +518,9 @@ int ttk::ContinuousScatterPlot::execute() const {
 
   {
     std::stringstream msg;
-    msg << "[ContinuousScatterPlot] Data-set (" << numberOfCells
-        << " tetrahedra) processed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    msg << "Processed " << numberOfCells << " tetrahedra";
+    this->printMsg(msg.str(), 1, t.getElapsedTime(), threadNumber_);
   }
 
   return 0;
 }
-
-#endif // CONTINUOUSSCATTERPLOT_H

@@ -1,0 +1,4 @@
+NAME
+  ttkWebSocketIO
+DEPENDS
+  ttkAlgorithm

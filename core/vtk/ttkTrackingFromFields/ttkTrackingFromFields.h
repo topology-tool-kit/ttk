@@ -1,302 +1,346 @@
-#ifndef _TTK_TRACKINGFROMF_H
-#define _TTK_TRACKINGFROMF_H
+/// \ingroup vtk
+/// \class ttkTrackingFromFields
+/// \author Maxime Soler <soler.maxime@total.com>
+/// \date August 2018.
+///
+/// \brief TTK VTK-filter that takes an input time-varying data set (represented
+/// by a list of scalar fields) and which computes a tracking mesh.
+///
+/// \param Input Input time-dependent scalar field, either 2D or 3D, regular
+/// grid or triangulation (vtkDataSet); time steps are obtained by
+/// GetPointData()->GetArray(i) in increasing time order.
+/// \param Output Output persistence diagram (vtkUnstructuredGrid)
+///
+/// This filter can be used as any other VTK filter (for instance, by using the
+/// sequence of calls SetInputData(), Update(), GetOutput()).
+///
+/// See the related ParaView example state files for usage examples within a
+/// VTK pipeline.
+///
+/// \b Related \b publication \n
+/// "Lifted Wasserstein Matcher for Fast and Robust Topology Tracking" \n
+/// Maxime Soler, Melanie Plainchault, Bruno Conche, Julien Tierny \n
+/// Proc. of IEEE Symposium on Large Data Analysis and Visualization, 2018
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/timeTracking/">Time
+///   tracking example</a>
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/trackingFromCriticalPoints/">Tracking
+///   From Critical Points example</a>
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/trackingPostProcessing/">Tracking
+///   post-processing example</a>
+///
 
-#include <tuple>
-
-#include <Wrapper.h>
+#pragma once
 
 #include <vtkCellData.h>
-#include <vtkCellType.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkPoints.h>
-#include <vtkSmartPointer.h>
-#include <vtkTable.h>
 #include <vtkUnstructuredGrid.h>
 
-#include <ttkTrackingFromPersistenceDiagrams.h>
-
+// VTK Module
+#include <TrackingFromCriticalPoints.h>
 #include <TrackingFromFields.h>
-#include <TrackingFromPersistenceDiagrams.h>
+#include <TrackingPostProcessing.h>
+#include <ttkAlgorithm.h>
+#include <ttkTrackingFromFieldsModule.h>
 
 #include <algorithm>
 #include <string>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTrackingFromFields
-#else
-class ttkTrackingFromFields
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKTRACKINGFROMFIELDS_EXPORT ttkTrackingFromFields
+  : public ttkAlgorithm,
+    protected ttk::TrackingFromFields {
 
 public:
   static ttkTrackingFromFields *New();
 
-  vtkTypeMacro(ttkTrackingFromFields, vtkDataSetAlgorithm);
+  vtkTypeMacro(ttkTrackingFromFields, ttkAlgorithm);
 
-  vtkSetMacro(debugLevel_, int);
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-
+  /// @brief Temporal sampling (take every N timestep).
+  /// @{
   vtkSetMacro(Sampling, int);
   vtkGetMacro(Sampling, int);
+  /// @}
 
+  /// @brief First timestep.
+  /// @{
   vtkSetMacro(StartTimestep, int);
   vtkGetMacro(StartTimestep, int);
+  /// @}
 
+  /// @brief Last timestep (-1 to use the last timestep available).
+  /// @{
   vtkSetMacro(EndTimestep, int);
   vtkGetMacro(EndTimestep, int);
+  /// @}
 
+  /// @brief Discard pairs below this threshold (percentage of the function
+  /// span).
+  /// @{
   vtkSetMacro(Tolerance, double);
   vtkGetMacro(Tolerance, double);
 
+  vtkSetMacro(RelativeDestructionCost, double);
+  vtkGetMacro(RelativeDestructionCost, double);
+  /// @}
+
+  vtkSetMacro(AssignmentPrecision, double);
+  vtkGetMacro(AssignmentPrecision, double);
+  /// @}
+
+  /// @brief Importance weight for the X component of the extremum.
+  /// @{
   vtkSetMacro(PX, double);
   vtkGetMacro(PX, double);
+  /// @}
 
+  /// @brief Importance weight for the Y component of the extremum.
+  /// @{
   vtkSetMacro(PY, double);
   vtkGetMacro(PY, double);
+  /// @}
 
+  /// @brief Importance weight for the Z component of the extremum.
+  /// @{
   vtkSetMacro(PZ, double);
   vtkGetMacro(PZ, double);
+  /// @}
 
+  /// @brief Importance weight for extrema.
+  /// @{
   vtkSetMacro(PE, double);
   vtkGetMacro(PE, double);
+  /// @}
 
+  /// @brief Importance weight for saddles.
+  /// @{
   vtkSetMacro(PS, double);
   vtkGetMacro(PS, double);
+  /// @}
 
-  vtkSetMacro(Alpha, double);
-  vtkGetMacro(Alpha, double);
+  /// @brief Importance weight for function values.
+  /// @{
+  vtkSetMacro(PF, double);
+  vtkGetMacro(PF, double);
+  /// @}
 
-  vtkSetMacro(WassersteinMetric, std::string);
+  /// @brief Value of the parameter p for the Wp (p-th Wasserstein) distance
+  /// computation (type "inf" for the Bottleneck distance).
+  /// @{
+  vtkSetMacro(WassersteinMetric, const std::string &);
   vtkGetMacro(WassersteinMetric, std::string);
+  /// @}
 
-  vtkSetMacro(DistanceAlgorithm, std::string);
+  vtkSetMacro(DistanceAlgorithm, const std::string &);
   vtkGetMacro(DistanceAlgorithm, std::string);
 
+  /// @brief Method for computing matchings.
+  ///
+  /// 0: sparse Munkres (Wasserstein), Gabow-Tarjan (Bottleneck)
+  /// @{
   vtkSetMacro(PVAlgorithm, int);
   vtkGetMacro(PVAlgorithm, int);
 
-  vtkSetMacro(UseGeometricSpacing, int);
-  vtkGetMacro(UseGeometricSpacing, int);
+  vtkSetMacro(AssignmentMethod, int);
+  vtkGetMacro(AssignmentMethod, int);
+  /// @}
 
+  /// @brief For the translation of the second set of critical points even the
+  /// persistence diagrams are embedded in the original domain. This is useful
+  /// to visualize the matching between the diagrams of two 2D scalar fields.
+  /// @{
+  vtkSetMacro(UseGeometricSpacing, bool);
+  vtkGetMacro(UseGeometricSpacing, bool);
+  /// @}
+
+  /// @brief Translation on the Z axis between the output representations of the
+  /// persistence diagrams.
+  /// @{
   vtkSetMacro(Spacing, double);
   vtkGetMacro(Spacing, double);
-  vtkSetMacro(DoPostProc, int);
-  vtkGetMacro(DoPostProc, int);
+  /// @}
 
+  /// @brief Do post-processing.
+  /// @{
+  vtkSetMacro(DoPostProc, bool);
+  vtkGetMacro(DoPostProc, bool);
+  /// @}
+
+  /// @brief Threshold for merging/splitting trajectories in connected
+  /// components array.
+  /// @{
   vtkSetMacro(PostProcThresh, double);
   vtkGetMacro(PostProcThresh, double);
+  /// @}
+
+  /// @brief Run the trajectory post-processing (linearization,
+  /// fusion, merge-tree surface stats) after the tracking stage.
+  /// @{
+  vtkSetMacro(EnablePostProc, bool);
+  vtkGetMacro(EnablePostProc, bool);
+  /// @}
+
+  /// @brief Linearize each tracked trajectory (least-squares line fit).
+  /// @{
+  vtkSetMacro(DoLinearize, bool);
+  vtkGetMacro(DoLinearize, bool);
+  /// @}
+
+  /// @brief Chain temporally-adjacent, directionally-consistent linearized
+  /// segments into longer trajectories.
+  /// @{
+  vtkSetMacro(DoFusion, bool);
+  vtkGetMacro(DoFusion, bool);
+  /// @}
+
+  /// @brief When on, fused chains are refit as a single global line. When off,
+  /// the original linearized segments are preserved and (N-1) explicit
+  /// junction segments are inserted between them; junctions carry
+  /// ConnectedComponentId = -1
+  /// @{
+  vtkSetMacro(LinearizeFuse, bool);
+  vtkGetMacro(LinearizeFuse, bool);
+  /// @}
+
+  /// @brief When on, change the starting Frame of each trajectory
+  /// i.e. change z value for the first point of each line in
+  /// trajectory output
+  /// @{
+  vtkSetMacro(DoStartFrame, bool);
+  vtkGetMacro(DoStartFrame, bool);
+  /// @}
+
+  /// @brief Starting Frame value if DoStartFrame==1
+  /// @{
+  vtkSetMacro(StartFrame, int);
+  vtkGetMacro(StartFrame, int);
+  /// @}
+
+  /// @brief Run per-frame merge-tree segmentation and attach surface
+  /// statistics (min/max/mean pixel-cell count) to each trajectory cell.
+  /// @{
+  vtkSetMacro(DoMergeTree, bool);
+  vtkGetMacro(DoMergeTree, bool);
+  /// @}
+
+  /// @brief Select the merge-tree variant used for per-frame segmentation.
+  /// When off (default), a join tree is used
+  /// @{
+  vtkSetMacro(UseSplitTree, int);
+  vtkGetMacro(UseSplitTree, int);
+  /// @}
+
+  /// @brief When on, the merge-tree pipeline runs an Otsu-threshold pass on
+  /// the candidate surface segments before accumulating statistics.
+  /// @{
+  vtkSetMacro(UseOtsuSimplification, bool);
+  vtkGetMacro(UseOtsuSimplification, bool);
+  /// @}
+
+  vtkSetMacro(OtsuBins, int);
+  vtkGetMacro(OtsuBins, int);
+
+  vtkSetMacro(MaxSurfSize, int);
+  vtkGetMacro(MaxSurfSize, int);
+
+  /// @brief Max angular deviation (degrees) allowed between two segments
+  /// during fusion. Internally converted to a cosine threshold.
+  /// @{
+  vtkSetMacro(CosColDegrees, double);
+  vtkGetMacro(CosColDegrees, double);
+  /// @}
+
+  /// @brief Max squared pixel distance between segment i's extrapolated
+  /// end and segment j's start during fusion.
+  /// @{
+  vtkSetMacro(MaxLinkRadius, double);
+  vtkGetMacro(MaxLinkRadius, double);
+  /// @}
+
+  /// @brief Max temporal gap (in frames) between consecutive segments in a
+  /// fusion link.
+  /// @{
+  vtkSetMacro(MaxFrameDist, int);
+  vtkGetMacro(MaxFrameDist, int);
+  /// @}
 
 protected:
-  ttkTrackingFromFields() {
-    outputMesh_ = nullptr;
-    UseAllCores = false;
+  ttkTrackingFromFields();
 
-    DistanceAlgorithm = "ttk";
-    PVAlgorithm = -1;
-    Alpha = 1.0;
-    WassersteinMetric = "2";
-    UseGeometricSpacing = false;
-    Is3D = true;
-    Spacing = 1.0;
-
-    DoPostProc = false;
-    PostProcThresh = 0;
-
-    Sampling = 1;
-    StartTimestep = 0;
-    EndTimestep = -1;
-
-    Tolerance = 1;
-    PX = 1;
-    PY = 1;
-    PZ = 0;
-    PE = 0;
-    PS = 0;
-
-    SetNumberOfInputPorts(1);
-    SetNumberOfOutputPorts(1);
-  }
-
-  ~ttkTrackingFromFields() {
-    if(outputMesh_)
-      outputMesh_->Delete();
-  }
-
-  TTK_SETUP();
-
-  virtual int FillOutputPortInformation(int port,
-                                        vtkInformation *info) override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestDataObject(vtkInformation *request,
+                        vtkInformationVector **inputVector,
+                        vtkInformationVector *outputVector) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
   // Sampling config.
-  int StartTimestep;
-  int EndTimestep;
-  int Sampling;
+  int StartTimestep{0};
+  int EndTimestep{-1};
+  int Sampling{1};
 
   // Filtering config.
-  double Tolerance;
-  double PX;
-  double PY;
-  double PZ;
-  double PE;
-  double PS;
+  double Tolerance{1};
+  double PX{1};
+  double PY{1};
+  double PZ{1};
+  double PE{0};
+  double PS{0};
+  double PF{0};
+
+  double RelativeDestructionCost{0.1};
+  double AssignmentPrecision{0.01};
+  int AssignmentMethod{0};
 
   // Bottleneck config.
-  bool UseGeometricSpacing;
-  bool Is3D;
-  bool DoPostProc;
-  double PostProcThresh;
-  double Spacing;
-  double Alpha;
-  std::string DistanceAlgorithm;
-  int PVAlgorithm;
-  std::string WassersteinMetric;
+  bool UseGeometricSpacing{false};
+  bool DoPostProc{false};
+  double PostProcThresh{0.0};
+  double Spacing{1.0};
+  std::string DistanceAlgorithm{"ttk"};
+  int PVAlgorithm{2};
+  std::string WassersteinMetric{"2"};
 
-  vtkUnstructuredGrid *outputMesh_;
+  // Post-processing config.
+  bool EnablePostProc{false};
+  bool DoLinearize{true};
+  bool DoFusion{true};
+  bool LinearizeFuse{true};
+  bool DoStartFrame{false};
+  int StartFrame{0};
+  bool DoMergeTree{false};
+  int UseSplitTree{2};
+  bool UseOtsuSimplification{false};
+  int OtsuBins{0};
+  int MaxSurfSize{10000};
+  double CosColDegrees{20.0};
+  double MaxLinkRadius{225.0};
+  int MaxFrameDist{30};
 
-  ttk::Triangulation *internalTriangulation_;
-  ttkTriangulation triangulation_;
-  ttk::TrackingFromFields trackingF_;
-  ttk::TrackingFromPersistenceDiagrams tracking_;
+  template <class dataType, class triangulationType>
+  int trackWithPersistenceMatching(vtkUnstructuredGrid *output,
+                                   unsigned long fieldNumber,
+                                   const triangulationType *triangulation);
 
-  template <typename dataType>
-  int trackWithPersistenceMatching(
-    vtkDataSet *input,
-    vtkUnstructuredGrid *output,
-    std::vector<vtkDataArray *> inputScalarFields);
+  template <class dataType, class triangulationType>
+  int trackWithCriticalPointMatching(vtkUnstructuredGrid *output,
+                                     unsigned long fieldNumber,
+                                     const triangulationType *triangulation);
+
+  template <class dataType, class triangulationType>
+  int applyPostProcessing(vtkUnstructuredGrid *output,
+                          vtkDataSet *segOutput,
+                          vtkDataSet *input,
+                          const std::vector<vtkDataArray *> &inputScalarFields,
+                          const triangulationType *triangulation);
+
+  void writeSegmentationArrays(
+    vtkDataSet *segOutput,
+    const std::vector<std::vector<int>> &vertexTrajPerFrame);
 };
-
-// (*) Persistence-driven approach
-template <typename dataType>
-int ttkTrackingFromFields::trackWithPersistenceMatching(
-  vtkDataSet *input,
-  vtkUnstructuredGrid *output,
-  std::vector<vtkDataArray *> inputScalarFields) {
-  unsigned long fieldNumber = inputScalarFields.size();
-
-  // 0. get data
-  trackingF_.setThreadNumber(ThreadNumber);
-  trackingF_.setTriangulation(internalTriangulation_);
-  std::vector<void *> inputFields(fieldNumber);
-  for(int i = 0; i < (int)fieldNumber; ++i)
-    inputFields[i] = inputScalarFields[i]->GetVoidPointer(0);
-  trackingF_.setInputScalars(inputFields);
-
-  // 0'. get offsets
-  auto numberOfVertices = (int)input->GetNumberOfPoints();
-  vtkIdTypeArray *offsets_ = vtkIdTypeArray::New();
-  offsets_->SetNumberOfComponents(1);
-  offsets_->SetNumberOfTuples(numberOfVertices);
-  offsets_->SetName("OffsetScalarField");
-  for(int i = 0; i < numberOfVertices; ++i)
-    offsets_->SetTuple1(i, i);
-  trackingF_.setInputOffsets(offsets_->GetVoidPointer(0));
-
-  // 1. get persistence diagrams.
-  std::vector<std::vector<diagramTuple>> persistenceDiagrams(
-    fieldNumber, std::vector<diagramTuple>());
-
-  trackingF_.performDiagramComputation<dataType>(
-    (int)fieldNumber, persistenceDiagrams, this);
-
-  // 2. call feature tracking with threshold.
-  std::vector<std::vector<matchingTuple>> outputMatchings(
-    fieldNumber - 1, std::vector<matchingTuple>());
-
-  double spacing = Spacing;
-  std::string algorithm = DistanceAlgorithm;
-  double alpha = Alpha;
-  double tolerance = Tolerance;
-  bool is3D = true; // Is3D;
-  std::string wasserstein = WassersteinMetric;
-
-  tracking_.setThreadNumber(ThreadNumber);
-  tracking_.performMatchings<dataType>(
-    (int)fieldNumber, persistenceDiagrams, outputMatchings,
-    algorithm, // Not from paraview, from enclosing tracking plugin
-    wasserstein, tolerance, is3D,
-    alpha, // Blending
-    PX, PY, PZ, PS, PE, // Coefficients
-    this // Wrapper for accessing threadNumber
-  );
-
-  outputMesh_ = vtkUnstructuredGrid::New();
-  vtkUnstructuredGrid *outputMesh = vtkUnstructuredGrid::SafeDownCast(output);
-
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-  vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram
-    = vtkSmartPointer<vtkUnstructuredGrid>::New();
-
-  vtkSmartPointer<vtkDoubleArray> persistenceScalars
-    = vtkSmartPointer<vtkDoubleArray>::New();
-  vtkSmartPointer<vtkDoubleArray> valueScalars
-    = vtkSmartPointer<vtkDoubleArray>::New();
-  vtkSmartPointer<vtkIntArray> matchingIdScalars
-    = vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> lengthScalars
-    = vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> timeScalars
-    = vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> componentIds
-    = vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> pointTypeScalars
-    = vtkSmartPointer<vtkIntArray>::New();
-  persistenceScalars->SetName("Cost");
-  valueScalars->SetName("Scalar");
-  matchingIdScalars->SetName("MatchingIdentifier");
-  lengthScalars->SetName("ComponentLength");
-  timeScalars->SetName("TimeStep");
-  componentIds->SetName("ConnectedComponentId");
-  pointTypeScalars->SetName("CriticalType");
-
-  // (+ vertex id)
-  std::vector<trackingTuple> trackingsBase;
-  tracking_.setThreadNumber(ThreadNumber);
-  tracking_.performTracking<dataType>(
-    persistenceDiagrams, outputMatchings, trackingsBase);
-
-  std::vector<std::set<int>> trackingTupleToMerged(
-    trackingsBase.size(), std::set<int>());
-
-  if(DoPostProc)
-    tracking_.performPostProcess<dataType>(persistenceDiagrams, trackingsBase,
-                                           trackingTupleToMerged,
-                                           PostProcThresh);
-
-  bool useGeometricSpacing = UseGeometricSpacing;
-
-  // Build mesh.
-  ttkTrackingFromPersistenceDiagrams::buildMesh(
-    trackingsBase, outputMatchings, persistenceDiagrams, useGeometricSpacing,
-    spacing, DoPostProc, trackingTupleToMerged, points, persistenceDiagram,
-    persistenceScalars, valueScalars, matchingIdScalars, lengthScalars,
-    timeScalars, componentIds, pointTypeScalars);
-
-  outputMesh_->ShallowCopy(persistenceDiagram);
-  outputMesh->ShallowCopy(outputMesh_);
-
-  return 0;
-}
-
-#endif // _TTK_TRACKINGFROMF_H

@@ -12,17 +12,15 @@
 
 #include <windows.h>
 
-#include <ciso646>
 #include <cwchar>
 #include <direct.h>
 #include <stdint.h>
-#include <time.h>
 
 #elif defined(__unix__) || defined(__APPLE__)
 
 #include <dirent.h>
+#include <sys/resource.h>
 #include <sys/stat.h>
-#include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 #endif
@@ -37,7 +35,9 @@ namespace ttk {
 #ifdef _WIN32
     directoryPath = _getcwd(NULL, 0);
 #else
-    directoryPath = getcwd(NULL, PATH_MAX);
+    std::vector<char> cwdName(PATH_MAX);
+    char *returnedString = getcwd(cwdName.data(), cwdName.size());
+    directoryPath = std::string{returnedString};
 #endif
     directoryPath += "/";
 
@@ -62,35 +62,33 @@ namespace ttk {
     return 0;
   }
 
-  int OsCall::getNumberOfCores() {
-#ifdef TTK_ENABLE_OPENMP
-    return omp_get_num_procs();
-#endif
-    return 1;
+  float OsCall::getTotalMemoryUsage() {
+    int max_use{0};
+#ifdef __linux__
+    int ru_maxrss;
+    struct rusage use;
+    getrusage(RUSAGE_SELF, &use);
+    ru_maxrss = static_cast<int>(use.ru_maxrss);
+#ifdef TTK_ENABLE_MPI
+    if(ttk::hasInitializedMPI()) {
+      MPI_Reduce(
+        &ru_maxrss, &max_use, 1, MPI_INTEGER, MPI_MAX, 0, ttk::MPIcomm_);
+    } else {
+      max_use = ru_maxrss;
+    }
+#else
+    max_use = ru_maxrss;
+#endif // TTK_ENABLE_MPI
+#endif // __linux__
+    // In Kilo Bytes
+    return (double)max_use;
   }
 
-  double OsCall::getTimeStamp() {
-#ifdef _WIN32
-    LARGE_INTEGER frequency;
-    QueryPerformanceFrequency(&frequency);
-
-    LARGE_INTEGER temp;
-    QueryPerformanceCounter(&temp);
-
-    return (double)temp.QuadPart / frequency.QuadPart;
+  int OsCall::getNumberOfCores() {
+#ifdef TTK_ENABLE_OPENMP
+    return omp_get_max_threads();
 #endif
-
-#ifdef __APPLE__
-    struct timeval stamp;
-    gettimeofday(&stamp, NULL);
-    return (stamp.tv_sec * 1000000 + stamp.tv_usec) / 1000000.0;
-#endif
-
-#ifdef __unix__
-    struct timeval stamp;
-    gettimeofday(&stamp, NULL);
-    return (stamp.tv_sec * 1000000 + stamp.tv_usec) / 1000000.0;
-#endif
+    return 1;
   }
 
   std::vector<std::string>
@@ -138,11 +136,13 @@ namespace ttk {
     HANDLE hFind
       = FindFirstFile(toWString(directoryName).c_str(), &FindFileData);
     if(hFind == INVALID_HANDLE_VALUE) {
-      std::stringstream msg;
-      msg << "[Os] Could not open directory `" << directoryName
-          << "'. Error: " << GetLastError() << std::endl;
+      std::string s;
+      s = "Could not open directory `";
+      s += directoryName;
+      s += "'. Error: ";
+      s += GetLastError();
       Debug d;
-      d.dMsg(std::cerr, msg.str(), 0);
+      d.printErr(s);
     } else {
       const std::string filename = toString(FindFileData.cFileName);
 
@@ -172,14 +172,15 @@ namespace ttk {
 #else
     DIR *d = opendir((directoryName + "/").data());
     if(!d) {
-      std::stringstream msg;
-      msg << "[Os] Could not open directory `" << directoryName << "'..."
-          << std::endl;
-      Debug dbg;
-      dbg.dMsg(std::cerr, msg.str(), 0);
+      std::string msg;
+      msg = "Could not open directory `";
+      msg += directoryName;
+      msg += "'...";
+      const Debug dbg;
+      dbg.printErr(msg);
     } else {
       struct dirent *dirEntry;
-      while((dirEntry = readdir(d)) != NULL) {
+      while((dirEntry = readdir(d)) != nullptr) {
         if(extension.size()) {
           std::string entryExtension(dirEntry->d_name);
           entryExtension
@@ -223,36 +224,11 @@ namespace ttk {
   }
 
   int OsCall::rmDir(const std::string &directoryName) {
-
-#ifdef _WIN32
-    // NOTE:
-    // the directory will be deleted with this call
-    // only if it's empty...
-    return _rmdir(directoryName.data());
-#else
-    std::stringstream cmd;
-    cmd << "rm -R " << directoryName << " 2> /dev/null";
-    return system(cmd.str().data());
-#endif
+    return std::remove(directoryName.c_str());
   }
 
   int OsCall::rmFile(const std::string &fileName) {
-
-    std::stringstream cmd;
-
-#ifdef _WIN32
-    cmd << "del";
-#else
-    cmd << "rm";
-#endif
-
-    cmd << " " << fileName;
-
-#ifndef _WIN32
-    cmd << " 2> /dev/null";
-#endif
-
-    return system(cmd.str().data());
+    return std::remove(fileName.c_str());
   }
 
 } // namespace ttk

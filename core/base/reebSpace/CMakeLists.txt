@@ -3,9 +3,9 @@ ttk_add_base_library(reebSpace
     ReebSpace.cpp
   HEADERS
     ReebSpace.h
-  LINK
+  DEPENDS
     fiberSurface
     geometry
     jacobiSet
     triangulation
-    )
+  )

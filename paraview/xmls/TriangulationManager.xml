@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkTriangulationManager"
+                 class="ttkTriangulationManager"
+                 label="TTK TriangulationManager">
+      <Documentation long_help="TriangulationManager Long"
+                     short_help="TriangulationManager Short">
+        This filter converts a regular grid (vtkImageData) into a
+        periodic regular grid (vtkImageData), in all dimensions OR compacts an
+        unstructured grid (vtkUnstructuredGrid, vtkPolyData) triangulation.
+
+        Alternatively, given a simplicial mesh, this filter also uses the PR star octree to divide
+        the mesh into different regions, and adds this clustering information as
+        a new scalar field to the original dataset. This clustering index scalar
+        field can be further used by TopoCluster data structure.
+
+        Related publications:
+        "The PR-star octree: A spatio-topological data structure for tetrahedral meshes."
+        Kenneth Weiss, Leila Floriani, Riccardo Fellegara, and Marcelo Velloso
+        Proc. of ACM SIGSPATIAL 2011.
+
+        "TopoCluster: A Localized Data Structure for Topology-based Visualization"
+        Guoxi Liu, Federico Iuricich, Riccardo Fellegara, and Leila De Floriani
+        IEEE Transactions on Visualization and Computer Graphics, 2021.
+        
+        
+        Online examples:
+        
+        - https://topology-tool-kit.github.io/examples/compactTriangulation/
+        
+        - https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/
+      </Documentation>
+
+      <InputProperty name="Input" command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet" />
+        </DataTypeDomain>
+        <Documentation>An input VTK data-set.</Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+          name="SetPeriodicity"
+          label="Periodicity in All Dimensions"
+          command="SetPeriodicity"
+          number_of_elements="1"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Set the periodicity ON or OFF.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="SetPreconditioning"
+          label="Preconditioning Strategy"
+          command="SetPreconditioningStrategy"
+          number_of_elements="1"
+          default_values="0">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Default"/>
+          <Entry value="1" text="Preconditioning (faster)"/>
+          <Entry value="2" text="No Preconditioning (larger datasets)"/>
+        </EnumerationDomain>
+        <Documentation>
+          Modify the preconditioning strategy for implicit and periodic triangulations:
+          * Default: use preconditioning under a grid size of
+          TTK_IMPLICIT_PRECONDITIONS_THRESHOLD^3,
+          * Preconditioning: force preconditioning for faster computation,
+          * No Preconditioning: disable preconditioning to reduce memory pressure.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+          name="DataArrays"
+          command="GetDataArraySelection"
+          number_of_elements_per_command="1"
+          repeat_command="1"
+          si_class="vtkSIDataArraySelectionProperty">
+        <ArrayListDomain name="array_list" input_domain_name="point_arrays">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the data arrays to pass through
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+          name="Threshold"
+          label="Bucket threshold"
+          command="SetThreshold"
+          number_of_elements="1"
+          default_values="1000">
+        <Documentation>
+          Bucket capacity for the octree construction.
+        </Documentation>
+      </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Implicit Triangulation Options">
+        <Property name="SetPeriodicity" />
+        <Property name="SetPreconditioning" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Compact Explicit Triangulation Options">
+        <Property name="Threshold" />
+        <Property name="DataArrays" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Domain" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

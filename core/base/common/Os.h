@@ -5,8 +5,7 @@
 ///
 /// \brief Os-specifics.
 
-#ifndef _OS_H
-#define _OS_H
+#pragma once
 
 #ifdef _WIN32
 #ifndef _USE_MATH_DEFINES
@@ -15,9 +14,6 @@
 
 #define drand48() (double(rand()) / RAND_MAX)
 //  #define               isnan(x)      _isnan(x)
-#ifndef _MSC_VER
-#define round(x) OsCall::roundToNearestInt(x)
-#endif
 #define srand48(seed) srand(seed)
 #endif // _WIN32
 
@@ -29,9 +25,7 @@
 #include <string>
 #include <vector>
 
-#define pow10(x) pow(10, x)
-
-//#define SINGLE_PRECISION
+// #define SINGLE_PRECISION
 
 #ifdef SINGLE_PRECISION
 #define REAL_TYPE float
@@ -59,9 +53,9 @@
 namespace ttk {
 
 #ifdef SINGLE_PRECISION
-  typedef float real;
+  using real = float;
 #else
-  typedef double real;
+  using real = double;
 #endif
 
   class OsCall {
@@ -70,9 +64,9 @@ namespace ttk {
 
     static float getMemoryInstantUsage();
 
-    static int getNumberOfCores();
+    static float getTotalMemoryUsage();
 
-    static double getTimeStamp();
+    static int getNumberOfCores();
 
     static std::vector<std::string>
       listFilesInDirectory(const std::string &directoryName,
@@ -105,7 +99,7 @@ namespace ttk {
   public:
     Memory() {
       initialMemory_ = OsCall::getMemoryInstantUsage();
-    };
+    }
 
     inline float getInitialMemoryUsage() {
       return initialMemory_;
@@ -119,42 +113,12 @@ namespace ttk {
       return OsCall::getMemoryInstantUsage() - initialMemory_;
     }
 
+    inline float getTotalUsage() {
+      return OsCall::getTotalMemoryUsage();
+    }
+
   protected:
     float initialMemory_;
   };
 
-  class Timer {
-
-  public:
-    Timer() {
-      start_ = getTimeStamp();
-    };
-
-    Timer(const Timer &other) {
-      start_ = other.start_;
-    }
-
-    inline double getElapsedTime() {
-
-      double end = getTimeStamp();
-      return end - start_;
-    };
-
-    inline double getStartTime() {
-      return start_;
-    }
-
-    inline void reStart() {
-      start_ = getTimeStamp();
-    }
-
-  protected:
-    inline double getTimeStamp() {
-      return OsCall::getTimeStamp();
-    }
-
-    double start_;
-  };
 } // namespace ttk
-
-#endif

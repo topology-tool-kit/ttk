@@ -1,0 +1,41 @@
+name: 'Test TTK for Unix'
+description: 'Test TTK standalone, examples & states on Ubuntu & macOS'
+runs:
+  using: "composite"
+  steps:
+
+    - name: Test C++ example
+      shell: bash
+      run: |
+        cd $GITHUB_WORKSPACE/examples/c++
+        mkdir build && cd build
+        cmake ..
+        cmake --build . --parallel
+        ./ttkExample-c++ -i ../../data/inputData.off
+
+    - name: Test VTK-C++ example
+      shell: bash
+      run: |
+        cd $GITHUB_WORKSPACE/examples/vtk-c++
+        mkdir build && cd build
+        cmake ..
+        cmake --build . --parallel
+        ./ttkExample-vtk-c++ -i ../../data/inputData.vtu
+
+    - name: Test Python example
+      shell: bash
+      run: |
+        cd $GITHUB_WORKSPACE/examples/python
+        python3 example.py ../data/inputData.vtu
+
+    - name: Test pvpython example
+      shell: bash
+      run: |
+        cd $GITHUB_WORKSPACE/examples/pvpython
+        pvpython example.py ../data/inputData.vtu
+
+    - name: Test standalone
+      shell: bash
+      run: |
+        cd $GITHUB_WORKSPACE
+        ttkHelloWorldCmd -i examples/data/inputData.vtu

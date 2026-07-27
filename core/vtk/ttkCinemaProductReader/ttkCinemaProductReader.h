@@ -13,99 +13,115 @@
 /// \param Input vtkTable that contains data product references (vtkTable)
 /// \param Output vtkMultiBlockDataSet where each block is a referenced product
 /// of an input table row (vtkMultiBlockDataSet)
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cinemaIO/">Cinema
+///   IO example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/">
+///   Clustering Kelvin Helmholtz Instabilities example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/contourTreeAlignment/">Contour
+///   Tree Alignment example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
+///   Tree Clustering example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeFeatureTracking/">Merge
+///   Tree Feature Tracking example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
+///   Tree Principal Geodesic Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/">Merge
+///   Tree Temporal Reduction example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeWAE/">Merge
+///   tree Wasserstein Auto-Encoder example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/molecularVibration/">Molecular
+///   Vibration example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/">Nested
+///   Tracking from Overlap example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramClustering/">Persistence
+///   Diagram Clustering example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramDictionary/">Persistence
+///   Diagram Dictionary example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramDistance/">Persistence
+///   Diagram Distance example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/">Persistence
+///   Diagram Principal Geodesic Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramWAE/">Persistence
+///   Diagram Wasserstein Auto-Encoder example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/">Persistent
+///   Generators Periodic Picture example</a> \n
+///
 
 #pragma once
 
+// VTK Module
+#include <ttkCinemaProductReaderModule.h>
+
 // VTK includes
-#include <vtkFiltersCoreModule.h>
-#include <vtkInformation.h>
-#include <vtkMultiBlockDataSet.h>
-#include <vtkMultiBlockDataSetAlgorithm.h>
+#include <ttkAlgorithm.h>
 
-// TTK includes
-#include <ttkWrapper.h>
+#include <ttkTopologicalCompressionReader.h>
+#include <vtkGenericDataObjectReader.h>
+#include <vtkNew.h>
+#include <vtkPNGReader.h>
+#include <vtkSmartPointer.h>
+#include <vtkTIFFReader.h>
+#include <vtkXMLGenericDataObjectReader.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaProductReader
-#else
-class ttkCinemaProductReader
-#endif
-  : public vtkMultiBlockDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKCINEMAPRODUCTREADER_EXPORT ttkCinemaProductReader
+  : public ttkAlgorithm {
 
 public:
   static ttkCinemaProductReader *New();
-  vtkTypeMacro(ttkCinemaProductReader, vtkMultiBlockDataSetAlgorithm)
+  vtkTypeMacro(ttkCinemaProductReader, ttkAlgorithm);
 
-    // default ttk setters
-    vtkSetMacro(debugLevel_, int);
-  void SetThreads() {
-    threadNumber_
-      = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
-    Modified();
-  }
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  void SetFilepathColumnName(
-    int idx, int port, int connection, int fieldAssociation, const char *name) {
-    this->FilepathColumnName = std::string(name);
-    this->Modified();
-  };
-
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
+  vtkSetMacro(FilepathColumnName, const std::string &);
+  vtkGetMacro(FilepathColumnName, std::string);
+  vtkSetMacro(AddFieldDataRecursively, bool);
+  vtkGetMacro(AddFieldDataRecursively, bool);
 
 protected:
-  ttkCinemaProductReader() {
-    UseAllCores = false;
+  ttkCinemaProductReader();
+  ~ttkCinemaProductReader() override;
 
-    SetNumberOfInputPorts(1);
-    SetNumberOfOutputPorts(1);
-  }
-  ~ttkCinemaProductReader(){};
+  vtkSmartPointer<vtkDataObject> readFileLocal(const std::string &pathToFile);
+  int addFieldDataRecursively(vtkDataObject *object, vtkFieldData *fd);
 
-  bool UseAllCores;
-  int ThreadNumber;
-
-  std::string FilepathColumnName;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
 private:
-  bool needsToAbort() override {
-    return GetAbortExecute();
-  };
-  int updateProgress(const float &progress) override {
-    UpdateProgress(progress);
-    return 0;
-  };
+  std::string FilepathColumnName{"FILE"};
+  bool AddFieldDataRecursively{true};
+
+  // PNG READER
+  vtkNew<vtkPNGReader> pngReader{};
+
+  // TTK READER
+  vtkNew<ttkTopologicalCompressionReader> topologicalCompressionReader{};
+
+  // TIFF READER
+  vtkNew<vtkTIFFReader> tiffReader{};
+
+  // LOCAL-LEGACY && REMOTE-LEGACY
+  vtkNew<vtkGenericDataObjectReader> genericDataObjectReader{};
+
+  // LOCAL-XML
+  vtkNew<vtkXMLGenericDataObjectReader> xmlGenericDataObjectReader{};
 };

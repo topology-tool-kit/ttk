@@ -1,0 +1,58 @@
+name: docker_build
+
+on:
+  push:
+    # triggered on tag pushes with tags beginning with either "v" or "dev"
+    branch-ignore:
+      - '*'
+    tags:
+      - 'v*'
+      - 'dev*'
+      - '*-*-*'
+      - '*.*.*'
+      - 'docker*'
+
+jobs:
+  docker:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        arch: [linux/amd64, linux/arm64]
+    timeout-minutes: 3600
+    steps:
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v2 
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      -
+        name: Build and push ttk
+        uses: docker/build-push-action@v4
+        with:
+          platforms: ${{ matrix.arch }}
+          context: "{{defaultContext}}:scripts/docker"
+          target: ttk
+          push: true
+          tags: |
+            ghcr.io/topology-tool-kit/ttk:latest
+          cache-from: type=gha,ref=ghcr.io/topology-tool-kit/ttk:buildcache
+          cache-to:   type=gha,ref=ghcr.io/topology-tool-kit/ttk:buildcache,mode=max
+      -
+        name: Build and push ttk-dev
+        uses: docker/build-push-action@v4
+        with:
+          platforms: ${{ matrix.arch }}
+          context: "{{defaultContext}}:scripts/docker"
+          target: ttk-dev
+          push: true
+          tags: |
+            ghcr.io/topology-tool-kit/ttk-dev:latest
+          cache-from: type=gha,ref=ghcr.io/topology-tool-kit/ttk:buildcache

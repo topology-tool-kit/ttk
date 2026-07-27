@@ -1,0 +1,9 @@
+NAME
+  ttkContinuousScatterPlot
+SOURCES
+  ttkContinuousScatterPlot.cpp
+HEADERS
+  ttkContinuousScatterPlot.h
+DEPENDS
+  continuousScatterPlot
+  ttkAlgorithm

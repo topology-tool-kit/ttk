@@ -1,0 +1,9 @@
+NAME
+  ttkProjectionFromTable
+SOURCES
+  ttkProjectionFromTable.cpp
+HEADERS
+  ttkProjectionFromTable.h
+DEPENDS
+  projectionFromTable
+  ttkAlgorithm

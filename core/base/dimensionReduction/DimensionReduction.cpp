@@ -1,4 +1,6 @@
 #include <DimensionReduction.h>
+#include <TopoMap.h>
+
 #define VALUE_TO_STRING(x) #x
 #define VALUE(x) VALUE_TO_STRING(x)
 
@@ -11,10 +13,12 @@
 using namespace std;
 using namespace ttk;
 
-DimensionReduction::DimensionReduction()
-  : numberOfRows_{0}, numberOfColumns_{0}, numberOfComponents_{0},
-    numberOfNeighbors_{0}, randomState_{0}, matrix_{nullptr},
-    embedding_{nullptr}, majorVersion_{'0'} {
+DimensionReduction::DimensionReduction() {
+  this->setDebugMsgPrefix("DimensionReduction");
+
+  // default backend
+  this->setInputMethod(METHOD::MDS);
+
 #ifdef TTK_ENABLE_SCIKIT_LEARN
   auto finalize_callback = []() { Py_Finalize(); };
 
@@ -25,56 +29,92 @@ DimensionReduction::DimensionReduction()
 
   const char *version = Py_GetVersion();
   if(version[0] >= '3') {
-    stringstream msg;
-    msg << "[DimensionReduction] Initializing Python: " << version[0]
-        << version[1] << version[2] << endl;
-    dMsg(cout, msg.str(), infoMsg);
+    this->printMsg("Initializing Python " + std::to_string(version[0])
+                   + std::to_string(version[1]) + std::to_string(version[2]));
   } else {
-    cerr << "[DimensionReduction] Error: Python 3+ is required:\n"
-         << version << " is provided." << endl;
+    this->printErr("Python 3 + is required :" + std::string{version}
+                   + " is provided.");
   }
 
   majorVersion_ = version[0];
 #endif
 }
 
-DimensionReduction::~DimensionReduction() {
-}
+int DimensionReduction::execute(
+  std::vector<std::vector<double>> &outputEmbedding,
+  const std::vector<double> &inputMatrix,
+  const int nRows,
+  const int nColumns,
+  int *insertionTimeForTopomap) const {
 
-bool DimensionReduction::isPythonFound() const {
-#ifdef TTK_ENABLE_SCIKIT_LEARN
-  return true;
-#else
-  stringstream msg;
-  msg << "[DimensionReduction] "
-      << "Warning: scikit-learn support disabled :(" << endl;
-  msg << "[DimensionReduction] "
-      << "Python/Numpy may not be installed properly." << endl;
-  msg << "[DimensionReduction] Features disabled..." << endl;
-  dMsg(cerr, msg.str(), fatalMsg);
-  return false;
-#endif
-}
-
-int DimensionReduction::execute() const {
-#ifdef TTK_ENABLE_SCIKIT_LEARN
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(majorVersion_ < '3')
-    return -1;
-  if(modulePath_.length() <= 0)
-    return -1;
-  if(moduleName_.length() <= 0)
-    return -1;
-  if(functionName_.length() <= 0)
-    return -1;
-  if(!matrix_)
-    return -1;
+#ifndef TTK_ENABLE_SCIKIT_LEARN
+  TTK_FORCE_USE(nColumns);
 #endif
 
   Timer t;
 
-  const int numberOfComponents = std::max(2, numberOfComponents_);
-  const int numberOfNeighbors = std::max(1, numberOfNeighbors_);
+  if(this->Method == METHOD::TOPOMAP) {
+    TopoMap topomap(
+      this->topomap_AngularSampleNb, topomap_CheckMST, topomap_Strategy);
+    topomap.setDebugLevel(this->debugLevel_);
+    topomap.setThreadNumber(this->threadNumber_);
+
+    std::vector<double> coordsTopomap(2 * nRows);
+    topomap.execute<double>(coordsTopomap.data(), insertionTimeForTopomap,
+                            inputMatrix, IsInputADistanceMatrix, nRows);
+    outputEmbedding.resize(2);
+    outputEmbedding[0].resize(nRows);
+    outputEmbedding[1].resize(nRows);
+    for(int i = 0; i < nRows; i++) {
+      outputEmbedding[0][i] = coordsTopomap[2 * i];
+      outputEmbedding[1][i] = coordsTopomap[2 * i + 1];
+    }
+
+    this->printMsg(
+      "Computed TopoMap", 1.0, t.getElapsedTime(), this->threadNumber_);
+    return 0;
+  }
+
+  if(this->Method == METHOD::AE) {
+#ifdef TTK_ENABLE_TORCH
+    TopologicalDimensionReduction tcdr(
+      ae_CUDA, ae_Deterministic, ae_Seed, NumberOfComponents, ae_Epochs,
+      ae_LearningRate, ae_Optimizer, ae_Method, ae_Model, ae_Architecture,
+      ae_Activation, ae_BatchSize, ae_BatchNormalization, ae_RegCoefficient,
+      IsInputImages, ae_PreOptimize, ae_PreOptimizeEpochs);
+    tcdr.setDebugLevel(debugLevel_);
+    tcdr.setThreadNumber(threadNumber_);
+
+    outputEmbedding.resize(NumberOfComponents);
+    for(int d = 0; d < NumberOfComponents; d++)
+      outputEmbedding[d].resize(nRows);
+
+    tcdr.execute(outputEmbedding, inputMatrix, nRows);
+
+    this->printMsg("Computed AE dimension reduction", 1.0, t.getElapsedTime(),
+                   threadNumber_);
+    return 0;
+#else
+    this->printErr("Unavailable backend: Torch is required.");
+    return 1;
+#endif
+  }
+
+#ifdef TTK_ENABLE_SCIKIT_LEARN
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(majorVersion_ < '3')
+    return -1;
+  if(ModulePath.empty())
+    return -2;
+  if(ModuleName.empty())
+    return -3;
+  if(FunctionName.empty())
+    return -4;
+#endif
+
+  const int numberOfComponents = std::max(2, this->NumberOfComponents);
+
+  const int numberOfNeighbors = std::max(1, this->NumberOfNeighbors);
 
   // declared here to avoid crossing initialization with goto
   vector<PyObject *> gc;
@@ -105,20 +145,27 @@ int DimensionReduction::execute() const {
 
   string modulePath;
 
-  if(PyArray_API == NULL) {
+  if(PyArray_API == nullptr) {
+#ifndef __clang_analyzer__
     import_array1(-1);
+#endif // __clang_analyzer__
+  }
+  if(PyArray_API == nullptr) {
+    return -5;
   }
 
   // convert the input matrix into a NumPy array.
   const int numberOfDimensions = 2;
-  npy_intp dimensions[2]{numberOfRows_, numberOfColumns_};
+  npy_intp dimensions[2]{nRows, nColumns};
 
-  pArray = PyArray_SimpleNewFromData(
-    numberOfDimensions, dimensions, NPY_DOUBLE, matrix_);
+  std::vector<std::string> methodToString{
+    "SE", "LLE", "MDS", "t-SNE", "IsoMap", "PCA"};
+
+  pArray = PyArray_SimpleNewFromData(numberOfDimensions, dimensions, NPY_DOUBLE,
+                                     const_cast<double *>(inputMatrix.data()));
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pArray) {
-    cerr << "[DimensionReduction] Python error: failed to convert the array."
-         << endl;
+    this->printErr("Python: failed to convert the array.");
     goto collect_garbage;
   }
 #endif
@@ -129,8 +176,7 @@ int DimensionReduction::execute() const {
   pSys = PyImport_ImportModule("sys");
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pSys) {
-    cerr << "[DimensionReduction] Python error: failed to load the sys module."
-         << endl;
+    this->printErr("Python: failed to load the sys module.");
     goto collect_garbage;
   }
 #endif
@@ -139,34 +185,25 @@ int DimensionReduction::execute() const {
   pPath = PyObject_GetAttrString(pSys, "path");
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pPath) {
-    cerr
-      << "[DimensionReduction] Python error: failed to get the path variable."
-      << endl;
+    this->printErr("Python: failed to get the path variable.");
     goto collect_garbage;
   }
 #endif
   gc.push_back(pPath);
 
-  if(modulePath_ == "default")
+  if(ModulePath == "default")
     modulePath = VALUE(TTK_SCRIPTS_PATH);
   else
-    modulePath = modulePath_;
+    modulePath = ModulePath;
 
-  {
-    stringstream msg;
-    msg << "[DimensionReduction] Loading Python script from: " << modulePath
-        << endl;
-    dMsg(cout, msg.str(), infoMsg);
-  }
+  this->printMsg("Loading Python script from: " + modulePath);
   PyList_Append(pPath, PyUnicode_FromString(modulePath.data()));
 
   // set other parameters
   pNumberOfComponents = PyLong_FromLong(numberOfComponents);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pNumberOfComponents) {
-    cerr << "[DimensionReduction] Python error: cannot convert "
-            "pNumberOfComponents."
-         << endl;
+    this->printErr("Python: cannot convert pNumberOfComponents.");
     goto collect_garbage;
   }
 #endif
@@ -175,48 +212,46 @@ int DimensionReduction::execute() const {
   pNumberOfNeighbors = PyLong_FromLong(numberOfNeighbors);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pNumberOfNeighbors) {
-    cerr
-      << "[DimensionReduction] Python error: cannot convert pNumberOfNeighbors."
-      << endl;
+    this->printErr("Python: cannot convert pNumberOfNeighbors.");
     goto collect_garbage;
   }
 #endif
   gc.push_back(pNumberOfNeighbors);
 
-  pMethod = PyLong_FromLong(method_);
+  pMethod = PyLong_FromLong(static_cast<long>(this->Method));
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pMethod) {
-    cerr << "[DimensionReduction] Python error: cannot convert pMethod."
-         << endl;
+    this->printErr("Python: cannot convert pMethod.");
     goto collect_garbage;
   }
 #endif
   gc.push_back(pMethod);
 
+  if(threadNumber_ > 1 && this->Method == METHOD::MDS) { // MDS
+    this->printWrn(
+      "MDS is known to be instable when used with multiple threads");
+  }
   pJobs = PyLong_FromLong(threadNumber_);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pJobs) {
-    cerr << "[DimensionReduction] Python error: cannot convert pJobs." << endl;
+    this->printErr("Python: cannot convert pJobs.");
     goto collect_garbage;
   }
 #endif
 
-  pIsDeterministic = PyLong_FromLong(randomState_);
+  pIsDeterministic = PyLong_FromLong(static_cast<long>(this->IsDeterministic));
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pIsDeterministic) {
-    cerr
-      << "[DimensionReduction] Python error: cannot convert pIsDeterministic."
-      << endl;
+    this->printErr("Python: cannot convert pIsDeterministic.");
     goto collect_garbage;
   }
 #endif
 
   // load module
-  pName = PyUnicode_FromString(moduleName_.data());
+  pName = PyUnicode_FromString(ModuleName.data());
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pName) {
-    cerr << "[DimensionReduction] Python error: moduleName parsing failed."
-         << endl;
+    this->printErr("Python: moduleName parsing failed.");
     goto collect_garbage;
   }
 #endif
@@ -225,23 +260,22 @@ int DimensionReduction::execute() const {
   pModule = PyImport_Import(pName);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pModule) {
-    cerr << "[DimensionReduction] Python error: module import failed." << endl;
+    this->printErr("Python: module import failed.");
     goto collect_garbage;
   }
 #endif
   gc.push_back(pModule);
 
   // configure function
-  pFunc = PyObject_GetAttrString(pModule, functionName_.data());
+  pFunc = PyObject_GetAttrString(pModule, FunctionName.data());
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pFunc) {
-    cerr << "[DimensionReduction] Python error: functionName parsing failed."
-         << endl;
+    this->printErr("Python: functionName parsing failed.");
     goto collect_garbage;
   }
 
   if(!PyCallable_Check(pFunc)) {
-    cerr << "[DimensionReduction] Python error: function call failed." << endl;
+    this->printErr("Python: function call failed.");
     goto collect_garbage;
   }
 #endif
@@ -290,6 +324,7 @@ int DimensionReduction::execute() const {
   PyList_Append(pISOParams, PyUnicode_FromString(iso_PathMethod.data()));
   PyList_Append(
     pISOParams, PyUnicode_FromString(iso_NeighborsAlgorithm.data()));
+  PyList_Append(pISOParams, PyUnicode_FromString(iso_Metric.data()));
 
   pPCAParams = PyList_New(0);
   PyList_Append(pPCAParams, PyBool_FromLong(pca_Copy));
@@ -313,9 +348,7 @@ int DimensionReduction::execute() const {
     pIsDeterministic, pParams, NULL);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pReturn) {
-    cerr
-      << "[DimensionReduction] Python error: function returned invalid object."
-      << endl;
+    this->printErr("Python: function returned invalid object.");
     goto collect_garbage;
   }
 #endif
@@ -324,9 +357,7 @@ int DimensionReduction::execute() const {
   pNRows = PyList_GetItem(pReturn, 0);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pNRows) {
-    cerr
-      << "[DimensionReduction] Python error: function returned invalid number "
-      << "of rows." << endl;
+    this->printErr("Python: function returned invalid number of rows");
     goto collect_garbage;
   }
 #endif
@@ -334,8 +365,7 @@ int DimensionReduction::execute() const {
   pNColumns = PyList_GetItem(pReturn, 1);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pNColumns) {
-    cerr << "[DimensionReduction] Python error: function returned invalid "
-         << "number of columns." << endl;
+    this->printErr("Python: function returned invalid number of columns.");
     goto collect_garbage;
   }
 #endif
@@ -343,26 +373,26 @@ int DimensionReduction::execute() const {
   pEmbedding = PyList_GetItem(pReturn, 2);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pEmbedding) {
-    cerr << "[DimensionReduction] Python error: function returned invalid"
-         << " embedding data." << endl;
+    this->printErr("Python: function returned invalid embedding data.");
     goto collect_garbage;
   }
 #endif
 
-  if(PyLong_AsLong(pNRows) == numberOfRows_
+  if(PyLong_AsLong(pNRows) == nRows
      and PyLong_AsLong(pNColumns) == numberOfComponents) {
     npEmbedding = reinterpret_cast<PyArrayObject *>(pEmbedding);
 
-    embedding_->resize(numberOfComponents);
+    outputEmbedding.resize(numberOfComponents);
     for(int i = 0; i < numberOfComponents; ++i) {
+      outputEmbedding[i].resize(nRows);
       if(PyArray_TYPE(npEmbedding) == NPY_FLOAT) {
         float *c_out = reinterpret_cast<float *>(PyArray_DATA(npEmbedding));
-        for(int j = 0; j < numberOfRows_; ++j)
-          (*embedding_)[i].push_back(c_out[i * numberOfRows_ + j]);
+        for(int j = 0; j < nRows; ++j)
+          outputEmbedding[i][j] = c_out[i * nRows + j];
       } else if(PyArray_TYPE(npEmbedding) == NPY_DOUBLE) {
         double *c_out = reinterpret_cast<double *>(PyArray_DATA(npEmbedding));
-        for(int j = 0; j < numberOfRows_; ++j)
-          (*embedding_)[i].push_back(c_out[i * numberOfRows_ + j]);
+        for(int j = 0; j < nRows; ++j)
+          outputEmbedding[i][j] = c_out[i * nRows + j];
       }
     }
   }
@@ -371,32 +401,8 @@ int DimensionReduction::execute() const {
   for(auto i : gc)
     Py_DECREF(i);
 
-  {
-    stringstream msg;
-    msg << "[DimensionReduction] ";
-    switch(method_) {
-      case 0:
-        msg << "SE";
-        break;
-      case 1:
-        msg << "LLE";
-        break;
-      case 2:
-        msg << "MDS";
-        break;
-      case 3:
-        msg << "t-SNE";
-        break;
-      case 4:
-        msg << "IsoMap";
-        break;
-      case 5:
-        msg << "PCA";
-        break;
-    }
-    msg << " computed in " << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Computed " + methodToString[static_cast<int>(this->Method)],
+                 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 
@@ -406,7 +412,7 @@ collect_garbage:
 #endif
   for(auto i : gc)
     Py_DECREF(i);
-  return -1;
+  return -6;
 
 #endif
 

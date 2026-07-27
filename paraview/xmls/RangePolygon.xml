@@ -1,0 +1,98 @@
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy
+     name="ttkRangePolygon"
+     class="ttkRangePolygon"
+     label="TTK RangePolygon">
+     <Documentation
+        long_help="TTK plugin which produces a valid range polygon for
+fiber surface extraction."
+        short_help="TTK plugin which produces a valid range polygon for
+fiber surface extraction.">
+
+Given an input 2D selection, this plugin produces a polygon to be used as
+an input to vtkFiberSurface. Typically, users generate a 2D selection from
+the continuous scatterplot and this plugin translates this selection into
+a valid range polygon.
+
+The user can either select:
+
+* Cells on the continuous scatterplot ("Select Cells with Polygon")
+WARNING: Users may need to zoom in sufficiently so/ that the "Extract
+Selection" indeed captures all of the user brushed cells.
+WARNING: In this case, the generated polygon may count A LOT of
+edges, which will seriously increase run-times. The next alternative is the
+default recommendation.
+
+* Points on the continuous scatterplot ("Interactive Select Points on")
+WARNING: This feature will only work properly with the TTK-branded ParaView
+(ParaView sources need to be patched with TTK fixes, see the documentation).
+
+Related publication
+"Fast and Exact Fiber Surface Extraction for Tetrahedral Meshes"
+Pavol Klacansky, Julien Tierny, Hamish Carr, Zhao Geng
+IEEE Transactions on Visualization and Computer Graphics, 2016.
+
+See also ContinuousScatterplot, FiberSurface, Fiber, ProjectionFromField.
+
+    Online examples:
+
+    - https://topology-tool-kit.github.io/examples/builtInExample2/
+
+     </Documentation>
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkUnstructuredGrid"/>
+        </DataTypeDomain>
+        <Documentation>
+          Input range cell selection.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+         name="ClosePolygon"
+         label="Closed Polygon"
+         command="SetClosedLoop"
+         number_of_elements="1"
+         default_values="0" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          Systematically close the range polygon.
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="NumberOfIterations"
+         label="Number Of Smoothing Iterations"
+         command="SetNumberOfIterations"
+         number_of_elements="1"
+         default_values="0" >
+        <IntRangeDomain name="range" min="0" max="100" />
+         <Documentation>
+           Number of smoothing iterations.
+         </Documentation>
+      </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="ClosePolygon" />
+        <Property name="NumberOfIterations" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Bivariate Scalar Data" />
+      </Hints>
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

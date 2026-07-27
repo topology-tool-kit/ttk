@@ -1,0 +1,143 @@
+<ServerManagerConfiguration>
+
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkDistanceField"
+      class="ttkDistanceField"
+      label="TTK DistanceField">
+      <Documentation
+        long_help="TTK plugin for distance field computations."
+        short_help="TTK plugin for distance field computations.">
+        This plugin takes a list of sources (a set of points with their global
+identifiers attached to them) and produces a distance field to the closest
+source.
+
+Related publication: "A note on two problems in connexion with graphs",
+Edsger W. Dijkstra, Numerische Mathematik, 1959.
+      </Documentation>
+
+      <InputProperty
+        name="Domain"
+        label="Input geometry"
+        port_index="0"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Domain" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+        name="Sources"
+        port_index="1"
+        label="Input sources"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPointSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Sources" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Sources for the distance fields.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty name="ForceInputVertexScalarField"
+        label="Force Input Vertex ScalarField"
+        command="SetForceInputVertexScalarField"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+          name="InputVertexScalarFieldNameNew"
+          label="Vertex Identifier Field"
+          command="SetInputArrayToProcess"
+          element_types="0 0 0 0 2"
+          number_of_elements="5"
+          default_values="0"
+          animateable="0"
+          panel_visibility="advanced"
+          >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0"
+          >
+          <RequiredProperties>
+            <Property name="Sources" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputVertexScalarField"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Select the vertex identifier scalar field in the sources.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="OutputScalarFieldType"
+        label="Output field type"
+        command="SetOutputScalarFieldType"
+        number_of_elements="1"
+        default_values="0" >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Float" />
+          <Entry value="1" text="Double" />
+        </EnumerationDomain>
+        <Documentation>
+          Select the type of the output scalar field.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+        name="OutputScalarFieldName"
+        command="SetOutputScalarFieldName"
+        label="Output field name"
+        number_of_elements="1"
+        default_values="OutputDistanceField">
+        <Documentation>
+          Select the name of the output scalar field.
+        </Documentation>
+      </StringVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="Sources" />
+        <Property name="ForceInputVertexScalarField" />
+        <Property name="InputVertexScalarFieldNameNew" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="OutputScalarFieldType" />
+        <Property name="OutputScalarFieldName" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

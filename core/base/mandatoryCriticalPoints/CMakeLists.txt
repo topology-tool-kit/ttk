@@ -3,9 +3,8 @@ ttk_add_base_library(mandatoryCriticalPoints
     MandatoryCriticalPoints.cpp
   HEADERS
     MandatoryCriticalPoints.h
-  LINK
+  DEPENDS
     triangulation
     contourTree
     lowestCommonAncestor
     )
-

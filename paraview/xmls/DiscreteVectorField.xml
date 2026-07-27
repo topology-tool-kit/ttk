@@ -1,0 +1,76 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkDiscreteVectorField"
+      class="ttkDiscreteVectorField"
+      label="TTK DiscreteVectorField">
+      <Documentation
+        long_help="TTK discreteVectorField plugin."
+        short_help="TTK discreteVectorField plugin.">
+        TTK discreteVectorField plugin documentation.
+      </Documentation>
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_vectors" attribute_type="point" number_of_components="3">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty name="Vector Field" 
+                            label="Input Array" 
+                            command="SetInputArrayToProcess" 
+                            element_types="0 0 0 0 2" 
+                            number_of_elements="5">
+        <ArrayListDomain attribute_type="Vectors" name="array_list">
+          <RequiredProperties>
+            <Property function="Input" name="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>The vector array that will be used to compute the discrete field.</Documentation>
+      </StringVectorProperty>
+
+
+      <IntVectorProperty name="ComputeVectorGlyphs"
+        label="Compute Vector Glyphs"
+        command="SetComputeVectorGlyphs"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="default">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Compute and display the discrete vector glyphs.
+        </Documentation>
+      </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="Vector Field" />
+        <Property name="ComputeVectorGlyphs"/>
+      </PropertyGroup>
+
+      <OutputPort name="Critical Points" index="0" id="port0"/>
+      <OutputPort name="Vector Glyphs" index="1" id="port1"/>
+
+      <Hints>
+        <ShowInMenu category="TTK - Vector Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

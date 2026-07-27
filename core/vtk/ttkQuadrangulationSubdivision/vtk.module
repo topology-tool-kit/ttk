@@ -1,0 +1,4 @@
+NAME
+ ttkQuadrangulationSubdivision
+DEPENDS
+ ttkAlgorithm

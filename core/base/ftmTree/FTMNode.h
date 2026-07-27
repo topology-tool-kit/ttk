@@ -8,8 +8,7 @@
 ///\param dataType Data type of the input scalar field (char, float,
 /// etc.).
 
-#ifndef NODE_H
-#define NODE_H
+#pragma once
 
 #include <vector>
 
@@ -26,8 +25,8 @@ namespace ttk {
     private:
       // mesh vertex where this node is
       SimplexId vertexId_;
-      // For leaves, linkedNode is the saddle ending the persistance pair
-      // For saddle, linked is the leaf starting the persistance pair in which
+      // For leaves, linkedNode is the saddle ending the persistence pair
+      // For saddle, linked is the leaf starting the persistence pair in which
       // they are
       SimplexId linkedNode_;
       // link with superArc above and below
@@ -62,11 +61,11 @@ namespace ttk {
 
       // Linked node
 
-      inline SimplexId getOrigin(void) const {
+      inline SimplexId getOrigin() const {
         return linkedNode_;
       }
 
-      inline SimplexId getTerminaison(void) const {
+      inline SimplexId getTermination() const {
         return linkedNode_;
       }
 
@@ -74,35 +73,34 @@ namespace ttk {
         linkedNode_ = linked;
       }
 
-      inline void setTerminaison(SimplexId linked) {
+      inline void setTermination(SimplexId linked) {
         linkedNode_ = linked;
       }
 
       // vector arcs
 
       inline idSuperArc getNumberOfDownSuperArcs() const {
-        return (idSuperArc)vect_downSuperArcList_.size();
+        return vect_downSuperArcList_.size();
       }
 
       inline idSuperArc getNumberOfUpSuperArcs() const {
-        return (idSuperArc)vect_upSuperArcList_.size();
+        return vect_upSuperArcList_.size();
       }
 
       inline idSuperArc getNumberOfSuperArcs() const {
-        return (idSuperArc)(vect_upSuperArcList_.size()
-                            + vect_downSuperArcList_.size());
+        return vect_upSuperArcList_.size() + vect_downSuperArcList_.size();
       }
 
       inline idSuperArc getDownSuperArcId(idSuperArc neighborId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((size_t)neighborId >= vect_downSuperArcList_.size()) {
+        if(neighborId >= vect_downSuperArcList_.size()) {
           std::cerr << "[Merge Tree:Node] get down on bad neighbor !";
           std::cerr << std::endl;
           return 0;
         }
 #endif
         return vect_downSuperArcList_[neighborId];
-      };
+      }
 
       inline idSuperArc getUpSuperArcId(idSuperArc neighborId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -126,14 +124,14 @@ namespace ttk {
         vect_upSuperArcList_.emplace_back(upSuperArcId);
       }
 
-      inline idSuperArc clearDownSuperArcs(void) {
-        idSuperArc s = vect_downSuperArcList_.size();
+      inline idSuperArc clearDownSuperArcs() {
+        idSuperArc const s = vect_downSuperArcList_.size();
         vect_downSuperArcList_.clear();
         return s;
       }
 
-      inline idSuperArc clearUpSuperArcs(void) {
-        idSuperArc s = vect_upSuperArcList_.size();
+      inline idSuperArc clearUpSuperArcs() {
+        idSuperArc const s = vect_upSuperArcList_.size();
         vect_upSuperArcList_.clear();
         return s;
       }
@@ -156,6 +154,22 @@ namespace ttk {
         }
       }
 
+      inline void removeDownSuperArcs(std::vector<idSuperArc> &idSa) {
+        if(idSa.empty())
+          return;
+        std::vector<bool> toDelete(
+          (*std::max_element(idSa.begin(), idSa.end())) + 1, false);
+        for(auto &id : idSa)
+          toDelete[id] = true;
+        vect_downSuperArcList_.erase(
+          std::remove_if(vect_downSuperArcList_.begin(),
+                         vect_downSuperArcList_.end(),
+                         [&toDelete](const idSuperArc &i) {
+                           return i < toDelete.size() and toDelete[i];
+                         }),
+          vect_downSuperArcList_.end());
+      }
+
       // Find and remove the arc
       inline void removeUpSuperArc(idSuperArc idSa) {
         for(idSuperArc i = 0; i < vect_upSuperArcList_.size(); ++i) {
@@ -169,12 +183,12 @@ namespace ttk {
       }
 
       void sortUpArcs(
-        std::function<bool(const idSuperArc, const idSuperArc)> comp) {
+        const std::function<bool(const idSuperArc, const idSuperArc)> &comp) {
         sort(vect_upSuperArcList_.begin(), vect_upSuperArcList_.end(), comp);
       }
 
       void sortDownArcs(
-        std::function<bool(const idSuperArc, const idSuperArc)> comp) {
+        const std::function<bool(const idSuperArc, const idSuperArc)> &comp) {
         sort(
           vect_downSuperArcList_.begin(), vect_downSuperArcList_.end(), comp);
       }
@@ -182,5 +196,3 @@ namespace ttk {
 
   } // namespace ftm
 } // namespace ttk
-
-#endif /* end of include guard: NODE_H */

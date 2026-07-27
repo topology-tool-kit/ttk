@@ -1,0 +1,156 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkRipsPersistenceGenerators" class="ttkRipsPersistenceGenerators" label="TTK RipsPersistenceGenerators">
+      <Documentation long_help="RipsPersistenceGenerators Long" short_help="RipsPersistenceGenerators Short">
+        TTK plugin for the computation of the persistence generators of Rips complexes.
+      </Documentation>
+
+      <!-- INPUT DATA OBJECTS -->
+      <InputProperty name="Input" label="Input source" port_index="0" command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable" />
+        </DataTypeDomain>
+        <Documentation>Point cloud to process.</Documentation>
+      </InputProperty>
+
+      <InputProperty name="Input1" label="Input 3D representation" port_index="1" command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPointSet" />
+        </DataTypeDomain>
+        <Documentation>Point cloud for geometric representation of persistent generators.</Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+        name="SelectFieldsWithRegexp"
+        label="Select Fields with a Regexp"
+        command="SetSelectFieldsWithRegexp"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Select input scalar fields matching a regular expression.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty command="SetScalarFields"
+        clean_command="ClearScalarFields"
+        label="Input Columns"
+        name="ScalarFields"
+        number_of_elements="0"
+        default_values="1"
+        number_of_elements_per_command="1"
+        repeat_command="1">
+        <ArrayListDomain name="array_list"
+          default_values="1">
+          <RequiredProperties>
+            <Property name="Input"
+              function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <NoDefault />
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectFieldsWithRegexp"
+                                   value="0" />
+        </Hints>
+        <Documentation>
+          Select the scalar fields to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+         name="Regexp"
+         command="SetRegexpString"
+         number_of_elements="1"
+         default_values=".*" >
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectFieldsWithRegexp"
+                                   value="1" />
+        </Hints>
+         <Documentation>
+            This regexp will be used to filter the chosen fields. Only
+            matching ones will be selected.
+         </Documentation>
+      </StringVectorProperty>
+
+
+      <!-- INPUT PARAMETER WIDGETS -->
+
+      <IntVectorProperty
+              name="InputIsDistanceMatrix"
+              label="Input is a distance matrix"
+              command="SetInputIsDistanceMatrix"
+              number_of_elements="1"
+              panel_visibility="advanced"
+              default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="BackEnd" values="0" />
+        </Hints>
+        <Documentation>
+          Check this box to read the input table as a distance matrix instead of a point cloud.
+        </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="InputIsDistanceMatrix" />
+        <Property name="SelectFieldsWithRegexp" />
+        <Property name="ScalarFields" />
+        <Property name="Regexp" />
+      </PropertyGroup>
+
+      <!-- OUTPUT PARAMETER WIDGETS -->
+      <StringVectorProperty
+              name="SimplexMaximumDiameter"
+              label="Simplex maximum diameter"
+              command="SetSimplexMaximumDiameter"
+              number_of_elements="1"
+              default_values="inf">
+        <Documentation>
+          Simplex maximum diameter in the Rips complex (type "inf" for unlimited diameter).
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+              name="OutputCascade"
+              label="Output cascade"
+              command="SetOutputCascade"
+              number_of_elements="1"
+              default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this to output the whole persistent cascade instead of the persistent generators. The edges will be
+          separated in four classes: the edges killing a 0-cycle (id=0); the edges creating a 1-cycle (id=1); the edges
+          killing a 1-cycle (id=2); and the other edges of the 1-dimensional persistent cascade (id=3).
+        </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="SimplexMaximumDiameter" />
+        <Property name="OutputCascade" />
+      </PropertyGroup>
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <OutputPort name="Generators" index="0" id="port0" />
+      <OutputPort name="Persistence Diagram" index="1" id="port1" />
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - High Dimension / Point Cloud Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

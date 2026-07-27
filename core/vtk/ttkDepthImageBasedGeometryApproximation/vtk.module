@@ -1,0 +1,4 @@
+NAME
+  ttkDepthImageBasedGeometryApproximation
+DEPENDS
+  ttkAlgorithm

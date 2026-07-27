@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkDistanceMatrixDistortion" class="ttkDistanceMatrixDistortion" label="TTK DistanceMatrixDistortion">
+      <Documentation long_help="DistanceMatrixDistortion plugin" short_help="DistanceMatrixDistortion plugin">This plugin, given two distance matrices representing the same points, computes the distortion between the two, according the SIM formula. It also provides, for each point, the distortion for its own distances to the other points.</Documentation>
+
+      <!-- INPUT DATA OBJECTS -->
+      <InputProperty
+        name="HighDistanceMatrix"
+        port_index="0"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable" />
+          </DataTypeDomain>
+          <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="HighDistanceMatrix" function="FieldDataSelection" />
+        </InputArrayDomain>
+ 
+        <Documentation>
+          High dimension distance matrix.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+        name="DoNotNormalize"
+        label="Do not normalize computations"
+        command="SetDoNotNormalize"
+        panel_visibility="advanced"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        If the box is not checked, we normalize the results by dividing the sums by the maximum element of the line. Warning: if the box is checked, the values will lie between -inf and 1 (best similarity).
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="SelectFieldsWithRegexpHigh"
+        label="Select Fields with a Regexp (High matrix)"
+        command="SetSelectFieldsWithRegexpHigh"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Select input scalar fields matching a regular expression.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty command="SetScalarFieldsHigh"
+        clean_command="ClearScalarFieldsHigh"
+        label="Input Columns"
+        name="ScalarFieldsHigh"
+        number_of_elements="0"
+        default_values="1"
+        number_of_elements_per_command="1"
+        repeat_command="1">
+        <ArrayListDomain name="array_list"
+          default_values="1">
+          <RequiredProperties>
+            <Property name="HighDistanceMatrix"
+              function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <NoDefault />
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectFieldsWithRegexpHigh"
+                                   value="0" />
+        </Hints>
+        <Documentation>
+          Select the scalar fields to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+         name="RegexpHigh"
+         command="SetRegexpStringHigh"
+         number_of_elements="1"
+         default_values=".*">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectFieldsWithRegexpHigh"
+                                   value="1" />
+        </Hints>
+         <Documentation>
+            This regexp will be used to filter the chosen fields. Only
+            matching ones will be selected.
+         </Documentation>
+      </StringVectorProperty>
+
+     
+
+      <InputProperty
+        name="LowDistanceMatrix"
+        port_index="1"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable" />
+        </DataTypeDomain>
+        <Documentation>
+          Low dimension distance matrix.
+        </Documentation>
+      </InputProperty>
+
+
+<IntVectorProperty
+        name="SelectFieldsWithRegexpLow"
+        label="Select Fields with a Regexp (Low matrix)"
+        command="SetSelectFieldsWithRegexpLow"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Select input scalar fields matching a regular expression.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty command="SetScalarFieldsLow"
+        clean_command="ClearScalarFieldsLow"
+        label="Input Columns"
+        name="ScalarFieldsLow"
+        number_of_elements="0"
+        default_values="1"
+        number_of_elements_per_command="1"
+        repeat_command="1">
+        <ArrayListDomain name="array_list"
+          default_values="1">
+          <RequiredProperties>
+            <Property name="LowDistanceMatrix"
+              function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <NoDefault />
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectFieldsWithRegexpLow"
+                                   value="0" />
+        </Hints>
+        <Documentation>
+          Select the scalar fields to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+         name="RegexpLow"
+         command="SetRegexpStringLow"
+         number_of_elements="1"
+         default_values=".*">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectFieldsWithRegexpLow"
+                                   value="1" />
+        </Hints>
+         <Documentation>
+            This regexp will be used to filter the chosen fields. Only
+            matching ones will be selected.
+         </Documentation>
+      </StringVectorProperty>
+
+            <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="SelectFieldsWithRegexpHigh" />
+        <Property name="ScalarFieldsHigh" />
+        <Property name="RegexpHigh" />
+        <Property name="SelectFieldsWithRegexpLow" />
+        <Property name="ScalarFieldsLow" />
+        <Property name="RegexpLow" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="DoNotNormalize" />
+      </PropertyGroup>
+
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - High Dimension / Point Cloud Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

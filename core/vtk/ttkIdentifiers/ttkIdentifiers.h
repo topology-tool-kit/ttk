@@ -1,16 +1,17 @@
 /// \ingroup vtk
 /// \class ttkIdentifiers
-/// \author Julien Tierny <julien.tierny@lip6.fr>
-/// \date August 2015.
+/// \author Eve Le Guillou <eve.le-guillou@lip6.fr>
+/// \date October 2022.
 ///
-/// \brief TTK VTK-filter that computes the global identifiers for each vertex
-/// and each cell as point data and cell data scalar fields.
+/// \brief TTK VTK-filter that triggers the computation of global identifiers.
 ///
-/// This filter is useful to retrieve the global identifiers of vertices or
-/// cells in subsequent filters throughout the VTK pipeline.
+/// This filter is useful when TTK is compiled with MPI to compute the
+/// MPI preconditioning of the Identifiers filter.
+/// When TTK is not compiled with MPI, the filter will compute the global
+/// identifiers without triggering the MPI preconditioning.
 ///
 /// \param Input Input data-set (vtkDataSet)
-/// \param Output Output data-set with identifier fields (vtkDataSet)
+/// \param Output Output data-set with MPI preconditioning (vtkDataSet)
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
@@ -18,91 +19,51 @@
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
-#ifndef _TTK_IDENTIFIERS_H
-#define _TTK_IDENTIFIERS_H
+
+#pragma once
 
 // VTK includes -- to adapt
-#include <vtkCellData.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkIdTypeArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
+
+// VTK Module
+#include <ttkIdentifiersModule.h>
 
 // ttk code includes
-#include <ttkWrapper.h>
+#include <Identifiers.h>
+#include <ttkAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkIdentifiers
-#else
-class ttkIdentifiers
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+
+class TTKIDENTIFIERS_EXPORT ttkIdentifiers : public ttkAlgorithm,
+                                             protected ttk::Identifiers {
 
 public:
   static ttkIdentifiers *New();
 
-  vtkTypeMacro(ttkIdentifiers, vtkDataSetAlgorithm);
+  vtkTypeMacro(ttkIdentifiers, ttkAlgorithm);
 
-  vtkSetMacro(CellFieldName, std::string);
+  vtkSetMacro(CellFieldName, const std::string &);
   vtkGetMacro(CellFieldName, std::string);
 
-  vtkSetMacro(VertexFieldName, std::string);
+  vtkSetMacro(VertexFieldName, const std::string &);
   vtkGetMacro(VertexFieldName, std::string);
-
-  // default ttk setters
-  vtkSetMacro(debugLevel_, int);
-
-  void SetThreads() {
-    if(!UseAllCores)
-      threadNumber_ = ThreadNumber;
-    else {
-      threadNumber_ = ttk::OsCall::getNumberOfCores();
-    }
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
 
 protected:
   ttkIdentifiers();
 
-  ~ttkIdentifiers();
+  ~ttkIdentifiers() override;
+
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
 private:
-  bool UseAllCores;
-  ttk::ThreadId ThreadNumber;
-  std::string CellFieldName, VertexFieldName;
-
-  // base code features
-  int doIt(vtkDataSet *input, vtkDataSet *output);
-
-  bool needsToAbort() override;
-
-  int updateProgress(const float &progress) override;
+  std::string CellFieldName{ttk::CellScalarFieldName},
+    VertexFieldName{ttk::VertexScalarFieldName};
 };
-
-#endif // _TTK_IDENTIFIERS_H

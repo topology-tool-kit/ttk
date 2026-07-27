@@ -1,13 +1,18 @@
 #include <Debug.h>
 
-bool ttk::welcomeMsg_ = true;
-bool ttk::goodbyeMsg_ = true;
-int ttk::globalDebugLevel_ = 0;
+COMMON_EXPORTS ttk::debug::LineMode ttk::Debug::lastLineMode
+  = ttk::debug::LineMode::NEW;
+
+COMMON_EXPORTS bool ttk::welcomeMsg_ = true;
+COMMON_EXPORTS bool ttk::goodbyeMsg_ = true;
+COMMON_EXPORTS int ttk::globalDebugLevel_ = 0;
 
 using namespace std;
 using namespace ttk;
 
 Debug::Debug() {
+
+  setDebugMsgPrefix("Debug");
 
   debugLevel_ = ttk::globalDebugLevel_;
 
@@ -18,87 +23,132 @@ Debug::Debug() {
 
 Debug::~Debug() {
   if((lastObject_) && (ttk::goodbyeMsg_)) {
-    stringstream msg;
-    msg << "[Common] Goodbye :)" << endl;
-    dMsg(cout, msg.str(), 1);
+
+    printMsg(
+      "Goodbye :)", debug::Priority::PERFORMANCE, debug::LineMode::NEW, cout);
+
     ttk::goodbyeMsg_ = false;
   }
 }
 
-int Debug::dMsg(ostream &stream, string msg, const int &debugLevel) const {
+int Debug::welcomeMsg(ostream &stream) {
 
-  if((ttk::welcomeMsg_) && (debugLevel_)) {
+#ifdef TTK_ENABLE_MPI
+  if(MPIrank_ != 0) {
     ttk::welcomeMsg_ = false;
-    stringstream s;
+  }
+#endif // TTK_ENABLE_MPI
 
-    s << "[Common] "
-         " _____ _____ _  __                       __  __    ____   ___  _  ___"
-      << endl
-      << "[Common] "
-         "|_   _|_   _| |/ /                      / /__\\ \\  |___ \\ / _ \\/ "
-         "|/ _ \\"
-      //"|_   _|_   _| |/ /                      / /__\\ \\  |___ \\ / _ \\/ |(
-      //_ )"
-      << endl
-      << "[Common] "
-         "  | |   | | | ' /                      | |/ __| |   __) | | | | | "
-         "(_) |"
-      //"  | |   | | | ' /                      | |/ __| |   __) | | | | |/ _
-      //\\"
-      << endl
-      << "[Common] "
-         "  | |   | | | . \\                      | | (__| |  / __/| |_| | "
-         "|\\__, |"
-      //"  | |   | | | . \\                      | | (__| |  / __/| |_| | | (_)
-      //|"
-      << endl
-      << "[Common] "
-         "  |_|   |_| |_|\\_\\                     | |\\___| | "
-         "|_____|\\___/|_|  /_/"
-      //"  |_|   |_| |_|\\_\\                     | |\\___| |
-      //|_____|\\___/|_|\\___/"
-      << endl
-      << "[Common] "
-         "                                        \\_\\  /_/"
-      //"                                        \\_\\  /_/"
-      << endl;
-    s << "[Common] Welcome!" << endl;
+  const int priorityAsInt = (int)debug::Priority::PERFORMANCE;
+
+  if((ttk::welcomeMsg_) && (debugLevel_ > priorityAsInt)) {
+    ttk::welcomeMsg_ = false;
+
+    const string currentPrefix = debugMsgPrefix_;
+    debugMsgPrefix_ = "[Common] ";
+
+#include <welcomeLogo.inl>
+#include <welcomeMsg.inl>
+
 #ifndef NDEBUG
-    s << "[Common]" << endl;
-    s << "[Common] WARNING:" << endl;
-    s << "[Common] TTK has been built in debug mode! (developers only)" << endl;
-    s << "[Common] Expect important performance degradation." << endl;
-    s << "[Common]" << endl;
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "TTK has been built in debug mode!",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "DEVELOPERS ONLY!",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(
+      debug::output::YELLOW + "Expect important performance degradation.",
+      debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+#endif
+#ifndef TTK_ENABLE_OPENMP
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(
+      debug::output::YELLOW + "TTK has *NOT* been built in parallel mode!",
+      debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "DEVELOPERS ONLY!",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(
+      debug::output::YELLOW + "Expect important performance degradation.",
+      debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+
+    printMsg(
+      debug::output::YELLOW + "To enable the parallel mode, rebuild TTK with:",
+      debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "  -DTTK_ENABLE_OPENMP=ON",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
 #endif
 #ifndef TTK_ENABLE_KAMIKAZE
-    s << "[Common]" << endl;
-    s << "[Common] WARNING:" << endl;
-    s << "[Common] TTK has *NOT* been built in performance mode!"
-      << " (developers only)" << endl;
-    s << "[Common] Expect important performance degradation." << endl;
-    s << "[Common] " << endl;
-    s << "[Common] To enable the performance mode, rebuild TTK with:" << endl;
-    s << "[Common]   -DTTK_ENABLE_KAMIKAZE=ON" << endl;
-    s << "[Common]" << endl;
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(
+      debug::output::YELLOW + "TTK has *NOT* been built in performance mode!",
+      debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "DEVELOPERS ONLY!",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(
+      debug::output::YELLOW + "Expect important performance degradation.",
+      debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+
+    printMsg(debug::output::YELLOW
+               + "To enable the performance mode, rebuild TTK with:",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "  -DTTK_ENABLE_KAMIKAZE=ON",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
 #endif
-    dMsg(cout, s.str(), 1);
+#ifndef TTK_ENABLE_DOUBLE_TEMPLATING
+    printMsg("", debug::Priority::DETAIL, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW
+               + "TTK has *NOT* been built in double-templating mode!",
+             debug::Priority::DETAIL, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "DEVELOPERS ONLY!",
+             debug::Priority::DETAIL, debug::LineMode::NEW, stream);
+    printMsg(
+      debug::output::YELLOW + "Expect unsupported types for bivariate data.",
+      debug::Priority::DETAIL, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::DETAIL, debug::LineMode::NEW, stream);
+
+    printMsg(debug::output::YELLOW
+               + "To enable the double-templating mode, rebuild TTK with:",
+             debug::Priority::DETAIL, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "  -DTTK_ENABLE_DOUBLE_TEMPLATING=ON",
+             debug::Priority::DETAIL, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::DETAIL, debug::LineMode::NEW, stream);
+#endif
+#ifdef TTK_REDUCE_TEMPLATE_INSTANTIATIONS
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(
+      debug::output::YELLOW + "TTK has *NOT* been built with all VTK types!",
+      debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "DEVELOPERS ONLY!",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "Expect unsupported scalar field types!",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+
+    printMsg(
+      debug::output::YELLOW + "To support all VTK types, rebuild TTK with:",
+      debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(
+      debug::output::YELLOW + "  -DTTK_REDUCE_TEMPLATE_INSTANTIATIONS=OFF",
+      debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+#endif // TTK_REDUCE_TEMPLATE_INSTANTIATIONS
+
+    debugMsgPrefix_ = currentPrefix;
   }
 
-  if((debugLevel_ >= debugLevel) || (globalDebugLevel_ >= debugLevel))
-    stream << msg.data() << flush;
   return 0;
-}
-
-int Debug::err(const string msg, const int &debugLevel) const {
-  return dMsg(cerr, msg, 0);
-}
-
-int Debug::msg(const char *msg, const int &debugLevel) const {
-  return dMsg(cout, string(msg), debugLevel);
 }
 
 int Debug::setDebugLevel(const int &debugLevel) {
   debugLevel_ = debugLevel;
+
+  welcomeMsg(cout);
+
   return 0;
 }
 

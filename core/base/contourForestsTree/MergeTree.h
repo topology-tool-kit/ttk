@@ -16,32 +16,15 @@
 /// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny \n
 /// Proc. of IEEE LDAV 2016.
 
-#ifndef _MERGETREE_H
-#define _MERGETREE_H
+#pragma once
 
+#include <map>
+#include <numeric>
 #include <queue>
 #include <vector>
 
-#ifdef __APPLE__
-#include <algorithm>
-#include <numeric>
-#else
-#ifdef _WIN32
-#include <algorithm>
-#include <numeric>
-#else
-#ifdef __clang__
-#include <algorithm>
-#include <numeric>
-#else
-#include <parallel/algorithm>
-#endif
-#endif
-#endif
-
 #include <Geometry.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 #include "DeprecatedDataTypes.h"
 #include "DeprecatedNode.h"
@@ -57,12 +40,14 @@ namespace ttk {
 
     protected:
       // global
-      Params *const params_;
-      Triangulation *mesh_;
-      Scalars *const scalars_;
+      std::shared_ptr<Params> params_;
+      std::shared_ptr<Scalars> scalars_;
 
       // local
       TreeData treeData_;
+
+      // storage
+      std::list<ExtendedUnionFind> storageEUF_;
 
     public:
       // CONSTRUCT
@@ -70,13 +55,12 @@ namespace ttk {
       // {
 
       // Tree with global data and partition number
-      MergeTree(Params *const params,
-                Triangulation *mesh,
-                Scalars *const scalars,
+      MergeTree(std::shared_ptr<Params> params,
+                std::shared_ptr<Scalars> scalars,
                 TreeType type,
                 idPartition part = nullPartition);
 
-      virtual ~MergeTree();
+      ~MergeTree() override;
 
       //}
       // --------------------
@@ -84,31 +68,23 @@ namespace ttk {
       // --------------------
       // {
 
-      void initNbScalars(void) {
-        scalars_->size = mesh_->getNumberOfVertices();
+      template <typename triangulationType>
+      void initNbScalars(const triangulationType &tri) {
+        scalars_->size = tri->getNumberOfVertices();
       }
 
-      /// \brief init Simulation of Simplicity datastructure if not set
-      void initSoS(void) {
-        std::vector<SimplexId> &sosVect = scalars_->sosOffsets;
-        if(!sosVect.size()) {
-          sosVect.resize(scalars_->size);
-          iota(sosVect.begin(), sosVect.end(), 0);
-        }
-      }
-
-      /// \brief init the type of the current tree froms params
-      void initTreeType(void) {
+      /// \brief init the type of the current tree from params
+      void initTreeType() {
         treeData_.treeType = params_->treeType;
       }
 
       /// \brief if sortedVertices_ is null, define and fill it
       /// Also fill the mirror std::vector
       template <typename scalarType>
-      void sortInput(void);
+      void sortInput();
 
       /// \brief clear local data for new computation
-      void flush(void) {
+      void flush() {
         treeData_.superArcs.clear();
         treeData_.nodes.clear();
         treeData_.leaves.clear();
@@ -130,7 +106,7 @@ namespace ttk {
       // On this implementation, the warpper communicate with ContourForest
       // A child class of this one.
 
-      inline int setDebugLevel(const int &local_debugLevel) {
+      inline int setDebugLevel(const int &local_debugLevel) override {
         Debug::setDebugLevel(local_debugLevel);
         params_->debugLevel = local_debugLevel;
         return 0;
@@ -154,12 +130,11 @@ namespace ttk {
         scalars_->values = local_scalars;
       }
 
-      inline void setupTriangulation(Triangulation *m,
-                                     const bool preproc = true) {
-        mesh_ = m;
-        if(mesh_ && preproc) {
-          mesh_->preprocessEdges();
-          mesh_->preprocessVertexNeighbors();
+      inline void preconditionTriangulation(AbstractTriangulation *const m,
+                                            const bool preproc = true) {
+        if(m && preproc) {
+          m->preconditionEdges();
+          m->preconditionVertexNeighbors();
         }
       }
 
@@ -167,7 +142,7 @@ namespace ttk {
       // partition
       // .....................{
 
-      inline idPartition getPartition(void) const {
+      inline idPartition getPartition() const {
         return treeData_.partition;
       }
 
@@ -189,7 +164,15 @@ namespace ttk {
       // offset
       // .....................{
 
-      inline void setVertexSoSoffsets(const std::vector<SimplexId> &offsets) {
+      /**
+       * @pre For this function to behave correctly in the absence of
+       * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+       * called to fill the @p offsets buffer prior to any
+       * computation (the VTK wrapper already includes a mechanism to
+       * automatically generate such a preconditioned buffer).
+       * @see examples/c++/main.cpp for an example use.
+       */
+      inline void setVertexSoSoffsets(const SimplexId *const offsets) {
         scalars_->sosOffsets = offsets;
       }
 
@@ -197,11 +180,11 @@ namespace ttk {
       // arcs
       // .....................{
 
-      inline idSuperArc getNumberOfSuperArcs(void) const {
+      inline idSuperArc getNumberOfSuperArcs() const {
         return treeData_.superArcs.size();
       }
 
-      inline idSuperArc getNumberOfVisibleArcs(void) const {
+      inline idSuperArc getNumberOfVisibleArcs() const {
         // Costly ! for dedbug only
         idSuperArc visibleArc = 0;
         for(const SuperArc &arc : treeData_.superArcs) {
@@ -211,7 +194,7 @@ namespace ttk {
         return visibleArc;
       }
 
-      inline const std::vector<SuperArc> &getSuperArc(void) const {
+      inline const std::vector<SuperArc> &getSuperArc() const {
         // break encapsulation...
         return treeData_.superArcs;
       }
@@ -221,7 +204,6 @@ namespace ttk {
         if((size_t)i >= treeData_.superArcs.size()) {
           std::cout << "[Merge Tree] get superArc on bad id :" << i;
           std::cout << " / " << treeData_.superArcs.size() << std::endl;
-          return nullptr;
         }
 #endif
         return &(treeData_.superArcs[i]);
@@ -250,11 +232,11 @@ namespace ttk {
       // nodes
       // .....................{
 
-      inline idNode getNumberOfNodes(void) const {
+      inline idNode getNumberOfNodes() const {
         return treeData_.nodes.size();
       }
 
-      inline const std::vector<Node> &getNodes(void) const {
+      inline const std::vector<Node> &getNodes() const {
         // break encapsulation...
         return treeData_.nodes;
       }
@@ -267,28 +249,26 @@ namespace ttk {
       // leaves / root
       // .....................{
 
-      inline SimplexId getNumberOfLeaves(void) const {
+      inline SimplexId getNumberOfLeaves() const {
         return treeData_.leaves.size();
       }
 
-      inline const std::vector<idNode> &getLeaves(void) const {
+      inline const std::vector<idNode> &getLeaves() const {
         // break encapsulation...
         return treeData_.leaves;
       }
 
       inline const idNode &getLeave(const idNode &id) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((id < 0) || (size_t)id > (treeData_.leaves.size())) {
-          std::stringstream msg;
-          msg << "[MergTree] getLeaves out of bounds : " << id << std::endl;
-          err(msg.str(), fatalMsg);
+        if(id > treeData_.leaves.size()) {
+          this->printErr("getLeaves out of bounds: " + std::to_string(id));
           return treeData_.leaves[0];
         }
 #endif
         return treeData_.leaves[id];
       }
 
-      inline const std::vector<idNode> &getRoots(void) const {
+      inline const std::vector<idNode> &getRoots() const {
         // break encapsulation...
         return treeData_.roots;
       }
@@ -297,7 +277,7 @@ namespace ttk {
       // vert2tree
       // .....................{
 
-      inline void setVert2Tree(decltype(treeData_.vert2tree) const vect2tree) {
+      inline void setVert2Tree(decltype(treeData_.vert2tree) const &vect2tree) {
         treeData_.vert2tree = vect2tree;
       }
 
@@ -330,11 +310,9 @@ namespace ttk {
       inline idNode getCorrespondingNodeId(const SimplexId &val) const {
 #ifndef TTK_ENABLE_KAMIKAZE
         if(!isCorrespondingNode(val)) {
-          std::stringstream debug;
-          debug << "[MergeTree] : getCorrespondingNode, ";
-          debug << "Vertex :" << val << " is not a node :";
-          debug << treeData_.vert2tree[val] << std::endl;
-          err(debug.str(), fatalMsg);
+          this->printErr("getCorrespondingNode, Vertex: " + std::to_string(val)
+                         + " is not a node: "
+                         + std::to_string(treeData_.vert2tree[val]));
         }
 #endif
         return corr2idNode(val);
@@ -343,18 +321,16 @@ namespace ttk {
       inline idSuperArc getCorrespondingSuperArcId(const SimplexId &val) const {
 #ifndef TTK_ENABLE_KAMIKAZE
         if(!isCorrespondingArc(val)) {
-          std::stringstream debug;
-          debug << "[MergeTree] : getCorrespondingSuperArcId, ";
-          debug << "Vertex :" << val << " is not on an arc :";
-          debug << treeData_.vert2tree[val] << std::endl;
-          err(debug.str(), fatalMsg);
+          this->printErr(
+            "getCorrespondingSuperArcId, Vertex: " + std::to_string(val)
+            + " is not on an arc: " + std::to_string(treeData_.vert2tree[val]));
         }
 #endif
         return treeData_.vert2tree[val];
       }
 
       // }
-      // Get vertex correponding object
+      // Get vertex corresponding object
       // ................................{
 
       inline SuperArc *vertex2SuperArc(const SimplexId &vert) {
@@ -381,11 +357,11 @@ namespace ttk {
 
       inline idCorresp idNode2corr(const idNode &id) const {
         // transform idNode to special value for the array : -idNode -1
-        return -(idCorresp)(id + 1);
+        return -static_cast<idCorresp>(id + 1);
       }
 
       inline idNode corr2idNode(const idCorresp &corr) const {
-        return -(idNode)(treeData_.vert2tree[corr] + 1);
+        return static_cast<idNode>(-(treeData_.vert2tree[corr] + 1));
       }
 
       // }
@@ -400,20 +376,24 @@ namespace ttk {
       // ..........................{
 
       // Merge tree processing of a vertex during build
+      template <typename triangulationType>
       void processVertex(const SimplexId &vertex,
                          std::vector<ExtendedUnionFind *> &vect_baseUF,
                          const bool overlapB,
                          const bool overlapA,
+                         const triangulationType &mesh,
                          DebugTimer &begin);
 
       /// \brief Compute the merge tree using Carr's algorithm
+      template <typename triangulationType>
       int build(std::vector<ExtendedUnionFind *> &vect_baseUF,
                 const std::vector<SimplexId> &overlapBefore,
                 const std::vector<SimplexId> &overlapAfter,
                 SimplexId start,
                 SimplexId end,
                 const SimplexId &posSeed0,
-                const SimplexId &posSeed1);
+                const SimplexId &posSeed1,
+                const triangulationType &mesh);
 
       // }
       // Simplify
@@ -421,13 +401,18 @@ namespace ttk {
 
       // BFS simplification for local CT
       template <typename scalarType>
-      SimplexId localSimplify(const SimplexId &podSeed0,
-                              const SimplexId &podSeed1);
+      SimplexId localSimplify(
+        const SimplexId &podSeed0,
+        const SimplexId &podSeed1,
+        std::list<std::vector<std::pair<SimplexId, bool>>> &storage);
 
       // BFS simpliciation for global CT
-      template <typename scalarType>
-      SimplexId globalSimplify(const SimplexId posSeed0,
-                               const SimplexId posSeed1);
+      template <typename scalarType, typename triangulationType>
+      SimplexId globalSimplify(
+        const SimplexId posSeed0,
+        const SimplexId posSeed1,
+        std::list<std::vector<std::pair<SimplexId, bool>>> &storage,
+        const triangulationType &mesh);
 
       // Having sorted std::pairs, simplify the current tree
       // in accordance with threashol, between the two seeds.
@@ -435,6 +420,7 @@ namespace ttk {
       SimplexId simplifyTree(
         const SimplexId &posSeed0,
         const SimplexId &posSeed1,
+        std::list<std::vector<std::pair<SimplexId, bool>>> &storage,
         const std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>>
           &sortedPairs);
 
@@ -447,23 +433,26 @@ namespace ttk {
       // PersistencePairs
       // ...........................{
 
-      template <typename scalarType>
+      template <typename scalarType, typename triangulationType>
       int computePersistencePairs(
-        std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs);
+        std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs,
+        const triangulationType &mesh);
 
-      template <typename scalarType>
+      template <typename scalarType, typename triangulationType>
       int computePersistencePairs(
-        std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> &pairs);
+        std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> &pairs,
+        const triangulationType &mesh);
 
       // Construct abstract JT / ST on a CT and fill std::pairs in accordance.
       // used for global simplification
-      template <typename scalarType>
+      template <typename scalarType, typename triangulationType>
       void recoverMTPairs(
         const std::vector<idNode> &sortedNodes,
         std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>>
           &pairsJT,
         std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>>
-          &pairsST);
+          &pairsST,
+        const triangulationType &mesh);
 
       // }
 
@@ -543,12 +532,13 @@ namespace ttk {
       idNode getParent(const idNode &n);
 
       void delNode(const idNode &node,
+                   std::list<std::vector<std::pair<SimplexId, bool>>> &storage,
                    const std::pair<SimplexId, bool> *mv = nullptr,
                    const SimplexId &nbm = 0);
 
       void hideNode(const idNode &node);
 
-      // For persistance std::pair on CT
+      // For persistence std::pair on CT
       // these function allow to make a JT / ST od the CT
       std::vector<idNode> getNodeNeighbors(const idNode &node);
 
@@ -566,14 +556,14 @@ namespace ttk {
                                        const SimplexId &v);
 
       // }
-      // Update informations
+      // Update information
       // ...........................{
 
       void updateSegmentation();
 
       void parallelUpdateSegmentation(const bool ct = false);
 
-      // will disapear
+      // will disappear
       void parallelInitNodeValence(const int nbThreadValence);
 
       // }
@@ -585,7 +575,7 @@ namespace ttk {
       // {
 
       // Print
-      void printTree2(void);
+      void printTree2();
 
       std::string printArc(const idSuperArc &a) {
         const SuperArc *sa = getSuperArc(a);
@@ -636,7 +626,7 @@ namespace ttk {
       }
 
       // Clone
-      MergeTree *clone() const;
+      std::shared_ptr<MergeTree> clone() const;
 
       void clone(const MergeTree *mt);
 
@@ -653,21 +643,11 @@ namespace ttk {
       // Strict
 
       inline bool isLower(const SimplexId &a, const SimplexId &b) const {
-        return scalars_->mirrorVertices[a] < scalars_->mirrorVertices[b];
+        return scalars_->isLower(a, b);
       }
 
       inline bool isHigher(const SimplexId &a, const SimplexId &b) const {
-        return scalars_->mirrorVertices[a] > scalars_->mirrorVertices[b];
-      }
-
-      // Large
-
-      inline bool isEqLower(const SimplexId &a, const SimplexId &b) const {
-        return scalars_->mirrorVertices[a] <= scalars_->mirrorVertices[b];
-      }
-
-      inline bool isEqHigher(const SimplexId &a, const SimplexId &b) const {
-        return scalars_->mirrorVertices[a] >= scalars_->mirrorVertices[b];
+        return scalars_->isHigher(a, b);
       }
 
       //}
@@ -764,23 +744,26 @@ namespace ttk {
         return std::make_pair(vert.second, vert.first);
       }
 
-      bool verifyTree(void);
+      template <typename triangulationType>
+      bool verifyTree(const triangulationType &mesh);
 
       // Create a std::pair with the value corresponding to the simplification
       // method
 
-      template <typename scalarType>
+      template <typename scalarType, typename triangulationType>
       void addPair(
         std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> &pairs,
         const SimplexId &orig,
         const SimplexId &term,
+        const triangulationType &mesh,
         const bool goUp);
 
-      template <typename scalarType>
+      template <typename scalarType, typename triangulationType>
       void addPair(
         std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs,
         const SimplexId &orig,
-        const SimplexId &term);
+        const SimplexId &term,
+        const triangulationType &mesh);
 
       // }
     };
@@ -792,5 +775,3 @@ namespace ttk {
 } // namespace ttk
 
 #include <MergeTreeTemplate.h>
-
-#endif /* end of include guard: MERGETREE_H */

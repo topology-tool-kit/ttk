@@ -11,14 +11,12 @@
 /// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny \n
 /// Proc. of IEEE LDAV 2016.
 
-#ifndef STRUCTURES_H
-#define STRUCTURES_H
+#pragma once
 
 #include <iterator>
 
 #include "DeprecatedDataTypes.h"
 #include "DeprecatedNode.h"
-#include "DeprecatedStructures.h"
 #include "DeprecatedSuperArc.h"
 
 namespace ttk {
@@ -33,29 +31,20 @@ namespace ttk {
 
     // Scalar related containers (global)
     struct Scalars {
-      SimplexId size;
-      void *values;
-      std::vector<SimplexId> sosOffsets;
-      std::vector<SimplexId> sortedVertices, mirrorVertices;
-
-      // Need vertices to be sorted : use mirrorVertices.
+      SimplexId size{};
+      void *values{};
+      const SimplexId *sosOffsets{};
+      std::vector<SimplexId> sortedVertices{};
 
       bool isLower(const SimplexId &a, const SimplexId &b) const {
-        return mirrorVertices[a] < mirrorVertices[b];
+        return sosOffsets[a] < sosOffsets[b];
       }
-      bool isEqLower(const SimplexId &a, const SimplexId &b) const {
-        return mirrorVertices[a] <= mirrorVertices[b];
-      }
-
       bool isHigher(const SimplexId &a, const SimplexId &b) const {
-        return mirrorVertices[a] > mirrorVertices[b];
-      }
-      bool isEqHigher(const SimplexId &a, const SimplexId &b) const {
-        return mirrorVertices[a] >= mirrorVertices[b];
+        return sosOffsets[a] > sosOffsets[b];
       }
     };
 
-    // Tree datas ( 1 per tree )
+    // Tree data ( 1 per tree )
     struct TreeData {
       TreeType treeType;
       idPartition partition;
@@ -72,7 +61,7 @@ namespace ttk {
       std::vector<idCorresp> vert2tree;
     };
 
-    // info on one vertex and CT arc in wich it is
+    // info on one vertex and CT arc in which it is
     struct vertex {
       SimplexId id;
       idSuperArc ctArc;
@@ -82,14 +71,14 @@ namespace ttk {
     using segmentRevIterator = std::vector<vertex>::reverse_iterator;
 
     // If we want to cross a Segment in the sorted order,
-    // wich is form the end to the beginning in the case of Split Tree,
+    // which is form the end to the beginning in the case of Split Tree,
     // we can do so by using sbegin and send which use this class
     class sorted_iterator : public segmentIterator {
     public:
-      sorted_iterator(segmentIterator base)
+      sorted_iterator(const segmentIterator &base)
         : segmentIterator(base), forward_(true) {
       }
-      sorted_iterator(segmentRevIterator base)
+      sorted_iterator(const segmentRevIterator &base)
         : segmentIterator(base.base()), forward_(false) {
       }
 
@@ -128,5 +117,3 @@ namespace ttk {
     };
   } // namespace cf
 } // namespace ttk
-
-#endif /* end of include guard: STRUCTURES_H */

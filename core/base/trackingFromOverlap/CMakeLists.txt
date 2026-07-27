@@ -1,8 +1,6 @@
-ttk_add_base_library(trackingFromOverlap
-  SOURCES
-    TrackingFromOverlap.cpp
+ttk_add_base_template_library(trackingFromOverlap
   HEADERS
     TrackingFromOverlap.h
-  LINK
+  DEPENDS
     triangulation
-    )
+)

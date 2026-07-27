@@ -1,4 +1,4 @@
-/// \class ttk:FTMTree
+/// \class ttk::FTMTree
 /// \ingroup base
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date Dec 2016.
@@ -17,10 +17,7 @@ using namespace std;
 using namespace ttk;
 using namespace ftm;
 
-FTMTree::FTMTree() : FTMTree_CT(new Params, nullptr, new Scalars) {
-}
-
-FTMTree::~FTMTree() {
-  delete params_;
-  delete scalars_;
+FTMTree::FTMTree()
+  : FTMTree_CT(std::make_shared<Params>(), std::make_shared<Scalars>()) {
+  this->setDebugMsgPrefix("FTMTree");
 }

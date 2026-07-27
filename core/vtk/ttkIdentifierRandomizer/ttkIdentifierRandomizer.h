@@ -11,80 +11,78 @@
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
+/// The input data array that will be processed needs to be specified via the
+/// standard VTK call SetInputArrayToProcess(), with the following parameters:
+/// \param idx 0 (FIXED: the first array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the VTK array)
+///
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
 /// \sa ttk::IdentifierRandomizer
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/imageProcessing/">Image
+/// processing example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/">
+///   KarhunenLove Digits 64Dimensions example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/molecularVibration/">Molecular
+///   Vibration example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">
+/// Tectonic puzzle example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/tribute/">
+/// Tribute example</a> \n
 #pragma once
 
 // VTK includes -- to adapt
-#include <vtkCellData.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
+
+// VTK Module
+#include <ttkIdentifierRandomizerModule.h>
+#include <vtkMultiBlockDataSet.h>
 
 // ttk code includes
-#include <ttkWrapper.h>
+#include <ttkAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkIdentifierRandomizer
-#else
-class ttkIdentifierRandomizer
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKIDENTIFIERRANDOMIZER_EXPORT ttkIdentifierRandomizer
+  : public ttkAlgorithm {
 
 public:
   static ttkIdentifierRandomizer *New();
-  vtkTypeMacro(ttkIdentifierRandomizer, vtkDataSetAlgorithm)
+  vtkTypeMacro(ttkIdentifierRandomizer, ttkAlgorithm);
 
-    // default ttk setters
-    vtkSetMacro(debugLevel_, int);
+  vtkGetMacro(RandomSeed, int);
+  vtkSetMacro(RandomSeed, int);
 
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
+  vtkGetMacro(CompactRange, bool);
+  vtkSetMacro(CompactRange, bool);
 
 protected:
-  ttkIdentifierRandomizer() {
+  ttkIdentifierRandomizer();
 
-    // init
-    outputScalarField_ = NULL;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
 
-    UseAllCores = true;
-  }
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
-  ~ttkIdentifierRandomizer() {
-    if(outputScalarField_) {
-      outputScalarField_->Delete();
-    }
-  };
+  template <typename T>
+  int shuffleScalarFieldValuesMultiBlock(vtkMultiBlockDataSet *input,
+                                         vtkMultiBlockDataSet *output,
+                                         const int nThreads = 1);
 
-  TTK_SETUP();
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
-  std::string ScalarField;
-  vtkDataArray *outputScalarField_;
+  int RandomSeed{};
+  bool CompactRange{false};
 };

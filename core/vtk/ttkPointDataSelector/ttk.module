@@ -1,0 +1,8 @@
+NAME
+  ttkPointDataSelector
+SOURCES
+  ttkPointDataSelector.cpp
+HEADERS
+  ttkPointDataSelector.h
+DEPENDS
+  ttkAlgorithm

@@ -1,15 +1,12 @@
 ttk_add_base_library(bottleneckDistance
   SOURCES
     BottleneckDistance.cpp
+    GabowTarjan.cpp
   HEADERS
     BottleneckDistance.h
-    BottleneckDistanceImpl.h
-    BottleneckDistanceMainImpl.h
-    Munkres.h
     GabowTarjan.h
-    GabowTarjanImpl.h
-    MatchingGraph.h
-  LINK
-    triangulation
+  DEPENDS
+    geometry
+    assignmentSolver
     persistenceDiagram
     )

@@ -1,0 +1,10 @@
+NAME
+  ttkPersistenceDiagramClustering
+SOURCES
+  ttkPersistenceDiagramClustering.cpp
+HEADERS
+  ttkPersistenceDiagramClustering.h
+DEPENDS
+  ttkAlgorithm
+  ttkPersistenceDiagram
+  persistenceDiagramClustering

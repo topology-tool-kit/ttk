@@ -1,0 +1,9 @@
+NAME
+  ttkTableDistanceMatrix
+SOURCES
+  ttkTableDistanceMatrix.cpp
+HEADERS
+  ttkTableDistanceMatrix.h
+DEPENDS
+  lDistanceMatrix
+  ttkAlgorithm

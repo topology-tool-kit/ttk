@@ -1,5 +1,5 @@
 /// \ingroup base
-/// \class ttk:FTMTree
+/// \class ttk::FTMTree
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date Sept 2016.
 ///
@@ -29,11 +29,11 @@ using namespace ftm;
 Segment::Segment(SimplexId size) : vertices_(size, nullVertex) {
 }
 
-segm_const_it Segment::begin(void) const {
+segm_const_it Segment::begin() const {
   return vertices_.begin();
 }
 
-segm_it Segment::begin(void) {
+segm_it Segment::begin() {
   return vertices_.begin();
 }
 
@@ -69,11 +69,11 @@ void Segment::createFromList(const Scalars *s,
   regularList.clear();
 }
 
-segm_const_it Segment::end(void) const {
+segm_const_it Segment::end() const {
   return vertices_.end();
 }
 
-segm_it Segment::end(void) {
+segm_it Segment::end() {
   return vertices_.end();
 }
 
@@ -85,7 +85,7 @@ SimplexId &Segment::operator[](const size_t &idx) {
   return vertices_[idx];
 }
 
-SimplexId Segment::size(void) const {
+SimplexId Segment::size() const {
   return vertices_.size();
 }
 
@@ -100,10 +100,9 @@ void Segment::sort(const Scalars *s) {
 // Segments
 // --------
 
-Segments::Segments() {
-}
+Segments::Segments() = default;
 
-void Segments::clear(void) {
+void Segments::clear() {
   segments_.clear();
 }
 
@@ -123,12 +122,12 @@ void Segments::resize(const vector<SimplexId> &sizes) {
 #endif
 
   segments_.reserve(sizes.size());
-  for(SimplexId size : sizes) {
+  for(SimplexId const size : sizes) {
     segments_.emplace_back(size);
   }
 }
 
-idSegment Segments::size(void) const {
+idSegment Segments::size() const {
   return segments_.size();
 }
 
@@ -149,12 +148,13 @@ void Segments::sortAll(const Scalars *s) {
 // ----------
 // Arc Region
 // ----------
-
-ArcRegion::ArcRegion() {
 #ifndef TTK_ENABLE_KAMIKAZE
+ArcRegion::ArcRegion() {
   segmented_ = false;
-#endif
 }
+#else
+ArcRegion::ArcRegion() = default;
+#endif
 
 ArcRegion::ArcRegion(const segm_it &begin, const segm_it &end) : ArcRegion() {
   concat(begin, end);
@@ -194,7 +194,7 @@ void ArcRegion::createSegmentation(const Scalars *s) {
 
   while(added != -1) {
     added = -1;
-    SimplexId minVert;
+    SimplexId minVert = -1;
     for(idSegment i = 0; i < nbSegments; i++) {
       auto &headIt = heads[i];
       const auto &endIt = ends[i];
@@ -390,7 +390,7 @@ tuple<SimplexId, ArcRegion> ArcRegion::splitFront(SimplexId v,
       remainingRegion.concat(reg.segmentBegin, reg.segmentEnd);
       willErase.emplace_back(it);
       if(splitVert == nullVertex || s->isLower(*reg.segmentBegin, splitVert)) {
-        // we ignore vertices that does not come frome this arc
+        // we ignore vertices that does not come from this arc
         splitVert = *reg.segmentBegin;
       }
     }

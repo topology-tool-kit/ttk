@@ -1,9 +1,11 @@
 ttk_add_base_library(implicitTriangulation
   SOURCES
     ImplicitTriangulation.cpp
+    ImplicitPreconditions.cpp
   HEADERS
     ImplicitTriangulation.h
-  LINK
+    ImplicitPreconditions.h
+  DEPENDS
     abstractTriangulation
+    regularGridTriangulation
     )
-

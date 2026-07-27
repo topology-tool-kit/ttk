@@ -1,0 +1,161 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+        name="ttkQuadrangulationSubdivision"
+        class="ttkQuadrangulationSubdivision"
+        label="TTK QuadrangulationSubdivision">
+      <Documentation
+          long_help="TTK plugin for surface quadrangulation."
+          short_help="TTK plugin for surface quadrangulation.">
+        This plugin outputs a very raw quadrangulation from a
+        Morse-Smale Complex of a triangular surfacic mesh.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/
+
+      </Documentation>
+
+      <InputProperty
+          name="mesh"
+          label="Triangulated surface"
+          port_index="1"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <Documentation>
+          Input triangulated surface.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+          name="quadrangles"
+          label="Coarse quadrangulation"
+          port_index="0"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+        <Documentation>
+          Input coarse quadrangulation.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+          name="SubdivisionLevel"
+          label="Level of subdivisions"
+          command="SetSubdivisionLevel"
+          number_of_elements="1"
+          default_values="1">
+        <Documentation>
+          Number of subdivisions of the original quadrangulation. The
+          higher the value, the more precise the output.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="RelaxationIterations"
+          label="Number of relaxation iterations"
+          command="SetRelaxationIterations"
+          number_of_elements="1"
+          default_values="10">
+        <Documentation>
+          Number of relaxation iterations.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="LockInputExtrema"
+          label="Lock extraordinary vertices"
+          command="SetLockInputExtrema"
+          number_of_elements="1"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Lock the position of the input extraordinary vertices
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="LockAllInputVertices"
+          label="Lock all coarse vertices"
+          command="SetLockAllInputVertices"
+          number_of_elements="1"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Lock the position of all input vertices
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="QuadStatistics"
+          label="Quad Statistics"
+          command="SetQuadStatistics"
+          number_of_elements="1"
+          panel_visibility="advanced"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Compute geometrical statistics on the output quadrangulation.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="ShowResError"
+          label="Force output despite warnings"
+          command="SetShowResError"
+          number_of_elements="1"
+          panel_visibility="advanced"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Produces an output despite warnings.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+          name="HausdorffLevel"
+          label="Hausdorff Warning Level"
+          command="SetHausdorffLevel"
+          number_of_elements="1"
+          panel_visibility="advanced"
+          default_values="200"
+          >
+        <Documentation>
+          Set Hausdorff warning level. Produces a warning if the
+          maximum Hausdorff distance between the input triangulation
+          and the output quadrangulation exceeds this value.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Testing">
+        <Property name="HausdorffLevel" />
+        <Property name="ShowResError" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="SubdivisionLevel" />
+        <Property name="RelaxationIterations" />
+        <Property name="LockInputExtrema" />
+        <Property name="LockAllInputVertices" />
+        <Property name="QuadStatistics" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Domain" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

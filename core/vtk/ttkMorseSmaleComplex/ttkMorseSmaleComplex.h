@@ -19,10 +19,28 @@
 /// \param Input Input scalar field, defined as a point data scalar field
 /// attached to a geometry, either 2D or 3D, either regular grid or
 /// triangulation (vtkDataSet)
-/// \param Output0 Output critical points (vtkUnstructuredGrid)
-/// \param Output1 Output 1-separatrices (vtkUnstructuredGrid)
-/// \param Output2 Output 2-separatrices (vtkUnstructuredGrid)
+/// \param Output0 Output critical points (vtkPolyData)
+/// \param Output1 Output 1-separatrices (vtkPolyData)
+/// \param Output2 Output 2-separatrices (vtkPolyData)
 /// \param Output3 Output data segmentation (vtkDataSet)
+///
+/// The input data array needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 0 (FIXED: the first array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the input array)
+///
+/// The optional offset array can be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 1 (FIXED: the second array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the offset array)
+/// \note: To use this optional array, `ForceInputOffsetScalarField` needs to be
+/// enabled with the setter `setForceInputOffsetScalarField()'.
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
@@ -32,195 +50,160 @@
 ///
 /// \sa ttk::MorseSmaleComplex
 ///
-#ifndef _TTK_MORSESMALECOMPLEX_H
-#define _TTK_MORSESMALECOMPLEX_H
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/1manifoldLearning/">1-Manifold
+///   Learning example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/1manifoldLearningCircles/">1-Manifold
+///   Learning Circles example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/2manifoldLearning/">
+///   2-Manifold Learning example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cosmicWeb/">
+///   Cosmic Web example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/imageProcessing/">Image
+///   Processing example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/">Karhunen-Love
+///   Digits 64-Dimensions example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/molecularVibration/">Molecular
+///   Vibration example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseMolecule/">Morse
+///   molecule example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morsePersistence/">Morse
+///   Persistence example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/">Morse-Smale
+///   Quadrangulation example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 0 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering1/">Persistence
+///   clustering 1 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering2/">Persistence
+///   clustering 2 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering3/">Persistence
+///   clustering 3 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering4/">Persistence
+///   clustering 4 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_at/">Persistent
+///   Generators AT example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_darkSky/">Persistent
+///   Generators DarkSky example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">Tectonic
+///   Puzzle example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_darkSky/">Topological
+///   Optimization DarkSky</a>\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/tribute/">Tribute
+///   example</a> \n
+///
 
-// VTK includes -- to adapt
-#include <vtkCellData.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
+#pragma once
+
+// VTK Module
+#include <ttkMorseSmaleComplexModule.h>
 
 // ttk code includes
 #include <MorseSmaleComplex.h>
-#include <ttkWrapper.h>
+#include <ttkAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkMorseSmaleComplex
-#else
-class ttkMorseSmaleComplex
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class vtkPolyData;
+
+class TTKMORSESMALECOMPLEX_EXPORT ttkMorseSmaleComplex
+  : public ttkAlgorithm,
+    protected ttk::MorseSmaleComplex {
 
 public:
   static ttkMorseSmaleComplex *New();
 
-  vtkTypeMacro(ttkMorseSmaleComplex, vtkDataSetAlgorithm);
+  vtkTypeMacro(ttkMorseSmaleComplex, ttkAlgorithm);
 
-  // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  vtkSetMacro(ForceInputOffsetScalarField, bool);
+  vtkGetMacro(ForceInputOffsetScalarField, bool);
 
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
+  vtkSetMacro(ComputeCriticalPoints, bool);
+  vtkGetMacro(ComputeCriticalPoints, bool);
 
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
+  vtkSetMacro(ComputeAscendingSeparatrices1, bool);
+  vtkGetMacro(ComputeAscendingSeparatrices1, bool);
 
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
+  vtkSetMacro(ComputeDescendingSeparatrices1, bool);
+  vtkGetMacro(ComputeDescendingSeparatrices1, bool);
 
-  vtkSetMacro(ScalarFieldId, int);
-  vtkGetMacro(ScalarFieldId, int);
+  vtkSetMacro(ComputeSaddleConnectors, bool);
+  vtkGetMacro(ComputeSaddleConnectors, bool);
 
-  vtkSetMacro(OffsetFieldId, int);
-  vtkGetMacro(OffsetFieldId, int);
+  vtkSetMacro(ComputeAscendingSeparatrices2, bool);
+  vtkGetMacro(ComputeAscendingSeparatrices2, bool);
 
-  vtkSetMacro(ForceInputOffsetScalarField, int);
-  vtkGetMacro(ForceInputOffsetScalarField, int);
+  vtkSetMacro(ComputeDescendingSeparatrices2, bool);
+  vtkGetMacro(ComputeDescendingSeparatrices2, bool);
 
-  vtkSetMacro(InputOffsetScalarFieldName, std::string);
-  vtkGetMacro(InputOffsetScalarFieldName, std::string);
+  vtkSetMacro(ComputeAscendingSegmentation, bool);
+  vtkGetMacro(ComputeAscendingSegmentation, bool);
 
-  vtkSetMacro(PeriodicBoundaryConditions, int);
-  vtkGetMacro(PeriodicBoundaryConditions, int);
+  vtkSetMacro(ComputeDescendingSegmentation, bool);
+  vtkGetMacro(ComputeDescendingSegmentation, bool);
+
+  vtkSetMacro(ComputeFinalSegmentation, bool);
+  vtkGetMacro(ComputeFinalSegmentation, bool);
 
   vtkSetMacro(IterationThreshold, int);
   vtkGetMacro(IterationThreshold, int);
 
-  vtkSetMacro(ReverseSaddleMaximumConnection, int);
-  vtkGetMacro(ReverseSaddleMaximumConnection, int);
+  vtkSetMacro(ReturnSaddleConnectors, bool);
+  vtkGetMacro(ReturnSaddleConnectors, bool);
 
-  vtkSetMacro(ReverseSaddleSaddleConnection, int);
-  vtkGetMacro(ReverseSaddleSaddleConnection, int);
-
-  vtkSetMacro(ComputeCriticalPoints, int);
-  vtkGetMacro(ComputeCriticalPoints, int);
-
-  vtkSetMacro(ComputeAscendingSeparatrices1, int);
-  vtkGetMacro(ComputeAscendingSeparatrices1, int);
-
-  vtkSetMacro(ComputeDescendingSeparatrices1, int);
-  vtkGetMacro(ComputeDescendingSeparatrices1, int);
-
-  vtkSetMacro(ComputeSaddleConnectors, int);
-  vtkGetMacro(ComputeSaddleConnectors, int);
-
-  vtkSetMacro(ComputeAscendingSeparatrices2, int);
-  vtkGetMacro(ComputeAscendingSeparatrices2, int);
-
-  vtkSetMacro(ComputeDescendingSeparatrices2, int);
-  vtkGetMacro(ComputeDescendingSeparatrices2, int);
-
-  vtkSetMacro(ComputeAscendingSegmentation, int);
-  vtkGetMacro(ComputeAscendingSegmentation, int);
-
-  vtkSetMacro(ComputeDescendingSegmentation, int);
-  vtkGetMacro(ComputeDescendingSegmentation, int);
-
-  vtkSetMacro(ComputeFinalSegmentation, int);
-  vtkGetMacro(ComputeFinalSegmentation, int);
-
-  vtkSetMacro(ReturnSaddleConnectors, int);
-  vtkGetMacro(ReturnSaddleConnectors, int);
+  vtkSetMacro(DiscreteGradientBackend, int);
+  vtkGetMacro(DiscreteGradientBackend, int);
 
   vtkSetMacro(SaddleConnectorsPersistenceThreshold, double);
   vtkGetMacro(SaddleConnectorsPersistenceThreshold, double);
 
-  vtkSetMacro(PrioritizeSpeedOverMemory, int);
-  vtkGetMacro(PrioritizeSpeedOverMemory, int);
+  vtkSetMacro(ThresholdIsAbsolute, bool);
+  vtkGetMacro(ThresholdIsAbsolute, bool);
 
-  int setupTriangulation(vtkDataSet *input);
-  vtkDataArray *getScalars(vtkDataSet *input);
-  vtkDataArray *getOffsets(vtkDataSet *input);
+  vtkSetMacro(ForceLoopFreeGradient, bool);
+  vtkGetMacro(ForceLoopFreeGradient, bool);
+
+  vtkSetMacro(StochasticGradientSeed, unsigned int);
+  vtkGetMacro(StochasticGradientSeed, unsigned int);
 
 protected:
-  template <typename VTK_TT>
-  int dispatch(
-    vtkDataArray *inputScalars,
-    vtkDataArray *inputOffsets,
-    vtkUnstructuredGrid *outputCriticalPoints,
-    vtkUnstructuredGrid *outputSeparatrices1,
-    vtkUnstructuredGrid *outputSeparatrices2,
-    ttk::SimplexId criticalPoints_numberOfPoints,
-    std::vector<float> &criticalPoints_points,
-    std::vector<char> &criticalPoints_points_cellDimensions,
-    std::vector<ttk::SimplexId> &criticalPoints_points_cellIds,
-    std::vector<char> &criticalPoints_points_isOnBoundary,
-    std::vector<ttk::SimplexId> &criticalPoints_points_PLVertexIdentifiers,
-    std::vector<ttk::SimplexId> &criticalPoints_points_manifoldSize,
-    ttk::SimplexId separatrices1_numberOfPoints,
-    std::vector<float> &separatrices1_points,
-    std::vector<char> &separatrices1_points_smoothingMask,
-    std::vector<char> &separatrices1_points_cellDimensions,
-    std::vector<ttk::SimplexId> separatrices1_points_cellIds,
-    ttk::SimplexId separatrices1_numberOfCells,
-    std::vector<ttk::SimplexId> &separatrices1_cells,
-    std::vector<ttk::SimplexId> &separatrices1_cells_sourceIds,
-    std::vector<ttk::SimplexId> &separatrices1_cells_destinationIds,
-    std::vector<ttk::SimplexId> &separatrices1_cells_separatrixIds,
-    std::vector<char> &separatrices1_cells_separatrixTypes,
-    std::vector<char> &separatrices1_cells_isOnBoundary,
-    ttk::SimplexId separatrices2_numberOfPoints,
-    std::vector<float> &separatrices2_points,
-    ttk::SimplexId separatrices2_numberOfCells,
-    std::vector<ttk::SimplexId> &separatrices2_cells,
-    std::vector<ttk::SimplexId> &separatrices2_cells_sourceIds,
-    std::vector<ttk::SimplexId> &separatrices2_cells_separatrixIds,
-    std::vector<char> &separatrices2_cells_separatrixTypes,
-    std::vector<char> &separatrices2_cells_isOnBoundary);
+  template <typename scalarType, typename triangulationType>
+  int dispatch(vtkDataArray *const inputScalars,
+               vtkPolyData *const outputCriticalPoints,
+               vtkPolyData *const outputSeparatrices1,
+               vtkPolyData *const outputSeparatrices2,
+               const SimplexId *const inputOffsets,
+               const triangulationType &triangulation);
 
   ttkMorseSmaleComplex();
-  ~ttkMorseSmaleComplex();
 
-  TTK_SETUP();
-
-  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
-  virtual int FillOutputPortInformation(int port,
-                                        vtkInformation *info) override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
-  std::string ScalarField;
-  std::string InputOffsetScalarFieldName;
-  bool ForceInputOffsetScalarField;
-  bool PeriodicBoundaryConditions;
-  int IterationThreshold;
-  bool ReverseSaddleMaximumConnection;
-  bool ReverseSaddleSaddleConnection;
-  bool ComputeCriticalPoints;
-  bool ComputeAscendingSeparatrices1;
-  bool ComputeDescendingSeparatrices1;
-  bool ComputeSaddleConnectors;
-  bool ComputeAscendingSeparatrices2;
-  bool ComputeDescendingSeparatrices2;
-  bool ComputeAscendingSegmentation;
-  bool ComputeDescendingSegmentation;
-  bool ComputeFinalSegmentation;
-  int ScalarFieldId;
-  int OffsetFieldId;
-  int ReturnSaddleConnectors;
-  double SaddleConnectorsPersistenceThreshold;
-  bool PrioritizeSpeedOverMemory;
-
-  ttk::MorseSmaleComplex morseSmaleComplex_;
-  ttk::Triangulation *triangulation_;
-  vtkDataArray *defaultOffsets_;
-  bool hasUpdatedMesh_;
+  bool ForceInputOffsetScalarField{};
+  int IterationThreshold{-1};
+  int DiscreteGradientBackend{0};
+  OutputManifold segmentations_{};
+  unsigned int StochasticGradientSeed{0};
 };
-
-#endif // _TTK_MORSESMALECOMPLEX_H

@@ -1,0 +1,9 @@
+NAME
+  ttkMetricDistortion
+SOURCES
+  ttkMetricDistortion.cpp
+HEADERS
+  ttkMetricDistortion.h
+DEPENDS
+  metricDistortion
+  ttkAlgorithm

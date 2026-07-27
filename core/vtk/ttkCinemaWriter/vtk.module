@@ -1,0 +1,9 @@
+NAME
+  ttkCinemaWriter
+DEPENDS
+  ttkAlgorithm
+  ttkTopologicalCompressionWriter
+PRIVATE_DEPENDS
+  VTK::CommonSystem
+  VTK::IOInfovis
+  VTK::IOImage

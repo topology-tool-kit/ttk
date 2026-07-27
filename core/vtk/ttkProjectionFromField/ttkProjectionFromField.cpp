@@ -1,156 +1,158 @@
+#include <ttkPersistenceDiagramUtils.h>
 #include <ttkProjectionFromField.h>
 
-using namespace std;
-using namespace ttk;
+#include <vtkFloatArray.h>
+#include <vtkInformation.h>
+#include <vtkNew.h>
+#include <vtkPointData.h>
+#include <vtkUnstructuredGrid.h>
 
-vtkStandardNewMacro(ttkProjectionFromField)
+#include <array>
 
-  ttkProjectionFromField::ttkProjectionFromField() {
-  UseAllCores = true;
+vtkStandardNewMacro(ttkProjectionFromField);
 
-  // init
-  pointSet_ = vtkSmartPointer<vtkPoints>::New();
+ttkProjectionFromField::ttkProjectionFromField() {
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
+
+  this->setDebugMsgPrefix("ProjectionFromField");
 }
 
-ttkProjectionFromField::~ttkProjectionFromField() {
-}
-
-// transmit abort signals -- to copy paste in other wrappers
-bool ttkProjectionFromField::needsToAbort() {
-  return GetAbortExecute();
-}
-
-// transmit progress status -- to copy paste in other wrappers
-int ttkProjectionFromField::updateProgress(const float &progress) {
-
-  {
-    stringstream msg;
-    msg << "[ttkProjectionFromField] " << progress * 100 << "% processed...."
-        << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+int ttkProjectionFromField::FillInputPortInformation(int port,
+                                                     vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
+    return 1;
   }
-
-  UpdateProgress(progress);
   return 0;
 }
 
-int ttkProjectionFromField::doIt(vtkPointSet *input, vtkPointSet *output) {
+int ttkProjectionFromField::FillOutputPortInformation(int port,
+                                                      vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
+  return 0;
+}
 
-  Timer t;
+int ttkProjectionFromField::projectPersistenceDiagram(
+  vtkUnstructuredGrid *const inputDiagram,
+  vtkUnstructuredGrid *const outputDiagram) {
+
+  auto pointData = inputDiagram->GetPointData();
+
+  // ensure we have the right arrays
+  const auto critCoordinates = vtkFloatArray::SafeDownCast(
+    pointData->GetAbstractArray(ttk::PersistenceCoordinatesName));
+  bool const embed = critCoordinates == nullptr;
+  int ret{0};
+
+  if(embed) {
+    ret = ProjectDiagramIn2D(inputDiagram, outputDiagram, *this);
+  } else {
+    if(critCoordinates == nullptr) {
+      this->printErr("Missing `Coordinates' vtkPointData array");
+      return 0;
+    }
+    if(critCoordinates->GetNumberOfComponents() != 3) {
+      this->printErr("`Coordinates' array should have 3 components");
+      return 0;
+    }
+    ret = ProjectDiagramInsideDomain(inputDiagram, outputDiagram, *this);
+  }
+
+  return ret == 0 ? 1 : 0;
+}
+
+int ttkProjectionFromField::RequestData(vtkInformation *ttkNotUsed(request),
+                                        vtkInformationVector **inputVector,
+                                        vtkInformationVector *outputVector) {
+
+  ttk::Timer t;
+
+  vtkPointSet *input = vtkPointSet::GetData(inputVector[0]);
+  vtkPointSet *output = vtkPointSet::GetData(outputVector, 0);
+
+  if(this->ProjectPersistenceDiagram) {
+    auto inputGrid = vtkUnstructuredGrid::SafeDownCast(input);
+    auto outputGrid = vtkUnstructuredGrid::SafeDownCast(output);
+    if(inputGrid != nullptr && outputGrid != nullptr) {
+      return projectPersistenceDiagram(inputGrid, outputGrid);
+    }
+    this->printErr("Input should be a vtkUnstructuredGrid");
+    return 0;
+  }
 
   output->ShallowCopy(input);
 
-  vtkDataArray *inputScalarFieldU = NULL;
-  vtkDataArray *inputScalarFieldV = NULL;
-  vtkDataArray *textureCoordinates = NULL;
+  vtkNew<vtkPoints> pointSet{};
+  pointSet->SetNumberOfPoints(input->GetNumberOfPoints());
 
   if(UseTextureCoordinates) {
-    textureCoordinates = input->GetPointData()->GetTCoords();
 
-    if(!textureCoordinates)
-      return -1;
-  } else {
-
-    if(UComponent.length()) {
-      inputScalarFieldU = input->GetPointData()->GetArray(UComponent.data());
-    } else {
-      inputScalarFieldU = input->GetPointData()->GetArray(0);
+    const auto textureCoordinates = input->GetPointData()->GetTCoords();
+    if(textureCoordinates == nullptr) {
+      return 0;
     }
-
-    if(!inputScalarFieldU)
-      return -2;
-
-    if(VComponent.length()) {
-      inputScalarFieldV = input->GetPointData()->GetArray(VComponent.data());
-    } else {
-      inputScalarFieldV = input->GetPointData()->GetArray(0);
-    }
-
-    if(!inputScalarFieldV)
-      return -3;
-  }
-
-  if(pointSet_->GetNumberOfPoints() != input->GetNumberOfPoints()) {
-    pointSet_->SetNumberOfPoints(input->GetNumberOfPoints());
-  }
-
-  vector<vector<double>> points(threadNumber_);
-  for(ThreadId i = 0; i < threadNumber_; i++) {
-    points[i].resize(3);
-    points[i][2] = 0;
-  }
-
-  SimplexId count = 0;
+    printMsg("Starting computation with texture coordinates...");
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < input->GetNumberOfPoints(); i++) {
+    for(int i = 0; i < input->GetNumberOfPoints(); i++) {
+      std::array<double, 3> pt{};
+      textureCoordinates->GetTuple(i, pt.data());
+      pointSet->SetPoint(i, pt[0], pt[1], pt[2]);
+    }
 
-    ThreadId threadId = 0;
+  } else if(this->Use3DCoordinatesArray) {
+
+    const auto inputCoordsArray = this->GetInputArrayToProcess(2, inputVector);
+    if(inputCoordsArray == nullptr) {
+      return 0;
+    }
+    printMsg("Starting computation...");
+    printMsg(std::vector<std::vector<std::string>>{
+      {"  Coordinates Array", inputCoordsArray->GetName()}});
 
 #ifdef TTK_ENABLE_OPENMP
-    threadId = omp_get_thread_num();
+#pragma omp parallel for num_threads(threadNumber_)
 #endif
+    for(int i = 0; i < input->GetNumberOfPoints(); i++) {
+      std::array<double, 3> pt{};
+      inputCoordsArray->GetTuple(i, pt.data());
+      pointSet->SetPoint(i, pt[0], pt[1], pt[2]);
+    }
 
-    if(!needsToAbort()) {
+  } else {
 
-      if(UseTextureCoordinates) {
-        textureCoordinates->GetTuple(i, points[threadId].data());
-      } else {
-        points[threadId][0] = inputScalarFieldU->GetComponent(i, 0);
-        points[threadId][1] = inputScalarFieldV->GetComponent(i, 0);
-      }
+    const auto inputScalarFieldU = this->GetInputArrayToProcess(0, inputVector);
+    const auto inputScalarFieldV = this->GetInputArrayToProcess(1, inputVector);
 
-      pointSet_->SetPoint(
-        i, points[threadId][0], points[threadId][1], points[threadId][2]);
+    if(inputScalarFieldU == nullptr || inputScalarFieldV == nullptr) {
+      return 0;
+    }
 
-      if(debugLevel_ > Debug::advancedInfoMsg) {
+    printMsg("Starting computation...");
+    printMsg({{"  U-component", inputScalarFieldU->GetName()},
+              {"  V-component", inputScalarFieldV->GetName()}});
+
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp critical
+#pragma omp parallel for num_threads(threadNumber_)
 #endif
-        {
-          if(!(count % (input->GetNumberOfPoints() / 10))) {
-            updateProgress((count + 1.0) / input->GetNumberOfPoints());
-          }
-
-          count++;
-        }
-      }
+    for(int i = 0; i < input->GetNumberOfPoints(); i++) {
+      pointSet->SetPoint(i, inputScalarFieldU->GetComponent(i, 0),
+                         inputScalarFieldV->GetComponent(i, 0), 0);
     }
   }
 
-  output->SetPoints(pointSet_);
+  output->SetPoints(pointSet);
 
-  {
-    stringstream msg;
-    msg << "[ttkProjectionFromField] Data-set projected in "
-        << t.getElapsedTime() << " s. (" << input->GetNumberOfPoints()
-        << " points)." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
-  return 0;
-}
+  printMsg(std::to_string(input->GetNumberOfPoints()) + " points projected", 1,
+           t.getElapsedTime(), threadNumber_);
 
-// to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkProjectionFromField::RequestData(vtkInformation *request,
-                                        vtkInformationVector **inputVector,
-                                        vtkInformationVector *outputVector) {
-
-  Memory m;
-
-  // here the vtkDataSet type should be changed to whatever type you consider.
-  vtkPointSet *input = vtkPointSet::GetData(inputVector[0]);
-  vtkPointSet *output = vtkPointSet::GetData(outputVector);
-
-  doIt(input, output);
-
-  {
-    stringstream msg;
-    msg << "[ttkProjectionFromField] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
+  printMsg(ttk::debug::Separator::L1);
 
   return 1;
 }

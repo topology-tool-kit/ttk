@@ -1,0 +1,8 @@
+NAME
+  ttkStringArrayConverter
+SOURCES
+  ttkStringArrayConverter.cpp
+HEADERS
+  ttkStringArrayConverter.h
+DEPENDS
+  ttkAlgorithm

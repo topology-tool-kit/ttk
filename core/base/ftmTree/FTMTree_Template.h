@@ -13,8 +13,7 @@
 ///
 /// \sa ttkFTMTree.cpp %for a usage example.
 
-#ifndef FTMTREE_TPL_H
-#define FTMTREE_TPL_H
+#pragma once
 
 #include "FTMTree.h"
 
@@ -27,8 +26,8 @@
 // PROCESS
 // -------
 
-template <typename scalarType, typename idType>
-void ttk::ftm::FTMTree::build(void) {
+template <typename scalarType, class triangulationType>
+void ttk::ftm::FTMTree::build(const triangulationType *mesh) {
   // -----
   // INPUT
   // -----
@@ -36,14 +35,11 @@ void ttk::ftm::FTMTree::build(void) {
   printParams();
 
 #ifdef TTK_ENABLE_OPENMP
-  omp_set_num_threads(threadNumber_);
-  omp_set_nested(1);
+  ParallelGuard const pg{threadNumber_};
+  omp_set_max_active_levels(100);
 #ifdef TTK_ENABLE_OMP_PRIORITY
   if(omp_get_max_task_priority() < 5) {
-    std::stringstream msg;
-    msg << "[FTM Graph]: Warning, OpenMP max priority is lower than 5"
-        << std::endl;
-    dMsg(std::cerr, msg.str(), infoMsg);
+    this->printWrn("OpenMP max priority is lower than 5");
   }
 #endif
 #endif
@@ -53,7 +49,7 @@ void ttk::ftm::FTMTree::build(void) {
   // ----
 
   setDebugLevel(debugLevel_);
-  initNbScalars();
+  initNbScalars(mesh);
 
   // This section is aimed to prevent un-deterministic results if the data-set
   // have NaN values in it.
@@ -72,7 +68,7 @@ void ttk::ftm::FTMTree::build(void) {
   }
 
   // Alloc / reserve
-  DebugTimer initTime;
+  Timer initTime;
   switch(params_->treeType) {
     case TreeType::Join:
       getJoinTree()->makeAlloc();
@@ -92,12 +88,12 @@ void ttk::ftm::FTMTree::build(void) {
     default:
       break;
   }
-  printTime(initTime, "[FTM] alloc", -1, 3);
+  printTime(initTime, "alloc", 3);
 
-  DebugTimer startTime;
+  Timer startTime;
 
   // init values
-  DebugTimer setTimer;
+  Timer setTimer;
   switch(params_->treeType) {
     case TreeType::Join:
       getJoinTree()->makeInit();
@@ -117,24 +113,23 @@ void ttk::ftm::FTMTree::build(void) {
     default:
       break;
   }
-  printTime(setTimer, "[FTM] init", -1, 3);
+  printTime(setTimer, "init", 3);
 
   // for fast comparison
   // and regions / segmentation
-  DebugTimer sortTime;
-  initSoS<idType>();
-  sortInput<scalarType, idType>();
-  printTime(sortTime, "[FTM] sort step", -1, 3);
+  Timer sortTime;
+  sortInput<scalarType>();
+  printTime(sortTime, "sort step", 3);
 
   // -----
   // BUILD
   // -----
 
-  DebugTimer buildTime;
-  FTMTree_CT::build(params_->treeType);
-  printTime(buildTime, "[FTM] build tree", -1, 3);
+  Timer buildTime;
+  FTMTree_CT::build(mesh, params_->treeType);
+  printTime(buildTime, "build tree", 3);
 
-  printTime(startTime, "[FTM] Total ", -1, 1);
+  printTime(startTime, "Total ", 1);
 
 #ifdef PERF_TESTS
   exit(0);
@@ -189,19 +184,17 @@ void ttk::ftm::FTMTree::build(void) {
   if(debugLevel_ > 4) {
     switch(params_->treeType) {
       case TreeType::Join:
-        jt_->printTree2();
+        jt_.printTree2();
         break;
       case TreeType::Split:
-        st_->printTree2();
+        st_.printTree2();
         break;
       case TreeType::Join_Split:
-        jt_->printTree2();
-        st_->printTree2();
+        jt_.printTree2();
+        st_.printTree2();
         break;
       default:
         printTree2();
     }
   }
 }
-
-#endif /* end of include guard: FTMTREE_TPL_H */

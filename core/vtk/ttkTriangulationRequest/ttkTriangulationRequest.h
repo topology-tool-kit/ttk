@@ -5,7 +5,7 @@
 ///
 /// \brief TTK VTK-filter that wraps the triangulation processing package.
 ///
-/// VTK wrapping code for the @Triangulation package.
+/// VTK wrapping code for the ttk::Triangulation package.
 ///
 /// \param Input Geometry, either 2D or 3D, either regular grid or
 /// triangulation (vtkDataSet)
@@ -22,121 +22,59 @@
 #pragma once
 
 // ttk code includes
-#include <ttkWrapper.h>
+#include <Triangulation.h>
+#include <ttkAlgorithm.h>
+#include <ttkMacros.h>
 
-// VTK includes
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
+// VTK Module
+#include <ttkTriangulationRequestModule.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTriangulationRequest
-#else
-class ttkTriangulationRequest
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKTRIANGULATIONREQUEST_EXPORT ttkTriangulationRequest
+  : public ttkAlgorithm {
 
 public:
-  enum Simplex { Vertex = 0, Edge, Triangle, Tetra };
-
-  enum Request {
-    ComputeSimplex = 0,
-    ComputeFacet,
-    ComputeCofacet,
-    ComputeStar,
-    ComputeLink
+  enum class SIMPLEX {
+    VERTEX = 0,
+    EDGE = 1,
+    TRIANGLE = 2,
+    TETRA = 3,
+  };
+  enum class REQUEST {
+    COMPUTE_SIMPLEX = 0,
+    COMPUTE_FACET = 1,
+    COMPUTE_COFACET = 2,
+    COMPUTE_STAR = 3,
+    COMPUTE_LINK = 4,
+    COMPUTE_BOUNDARY = 5,
   };
 
   static ttkTriangulationRequest *New();
-  vtkTypeMacro(ttkTriangulationRequest, vtkDataSetAlgorithm)
+  vtkTypeMacro(ttkTriangulationRequest, ttkAlgorithm);
 
-    // default ttk setters
-    vtkSetMacro(debugLevel_, int);
+  ttkSetEnumMacro(SimplexType, SIMPLEX);
+  vtkGetEnumMacro(SimplexType, SIMPLEX);
 
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
+  vtkSetMacro(SimplexIdentifier, const std::string &);
+  vtkGetMacro(SimplexIdentifier, std::string);
 
-  vtkSetMacro(SimplexType, int);
-  vtkGetMacro(SimplexType, int);
-
-  vtkSetMacro(SimplexIdentifier, int);
-  vtkGetMacro(SimplexIdentifier, int);
-
-  vtkSetMacro(RequestType, int);
-  vtkGetMacro(RequestType, int);
+  ttkSetEnumMacro(RequestType, REQUEST);
+  vtkGetEnumMacro(RequestType, REQUEST);
 
   vtkSetMacro(KeepAllDataArrays, bool);
   vtkGetMacro(KeepAllDataArrays, bool);
 
-  vtkSetMacro(PeriodicBoundaryConditions, int);
-  vtkGetMacro(PeriodicBoundaryConditions, int);
-
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-        break;
-
-      default:
-        break;
-    }
-
-    return 1;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        break;
-
-      default:
-        break;
-    }
-
-    return 1;
-  }
-
 protected:
-  ttkTriangulationRequest() {
-    UseAllCores = true;
-    SimplexType = 0;
-    SimplexIdentifier = 0;
-    RequestType = 0;
-    KeepAllDataArrays = true;
-    PeriodicBoundaryConditions = false;
+  ttkTriangulationRequest();
 
-    SetNumberOfInputPorts(1);
-    SetNumberOfOutputPorts(1);
-  }
-
-  ~ttkTriangulationRequest(){};
-
-  TTK_SETUP();
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
-  int SimplexType;
-  int SimplexIdentifier;
-  int RequestType;
-  bool KeepAllDataArrays;
-  bool PeriodicBoundaryConditions;
+  SIMPLEX SimplexType{};
+  REQUEST RequestType{};
+  std::string SimplexIdentifier{0};
+  bool KeepAllDataArrays{true};
 };

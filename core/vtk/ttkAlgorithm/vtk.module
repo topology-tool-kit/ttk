@@ -1,0 +1,8 @@
+NAME
+  ttkAlgorithm
+DEPENDS
+  VTK::FiltersCore
+PRIVATE_DEPENDS
+  VTK::CommonCore
+OPTIONAL_DEPENDS
+  VTK::FiltersParallelDIY2

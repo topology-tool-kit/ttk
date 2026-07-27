@@ -5,12 +5,12 @@
 ///
 /// \brief TTK VTK-filter that computes a planar graph layout.
 ///
-/// VTK wrapping code for the @PlanarGraphLayout package.
+/// VTK wrapping code for the ttk::PlanarGraphLayout package.
 ///
 /// This filter computes a planar graph layout of a \b vtkUnstructuredGrid. To
 /// improve the quality of the layout it is possible to pass additional field
 /// data to the algorithm:\n \b 1) \b Sequences: Points are positioned along the
-/// x-axis based on a sequence (e.g., time indicies or scalar values). \b 1) \b
+/// x-axis based on a sequence (e.g., time indices or scalar values). \b 1) \b
 /// Sizes: Points cover space on the y-axis based on their size. \b 1) \b
 /// Branches: Points with the same branch label are positioned on straight
 /// lines. \b 1) \b Levels: The layout of points with the same level label are
@@ -37,142 +37,136 @@
 /// vtkCalculator.
 ///
 /// \sa ttk::PlanarGraphLayout
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/contourTreeAlignment/">Contour
+///   Tree Alignment example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/">Nested
+///   Tracking from Overlap example</a> \n
 
 #pragma once
 
+// Module
+#include <ttkPlanarGraphLayoutModule.h>
+
 // VTK includes
-#include <vtkInformation.h>
-#include <vtkUnstructuredGridAlgorithm.h>
+#include <ttkAlgorithm.h>
+#include <vtkUnstructuredGrid.h>
 
 // TTK includes
 #include <PlanarGraphLayout.h>
-#include <ttkWrapper.h>
+#include <vtkUnstructuredGrid.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkPlanarGraphLayout
-#else
-class ttkPlanarGraphLayout
-#endif
-  : public vtkUnstructuredGridAlgorithm,
-    public ttk::Wrapper {
+class TTKPLANARGRAPHLAYOUT_EXPORT ttkPlanarGraphLayout
+  : public ttkAlgorithm,
+    protected ttk::PlanarGraphLayout {
+
+private:
+  // --- Graph Planar Layout
+  // optional field data
+  bool UseSequences{false};
+  bool UseSizes{false};
+  bool UseBranches{false};
+  bool UseLevels{false};
+
+  // output field name
+  std::string OutputArrayName{"Layout"};
+
+  // --- Merge Tree Planar Layout
+  bool InputIsAMergeTree = false;
+  bool BranchDecompositionPlanarLayout = false;
+  bool PathPlanarLayout = false;
+  double BranchSpacing = 1.;
+  double ImportantPairs = 10.; // important pairs threshold
+  int MaximumImportantPairs = 0;
+  int MinimumImportantPairs = 0;
+  double ImportantPairsSpacing = 1.;
+  double NonImportantPairsSpacing = 0.1;
+  double NonImportantPairsProximity = 0.05;
+  std::string ExcludeImportantPairsLower = "";
+  std::string ExcludeImportantPairsHigher = "";
 
 public:
-  static ttkPlanarGraphLayout *New();
-  vtkTypeMacro(ttkPlanarGraphLayout, vtkUnstructuredGridAlgorithm)
-
-    // getters and setters for optional field data
-    vtkSetMacro(UseSequences, bool);
+  // --- Graph Planar Layout
+  // getters and setters for optional arrays
+  vtkSetMacro(UseSequences, bool);
   vtkGetMacro(UseSequences, bool);
-  vtkSetMacro(SequenceFieldName, std::string);
-  vtkGetMacro(SequenceFieldName, std::string);
 
   vtkSetMacro(UseSizes, bool);
   vtkGetMacro(UseSizes, bool);
-  vtkSetMacro(SizeFieldName, std::string);
-  vtkGetMacro(SizeFieldName, std::string);
 
   vtkSetMacro(UseBranches, bool);
   vtkGetMacro(UseBranches, bool);
-  vtkSetMacro(BranchFieldName, std::string);
-  vtkGetMacro(BranchFieldName, std::string);
 
   vtkSetMacro(UseLevels, bool);
   vtkGetMacro(UseLevels, bool);
-  vtkSetMacro(LevelFieldName, std::string);
-  vtkGetMacro(LevelFieldName, std::string);
 
-  // getters and setters for output field name
-  vtkSetMacro(OutputFieldName, std::string);
-  vtkGetMacro(OutputFieldName, std::string);
+  // getters and setters for output array name
+  vtkSetMacro(OutputArrayName, const std::string &);
+  vtkGetMacro(OutputArrayName, std::string);
 
-  // default ttk setters
-  vtkSetMacro(debugLevel_, int);
-  void SetThreads() {
-    threadNumber_
-      = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
-    Modified();
-  }
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
+  // --- Merge Tree Planar Layout
+  vtkSetMacro(InputIsAMergeTree, bool);
+  vtkGetMacro(InputIsAMergeTree, bool);
 
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
+  vtkSetMacro(BranchDecompositionPlanarLayout, bool);
+  vtkGetMacro(BranchDecompositionPlanarLayout, bool);
 
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
+  vtkSetMacro(PathPlanarLayout, bool);
+  vtkGetMacro(PathPlanarLayout, bool);
+
+  vtkSetMacro(BranchSpacing, double);
+  vtkGetMacro(BranchSpacing, double);
+
+  vtkSetMacro(ImportantPairs, double);
+  vtkGetMacro(ImportantPairs, double);
+
+  vtkSetMacro(MaximumImportantPairs, int);
+  vtkGetMacro(MaximumImportantPairs, int);
+
+  vtkSetMacro(MinimumImportantPairs, int);
+  vtkGetMacro(MinimumImportantPairs, int);
+
+  vtkSetMacro(ImportantPairsSpacing, double);
+  vtkGetMacro(ImportantPairsSpacing, double);
+
+  vtkSetMacro(NonImportantPairsSpacing, double);
+  vtkGetMacro(NonImportantPairsSpacing, double);
+
+  vtkSetMacro(NonImportantPairsProximity, double);
+  vtkGetMacro(NonImportantPairsProximity, double);
+
+  vtkSetMacro(ExcludeImportantPairsLower, const std::string &);
+  vtkGetMacro(ExcludeImportantPairsLower, std::string);
+
+  vtkSetMacro(ExcludeImportantPairsHigher, const std::string &);
+  vtkGetMacro(ExcludeImportantPairsHigher, std::string);
+
+  // ---
+  static ttkPlanarGraphLayout *New();
+  vtkTypeMacro(ttkPlanarGraphLayout, ttkAlgorithm);
 
 protected:
-  ttkPlanarGraphLayout() {
-    SetUseSequences(false);
-    SetSequenceFieldName("");
-    SetUseSizes(false);
-    SetSizeFieldName("");
-    SetUseBranches(false);
-    SetBranchFieldName("");
-    SetUseLevels(false);
-    SetLevelFieldName("");
+  ttkPlanarGraphLayout();
+  ~ttkPlanarGraphLayout() override;
 
-    SetOutputFieldName("Layout");
-
-    UseAllCores = false;
-
-    SetNumberOfInputPorts(1);
-    SetNumberOfOutputPorts(1);
-  }
-  ~ttkPlanarGraphLayout(){};
-
-  bool UseAllCores;
-  int ThreadNumber;
-
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
-private:
-  // optional field data
-  bool UseSequences;
-  std::string SequenceFieldName;
-  bool UseSizes;
-  std::string SizeFieldName;
-  bool UseBranches;
-  std::string BranchFieldName;
-  bool UseLevels;
-  std::string LevelFieldName;
+  int planarGraphLayoutCall(vtkInformation *request,
+                            vtkInformationVector **inputVector,
+                            vtkInformationVector *outputVector);
+  int mergeTreePlanarLayoutCall(vtkInformation *request,
+                                vtkInformationVector **inputVector,
+                                vtkInformationVector *outputVector);
 
-  // output field name
-  std::string OutputFieldName;
-
-  // base code
-  ttk::PlanarGraphLayout planarGraphLayout;
-
-  bool needsToAbort() override {
-    return GetAbortExecute();
-  };
-  int updateProgress(const float &progress) override {
-    UpdateProgress(progress);
-    return 0;
-  };
+  template <class dataType>
+  int mergeTreePlanarLayoutCallTemplate(vtkUnstructuredGrid *treeNodes,
+                                        vtkUnstructuredGrid *treeArcs,
+                                        vtkUnstructuredGrid *output);
 };

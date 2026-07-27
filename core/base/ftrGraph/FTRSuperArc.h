@@ -10,8 +10,7 @@
 ///
 /// \sa ttk::FTRGraph
 
-#ifndef FTR_SUPERARC_H
-#define FTR_SUPERARC_H
+#pragma once
 
 // local includes
 #include "FTRAtomicUF.h"
@@ -28,33 +27,25 @@ namespace ttk {
   namespace ftr {
     class Node;
 
-    class SuperArc {
-    private:
-      idNode upNodeId_;
-      idNode downNodeId_;
-      AtomicUF *ufProp_;
-      bool visible_;
-      idVertex firstReg_, lastReg_, endV_;
-      idSuperArc merged_;
-      Segment segmentation_;
+    class SuperArc : virtual public Debug {
+      idNode upNodeId_{};
+      idNode downNodeId_{};
+      AtomicUF *ufProp_{};
+      bool visible_{true};
+      idVertex firstReg_{nullVertex}, lastReg_{nullVertex}, endV_{nullVertex};
+      idSuperArc merged_{nullSuperArc};
+      Segment segmentation_{};
 #ifndef NDEBUG
-      bool fromUp_;
+      bool fromUp_{false};
 #endif
 
     public:
       SuperArc(const idNode down = nullNode, const idNode up = nullNode)
-        : upNodeId_{up}, downNodeId_{down}, ufProp_{nullptr}, visible_{true},
-          firstReg_{nullVertex}, lastReg_{nullVertex}, endV_{nullVertex},
-          merged_{nullSuperArc}, segmentation_ {
+        : upNodeId_{up}, downNodeId_{down} {
+        this->setDebugMsgPrefix("SuperNode");
       }
-#ifndef NDEBUG
-      , fromUp_ {
-        false
-      }
-#endif
-      {}
 
-      idNode getUpNodeId(void) const {
+      idNode getUpNodeId() const {
         // Caution. can be nullNode
         return upNodeId_;
       }
@@ -63,10 +54,10 @@ namespace ttk {
         upNodeId_ = id;
       }
 
-      idNode getDownNodeId(void) const {
+      idNode getDownNodeId() const {
 #ifndef TTK_ENABLE_KAMIKAZE
         if(downNodeId_ == nullNode) {
-          std::cerr << "[FTR Graph]: Arc have null down node" << std::endl;
+          this->printErr("Arc have null down node");
         }
 #endif
         return downNodeId_;
@@ -76,10 +67,10 @@ namespace ttk {
         downNodeId_ = id;
       }
 
-      Propagation *getPropagation(void) const {
+      Propagation *getPropagation() const {
 #ifndef TTK_ENABLE_KAMIKAZE
         if(!ufProp_) {
-          std::cerr << "[FTR Graph]: Arc have null UF propagation" << std::endl;
+          this->printErr("Arc have null UF propagation");
         }
 #endif
         return ufProp_->find()->getPropagation();
@@ -89,13 +80,13 @@ namespace ttk {
         ufProp_ = UFprop;
       }
 
-      bool hide(void) {
-        bool old = visible_;
+      bool hide() {
+        bool const old = visible_;
         visible_ = false;
         return old;
       }
 
-      bool isVisible(void) const {
+      bool isVisible() const {
         return visible_;
       }
 
@@ -117,7 +108,7 @@ namespace ttk {
         }
       }
 
-      idVertex getEnd(void) const {
+      idVertex getEnd() const {
         return endV_;
       }
 
@@ -140,15 +131,15 @@ namespace ttk {
         }
       }
 
-      bool merged(void) const {
+      bool merged() const {
         return merged_ != nullSuperArc;
       }
 
-      idSuperArc mergedIn(void) const {
+      idSuperArc mergedIn() const {
         return merged_;
       }
 
-      void restore(void) {
+      void restore() {
         visible_ = true;
         merged_ = nullSuperArc;
       }
@@ -166,12 +157,10 @@ namespace ttk {
         fromUp_ = up;
       }
 
-      bool getFromUp(void) const {
+      bool getFromUp() const {
         return fromUp_;
       }
 #endif
     };
   } // namespace ftr
 } // namespace ttk
-
-#endif /* end of include guard: FTR_SUPERARC_H */

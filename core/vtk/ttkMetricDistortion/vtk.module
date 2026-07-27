@@ -1,0 +1,4 @@
+NAME
+  ttkMetricDistortion
+DEPENDS
+  ttkAlgorithm

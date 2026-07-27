@@ -3,9 +3,14 @@ ttk_add_base_library(persistenceDiagram
     PersistenceDiagram.cpp
   HEADERS
     PersistenceDiagram.h
-  LINK
-    discreteGradient
+    PersistenceDiagramUtils.h
+  DEPENDS
     triangulation
-    morseSmaleComplex3D
     ftmTreePP
+    persistentSimplexPairs
+    progressiveTopology
+    approximateTopology
+    discreteMorseSandwich
+    discreteMorseSandwichMPI
+    arrayPreconditioning
     )

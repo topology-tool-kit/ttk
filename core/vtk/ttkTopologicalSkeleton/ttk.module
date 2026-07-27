@@ -1,0 +1,9 @@
+NAME
+  ttkTopologicalSkeleton
+SOURCES
+  ttkTopologicalSkeleton.cpp
+HEADERS
+  ttkTopologicalSkeleton.h
+DEPENDS
+  topologicalSkeleton
+  ttkAlgorithm

@@ -1,0 +1,69 @@
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkPersistenceCurve"
+      class="ttkPersistenceCurve"
+      label="TTK PersistenceCurve">
+      <Documentation
+        long_help="TTK plugin for the computation of persistence curves."
+        short_help="TTK plugin for the computation of persistence curves.">
+        TTK plugin for the computation of persistence curves.
+
+        This plugin takes a persistence diagram as input and computes the
+number of pairs as a function of persistence (i.e. the number of pairs
+whose persistence is higher than a threshold). The plugin produces tables.
+
+A good strategy to visualize these curves is to use the "Line Chart View"
+rendering type of ParaView, and to use the field "Persistence" as an X axis,
+and only display the "Number of Pairs".
+
+Such curves provide useful visual clues in order to fine-tune persistence
+simplification thresholds.
+
+See also ContourForests, PersistenceDiagram, ScalarFieldCriticalPoints, TopologicalSimplification.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/BuiltInExample1/
+
+        - https://topology-tool-kit.github.io/examples/dragon/
+
+        - https://topology-tool-kit.github.io/examples/interactionSites/
+
+        - https://topology-tool-kit.github.io/examples/morsePersistence/
+
+      </Documentation>
+
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkUnstructuredGrid"/>
+        </DataTypeDomain>
+        <Documentation>
+          Input Persistence Diagram as computed by the TTKPersistenceDiagram filter.
+        </Documentation>
+      </InputProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <OutputPort name="Minimum-saddle pairs" index="0" id="port0" />
+      <OutputPort name="Saddle-saddle pairs" index="1" id="port1" />
+      <OutputPort name="Saddle-maximum pairs" index="2" id="port2" />
+      <OutputPort name="All pairs" index="3" id="port3" />
+
+      <Hints>
+        <View type="XYChartView" />
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

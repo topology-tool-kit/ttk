@@ -1,0 +1,8 @@
+NAME
+  ttkOBJWriter
+SOURCES
+  ttkOBJWriter.cpp
+HEADERS
+  ttkOBJWriter.h
+DEPENDS
+  common

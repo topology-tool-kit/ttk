@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="ContourTreeAlignment" class="ttkContourTreeAlignment" label="TTK ContourTreeAlignment">
+            <Documentation long_help="TTK plugin for computing an alignment of a multiblock of contour trees, given as unstructured grids."
+                short_help="TTK plugin for computing an alignment of contour trees.">
+
+                Given a multiblock of unstructured grids representing contour trees, this plugin comutes an alignment of the trees.
+
+                The arrays for the scalar values of vertices, the region sizes of arcs and the segmentation ids of arcs must be specified.
+
+                Also, this plugin can write the alignment tree to a JSON output file specified by the user.
+
+                Related publication:
+                'Fuzzy contour trees: Alignment and joint layout of multiple contour trees'
+                Anna Pia Lohfink, Florian Wetzels, Jonas Lukasczyk, Gunther H. Weber, and Christoph Garth.
+                Comput. Graph. Forum, 39(3):343-355, 2020.
+
+                Online examples:
+
+                - https://topology-tool-kit.github.io/examples/contourTreeAlignment/
+
+            </Documentation>
+
+            <InputProperty name="Input" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkMultiBlockDataSet" />
+                </DataTypeDomain>
+                <InputArrayDomain name="input_array" attribute_type="point" number_of_components="1" />
+                <InputArrayDomain name="cell_array" attribute_type="cell" number_of_components="1" />
+                <Documentation>A vtkMultiBlockDataSet containing the contour trees that should be aligned.</Documentation>
+            </InputProperty>
+
+            <StringVectorProperty
+                name="ScalarFieldNew"
+                command="SetInputArrayToProcess"
+                element_types="0 0 0 0 2"
+                number_of_elements="5"
+                default_values="0 0 0 0 Scalar"
+                animateable="0"
+                label="Scalar Field"
+                >
+                <ArrayListDomain
+                    name="scalar_list"
+                    attribute_type="Scalars"
+                    input_domain_name="input_array">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>
+                    The point array for the original scalar values.
+                </Documentation>
+            </StringVectorProperty>
+
+            <StringVectorProperty
+                name="RegSizeArray"
+                command="SetInputArrayToProcess"
+                element_types="0 0 0 0 2"
+                number_of_elements="5"
+                default_values="1 0 0 1 RegionSize"
+                animateable="0"
+                label="Region size array"
+                >
+                <ArrayListDomain
+                    name="reg_list"
+                    attribute_type="Scalars"
+                    data_type="VTK_INT"
+                    input_domain_name="cell_array">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>
+                    The cell array for the regions sizes of arcs.
+                </Documentation>
+            </StringVectorProperty>
+
+            <StringVectorProperty
+                name="SegIdArray"
+                command="SetInputArrayToProcess"
+                element_types="0 0 0 0 2"
+                number_of_elements="5"
+                default_values="2 0 0 1 SegmentationId"
+                animateable="0"
+                label="Segmentation ID array for CT"
+                >
+                <ArrayListDomain
+                    name="seg_list"
+                    attribute_type="Scalars"
+                    data_type="VTK_INT"
+                    input_domain_name="cell_array">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>
+                    The cell array for the segmentation ids of arcs.
+                </Documentation>
+            </StringVectorProperty>
+
+            <StringVectorProperty
+                name="SegmentationArray"
+                command="SetInputArrayToProcess"
+                element_types="0 0 0 0 2"
+                number_of_elements="5"
+                default_values="3 0 0 0 SegmentationId"
+                animateable="0"
+                label="Segment ID array for segmentation"
+                >
+                <ArrayListDomain
+                    name="segseg_list"
+                    attribute_type="Scalars"
+                    input_domain_name="input_array">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>
+                    The point array for the segment ids of points in segmentation.
+                </Documentation>
+            </StringVectorProperty>
+
+            <IntVectorProperty name="matchOverTime"
+                               label="Match over time"
+                               command="SetMatchTime"
+                               number_of_elements="1"
+                               default_values="0">
+                <BooleanDomain name="bool"/>
+            </IntVectorProperty>
+
+            <IntVectorProperty name="Seed"
+                               command="SetRandomSeed"
+                               number_of_elements="1"
+                               default_values="37">
+            </IntVectorProperty>
+
+            <DoubleVectorProperty name="WeightCombinatorialMatch"
+                                  label="Weight for combinatorial matching"
+                                  command="SetWeightCombinatorialMatch"
+                                  number_of_elements="1"
+                                  default_values="0">
+            </DoubleVectorProperty>
+
+            <DoubleVectorProperty name="WeightArcMatch"
+                                  label="Weight for arc property difference in matching"
+                                  command="SetWeightArcMatch"
+                                  number_of_elements="1"
+                                  default_values="1">
+            </DoubleVectorProperty>
+
+            <DoubleVectorProperty name="WeightScalarDifference"
+                                  label="Weight for scalar value difference in matching"
+                                  command="SetWeightScalarValueMatch"
+                                  number_of_elements="1"
+                                  default_values="0">
+            </DoubleVectorProperty>
+
+	        <IntVectorProperty
+                    name="modeArcMatch"
+		            label="Arc property used for matching"
+                    command="SetArcMatchMode"
+                    number_of_elements="1"
+                    default_values="2">
+        		<EnumerationDomain name="enum">
+          		    <Entry value="0" text="persistence"/>
+          		    <Entry value="1" text="area"/>
+          		    <Entry value="2" text="volume"/>
+          		    <Entry value="3" text="overlap"/>
+        	    </EnumerationDomain>
+        	    <Documentation>
+          		    This property indicates which arc property will be used for matching.
+        	    </Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty
+                    name="modeAlignmentNodeValues"
+                    label="Method to compute scalar values of alignment nodes"
+                    command="SetAlignmenttreeType"
+                    number_of_elements="1"
+                    default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="average"/>
+                    <Entry value="1" text="median"/>
+                </EnumerationDomain>
+                <Documentation>
+                    This property indicates which method will be used to compute the scalar values of alignment vertices from the matched vertices.
+                </Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty name="exportJSON"
+                               label="Export alignment and trees as JSON file"
+                               command="SetExportJSON"
+                               number_of_elements="1"
+                               default_values="0">
+                <BooleanDomain name="bool"/>
+            </IntVectorProperty>
+
+            <StringVectorProperty name="exportPath" label="Export Path" animateable="0" command="SetExportPath" number_of_elements="1" default_values="">
+                <Documentation>Path to write JSON files.</Documentation>
+                <FileListDomain name="files" />
+                <Hints>
+                    <UseDirectoryName />
+                </Hints>
+            </StringVectorProperty>
+
+            ${DEBUG_WIDGETS}
+
+            <Hints>
+                <ShowInMenu category="TTK - Ensemble Scalar Data" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

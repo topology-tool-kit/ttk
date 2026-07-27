@@ -1,7 +1,103 @@
 ## TTK - ChangeLog
 =
-### ttk.git
+### dev
+
+### 1.4.0
+- Cycle-aware dimensionality reduction (TopoAE++, IEEE TVCG 2026)
+- Reliable Tracking in HVI Fast Imaging (DebrisTracer, IEEE VIS 2026)
+- Distributed computation of persistent homology! (IEEE TPDS 2025)
+- Separatrix stability, a.k.a., BondMatcher (IEEE TVCG 2025)
+- Discrete vector field topology! (IEEE VIS 2024)
+- Persistence Diagram Dictionaries (IEEE TVCG 2024)
+- Merge tree barycenters with path mapping (IEEE VIS 2023)
+- Fast DelaunayRips persistence computation for point cloud data
+- New backend for TrackingFromFields (critical point based)
+- Stochastic discrete gradient (IEEE VIS 2012)
+- Fast planar Rips filtration persistence computation
+- Migration to ParaView 6.1.1
+- CI updates
+
+### 1.3.0
+- Wasserstein Auto-Encoders of Merge Trees / Pers. Diagrams (IEEE TVCG 2024)
+- Topological simplification optimization (IEEE VIS 2024)
+- TopoMap dimensionality reduction (IEEE TVCG 2020)
+- TTK is Getting MPI-ready! (IEEE TVCG 2024)
+- ExTreeM merge tree computation backend (IEEE TVCG 2024)
+- Ripser integration
+- DMS performance improvements (allocation)
+- Saddle connector reversal performance improvements
+- Signed distance fields
+- Array preconditioning improvements (fast MPI implementation)
+- Migration to ParaView 5.12, 5.13
+- CI extensions (sccache, ubuntu-24.04, macos-14)
+- Switch to C++17
+- Bug fixes
+
+
+### 1.2
+- Principal Geodesic Analysis of Merge Trees / Pers. Diagrams (IEEE TVCG 2023)
+- Parallel Computation of Morse-Smale Segmentations (IEEE TVCG 2023)
+- Branch Mapping Distance between Merge Trees (EuroVis 2022)
+- Path Mapping Distance between Merge Trees (IEEE TopoInVis 2022)
+- TTK is Getting MPI-Ready \0/ !!!
+- Migration to ParaView 5.11.1
+- Switch to C++14
+- Discrete Morse Sandwich performance improvements (parallel efficiency)
+- Morse Smale Complex performance improvements
+- Wasserstein distance performance improvements
+- Support for Persistence Diagrams in Merge Tree Clustering
+- Clustering scores (NMI/ARI)
+- Dimensionality reduction metric preservation score (DistanceMatrixDistortion)
+- On-surface smoothing
+- API improvements
+- Bug fixes
+
+### 1.1
+- Discrete Morse Sandwich & persistent generators (IEEE TVCG 2023)
+- Persistence diagram approximation (IEEE LDAV 2021)
+- Compact triangulations (IEEE TVCG 2021)
+- Rips complex
+- Triangulation manager
+- PersistentSimplexPairs backend (Zomorodian 2010), slow.
+- Bug fixes
+- Documentation improvements
+- Online examples
+
+### 1.0
+- Official integration into ParaView-5.10 \0/ clap! clap! clap! \0/
+- Migration to ParaView-5.9.1
+- Wasserstein Distances, Geodesics, Barycenters of Merge Trees (IEEE VIS 2021)
+- Progressive Scalar Field Topology (IEEE TVCG 2021)
+- Direct LTS-based persistence sensitive simplification
+- Improved Persistence diagram clustering features
+- Marking deprecated filters (ParaView integration)
+- Explicit triangulation performance improvement 
+- IO for preconditioned triangulations
+- Morphological modules (DilateErode)
+- StableManifoldPersistence module 
+- Pareto set extension to Jacobi sets
+- More performance optimization (Discrete Morse Theory / Morse-Smale complex)
+- Improved ZFP integration (fixed accuracy instead of fixed rate)
+- Support for WebSocketIO (web browser interaction)
+- CMake improvements
+- Bug fixes
+
+### 0.9.9
+- Migration to VTK9/ParaView-5.8.0 \0/ clap! clap! clap! \0/
+- Support for ParaView-5.7.0 \0/
 - New branching management
+- New triangulation preconditioning for regular grids
+- New templated triangulation API (up to x2 speedup)
+- New debugging API
+- New module API (simpler, clearer, more convenient)
+- Performance updates for the Morse-Smale complex (e.g. improved worstcase runtime with processlowerStar, IEEE PAMI 2011)
+- Order-based simulation of simplicity (big performance updates)
+- Localized Topological Simplification of Scalar Data (IEEE VIS 2020)
+- Fuzzy Contour Trees: Alignment and Joint Layout of Multiple Contour Trees (EuroVis 2020)
+- Cinema Darkroom: A Deferred Rendering Framework for Large-Scale Datasets (IEEE LDAV 2020)
+- Automatic deb binary packaging (for Ubuntu, Windows, MacOS)
+- Updated examples
+- Many fixes
 
 ### 0.9.8.9
 - Progressive Wasserstein Barycenters of Persistence Diagrams (IEEE VIS 2019)

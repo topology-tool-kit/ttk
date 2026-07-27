@@ -2,36 +2,39 @@
 /// \class ttk::TrackingFromPersistenceDiagrams
 /// \author Maxime Soler <soler.maxime@total.com>
 /// \date August 2018.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/timeTracking/">Time
+///   tracking example</a>
 
-#ifndef _TRACKINGFROMF_H
-#define _TRACKINGFROMF_H
+#pragma once
 
 // base code includes
 #include <BottleneckDistance.h>
+#include <DiscreteGradient.h>
 #include <PersistenceDiagram.h>
-#include <Wrapper.h>
-
+#include <Triangulation.h>
 namespace ttk {
 
-  class TrackingFromFields : public Debug {
+  class TrackingFromFields : virtual public Debug {
 
   public:
     TrackingFromFields() {
-    }
-
-    ~TrackingFromFields() {
+      this->setDebugMsgPrefix("TrackingFromFields");
     }
 
     /// Execute the package.
     /// \return Returns 0 upon success, negative values otherwise.
-    template <class dataType>
-    int execute();
+    // template <class dataType>
+    // int execute();
 
-    template <typename dataType>
+    template <typename dataType,
+              typename triangulationType = ttk::AbstractTriangulation>
     int performDiagramComputation(
       int fieldNumber,
-      std::vector<std::vector<diagramTuple>> &persistenceDiagrams,
-      const ttk::Wrapper *wrapper);
+      std::vector<ttk::DiagramType> &persistenceDiagrams,
+      const triangulationType *triangulation);
 
     /// Pass a pointer to an input array representing a scalarfield.
     /// The array is expected to be correctly allocated. idx in
@@ -54,96 +57,65 @@ namespace ttk {
       return 0;
     }
 
-    inline int setTriangulation(ttk::Triangulation *t) {
-      triangulation_ = t;
-      return 0;
+    inline void
+      preconditionTriangulation(AbstractTriangulation *triangulation) {
+      ttk::PersistenceDiagram pd{};
+      pd.preconditionTriangulation(triangulation);
     }
 
-    inline int setInputScalars(std::vector<void *> &is) {
+    inline void setInputScalars(std::vector<void *> &is) {
       inputData_ = is;
-      return 0;
     }
 
-    inline int setInputOffsets(void *io) {
+    /**
+     * @pre For this function to behave correctly in the absence of
+     * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+     * called to fill every buffer in the @p io vector prior to any
+     * computation (the VTK wrapper already includes a mechanism to
+     * automatically generate such a preconditioned buffer).
+     * @see examples/c++/main.cpp for an example use.
+     */
+    inline void setInputOffsets(std::vector<SimplexId *> &io) {
       inputOffsets_ = io;
-      return 0;
     }
 
   protected:
-    int numberOfInputs_;
-    std::vector<void *> inputData_;
-    void *inputOffsets_;
-    ttk::Triangulation *triangulation_; // 1 triangulation for everyone
+    int numberOfInputs_{0};
+    std::vector<void *> inputData_{};
+    std::vector<SimplexId *> inputOffsets_{};
   };
 } // namespace ttk
 
-// template functions
-template <class dataType>
-int ttk::TrackingFromFields::execute() {
-  ttk::Timer t;
-
-  {
-    std::stringstream msg;
-    msg << "[TrackingFromFields] Data-set "
-        << "processed in " << t.getElapsedTime() << " s. (" << threadNumber_
-        << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
-
-  return 0;
-}
-
-template <typename dataType>
+template <typename dataType, typename triangulationType>
 int ttk::TrackingFromFields::performDiagramComputation(
   int fieldNumber,
-  std::vector<std::vector<diagramTuple>> &persistenceDiagrams,
-  const ttk::Wrapper *wrapper) {
+  std::vector<ttk::DiagramType> &persistenceDiagrams,
+  const triangulationType *triangulation) {
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(int i = 0; i < fieldNumber; ++i) {
-    ttk::PersistenceDiagram persistenceDiagram_;
-    persistenceDiagram_.setWrapper(wrapper);
-    persistenceDiagram_.setupTriangulation(triangulation_);
-    persistenceDiagram_.setThreadNumber(1);
-    // should have been done before
-
-    std::vector<std::tuple<ttk::dcg::Cell, ttk::dcg::Cell>> dmt_pairs;
-    persistenceDiagram_.setDMTPairs(&dmt_pairs);
-    persistenceDiagram_.setInputScalars(inputData_[i]);
-    persistenceDiagram_.setInputOffsets(inputOffsets_);
-    persistenceDiagram_.setComputeSaddleConnectors(false);
-    std::vector<std::tuple<int, CriticalType, int, CriticalType, dataType, int>>
-      CTDiagram;
-
-    persistenceDiagram_.setOutputCTDiagram(&CTDiagram);
-    persistenceDiagram_.execute<dataType, int>();
-
-    // Copy diagram into augmented diagram.
-    persistenceDiagrams[i] = std::vector<diagramTuple>(CTDiagram.size());
-
-    for(int j = 0; j < (int)CTDiagram.size(); ++j) {
-      float p[3];
-      float q[3];
-      auto currentTuple = CTDiagram[j];
-      const int a = std::get<0>(currentTuple);
-      const int b = std::get<2>(currentTuple);
-      triangulation_->getVertexPoint(a, p[0], p[1], p[2]);
-      triangulation_->getVertexPoint(b, q[0], q[1], q[2]);
-      const double sa = ((double *)inputData_[i])[a];
-      const double sb = ((double *)inputData_[i])[b];
-      diagramTuple dt
-        = std::make_tuple(std::get<0>(currentTuple), std::get<1>(currentTuple),
-                          std::get<2>(currentTuple), std::get<3>(currentTuple),
-                          std::get<4>(currentTuple), std::get<5>(currentTuple),
-                          sa, p[0], p[1], p[2], sb, q[0], q[1], q[2]);
-
-      persistenceDiagrams[i][j] = dt;
-    }
+    ttk::PersistenceDiagram persistenceDiagram;
+    persistenceDiagram.setThreadNumber(1);
+    persistenceDiagram.setBackend(
+      ttk::PersistenceDiagram::BACKEND::DISCRETE_MORSE_SANDWICH);
+    persistenceDiagram.execute(persistenceDiagrams[i],
+                               (dataType *)(inputData_[i]), 0, inputOffsets_[i],
+                               triangulation);
+    // Augment diagram.
+    // for(auto &pair : persistenceDiagrams[i]) {
+    //  triangulation->getVertexPoint(pair.birth.id, pair.birth.coords[0],
+    //                                pair.birth.coords[1],
+    //                                pair.birth.coords[2]);
+    //  triangulation->getVertexPoint(pair.death.id, pair.death.coords[0],
+    //                                pair.death.coords[1],
+    //                                pair.death.coords[2]);
+    //  pair.birth.sfValue = static_cast<double
+    //  *>(inputData_[i])[pair.birth.id]; pair.death.sfValue =
+    //  static_cast<double *>(inputData_[i])[pair.death.id];
+    //}
   }
 
   return 0;
 }
-
-#endif // _TRACKINGFROMP_H

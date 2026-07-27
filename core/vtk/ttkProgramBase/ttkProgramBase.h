@@ -4,10 +4,9 @@
 /// \date February 2017.
 ///
 /// \brief Base VTK editor class for standalone programs. This class parses the
-/// the comamnd line, execute the TTK module and takes care of the IO.
+/// the command line, execute the TTK module and takes care of the IO.
 
-#ifndef _TTK_EDITOR_BASE_H
-#define _TTK_EDITOR_BASE_H
+#pragma once
 
 // VTK IO
 #include <vtkDataSet.h>
@@ -25,24 +24,27 @@
 
 // base code includes
 #include <ProgramBase.h>
-#include <ttkWrapper.h>
+#include <ttkAlgorithm.h>
 
-class VTKFILTERSCORE_EXPORT ttkProgramBase : public ttk::ProgramBase {
+#include <ttkProgramBaseModule.h>
+
+class TTKPROGRAMBASE_EXPORT ttkProgramBase : public ttk::ProgramBase {
 
 public:
   ttkProgramBase() {
 
-    vtkWrapper_ = NULL;
+    vtkWrapper_ = nullptr;
   };
 
-  virtual ~ttkProgramBase(){};
+  ~ttkProgramBase() override = default;
+  ;
 
   /// Set the arguments of your ttk module and execute it here.
-  int execute();
+  int execute() override;
 
   vtkDataSet *getInput(const int &inputId) {
     if((inputId < 0) || (inputId >= (int)inputs_.size()))
-      return NULL;
+      return nullptr;
     return inputs_[inputId];
   }
 
@@ -50,17 +52,23 @@ public:
     return inputs_.size();
   };
 
-  virtual int run() {
+  int run() override {
 
     if(!vtkWrapper_) {
       return -1;
     }
 
+    if(!ttkModule_)
+      return -2;
+
+    ttkModule_->setDebugLevel(debugLevel_);
+    ttkModule_->setThreadNumber(threadNumber_);
+
     return execute();
   }
 
   /// Save the output(s) of the TTK module.
-  virtual int save() const;
+  int save() const override;
 
   virtual int setTTKmodule(vtkDataSetAlgorithm *ttkModule) {
 
@@ -83,7 +91,7 @@ protected:
            std::vector<vtkSmartPointer<vtkReaderClass>> &readerList);
 
   /// Load a sequence of input data-sets.
-  virtual int load(const std::vector<std::string> &inputPaths);
+  int load(const std::vector<std::string> &inputPaths) override;
 
   template <class vtkWriterClass>
   int save(const int &outputPortId) const;
@@ -99,11 +107,7 @@ public:
     ttkModule_ = (Debug *)ttkObject_.GetPointer();
   }
 
-  virtual int run() {
-
-    ttkObject_->setDebugLevel(ttk::globalDebugLevel_);
-    ttkObject_->setThreadNumber(ttk::globalThreadNumber_);
-
+  int run() override {
     return ttkProgramBase::run();
   }
 
@@ -142,14 +146,14 @@ int ttkProgramBase::save(const int &outputPortId) const {
   std::stringstream fileName;
   fileName << outputPath_ << "_port#" << outputPortId << "." << extension;
 
-  vtkSmartPointer<vtkWriterClass> writer
+  vtkSmartPointer<vtkWriterClass> const writer
     = vtkSmartPointer<vtkWriterClass>::New();
   writer->SetFileName(fileName.str().data());
   writer->SetInputData(vtkWrapper_->GetOutput(outputPortId));
   std::stringstream msg;
   msg << "[ttkProgramBase] Saving output file `" << fileName.str() << "'..."
       << std::endl;
-  dMsg(std::cout, msg.str(), Debug::infoMsg);
+  printMsg(msg.str());
 
   writer->Write();
 
@@ -173,7 +177,7 @@ int ttkProgramBase::load(
     // choose where to display this message (std::cout, std::cerr, a file)
     // choose the priority of this message (1, nearly always displayed,
     // higher values mean lower priorities)
-    dMsg(std::cout, msg.str(), 1);
+    printMsg(msg.str());
   }
 
   readerList.back()->Update();
@@ -193,10 +197,8 @@ int ttkProgramBase::load(
     msg << "[ttkProgramBase]   done! (read "
         << inputs_.back()->GetNumberOfPoints() << " vertices, "
         << inputs_.back()->GetNumberOfCells() << " cells)" << std::endl;
-    dMsg(std::cout, msg.str(), Debug::infoMsg);
+    printMsg(msg.str());
   }
 
   return 0;
 }
-
-#endif // VTK_EDITOR_BASE_H

@@ -1,0 +1,4 @@
+NAME
+ ttkIntegralLines
+DEPENDS
+  ttkAlgorithm

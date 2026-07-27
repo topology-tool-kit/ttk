@@ -6,25 +6,18 @@
 /// \brief Class to answer the lowest common ancestor requests of pairs of nodes
 /// in a tree in constant time after a linear time preprocess.
 
-#ifndef LOWESTCOMMONANCESTOR_H
-#define LOWESTCOMMONANCESTOR_H
+#pragma once
 
 // ttk includes
 #include <Debug.h>
 #include <RangeMinimumQuery.h>
 // STL includes
-#include <algorithm>
 #include <array>
-#include <climits>
-#include <cmath>
-#include <sstream>
-#include <stack>
-#include <string>
 #include <vector>
 
 namespace ttk {
 
-  class LowestCommonAncestor : public Debug {
+  class LowestCommonAncestor : virtual public Debug {
   public:
     class Node {
     public:
@@ -49,16 +42,17 @@ namespace ttk {
       }
 
     protected:
-      int ancestor_;
-      std::vector<int> successor_;
+      int ancestor_{};
+      std::vector<int> successor_{};
     };
 
-  public:
+    LowestCommonAncestor();
+
     /// Add a node in the tree
     /// \return Returns the id of the new node
     inline int addNode() {
-      node_.push_back(Node());
-      int id = static_cast<int>(node_.size());
+      node_.emplace_back();
+      int const id = static_cast<int>(node_.size());
       node_[id].setAncestor(id);
       return id;
     }
@@ -76,12 +70,8 @@ namespace ttk {
     }
 
     /// \returns Returns a pointer to the id-th node
-    inline Node *getNode(const unsigned int &id) {
-      if(id < node_.size()) {
-        return node_.data() + id;
-      } else {
-        return nullptr;
-      }
+    inline Node &getNode(const unsigned int &id) {
+      return node_[id];
     }
 
     /// Preprocess the tree structure to answer the query() calls in constant
@@ -92,11 +82,11 @@ namespace ttk {
     /// \pre preprocess() must have been called after the last change in the
     /// tree.
     inline int query(int i, int j) const {
-      if(nodeFirstAppearence_[i] > nodeFirstAppearence_[j]) {
+      if(nodeFirstAppearance_[i] > nodeFirstAppearance_[j]) {
         std::swap(i, j);
       }
       return nodeOrder_[RMQuery(
-        nodeFirstAppearence_[i], nodeFirstAppearence_[j])];
+        nodeFirstAppearance_[i], nodeFirstAppearance_[j])];
     }
 
   protected:
@@ -121,29 +111,27 @@ namespace ttk {
 
   protected:
     /* Tree structure */
-    std::vector<Node> node_;
+    std::vector<Node> node_{};
 
     /* Eulerian Transverse */
-    std::vector<int> nodeOrder_;
-    std::vector<int> nodeDepth_;
-    std::vector<int> nodeFirstAppearence_;
+    std::vector<int> nodeOrder_{};
+    std::vector<int> nodeDepth_{};
+    std::vector<int> nodeFirstAppearance_{};
 
     /* Range Minimum Query */
-    int blocSize_;
+    int blocSize_{};
     // Boundaries of blocs
-    std::vector<std::pair<int, int>> blocPartition_;
+    std::vector<std::pair<int, int>> blocPartition_{};
     // Min values
-    std::vector<int> blocMinimumValue_;
+    std::vector<int> blocMinimumValue_{};
     // RMQ of the blocMinimumValue_ vector
-    RangeMinimumQuery<int> blocMinimumValueRMQ_;
+    RangeMinimumQuery<int> blocMinimumValueRMQ_{};
     // Positions of min values
-    std::vector<int> blocMinimumPosition_;
+    std::vector<int> blocMinimumPosition_{};
     // All queries for each possible bloc (positions)
-    std::vector<std::vector<std::vector<int>>> normalizedBlocTable_;
+    std::vector<std::vector<std::vector<int>>> normalizedBlocTable_{};
     // Corresponding normalized bloc for each bloc of nodeDepth_
-    std::vector<int> blocToNormalizedBloc_;
+    std::vector<int> blocToNormalizedBloc_{};
   };
 
 } // namespace ttk
-
-#endif

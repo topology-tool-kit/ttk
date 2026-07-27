@@ -37,502 +37,247 @@
 /// Herbert Edelsbrunner and John Harer \n
 /// American Mathematical Society, 2010
 ///
-/// \sa ttkFTMTreePP
+/// Five backends are available for the computation:
+///
+///  1) FTM \n
+/// \b Related \b publication \n
+/// "Task-based Augmented Contour Trees with Fibonacci Heaps"
+/// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny
+/// IEEE Transactions on Parallel and Distributed Systems, 2019
+///
+///  2) Progressive Approach \n
+/// \b Related \b publication \n
+/// "A Progressive Approach to Scalar Field Topology" \n
+/// Jules Vidal, Pierre Guillou, Julien Tierny\n
+/// IEEE Transactions on Visualization and Computer Graphics, 2021
+///
+/// 3) Discrete Morse Sandwich (default) \n
+/// \b Related \b publication \n
+/// "Discrete Morse Sandwich: Fast Computation of Persistence Diagrams for
+/// Scalar Data -- An Algorithm and A Benchmark" \n
+/// Pierre Guillou, Jules Vidal, Julien Tierny \n
+/// IEEE Transactions on Visualization and Computer Graphics, 2023.\n
+/// arXiv:2206.13932, 2023.\n
+/// Fast and versatile algorithm for persistence diagram computation.
+///
+/// 4) Approximate Approach \n
+/// \b Related \b publication \n
+/// "Fast Approximation of Persistence Diagrams with Guarantees" \n
+/// Jules Vidal, Julien Tierny\n
+/// IEEE Symposium on Large Data Visualization and Analysis (LDAV), 2021
+///
+/// 5) Persistent Simplex \n
+/// This is a textbook (and very slow) algorithm, described in
+/// "Algorithm and Theory of Computation Handbook (Second Edition)
+/// - Special Topics and Techniques" by Atallah and Blanton on page 97.
+///
+/// 6) Distributed Discrete Morse Sandwich \n
+/// \b Related \b publication \n
+/// "Distributed Discrete Morse Sandwich: Efficient Computation of Persistence
+/// Diagrams for Massive Scalar Data" \n
+/// Eve Le Guillou, Pierre Fortin, Julien Tierny \n
+/// IEEE Transactions on Parallel and Distributed Systems, 2025. \n
+/// https://arxiv.org/abs/2505.21266, 2025. \n
+/// Fast, hybrid MPI-OpenMP backend for large-scale datasets on supercomputers.
+///
+/// \sa ttkMergeTreePP
 /// \sa ttkPersistenceCurve
 /// \sa ttkScalarFieldCriticalPoints
 /// \sa ttkTopologicalSimplification
 /// \sa ttk::PersistenceDiagram
-#ifndef _TTK_PERSISTENCEDIAGRAM_H
-#define _TTK_PERSISTENCEDIAGRAM_H
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/1manifoldLearning/">1-Manifold
+///   Learning example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/1manifoldLearningCircles/">1-Manifold
+///   Learning Circles example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/2manifoldLearning/">
+///   2-Manifold Learning example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/BuiltInExample1/">BuiltInExample1
+///   </a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/">
+///   Clustering Kelvin Helmholtz Instabilities example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/ctBones/">CT Bones
+///   example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/distributedPersistenceDiagram/">
+///   Distributed Persistence Diagram example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
+///   example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/harmonicSkeleton/">
+///   Harmonic Skeleton example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/imageProcessing/">Image
+///   Processing example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
+///   Interaction sites</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/">Karhunen-Love
+///   Digits 64-Dimensions example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morsePersistence/">Morse
+///   Persistence example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/">Morse-Smale
+///   Quadrangulation example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 0 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 1 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 2 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 3 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 4 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramClustering/">Persistence
+///   Diagram Clustering example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramDictionary/">Persistence
+///   Diagram Dictionary example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramDistance/">Persistence
+///   Diagram Distance example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/">Persistence
+///   Diagram Principal Geodesic Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">Tectonic
+///   Puzzle example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_darkSky/">Topological
+///   Optimization DarkSky example</a>\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_pegasus/">Topological
+///   Optimization for Pegasus Genus Repair example</a>\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_torus/">Topological
+///   Optimization for Torus Repair example</a>\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/tribute/">Tribute
+///   example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/uncertainStartingVortex/">
+///   Uncertain Starting Vortex example</a> \n
+///
+
+#pragma once
 
 // VTK includes
-#include <vtkCellData.h>
 #include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-#include <vtkTable.h>
+#include <vtkUnstructuredGrid.h>
+
+// VTK Module
+#include <ttkPersistenceDiagramModule.h>
 
 // ttk code includes
 #include <PersistenceDiagram.h>
-#include <ttkWrapper.h>
+#include <ttkAlgorithm.h>
+#include <ttkMacros.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkPersistenceDiagram
-#else
-class ttkPersistenceDiagram
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKPERSISTENCEDIAGRAM_EXPORT ttkPersistenceDiagram
+  : public ttkAlgorithm,
+    protected ttk::PersistenceDiagram {
 
 public:
   static ttkPersistenceDiagram *New();
 
-  vtkTypeMacro(ttkPersistenceDiagram, vtkDataSetAlgorithm);
+  vtkTypeMacro(ttkPersistenceDiagram, ttkAlgorithm);
 
-  // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  vtkSetMacro(ForceInputOffsetScalarField, bool);
+  vtkGetMacro(ForceInputOffsetScalarField, bool);
 
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-    computeDiagram_ = true;
+  vtkSetMacro(ShowInsideDomain, bool);
+  vtkGetMacro(ShowInsideDomain, bool);
+
+  ttkSetEnumMacro(BackEnd, BACKEND);
+  vtkGetEnumMacro(BackEnd, BACKEND);
+
+  vtkGetMacro(StartingResolutionLevel, int);
+  vtkSetMacro(StartingResolutionLevel, int);
+
+  vtkGetMacro(StoppingResolutionLevel, int);
+  vtkSetMacro(StoppingResolutionLevel, int);
+
+  vtkSetMacro(UseTasks, bool);
+  vtkGetMacro(UseTasks, bool);
+
+  vtkGetMacro(IsResumable, bool);
+  vtkSetMacro(IsResumable, bool);
+
+  vtkGetMacro(TimeLimit, double);
+  vtkSetMacro(TimeLimit, double);
+
+  vtkGetMacro(Epsilon, double);
+  vtkSetMacro(Epsilon, double);
+
+  vtkSetMacro(IgnoreBoundary, bool);
+  vtkGetMacro(IgnoreBoundary, bool);
+
+  inline void SetComputeMinSad(const bool data) {
+    this->setComputeMinSad(data);
+    this->dmsDimsCache[0] = data;
+    this->Modified();
+  }
+  inline void SetComputeSadSad(const bool data) {
+    this->setComputeSadSad(data);
+    this->dmsDimsCache[1] = data;
+    this->Modified();
+  }
+  inline void SetComputeSadMax(const bool data) {
+    this->setComputeSadMax(data);
+    this->dmsDimsCache[2] = data;
+    this->Modified();
+  }
+  inline void SetDMSDimensions(const int data) {
+    this->setComputeMinSad(data == 0 ? true : this->dmsDimsCache[0]);
+    this->setComputeSadSad(data == 0 ? true : this->dmsDimsCache[1]);
+    this->setComputeSadMax(data == 0 ? true : this->dmsDimsCache[2]);
+    this->Modified();
   }
 
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-    computeDiagram_ = true;
-  }
-  // end of default ttk setters
-
-  void SetScalarField(std::string data) {
-    ScalarField = data;
-    Modified();
-    computeDiagram_ = true;
-  }
-  vtkGetMacro(ScalarField, std::string);
-
-  void SetScalarFieldId(int data) {
-    ScalarFieldId = data;
-    Modified();
-    computeDiagram_ = true;
-  }
-  vtkGetMacro(ScalarFieldId, int);
-
-  void SetOffsetFieldId(int data) {
-    OffsetFieldId = data;
-    Modified();
-    computeDiagram_ = true;
-  }
-  vtkGetMacro(OffsetFieldId, int);
-
-  void SetForceInputOffsetScalarField(int data) {
-    ForceInputOffsetScalarField = data;
-    Modified();
-    computeDiagram_ = true;
-  }
-  vtkGetMacro(ForceInputOffsetScalarField, int);
-
-  void SetComputeSaddleConnectors(int data) {
-    ComputeSaddleConnectors = data;
-    Modified();
-    computeDiagram_ = true;
-  }
-  vtkGetMacro(ComputeSaddleConnectors, int);
-
-  void SetInputOffsetScalarFieldName(std::string data) {
-    InputOffsetScalarFieldName = data;
-    Modified();
-    computeDiagram_ = true;
-  }
-  vtkGetMacro(InputOffsetScalarFieldName, std::string);
-
-  void SetShowInsideDomain(int onOff) {
-    ShowInsideDomain = onOff;
-    Modified();
-  }
-  vtkGetMacro(ShowInsideDomain, int);
-
-  void SetPeriodicBoundaryConditions(int data) {
-    PeriodicBoundaryConditions = data;
-    Modified();
-    computeDiagram_ = true;
-  }
-  vtkGetMacro(PeriodicBoundaryConditions, int);
-
-  int getScalars(vtkDataSet *input);
-  int getTriangulation(vtkDataSet *input);
-  int getOffsets(vtkDataSet *input);
-
-  template <typename scalarType>
-  int setPersistenceDiagramInfo(
-    ttk::SimplexId id,
-    vtkSmartPointer<ttkSimplexIdTypeArray> vertexIdentifierScalars,
-    vtkSmartPointer<vtkIntArray> nodeTypeScalars,
-    vtkSmartPointer<vtkFloatArray> coordsScalars,
-    const std::vector<std::tuple<ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 scalarType,
-                                 ttk::SimplexId>> &diagram,
-    vtkSmartPointer<vtkPoints> points,
-    vtkIdType ids[3]);
-
-  template <typename scalarType>
-  int getPersistenceDiagram(
-    ttk::ftm::TreeType treeType,
-    const std::vector<std::tuple<ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 scalarType,
-                                 ttk::SimplexId>> &diagram);
-
-  template <typename scalarType>
-  int setPersistenceDiagramInfoInsideDomain(
-    ttk::SimplexId id,
-    vtkSmartPointer<ttkSimplexIdTypeArray> vertexIdentifierScalars,
-    vtkSmartPointer<vtkIntArray> nodeTypeScalars,
-    vtkDataArray *birthScalars,
-    vtkDataArray *deathScalars,
-    const std::vector<std::tuple<ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 scalarType,
-                                 ttk::SimplexId>> &diagram,
-    vtkSmartPointer<vtkPoints> points,
-    vtkIdType ids[3]);
-
-  template <typename scalarType>
-  int getPersistenceDiagramInsideDomain(
-    ttk::ftm::TreeType treeType,
-    const std::vector<std::tuple<ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 scalarType,
-                                 ttk::SimplexId>> &diagram);
-
-  template <typename VTK_TT>
-  int deleteDiagram();
-
-  template <typename VTK_TT>
-  int dispatch();
+  vtkSetMacro(ClearDGCache, bool);
+  vtkGetMacro(ClearDGCache, bool);
 
 protected:
   ttkPersistenceDiagram();
-  ~ttkPersistenceDiagram();
 
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
+
+  int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
-  TTK_SETUP();
-
 private:
-  std::string ScalarField;
-  std::string InputOffsetScalarFieldName;
-  bool ForceInputOffsetScalarField;
-  bool ComputeSaddleConnectors;
-  int ShowInsideDomain;
-  bool PeriodicBoundaryConditions;
+  template <typename scalarType, typename triangulationType>
+  int dispatch(vtkUnstructuredGrid *outputCTPersistenceDiagram,
+               vtkDataArray *const inputScalarsArray,
+               const scalarType *const inputScalars,
+               scalarType *outputScalars,
+               SimplexId *outputOffsets,
+               int *outputMonotonyOffsets,
+               const SimplexId *const inputOrder,
+               const triangulationType *triangulation);
 
-  ttk::PersistenceDiagram persistenceDiagram_;
-  ttk::Triangulation *triangulation_;
-  vtkDataArray *inputScalars_;
-  vtkUnstructuredGrid *CTPersistenceDiagram_;
-  vtkDataArray *offsets_;
-  vtkDataArray *inputOffsets_;
-  bool varyingMesh_;
-  int ScalarFieldId, OffsetFieldId;
-  void *CTDiagram_;
-  bool computeDiagram_;
+  bool ForceInputOffsetScalarField{false};
+  bool ShowInsideDomain{false};
+  // stores the values of Compute[Min|Sad][Sad|Max] GUI checkboxes
+  // when "All Dimensions" is selected
+  std::array<bool, 3> dmsDimsCache{true, true, true};
+  // clear DiscreteGradient cache after computation
+  bool ClearDGCache{false};
 };
-
-template <typename scalarType>
-int ttkPersistenceDiagram::setPersistenceDiagramInfo(
-  ttk::SimplexId id,
-  vtkSmartPointer<ttkSimplexIdTypeArray> vertexIdentifierScalars,
-  vtkSmartPointer<vtkIntArray> nodeTypeScalars,
-  vtkSmartPointer<vtkFloatArray> coordsScalars,
-  const std::vector<std::tuple<ttk::SimplexId,
-                               ttk::CriticalType,
-                               ttk::SimplexId,
-                               ttk::CriticalType,
-                               scalarType,
-                               ttk::SimplexId>> &diagram,
-  vtkSmartPointer<vtkPoints> points,
-  vtkIdType ids[3]) {
-  double p[3] = {0, 0, 0};
-  const ttk::SimplexId a = std::get<0>(diagram[id]);
-  const ttk::SimplexId na
-    = static_cast<ttk::SimplexId>(std::get<1>(diagram[id]));
-  const ttk::SimplexId b = std::get<2>(diagram[id]);
-  const ttk::SimplexId nb
-    = static_cast<ttk::SimplexId>(std::get<3>(diagram[id]));
-
-  nodeTypeScalars->InsertTuple1(2 * id, na);
-  nodeTypeScalars->InsertTuple1(2 * id + 1, nb);
-
-  vertexIdentifierScalars->InsertTuple1(2 * id, a);
-  vertexIdentifierScalars->InsertTuple1(2 * id + 1, b);
-
-  float coords[3];
-  triangulation_->getVertexPoint(a, coords[0], coords[1], coords[2]);
-  coordsScalars->InsertTuple3(2 * id, coords[0], coords[1], coords[2]);
-
-  triangulation_->getVertexPoint(b, coords[0], coords[1], coords[2]);
-  coordsScalars->InsertTuple3(2 * id + 1, coords[0], coords[1], coords[2]);
-
-  p[0] = inputScalars_->GetTuple1(a);
-  p[1] = inputScalars_->GetTuple1(a);
-  ids[0] = points->InsertNextPoint(p);
-
-  p[0] = inputScalars_->GetTuple1(a);
-  p[1] = inputScalars_->GetTuple1(b);
-  ids[1] = points->InsertNextPoint(p);
-
-  return 0;
-}
-
-template <typename scalarType>
-int ttkPersistenceDiagram::getPersistenceDiagram(
-  ttk::ftm::TreeType treeType,
-  const std::vector<std::tuple<ttk::SimplexId,
-                               ttk::CriticalType,
-                               ttk::SimplexId,
-                               ttk::CriticalType,
-                               scalarType,
-                               ttk::SimplexId>> &diagram) {
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-
-  vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram
-    = vtkSmartPointer<vtkUnstructuredGrid>::New();
-
-  vtkSmartPointer<ttkSimplexIdTypeArray> vertexIdentifierScalars
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-  vertexIdentifierScalars->SetNumberOfComponents(1);
-  vertexIdentifierScalars->SetName(ttk::VertexScalarFieldName);
-
-  vtkSmartPointer<vtkIntArray> nodeTypeScalars
-    = vtkSmartPointer<vtkIntArray>::New();
-  nodeTypeScalars->SetNumberOfComponents(1);
-  nodeTypeScalars->SetName("CriticalType");
-
-  vtkSmartPointer<ttkSimplexIdTypeArray> pairIdentifierScalars
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-  pairIdentifierScalars->SetNumberOfComponents(1);
-  pairIdentifierScalars->SetName("PairIdentifier");
-
-  vtkSmartPointer<vtkDoubleArray> persistenceScalars
-    = vtkSmartPointer<vtkDoubleArray>::New();
-  persistenceScalars->SetNumberOfComponents(1);
-  persistenceScalars->SetName("Persistence");
-
-  vtkSmartPointer<vtkIntArray> extremumIndexScalars
-    = vtkSmartPointer<vtkIntArray>::New();
-  extremumIndexScalars->SetNumberOfComponents(1);
-  extremumIndexScalars->SetName("PairType");
-
-  vtkSmartPointer<vtkFloatArray> coordsScalars
-    = vtkSmartPointer<vtkFloatArray>::New();
-  coordsScalars->SetNumberOfComponents(3);
-  coordsScalars->SetName("Coordinates");
-
-  const ttk::SimplexId minIndex = 0;
-  const ttk::SimplexId saddleSaddleIndex = 1;
-  const ttk::SimplexId maxIndex = triangulation_->getCellVertexNumber(0) - 2;
-
-  const ttk::SimplexId diagramSize = diagram.size();
-  if(diagramSize) {
-    vtkIdType ids[2];
-    vtkIdType oldIds[2];
-
-    scalarType maxPersistenceValue = std::numeric_limits<scalarType>::min();
-    oldIds[0] = 0;
-    for(ttk::SimplexId i = 0; i < diagramSize; ++i) {
-      const scalarType persistenceValue = std::get<4>(diagram[i]);
-      const ttk::SimplexId type = std::get<5>(diagram[i]);
-      maxPersistenceValue = std::max(persistenceValue, maxPersistenceValue);
-
-      setPersistenceDiagramInfo(i, vertexIdentifierScalars, nodeTypeScalars,
-                                coordsScalars, diagram, points, ids);
-
-      // add cell data
-      persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);
-      pairIdentifierScalars->InsertTuple1(i, i);
-      if(!i)
-        extremumIndexScalars->InsertTuple1(i, -1);
-      else {
-        switch(type) {
-          case 0:
-            extremumIndexScalars->InsertTuple1(i, minIndex);
-            break;
-
-          case 1:
-            extremumIndexScalars->InsertTuple1(i, saddleSaddleIndex);
-            break;
-
-          case 2:
-            extremumIndexScalars->InsertTuple1(i, maxIndex);
-            break;
-        }
-      }
-      persistenceScalars->InsertTuple1(i, persistenceValue);
-    }
-    oldIds[1] = ids[0];
-
-    // add diag
-    persistenceDiagram->InsertNextCell(VTK_LINE, 2, oldIds);
-    pairIdentifierScalars->InsertTuple1(diagramSize, -1);
-    extremumIndexScalars->InsertTuple1(diagramSize, -1);
-    persistenceScalars->InsertTuple1(diagramSize, 2 * maxPersistenceValue);
-  }
-
-  persistenceDiagram->SetPoints(points);
-  persistenceDiagram->GetPointData()->AddArray(vertexIdentifierScalars);
-  persistenceDiagram->GetPointData()->AddArray(nodeTypeScalars);
-  persistenceDiagram->GetPointData()->AddArray(coordsScalars);
-  persistenceDiagram->GetCellData()->AddArray(pairIdentifierScalars);
-  persistenceDiagram->GetCellData()->AddArray(extremumIndexScalars);
-  persistenceDiagram->GetCellData()->AddArray(persistenceScalars);
-
-  CTPersistenceDiagram_->ShallowCopy(persistenceDiagram);
-
-  return 0;
-}
-
-template <typename scalarType>
-int ttkPersistenceDiagram::setPersistenceDiagramInfoInsideDomain(
-  ttk::SimplexId id,
-  vtkSmartPointer<ttkSimplexIdTypeArray> vertexIdentifierScalars,
-  vtkSmartPointer<vtkIntArray> nodeTypeScalars,
-  vtkDataArray *birthScalars,
-  vtkDataArray *deathScalars,
-  const std::vector<std::tuple<ttk::SimplexId,
-                               ttk::CriticalType,
-                               ttk::SimplexId,
-                               ttk::CriticalType,
-                               scalarType,
-                               ttk::SimplexId>> &diagram,
-  vtkSmartPointer<vtkPoints> points,
-  vtkIdType ids[3]) {
-  float p[3];
-  const ttk::SimplexId a = std::get<0>(diagram[id]);
-  const ttk::SimplexId na
-    = static_cast<ttk::SimplexId>(std::get<1>(diagram[id]));
-  const ttk::SimplexId b = std::get<2>(diagram[id]);
-  const ttk::SimplexId nb
-    = static_cast<ttk::SimplexId>(std::get<3>(diagram[id]));
-  const double sa = inputScalars_->GetTuple1(a);
-  const double sb = inputScalars_->GetTuple1(b);
-
-  nodeTypeScalars->InsertTuple1(2 * id, na);
-  nodeTypeScalars->InsertTuple1(2 * id + 1, nb);
-  vertexIdentifierScalars->InsertTuple1(2 * id, a);
-  vertexIdentifierScalars->InsertTuple1(2 * id + 1, b);
-  birthScalars->InsertTuple1(2 * id, sa);
-  birthScalars->InsertTuple1(2 * id + 1, sa);
-  deathScalars->InsertTuple1(2 * id, sa);
-  deathScalars->InsertTuple1(2 * id + 1, sb);
-
-  triangulation_->getVertexPoint(a, p[0], p[1], p[2]);
-  ids[0] = points->InsertNextPoint(p);
-
-  triangulation_->getVertexPoint(b, p[0], p[1], p[2]);
-  ids[1] = points->InsertNextPoint(p);
-
-  return 0;
-}
-
-template <typename scalarType>
-int ttkPersistenceDiagram::getPersistenceDiagramInsideDomain(
-  ttk::ftm::TreeType treeType,
-  const std::vector<std::tuple<ttk::SimplexId,
-                               ttk::CriticalType,
-                               ttk::SimplexId,
-                               ttk::CriticalType,
-                               scalarType,
-                               ttk::SimplexId>> &diagram) {
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-
-  vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram
-    = vtkSmartPointer<vtkUnstructuredGrid>::New();
-
-  vtkSmartPointer<ttkSimplexIdTypeArray> vertexIdentifierScalars
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-  vertexIdentifierScalars->SetNumberOfComponents(1);
-  vertexIdentifierScalars->SetName(ttk::VertexScalarFieldName);
-
-  vtkSmartPointer<vtkIntArray> nodeTypeScalars
-    = vtkSmartPointer<vtkIntArray>::New();
-  nodeTypeScalars->SetNumberOfComponents(1);
-  nodeTypeScalars->SetName("CriticalType");
-
-  vtkSmartPointer<ttkSimplexIdTypeArray> pairIdentifierScalars
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-  pairIdentifierScalars->SetNumberOfComponents(1);
-  pairIdentifierScalars->SetName("PairIdentifier");
-
-  vtkSmartPointer<vtkDoubleArray> persistenceScalars
-    = vtkSmartPointer<vtkDoubleArray>::New();
-  persistenceScalars->SetNumberOfComponents(1);
-  persistenceScalars->SetName("Persistence");
-
-  vtkSmartPointer<vtkIntArray> extremumIndexScalars
-    = vtkSmartPointer<vtkIntArray>::New();
-  extremumIndexScalars->SetNumberOfComponents(1);
-  extremumIndexScalars->SetName("PairType");
-
-  vtkDataArray *birthScalars = inputScalars_->NewInstance();
-  birthScalars->SetNumberOfComponents(1);
-  birthScalars->SetName("Birth");
-
-  vtkDataArray *deathScalars = inputScalars_->NewInstance();
-  deathScalars->SetNumberOfComponents(1);
-  deathScalars->SetName("Death");
-
-  const ttk::SimplexId minIndex = 0;
-  const ttk::SimplexId saddleSaddleIndex = 1;
-  const ttk::SimplexId maxIndex = triangulation_->getCellVertexNumber(0) - 2;
-
-  const ttk::SimplexId diagramSize = diagram.size();
-  if(diagramSize) {
-    vtkIdType ids[2];
-
-    scalarType maxPersistenceValue = std::numeric_limits<scalarType>::min();
-    for(ttk::SimplexId i = 0; i < diagramSize; ++i) {
-      const scalarType persistenceValue = std::get<4>(diagram[i]);
-      const ttk::SimplexId type = std::get<5>(diagram[i]);
-      maxPersistenceValue = std::max(persistenceValue, maxPersistenceValue);
-
-      setPersistenceDiagramInfoInsideDomain(i, vertexIdentifierScalars,
-                                            nodeTypeScalars, birthScalars,
-                                            deathScalars, diagram, points, ids);
-
-      // add cell data
-      persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);
-      pairIdentifierScalars->InsertTuple1(i, i);
-      if(!i)
-        extremumIndexScalars->InsertTuple1(i, -1);
-      else {
-        switch(type) {
-          case 0:
-            extremumIndexScalars->InsertTuple1(i, minIndex);
-            break;
-
-          case 1:
-            extremumIndexScalars->InsertTuple1(i, saddleSaddleIndex);
-            break;
-
-          case 2:
-            extremumIndexScalars->InsertTuple1(i, maxIndex);
-            break;
-        }
-      }
-      persistenceScalars->InsertTuple1(i, persistenceValue);
-    }
-  }
-
-  persistenceDiagram->SetPoints(points);
-  persistenceDiagram->GetPointData()->AddArray(vertexIdentifierScalars);
-  persistenceDiagram->GetPointData()->AddArray(nodeTypeScalars);
-  persistenceDiagram->GetPointData()->AddArray(birthScalars);
-  persistenceDiagram->GetPointData()->AddArray(deathScalars);
-  persistenceDiagram->GetCellData()->AddArray(pairIdentifierScalars);
-  persistenceDiagram->GetCellData()->AddArray(extremumIndexScalars);
-  persistenceDiagram->GetCellData()->AddArray(persistenceScalars);
-
-  CTPersistenceDiagram_->ShallowCopy(persistenceDiagram);
-  return 0;
-}
-
-#endif // _TTK_PERSISTENCEDIAGRAM_H

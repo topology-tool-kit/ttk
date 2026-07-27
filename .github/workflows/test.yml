@@ -1,0 +1,34 @@
+name: test_build
+
+on:
+  push:
+    # triggered on commit pushes on the "dev" branch
+    branches:
+      - 'dev'
+    # triggered on tag pushes with tags beginning with either "v" or "dev"
+    tags:
+      - 'v*'
+      - 'dev*'
+      - 'ci*'
+      - 'build*'
+      - 'test*'
+  pull_request:
+    # also triggered by pull requests on the "dev" branch
+    branches:
+      - 'dev'
+  # manual trigger
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  call-test-ubuntu:
+    uses: ./.github/workflows/test-ubuntu.yml
+  call-test-macos:
+    uses: ./.github/workflows/test-macos.yml
+  call-test-windows:
+    uses: ./.github/workflows/test-windows.yml
+  call-check-code:
+    uses: ./.github/workflows/check.yml

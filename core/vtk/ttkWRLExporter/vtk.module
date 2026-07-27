@@ -1,0 +1,9 @@
+NAME
+ ttkWRLExporter
+DEPENDS
+  VTK::FiltersCore
+  VTK::RenderingCore
+  VTK::IOExport
+PRIVATE_DEPENDS
+  VTK::CommonCore
+  VTK::FiltersGeometry

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkPeriodicGhostsGeneration" class="ttkPeriodicGhostsGeneration" label="TTK PeriodicGhostsGeneration">
+      <Documentation long_help="PeriodicGhostsGeneration Long" short_help="PeriodicGhostsGeneration Short">
+      This filter creates additional ghosts for periodic grids when used in a distributed setting.
+      </Documentation>
+
+      <!-- INPUT DATA OBJECTS -->
+      <InputProperty name="Input" port_index="0" command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet" />
+        </DataTypeDomain>
+        <InputArrayDomain name="input_array" attribute_type="point" number_of_components="1" optional="0"/>
+        <Documentation> A vtkImageData with at least one scalar field </Documentation>
+      </InputProperty>  
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - Domain" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

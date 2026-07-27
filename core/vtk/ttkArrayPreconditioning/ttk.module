@@ -1,0 +1,9 @@
+NAME
+  ttkArrayPreconditioning
+SOURCES
+  ttkArrayPreconditioning.cpp
+HEADERS
+  ttkArrayPreconditioning.h
+DEPENDS
+  arrayPreconditioning
+  ttkAlgorithm

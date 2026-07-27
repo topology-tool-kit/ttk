@@ -1,0 +1,204 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+        name="ttkHarmonicField"
+        class="ttkHarmonicField"
+        label="TTK HarmonicField">
+      <Documentation
+          long_help="TTK plugin for harmonic field computations."
+          short_help="TTK plugin for harmonic field computations.">
+        This plugin takes a list of sources (a set of points with
+        their global identifiers attached to them) with a scalar
+        constraint on each of them and computes an harmonic field by
+        solving a laplacian equation.
+        Related publication
+        "Dynamic harmonic fields for surface processing"
+        Kai Xu, Hao Zhang, Daniel Cohen-Or, Yueshan Xiong
+        Computers and Graphics 2009.
+
+        Online Examples:
+
+        - https://topology-tool-kit.github.io/examples/harmonicSkeleton/
+      </Documentation>
+
+      <InputProperty
+          name="Domain"
+          port_index="0"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+          name="Constraints"
+          port_index="1"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPointSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1" >
+          <Property name="Constraints" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Harmonic field constraints.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+          name="Scalar Field"
+          command="SetInputArrayToProcess"
+          element_types="0 0 0 0 2"
+          number_of_elements="5"
+          default_values="0"
+          animateable="0"
+          >
+        <ArrayListDomain
+            name="array_list"
+            input_domain_name="input_scalars"
+            default_values="0"
+            >
+          <RequiredProperties>
+            <Property name="Constraints" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the constraint value scalar field.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+          name="ForceConstraintIdentifiers"
+          label="Force Constraint Identifiers"
+          command="SetForceConstraintIdentifiers"
+          number_of_elements="1"
+          default_values="0"
+          panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Use a non-default identifiers field for the constraint.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+          name="Constraint Vertices Identifiers"
+          command="SetInputArrayToProcess"
+          number_of_elements="5"
+          element_types="0 0 0 0 2"
+          default_values="1"
+          animateable="0"
+          panel_visibility="advanced"
+          >
+        <ArrayListDomain
+            name="array_list"
+            input_domain_name="input_scalars"
+            default_values="0"
+            >
+          <RequiredProperties>
+            <Property name="Constraints" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator
+              type="GenericDecorator"
+              mode="visibility"
+              property="ForceConstraintIdentifiers"
+              value="1" />
+        </Hints>
+        <Documentation>
+          Select the vertex identifier scalar field in the sources.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+          name="UseCotanWeights"
+          label="Use Cotangent Weights"
+          command="SetUseCotanWeights"
+          number_of_elements="1"
+          default_values="1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Use the more precise cotangent weights matrix instead of the
+          laplacian graph.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="SolvingMethod"
+          label="Solver"
+          command="SetSolvingMethod"
+          number_of_elements="1"
+          default_values="0">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Auto"/>
+          <Entry value="1" text="Cholesky"/>
+          <Entry value="2" text="Iterative"/>
+        </EnumerationDomain>
+        <Documentation>
+          This property allows the user to select a solving
+          method. Cholesky simply decomposes the laplacian matrix, and
+          Iterative uses the Conjugate Gradients Iterative method to
+          solve the laplacian equation. Auto triggers a heuristic
+          which will try to select the best option between the two former.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+          name="LogAlpha"
+          label="Penalty"
+          command="SetLogAlpha"
+          number_of_elements="1"
+          default_values="5"
+          >
+        <Documentation>
+          This property allows the user to select a penalty value for
+          solving the harmonic equation. A lower penalty should lead
+          to a better harmonic solution at the expense of computation
+          time.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <StringVectorProperty
+        name="OutputScalarFieldName"
+        command="SetOutputScalarFieldName"
+        label="Output Field Name"
+        number_of_elements="1"
+        default_values="OutputHarmonicField"
+        panel_visibility="advanced">
+        <Documentation>
+          Select the name of the output scalar field.
+        </Documentation>
+      </StringVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="UseCotanWeights" />
+        <Property name="SolvingMethod" />
+        <Property name="Scalar Field" />
+        <Property name="ForceConstraintIdentifiers" />
+        <Property name="Constraint Vertices Identifiers" />
+        <Property name="LogAlpha" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="OutputScalarFieldName"/>
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

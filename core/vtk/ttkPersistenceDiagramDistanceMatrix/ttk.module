@@ -1,0 +1,10 @@
+NAME
+  ttkPersistenceDiagramDistanceMatrix
+SOURCES
+  ttkPersistenceDiagramDistanceMatrix.cpp
+HEADERS
+  ttkPersistenceDiagramDistanceMatrix.h
+DEPENDS
+  persistenceDiagramDistanceMatrix
+  ttkAlgorithm
+  ttkPersistenceDiagram

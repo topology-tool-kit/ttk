@@ -1,317 +1,184 @@
+#include <vtkCellData.h>
+#include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
+#include <vtkIdTypeArray.h>
+#include <vtkInformation.h>
+#include <vtkNew.h>
+#include <vtkPointData.h>
+#include <vtkSmartPointer.h>
+
 #include <ttkPersistenceDiagram.h>
+#include <ttkPersistenceDiagramUtils.h>
+#include <ttkUtils.h>
 
-using namespace std;
-using namespace ttk;
-using namespace dcg;
+vtkStandardNewMacro(ttkPersistenceDiagram);
 
-vtkStandardNewMacro(ttkPersistenceDiagram)
-
-  ttkPersistenceDiagram::ttkPersistenceDiagram()
-  : UseAllCores{}, inputScalars_{},
-    CTPersistenceDiagram_{vtkUnstructuredGrid::New()}, offsets_{},
-    inputOffsets_{}, varyingMesh_{} {
+ttkPersistenceDiagram::ttkPersistenceDiagram() {
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(1);
-
-  ScalarFieldId = 0;
-  OffsetFieldId = -1;
-  ComputeSaddleConnectors = false;
-  InputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
-  ForceInputOffsetScalarField = false;
-  ComputeSaddleConnectors = false;
-  UseAllCores = true;
-  ShowInsideDomain = false;
-  computeDiagram_ = true;
-  PeriodicBoundaryConditions = false;
-
-  triangulation_ = nullptr;
-  CTDiagram_ = nullptr;
 }
 
-ttkPersistenceDiagram::~ttkPersistenceDiagram() {
-  if(CTPersistenceDiagram_)
-    CTPersistenceDiagram_->Delete();
-  if(offsets_)
-    offsets_->Delete();
-
-  if(CTDiagram_ and inputScalars_) {
-    switch(inputScalars_->GetDataType()) {
-      vtkTemplateMacro(deleteDiagram<VTK_TT>());
-    }
+int ttkPersistenceDiagram::FillInputPortInformation(int port,
+                                                    vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
   }
+  return 0;
 }
 
 int ttkPersistenceDiagram::FillOutputPortInformation(int port,
                                                      vtkInformation *info) {
-  switch(port) {
-    case 0:
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-      break;
+  if(port == 0) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
+  }
+  return 0;
+}
+
+template <typename scalarType, typename triangulationType>
+int ttkPersistenceDiagram::dispatch(
+  vtkUnstructuredGrid *outputCTPersistenceDiagram,
+  vtkDataArray *const inputScalarsArray,
+  const scalarType *const inputScalars,
+  scalarType *outputScalars,
+  SimplexId *outputOffsets,
+  int *outputMonotonyOffsets,
+  const SimplexId *const inputOrder,
+  const triangulationType *triangulation) {
+
+  int status{};
+  ttk::DiagramType CTDiagram{};
+
+  if(BackEnd == BACKEND::APPROXIMATE_TOPOLOGY) {
+    std::cout << "Chosen approx" << std::endl;
+    double *range = inputScalarsArray->GetRange(0);
+    this->setDeltaApproximate(range[1] - range[0]);
+    this->setOutputScalars(outputScalars);
+    this->setOutputOffsets(outputOffsets);
+    this->setOutputMonotonyOffsets(outputMonotonyOffsets);
+  }
+
+  status = this->execute(CTDiagram, inputScalars, inputScalarsArray->GetMTime(),
+                         inputOrder, triangulation);
+
+  // something wrong in baseCode
+  if(status != 0) {
+    this->printErr("PersistenceDiagram::execute() error code: "
+                   + std::to_string(status));
+    return 0;
+  }
+#ifdef TTK_ENABLE_MPI
+  if(!ttk::isRunningWithMPI())
+#endif
+    if(CTDiagram.empty()) {
+      this->printErr("Empty diagram!");
+      return 0;
+    }
+
+  vtkNew<vtkUnstructuredGrid> const vtu{};
+
+  // convert CTDiagram to vtkUnstructuredGrid
+#if defined(TTK_ENABLE_MPI) && defined(TTK_ENABLE_OPENMP)
+  if(!ttk::isRunningWithMPI()) {
+    DiagramToVTU(vtu, CTDiagram, inputScalarsArray, *this,
+                 triangulation->getDimensionality(), this->ShowInsideDomain);
+  } else {
+    DiagramToDistributedVTU(vtu, CTDiagram, inputScalarsArray, *this,
+                            triangulation->getDimensionality(),
+                            this->ShowInsideDomain);
+  }
+#else
+  DiagramToVTU(vtu, CTDiagram, inputScalarsArray, *this,
+               triangulation->getDimensionality(), this->ShowInsideDomain);
+#endif
+  outputCTPersistenceDiagram->ShallowCopy(vtu);
+
+  if(this->ClearDGCache
+     && (this->BackEnd == BACKEND::DISCRETE_MORSE_SANDWICH
+         || this->BackEnd == BACKEND::DISCRETE_MORSE_SANDWICH_MPI)) {
+    this->printMsg("Clearing DiscreteGradient cache...");
+    ttk::dcg::DiscreteGradient::clearCache(*triangulation);
   }
 
   return 1;
 }
 
-int ttkPersistenceDiagram::getScalars(vtkDataSet *input) {
-  vtkPointData *pointData = input->GetPointData();
+int ttkPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
+                                       vtkInformationVector **inputVector,
+                                       vtkInformationVector *outputVector) {
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!pointData) {
-    cerr << "[ttkPersistenceDiagram] Error : input has no point data." << endl;
-    return -1;
-  }
-#endif
-
-  if(ScalarField.length()) {
-    inputScalars_ = pointData->GetArray(ScalarField.data());
-  } else {
-    inputScalars_ = pointData->GetArray(ScalarFieldId);
-    if(inputScalars_)
-      ScalarField = inputScalars_->GetName();
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputScalars_) {
-    cerr
-      << "[ttkPersistenceDiagram] Error : input scalar field pointer is null."
-      << endl;
-    return -3;
-  }
-#endif
-
-  if(this->GetMTime() < inputScalars_->GetMTime())
-    computeDiagram_ = true;
-
-  stringstream msg;
-  msg << "[ttkPersistenceDiagram] Starting computation on field `"
-      << inputScalars_->GetName() << "'..." << endl;
-  dMsg(cout, msg.str(), infoMsg);
-
-  return 0;
-}
-
-int ttkPersistenceDiagram::getTriangulation(vtkDataSet *input) {
-  varyingMesh_ = false;
-
-  triangulation_ = ttkTriangulation::getTriangulation(input);
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!triangulation_) {
-    cerr << "[ttkPersistenceDiagram] Error: input triangulation is NULL."
-         << endl;
-    return -1;
-  }
-#endif
-
-  triangulation_->setPeriodicBoundaryConditions(PeriodicBoundaryConditions);
-  triangulation_->setWrapper(this);
-  persistenceDiagram_.setupTriangulation(triangulation_);
-
-  if(triangulation_->isEmpty()
-     or ttkTriangulation::hasChangedConnectivity(triangulation_, input, this)) {
-    Modified();
-    varyingMesh_ = true;
-    computeDiagram_ = true;
-  }
-
-  if(this->GetMTime() < input->GetMTime())
-    computeDiagram_ = true;
-
-  return 0;
-}
-
-int ttkPersistenceDiagram::getOffsets(vtkDataSet *input) {
-  if(OffsetFieldId != -1) {
-    inputOffsets_ = input->GetPointData()->GetArray(OffsetFieldId);
-    if(inputOffsets_) {
-      InputOffsetScalarFieldName = inputOffsets_->GetName();
-      ForceInputOffsetScalarField = true;
-    }
-  }
-
-  if(ForceInputOffsetScalarField and InputOffsetScalarFieldName.length()) {
-    inputOffsets_
-      = input->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
-  } else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)) {
-    inputOffsets_ = input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
-  } else {
-    if(varyingMesh_ and offsets_) {
-      offsets_->Delete();
-      offsets_ = nullptr;
-    }
-
-    if(!offsets_) {
-      const SimplexId numberOfVertices = input->GetNumberOfPoints();
-
-      offsets_ = ttkSimplexIdTypeArray::New();
-      offsets_->SetNumberOfComponents(1);
-      offsets_->SetNumberOfTuples(numberOfVertices);
-      offsets_->SetName(ttk::OffsetScalarFieldName);
-      for(SimplexId i = 0; i < numberOfVertices; ++i)
-        offsets_->SetTuple1(i, i);
-      offsets_->Modified();
-    }
-
-    inputOffsets_ = offsets_;
-  }
-
-  if(this->GetMTime() < inputOffsets_->GetMTime())
-    computeDiagram_ = true;
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputOffsets_) {
-    cerr << "[ttkPersistenceDiagram] Error : wrong input offset scalar field."
-         << endl;
-    return -1;
-  }
-#endif
-
-  return 0;
-}
-
-template <typename VTK_TT>
-int ttkPersistenceDiagram::deleteDiagram() {
-  using tuple_t = tuple<SimplexId, CriticalType, SimplexId, CriticalType,
-                        VTK_TT, SimplexId>;
-  vector<tuple_t> *CTDiagram = (vector<tuple_t> *)CTDiagram_;
-  delete CTDiagram;
-  return 0;
-}
-
-template <typename VTK_TT>
-int ttkPersistenceDiagram::dispatch() {
-  int ret = 0;
-  using tuple_t = tuple<SimplexId, CriticalType, SimplexId, CriticalType,
-                        VTK_TT, SimplexId>;
-
-  if(CTDiagram_ && computeDiagram_) {
-    vector<tuple_t> *tmpDiagram = (vector<tuple_t> *)CTDiagram_;
-    delete tmpDiagram;
-    CTDiagram_ = new vector<tuple_t>();
-  } else if(!CTDiagram_) {
-    CTDiagram_ = new vector<tuple_t>();
-    computeDiagram_ = true;
-  }
-
-  vector<tuple_t> *CTDiagram = (vector<tuple_t> *)CTDiagram_;
-
-  if(computeDiagram_) {
-    persistenceDiagram_.setOutputCTDiagram(CTDiagram);
-    if(inputOffsets_->GetDataType() == VTK_INT)
-      ret = persistenceDiagram_.execute<VTK_TT, int>();
-    if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-      ret = persistenceDiagram_.execute<VTK_TT, vtkIdType>();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(ret) {
-      cerr << "[ttkPersistenceDiagram] PersistenceDiagram.execute() "
-           << "error code : " << ret << endl;
-      return -4;
-    }
-#endif
-  }
-
-  if(ShowInsideDomain)
-    ret = getPersistenceDiagramInsideDomain<VTK_TT>(
-      ftm::TreeType::Contour, *CTDiagram);
-  else
-    ret = getPersistenceDiagram<VTK_TT>(ftm::TreeType::Contour, *CTDiagram);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    cerr << "[ttkPersistenceDiagram] Error : "
-         << "build of contour tree persistence diagram has failed." << endl;
-    return -5;
-  }
-#endif
-
-  return ret;
-}
-
-int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
-                                vector<vtkDataSet *> &outputs) {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputs.size()) {
-    cerr << "[ttkPersistenceDiagram] Error: not enough input information."
-         << endl;
-    return -1;
-  }
-#endif
-
-  vtkDataSet *input = inputs[0];
+  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   vtkUnstructuredGrid *outputCTPersistenceDiagram
-    = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
+    = vtkUnstructuredGrid::GetData(outputVector, 0);
 
+  ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!input) {
-    cerr << "[ttkPersistenceDiagram] Error: input is NULL." << endl;
-    return -1;
-  }
-
-  if(!input->GetNumberOfPoints()) {
-    cerr << "[ttkPersistenceDiagram] Error: input has no point." << endl;
-    return -1;
-  }
-
-  if(!outputCTPersistenceDiagram) {
-    cerr << "[ttkPersistenceDiagram] Error: output is NULL." << endl;
-    return -1;
+  if(!triangulation) {
+    this->printErr("Wrong triangulation");
+    return 0;
   }
 #endif
 
-  Memory m;
+  this->preconditionTriangulation(triangulation);
 
-  int ret{};
-
-  ret = getScalars(input);
+  vtkDataArray *inputScalars = this->GetInputArrayToProcess(0, inputVector);
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    cerr << "[ttkPersistenceDiagram] Error : wrong scalars." << endl;
-    return -1;
+  if(!inputScalars) {
+    this->printErr("Wrong input scalars");
+    return 0;
   }
 #endif
 
-  ret = getTriangulation(input);
+  vtkDataArray *offsetField = this->GetOrderArray(
+    input, 0, triangulation, true, 1, ForceInputOffsetScalarField);
+
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    cerr << "[ttkPersistenceDiagram] Error : wrong triangulation." << endl;
-    return -2;
+  if(!offsetField) {
+    this->printErr("Wrong input offsets");
+    return 0;
+  }
+  if(offsetField->GetDataType() != VTK_INT
+     and offsetField->GetDataType() != VTK_ID_TYPE) {
+    this->printErr("Input offset field type not supported");
+    return 0;
   }
 #endif
 
-  ret = getOffsets(input);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    cerr << "[ttkPersistenceDiagram] Error : wrong offsets." << endl;
-    return -3;
-  }
-  if(inputOffsets_->GetDataType() != VTK_INT
-     and inputOffsets_->GetDataType() != VTK_ID_TYPE) {
-    cerr << "[ttkPersistenceDiagram] Error : input offset field type not "
-            "supported."
-         << endl;
-    return -1;
-  }
-#endif
+  vtkNew<ttkSimplexIdTypeArray> outputOffsets{};
+  outputOffsets->SetNumberOfComponents(1);
+  outputOffsets->SetNumberOfTuples(inputScalars->GetNumberOfTuples());
+  outputOffsets->SetName("outputOffsets");
 
-  vector<tuple<Cell, Cell>> dmt_pairs;
-  persistenceDiagram_.setWrapper(this);
-  persistenceDiagram_.setDMTPairs(&dmt_pairs);
-  persistenceDiagram_.setInputScalars(inputScalars_->GetVoidPointer(0));
-  persistenceDiagram_.setInputOffsets(inputOffsets_->GetVoidPointer(0));
-  persistenceDiagram_.setComputeSaddleConnectors(ComputeSaddleConnectors);
-  switch(inputScalars_->GetDataType()) {
-    vtkTemplateMacro(ret = dispatch<VTK_TT>());
-  }
+  vtkNew<vtkIntArray> outputMonotonyOffsets{};
+  outputMonotonyOffsets->SetNumberOfComponents(1);
+  outputMonotonyOffsets->SetNumberOfTuples(inputScalars->GetNumberOfTuples());
+  outputMonotonyOffsets->SetName("outputMonotonyffsets");
+  outputMonotonyOffsets->FillComponent(0, 0);
 
-  outputCTPersistenceDiagram->ShallowCopy(CTPersistenceDiagram_);
-  computeDiagram_ = false;
+  vtkSmartPointer<vtkDataArray> const outputScalars
+    = vtkSmartPointer<vtkDataArray>::Take(inputScalars->NewInstance());
+  outputScalars->SetNumberOfComponents(1);
+  outputScalars->SetNumberOfTuples(inputScalars->GetNumberOfTuples());
+  outputScalars->DeepCopy(inputScalars);
+  outputScalars->SetName("Cropped");
 
-  {
-    stringstream msg;
-    msg << "[ttkPersistenceDiagram] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
+  int status{};
+  ttkVtkTemplateMacro(
+    inputScalars->GetDataType(), triangulation->getType(),
+    status = this->dispatch(
+      outputCTPersistenceDiagram, inputScalars,
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
+      static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
+      static_cast<int *>(ttkUtils::GetVoidPointer(outputMonotonyOffsets)),
+      static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsetField)),
+      static_cast<TTK_TT *>(triangulation->getData())));
 
-  return ret;
+  // shallow copy input Field Data
+  outputCTPersistenceDiagram->GetFieldData()->ShallowCopy(
+    input->GetFieldData());
+
+  return status;
 }

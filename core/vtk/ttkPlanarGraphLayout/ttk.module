@@ -1,0 +1,12 @@
+NAME
+  ttkPlanarGraphLayout
+SOURCES
+  ttkPlanarGraphLayout.cpp
+HEADERS
+  ttkPlanarGraphLayout.h
+  ttkMergeTreeVisualization.h
+DEPENDS
+  planarGraphLayout
+  ttkAlgorithm
+  ttkMergeTree
+  ftmTreePP

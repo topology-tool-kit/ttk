@@ -1,191 +1,274 @@
+#include <Shuffle.h>
 #include <ttkIdentifierRandomizer.h>
 
-using namespace std;
-using namespace ttk;
+#include <vtkCellData.h>
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
+#include <vtkInformation.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 
-vtkStandardNewMacro(ttkIdentifierRandomizer)
+#include <ttkMacros.h>
+#include <ttkUtils.h>
 
-  int ttkIdentifierRandomizer::doIt(vector<vtkDataSet *> &inputs,
-                                    vector<vtkDataSet *> &outputs) {
+#include <map>
+#include <numeric>
+#include <random>
 
-  Memory m;
+vtkStandardNewMacro(ttkIdentifierRandomizer);
 
-  bool isPointData = true;
+ttkIdentifierRandomizer::ttkIdentifierRandomizer() {
 
-  vtkDataSet *input = inputs[0];
-  vtkDataSet *output = outputs[0];
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
 
-  // use a pointer-base copy for the input data -- to adapt if your wrapper does
-  // not produce an output of the type of the input.
-  output->ShallowCopy(input);
+  this->setDebugMsgPrefix("IdentifierRandomizer");
+}
 
-  // in the following, the target scalar field of the input is replaced in the
-  // variable 'output' with the result of the computation.
-  // if your wrapper produces an output of the same type of the input, you
-  // should proceed in the same way.
-  vtkDataArray *inputScalarField = NULL;
+int ttkIdentifierRandomizer::FillInputPortInformation(int port,
+                                                      vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataObject");
+    return 1;
+  }
+  return 0;
+}
 
-  if(ScalarField.length()) {
-    inputScalarField = input->GetPointData()->GetArray(ScalarField.data());
+int ttkIdentifierRandomizer::FillOutputPortInformation(int port,
+                                                       vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
+  return 0;
+}
+
+template <typename T>
+int shuffleScalarFieldValues(const T *const inputField,
+                             T *const outputField,
+                             const int nValues,
+                             const int seed,
+                             const bool compactRange,
+                             const int nThreads = 1) {
+
+  // copy input field into vector
+  std::vector<T> inputValues(inputField, inputField + nValues);
+
+  // reduce the copy
+  TTK_PSORT(nThreads, inputValues.begin(), inputValues.end());
+  const auto last = std::unique(inputValues.begin(), inputValues.end());
+  inputValues.erase(last, inputValues.end());
+
+  // copy the range of values
+  std::vector<T> shuffledValues(inputValues.size());
+  if(compactRange) {
+    std::iota(shuffledValues.begin(), shuffledValues.end(), T{});
   } else {
-    inputScalarField = input->GetPointData()->GetArray(0);
+    std::copy(inputValues.begin(), inputValues.end(), shuffledValues.begin());
   }
 
-  if(!inputScalarField) {
-    // it may be a cell data field
-    if(ScalarField.length()) {
-      inputScalarField = input->GetCellData()->GetArray(ScalarField.data());
-    } else {
-      inputScalarField = input->GetCellData()->GetArray(0);
+  // shuffle them using the seed
+  std::mt19937 random_engine{};
+  random_engine.seed(seed);
+  // use the Fisher-Yates algorithm instead of std::shuffle, whose
+  // results are platform-dependent
+  ttk::shuffle(shuffledValues, random_engine);
+
+  // link original value to shuffled value correspondence
+  std::map<T, T> originalToShuffledValues{};
+  for(size_t i = 0; i < inputValues.size(); ++i) {
+    originalToShuffledValues[inputValues[i]] = shuffledValues[i];
+  }
+
+// write shuffled values inside the output scalar field
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(nThreads)
+#endif // TTK_ENABLE_OPENMP
+  for(int i = 0; i < nValues; ++i) {
+    outputField[i] = originalToShuffledValues[inputField[i]];
+  }
+
+  TTK_FORCE_USE(nThreads);
+  return 1;
+}
+
+template <typename T>
+int ttkIdentifierRandomizer::shuffleScalarFieldValuesMultiBlock(
+  vtkMultiBlockDataSet *input,
+  vtkMultiBlockDataSet *output,
+  const int nThreads) {
+
+  int n_blocks = input->GetNumberOfBlocks();
+  std::vector<T> inputValues;
+  for(int i = 0; i < n_blocks; i++) {
+    vtkDataSet *block = vtkDataSet::SafeDownCast(input->GetBlock(i));
+    vtkDataArray *inputScalarField = this->GetInputArrayToProcess(0, block);
+    int nValues = inputScalarField->GetNumberOfTuples();
+    const T *const inputScalarFieldPtr
+      = static_cast<T *>(ttkUtils::GetVoidPointer(inputScalarField));
+    inputValues.insert(
+      inputValues.end(), inputScalarFieldPtr, inputScalarFieldPtr + nValues);
+  }
+
+  TTK_PSORT(nThreads, inputValues.begin(), inputValues.end());
+  const auto last = std::unique(inputValues.begin(), inputValues.end());
+  inputValues.erase(last, inputValues.end());
+  std::vector<T> shuffledValues(inputValues.size());
+  if(CompactRange) {
+    std::iota(shuffledValues.begin(), shuffledValues.end(), T{});
+  } else {
+    std::copy(inputValues.begin(), inputValues.end(), shuffledValues.begin());
+  }
+  // shuffle them using the seed
+  std::mt19937 random_engine{};
+  random_engine.seed(RandomSeed);
+  // use the Fisher-Yates algorithm instead of std::shuffle, whose
+  // results are platform-dependent
+  ttk::shuffle(shuffledValues, random_engine);
+
+  // link original value to shuffled value correspondence
+  std::map<T, T> originalToShuffledValues{};
+  for(size_t i = 0; i < inputValues.size(); ++i) {
+    originalToShuffledValues[inputValues[i]] = shuffledValues[i];
+  }
+
+// write shuffled values inside the output scalar field
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(nThreads)
+#endif // TTK_ENABLE_OPENMP
+  for(int i = 0; i < n_blocks; ++i) {
+    vtkDataSet *block = vtkDataSet::SafeDownCast(input->GetBlock(i));
+    vtkDataArray *inputScalarField = this->GetInputArrayToProcess(0, block);
+    int nValues = inputScalarField->GetNumberOfTuples();
+
+    vtkSmartPointer<vtkDataArray> const outputArray
+      = vtkSmartPointer<vtkDataArray>::Take(inputScalarField->NewInstance());
+    outputArray->SetName(inputScalarField->GetName());
+    outputArray->SetNumberOfComponents(1);
+    outputArray->SetNumberOfTuples(inputScalarField->GetNumberOfTuples());
+    T *const inputArrayPtr
+      = static_cast<T *>(ttkUtils::GetVoidPointer(inputScalarField));
+    T *const outputArrayPtr
+      = static_cast<T *>(ttkUtils::GetVoidPointer(outputArray));
+    for(int j = 0; j < nValues; ++j) {
+      T newValue = originalToShuffledValues[inputArrayPtr[j]];
+      outputArrayPtr[j] = newValue;
     }
-    if(inputScalarField)
-      isPointData = false;
+
+    vtkDataSet *outputBlock = vtkDataSet::SafeDownCast(output->GetBlock(i));
+    if(block->GetPointData()->GetArray(inputScalarField->GetName())) {
+      outputBlock->GetPointData()->AddArray(outputArray);
+    } else {
+      outputBlock->GetCellData()->AddArray(outputArray);
+    }
   }
+  TTK_FORCE_USE(nThreads);
+  return 1;
+}
 
-  if(!inputScalarField)
-    return -2;
+int ttkIdentifierRandomizer::RequestData(vtkInformation *ttkNotUsed(request),
+                                         vtkInformationVector **inputVector,
+                                         vtkInformationVector *outputVector) {
 
-  {
-    stringstream msg;
-    msg << "[ttkIdentifierRandomizer] Shuffling ";
+  ttk::Timer t;
+
+  vtkDataSet *input
+    = vtkDataSet::SafeDownCast(vtkDataSet::GetData(inputVector[0]));
+  if(input) {
+    vtkDataSet *output = vtkDataSet::GetData(outputVector);
+    output->ShallowCopy(input);
+    // use a pointer-base copy for the input data -- to adapt if your wrapper
+    // does not produce an output of the type of the input.
+
+    // in the following, the target scalar field of the input is replaced in the
+    // variable 'output' with the result of the computation.
+    // if your wrapper produces an output of the same type of the input, you
+    // should proceed in the same way.
+    vtkDataArray *inputScalarField
+      = this->GetInputArrayToProcess(0, inputVector);
+
+    if(!inputScalarField) {
+      printErr("Could not retrieve mandatory input array :(");
+      return 0;
+    }
+
+    bool isPointData = false;
+    if(input->GetPointData()->GetArray(inputScalarField->GetName())
+       == inputScalarField) {
+      isPointData = true;
+    }
+
+    this->printMsg("Shuffling " + std::string{isPointData ? "vertex" : "cell"}
+                   + " field `" + std::string{inputScalarField->GetName()}
+                   + "'...");
+
+    // allocate the memory for the output scalar field
+    vtkSmartPointer<vtkDataArray> const outputArray
+      = vtkSmartPointer<vtkDataArray>::Take(inputScalarField->NewInstance());
+    outputArray->SetName(inputScalarField->GetName());
+    outputArray->SetNumberOfComponents(1);
+    outputArray->SetNumberOfTuples(inputScalarField->GetNumberOfTuples());
+
+    switch(outputArray->GetDataType()) {
+      vtkTemplateMacro(shuffleScalarFieldValues(
+        static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalarField)),
+        static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputArray)),
+        outputArray->GetNumberOfTuples(), this->RandomSeed, this->CompactRange,
+        this->threadNumber_));
+    }
+
     if(isPointData)
-      msg << "vertex";
+      output->GetPointData()->AddArray(outputArray);
     else
-      msg << "cell";
-    msg << " field `" << inputScalarField->GetName() << "'..." << endl;
-    dMsg(cout, msg.str(), infoMsg);
-  }
+      output->GetCellData()->AddArray(outputArray);
 
-  // allocate the memory for the output scalar field
-  if(outputScalarField_) {
-    outputScalarField_->Delete();
-  }
+    printMsg("Processed " + std::to_string(outputArray->GetNumberOfTuples())
+               + (isPointData ? " vertices." : " cells."),
+             1, t.getElapsedTime(), 1);
 
-  switch(inputScalarField->GetDataType()) {
+    printMsg(ttk::debug::Separator::L1);
 
-    case VTK_CHAR:
-      outputScalarField_ = vtkCharArray::New();
-      break;
-
-    case VTK_DOUBLE:
-      outputScalarField_ = vtkDoubleArray::New();
-      break;
-
-    case VTK_FLOAT:
-      outputScalarField_ = vtkFloatArray::New();
-      break;
-
-    case VTK_INT:
-      outputScalarField_ = vtkIntArray::New();
-      break;
-
-    case VTK_ID_TYPE:
-      outputScalarField_ = vtkIdTypeArray::New();
-      break;
-
-    default:
-      stringstream msg;
-      msg << "[ttkIdentifierRandomizer] Unsupported data type :(" << endl;
-      dMsg(cerr, msg.str(), fatalMsg);
-      return -1;
-  }
-  outputScalarField_->SetNumberOfTuples(inputScalarField->GetNumberOfTuples());
-  outputScalarField_->SetName(inputScalarField->GetName());
-
-  // on the output, replace the field array by a pointer to its processed
-  // version
-  if(isPointData) {
-    if(ScalarField.length()) {
-      output->GetPointData()->RemoveArray(ScalarField.data());
-    } else {
-      output->GetPointData()->RemoveArray(0);
-    }
-    output->GetPointData()->AddArray(outputScalarField_);
   } else {
-    if(ScalarField.length()) {
-      output->GetCellData()->RemoveArray(ScalarField.data());
-    } else {
-      output->GetCellData()->RemoveArray(0);
+    vtkMultiBlockDataSet *input_mb = vtkMultiBlockDataSet::SafeDownCast(
+      vtkMultiBlockDataSet::GetData(inputVector[0]));
+    vtkMultiBlockDataSet *output_mb
+      = vtkMultiBlockDataSet::GetData(outputVector);
+    output_mb->ShallowCopy(input_mb);
+    if(!input_mb) {
+      printMsg("Invalid input.");
     }
-    output->GetCellData()->AddArray(outputScalarField_);
-  }
+    int n_blocks = input_mb->GetNumberOfBlocks();
+    int currentType = 0;
+    // check if the multiblock input and the input scalar field are valid and
+    // retrieve the data type
+    for(int i = 0; i < n_blocks; i++) {
+      vtkDataSet *block = vtkDataSet::SafeDownCast(input_mb->GetBlock(i));
+      if(!block)
+        printMsg("Block " + std::to_string(i) + " invalid.");
+      vtkDataArray *inputScalarField = this->GetInputArrayToProcess(0, block);
 
-  vector<pair<SimplexId, SimplexId>> identifierMap;
-
-  for(SimplexId i = 0; i < inputScalarField->GetNumberOfTuples(); i++) {
-    double inputIdentifier = -1;
-    inputScalarField->GetTuple(i, &inputIdentifier);
-
-    bool isIn = false;
-    for(SimplexId j = 0; j < (SimplexId)identifierMap.size(); j++) {
-      if(identifierMap[j].first == inputIdentifier) {
-        isIn = true;
-        break;
+      if(!inputScalarField) {
+        printWrn(
+          "Block " + std::to_string(i)
+          + " does not have the required input scalar field as data array.");
+        continue;
       }
-    }
 
-    if(!isIn) {
-      identifierMap.push_back(
-        pair<SimplexId, SimplexId>(inputIdentifier, -INT_MAX));
-    }
-  }
-
-  // now let's shuffle things around
-  SimplexId freeIdentifiers = identifierMap.size();
-  SimplexId randomIdentifier = -1;
-
-  for(SimplexId i = 0; i < (SimplexId)identifierMap.size(); i++) {
-
-    randomIdentifier = drand48() * (freeIdentifiers);
-
-    SimplexId freeCounter = -1;
-    for(SimplexId j = 0; j < (SimplexId)identifierMap.size(); j++) {
-
-      bool isFound = false;
-      for(SimplexId k = 0; k < (SimplexId)identifierMap.size(); k++) {
-
-        if(identifierMap[k].second == identifierMap[j].first) {
-          isFound = true;
-          break;
+      if(i == 0) {
+        currentType = inputScalarField->GetDataType();
+        continue;
+      } else {
+        if(currentType != inputScalarField->GetDataType()) {
+          printErr("All block's input scalar field must have the same type.");
+          return 0;
         }
       }
-      if(!isFound) {
-        freeCounter++;
-      }
-
-      if(freeCounter >= randomIdentifier) {
-        randomIdentifier = identifierMap[j].first;
-        break;
-      }
     }
-
-    identifierMap[i].second = randomIdentifier;
-    freeIdentifiers--;
-  }
-
-  // now populate the output scalar field.
-  for(SimplexId i = 0; i < inputScalarField->GetNumberOfTuples(); i++) {
-    double inputIdentifier = -1;
-    double outputIdentifier = -1;
-
-    inputScalarField->GetTuple(i, &inputIdentifier);
-
-    for(SimplexId j = 0; j < (SimplexId)identifierMap.size(); j++) {
-      if(inputIdentifier == identifierMap[j].first) {
-        outputIdentifier = identifierMap[j].second;
-        break;
-      }
+    switch(currentType) {
+      vtkTemplateMacro(shuffleScalarFieldValuesMultiBlock<VTK_TT>(
+        input_mb, output_mb, this->threadNumber_));
     }
-
-    outputScalarField_->SetTuple(i, &outputIdentifier);
   }
 
-  {
-    stringstream msg;
-    msg << "[ttkIdentifierRandomizer] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
-  return 0;
+  return 1;
 }

@@ -1,46 +1,75 @@
 #include <ttkManifoldCheck.h>
 
+#include <vtkCellData.h>
+#include <vtkDataSet.h>
+#include <vtkGenericCell.h>
+#include <vtkIdTypeArray.h>
+#include <vtkInformation.h>
+#include <vtkIntArray.h>
+#include <vtkPointData.h>
+
+#include <ttkMacros.h>
+#include <ttkUtils.h>
+
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkManifoldCheck)
+vtkStandardNewMacro(ttkManifoldCheck);
 
-  int ttkManifoldCheck::doIt(vector<vtkDataSet *> &inputs,
-                             vector<vtkDataSet *> &outputs) {
+ttkManifoldCheck::ttkManifoldCheck() {
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
+}
 
-  Memory mem;
+int ttkManifoldCheck::FillInputPortInformation(int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
+  }
+  return 0;
+}
 
-  vtkDataSet *input = inputs[0];
-  vtkDataSet *output = outputs[0];
+int ttkManifoldCheck::FillOutputPortInformation(int port,
+                                                vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
+  return 0;
+}
 
-  Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
+int ttkManifoldCheck::RequestData(vtkInformation *ttkNotUsed(request),
+                                  vtkInformationVector **inputVector,
+                                  vtkInformationVector *outputVector) {
+
+  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
+  vtkDataSet *output = vtkDataSet::GetData(outputVector);
+
+  Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
 
   if(!triangulation)
-    return -1;
+    return 0;
 
-  triangulation->setWrapper(this);
-  triangulation->preprocessVertexTriangles();
-  manifoldCheck_.setupTriangulation(triangulation);
-  manifoldCheck_.setWrapper(this);
+  this->preconditionTriangulation(triangulation);
 
   // use a pointer-base copy for the input data -- to adapt if your wrapper does
   // not produce an output of the type of the input.
   output->ShallowCopy(input);
 
-  manifoldCheck_.setVertexLinkComponentNumberVector(
-    &vertexLinkComponentNumber_);
-  manifoldCheck_.setEdgeLinkComponentNumberVector(&edgeLinkComponentNumber_);
-  manifoldCheck_.setTriangleLinkComponentNumberVector(
-    &triangleLinkComponentNumber_);
-  manifoldCheck_.execute();
+  this->setVertexLinkComponentNumberVector(&vertexLinkComponentNumber_);
+  this->setEdgeLinkComponentNumberVector(&edgeLinkComponentNumber_);
+  this->setTriangleLinkComponentNumberVector(&triangleLinkComponentNumber_);
 
-  {
-    stringstream msg;
-    msg << "[ttkManifoldCheck] Preparing VTK output..." << endl;
-    dMsg(cout, msg.str(), Debug::timeMsg);
-  }
+  int error = 0;
+  ttkTemplateMacro(
+    triangulation->getType(),
+    (error = this->execute<TTK_TT>((TTK_TT *)triangulation->getData())));
+  if(error)
+    return error;
 
-  vtkSmartPointer<ttkSimplexIdTypeArray> vertexPointArray
+  printMsg("Preparing VTK output...");
+
+  vtkSmartPointer<ttkSimplexIdTypeArray> const vertexPointArray
     = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   vertexPointArray->SetName("VertexLinkComponentNumber");
   vertexPointArray->SetNumberOfTuples(output->GetNumberOfPoints());
@@ -48,7 +77,7 @@ vtkStandardNewMacro(ttkManifoldCheck)
     vertexPointArray->SetTuple1(i, vertexLinkComponentNumber_[i]);
   output->GetPointData()->AddArray(vertexPointArray);
 
-  vtkSmartPointer<ttkSimplexIdTypeArray> vertexCellArray
+  vtkSmartPointer<ttkSimplexIdTypeArray> const vertexCellArray
     = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   vertexCellArray->SetName("VertexLinkComponentNumber");
   vertexCellArray->SetNumberOfTuples(output->GetNumberOfCells());
@@ -57,7 +86,7 @@ vtkStandardNewMacro(ttkManifoldCheck)
     vtkCell *c = output->GetCell(i);
     SimplexId cellMax = -1;
     for(int j = 0; j < c->GetNumberOfPoints(); j++) {
-      SimplexId vertexId = c->GetPointId(j);
+      SimplexId const vertexId = c->GetPointId(j);
       if((!j) || (vertexLinkComponentNumber_[vertexId] > cellMax)) {
         cellMax = vertexLinkComponentNumber_[vertexId];
       }
@@ -68,7 +97,7 @@ vtkStandardNewMacro(ttkManifoldCheck)
   output->GetCellData()->AddArray(vertexCellArray);
 
   // edges
-  vtkSmartPointer<ttkSimplexIdTypeArray> edgePointArray
+  vtkSmartPointer<ttkSimplexIdTypeArray> const edgePointArray
     = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   edgePointArray->SetName("EdgeLinkComponentNumber");
   edgePointArray->SetNumberOfTuples(output->GetNumberOfPoints());
@@ -76,7 +105,7 @@ vtkStandardNewMacro(ttkManifoldCheck)
     edgePointArray->SetTuple1(i, 0);
   }
 
-  vtkSmartPointer<ttkSimplexIdTypeArray> edgeCellArray
+  vtkSmartPointer<ttkSimplexIdTypeArray> const edgeCellArray
     = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   edgeCellArray->SetName("EdgeLinkComponentNumber");
   edgeCellArray->SetNumberOfTuples(output->GetNumberOfCells());
@@ -92,8 +121,8 @@ vtkStandardNewMacro(ttkManifoldCheck)
       triangulation->getEdgeVertex(i, 0, vertexId0);
       triangulation->getEdgeVertex(i, 1, vertexId1);
 
-      SimplexId vertexMax0 = edgePointArray->GetTuple1(vertexId0);
-      SimplexId vertexMax1 = edgePointArray->GetTuple1(vertexId1);
+      SimplexId const vertexMax0 = edgePointArray->GetTuple1(vertexId0);
+      SimplexId const vertexMax1 = edgePointArray->GetTuple1(vertexId1);
 
       if(edgeLinkComponentNumber_[i] > vertexMax0)
         edgePointArray->SetTuple1(vertexId0, edgeLinkComponentNumber_[i]);
@@ -105,12 +134,12 @@ vtkStandardNewMacro(ttkManifoldCheck)
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(SimplexId i = 0; i < output->GetNumberOfCells(); i++) {
-      vtkSmartPointer<vtkGenericCell> c
+      vtkSmartPointer<vtkGenericCell> const c
         = vtkSmartPointer<vtkGenericCell>::New();
       output->GetCell(i, c);
       SimplexId cellMax = -1;
       for(int j = 0; j < c->GetNumberOfPoints(); j++) {
-        SimplexId vertexId0 = c->GetPointId(j);
+        SimplexId const vertexId0 = c->GetPointId(j);
         SimplexId vertexId1 = -1;
         for(int k = 0; k < c->GetNumberOfPoints(); k++) {
           if(k != j) {
@@ -118,7 +147,7 @@ vtkStandardNewMacro(ttkManifoldCheck)
 
             // check if (vertexId0 - vertexId1) is indeed an edge in the
             // triangulation
-            SimplexId edgeNumber
+            SimplexId const edgeNumber
               = triangulation->getVertexEdgeNumber(vertexId0);
             for(SimplexId l = 0; l < edgeNumber; l++) {
               SimplexId edgeId = -1;
@@ -147,7 +176,7 @@ vtkStandardNewMacro(ttkManifoldCheck)
   output->GetCellData()->AddArray(edgeCellArray);
 
   // triangles
-  vtkSmartPointer<ttkSimplexIdTypeArray> trianglePointArray
+  vtkSmartPointer<ttkSimplexIdTypeArray> const trianglePointArray
     = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   trianglePointArray->SetName("TriangleLinkComponentNumber");
   trianglePointArray->SetNumberOfTuples(output->GetNumberOfPoints());
@@ -155,7 +184,7 @@ vtkStandardNewMacro(ttkManifoldCheck)
     trianglePointArray->SetTuple1(i, 0);
   }
 
-  vtkSmartPointer<ttkSimplexIdTypeArray> triangleCellArray
+  vtkSmartPointer<ttkSimplexIdTypeArray> const triangleCellArray
     = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   triangleCellArray->SetName("TriangleLinkComponentNumber");
   triangleCellArray->SetNumberOfTuples(output->GetNumberOfCells());
@@ -173,9 +202,9 @@ vtkStandardNewMacro(ttkManifoldCheck)
       triangulation->getTriangleVertex(i, 1, vertexId1);
       triangulation->getTriangleVertex(i, 2, vertexId2);
 
-      SimplexId vertexMax0 = trianglePointArray->GetTuple1(vertexId0);
-      SimplexId vertexMax1 = trianglePointArray->GetTuple1(vertexId1);
-      SimplexId vertexMax2 = trianglePointArray->GetTuple1(vertexId2);
+      SimplexId const vertexMax0 = trianglePointArray->GetTuple1(vertexId0);
+      SimplexId const vertexMax1 = trianglePointArray->GetTuple1(vertexId1);
+      SimplexId const vertexMax2 = trianglePointArray->GetTuple1(vertexId2);
 
       if(triangleLinkComponentNumber_[i] > vertexMax0)
         trianglePointArray->SetTuple1(
@@ -192,13 +221,13 @@ vtkStandardNewMacro(ttkManifoldCheck)
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(SimplexId i = 0; i < output->GetNumberOfCells(); i++) {
-      vtkSmartPointer<vtkGenericCell> c
+      vtkSmartPointer<vtkGenericCell> const c
         = vtkSmartPointer<vtkGenericCell>::New();
       output->GetCell(i, c);
 
       SimplexId cellMax = -1;
       for(int j = 0; j < c->GetNumberOfPoints(); j++) {
-        SimplexId vertexId0 = c->GetPointId(j);
+        SimplexId const vertexId0 = c->GetPointId(j);
         SimplexId vertexId1 = -1;
         SimplexId vertexId2 = -1;
 
@@ -212,7 +241,7 @@ vtkStandardNewMacro(ttkManifoldCheck)
 
                 // check if (vertexId0, vertexId1, vertexId2) is indeed a
                 // triangle in the triangulation
-                SimplexId triangleNumber
+                SimplexId const triangleNumber
                   = triangulation->getVertexTriangleNumber(vertexId0);
                 for(SimplexId m = 0; m < triangleNumber; m++) {
                   SimplexId triangleId = -1;
@@ -260,12 +289,5 @@ vtkStandardNewMacro(ttkManifoldCheck)
   output->GetPointData()->AddArray(trianglePointArray);
   output->GetCellData()->AddArray(triangleCellArray);
 
-  {
-    stringstream msg;
-    msg << "[ttkManifoldCheck] Memory usage: " << mem.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
-  return 0;
+  return 1;
 }

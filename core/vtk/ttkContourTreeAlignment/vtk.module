@@ -1,0 +1,4 @@
+NAME
+  ttkContourTreeAlignment
+DEPENDS
+  ttkAlgorithm

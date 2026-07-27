@@ -1,0 +1,148 @@
+<IntVectorProperty
+name="Backend"
+label="Backend"
+command="SetBackend"
+number_of_elements="1"
+default_values="0">
+<EnumerationDomain name="enum">
+    <Entry value="0" text="Wasserstein Distance (IEEE TVCG 2021)"/>
+    <Entry value="1" text="Edit Distance (IEEE TVCG 2019)"/>
+    <Entry value="3" text="Branch Mapping Distance (EuroVis 2022)"/>
+    <Entry value="4" text="Path Mapping Distance (TopoInVis 2022)"/>
+    <Entry value="2" text="Custom"/>
+</EnumerationDomain>
+  <Documentation>
+    Backend for the computation of the distance between merge trees. The Edit Distance, the Branch Mapping Distance and the Path Mapping Distance do not allow to compute geodesics, barycenters and clusters contrary to the Wasserstein Distance. One can choose Custom to configure manually the three parameters controlling the distance.
+  </Documentation>
+</IntVectorProperty>
+
+<IntVectorProperty
+name="BranchMetric"
+label="Branch Metric"
+command="SetBranchMetric"
+number_of_elements="1"
+default_values="0">
+<EnumerationDomain name="enum">
+    <Entry value="0" text="Wasserstein first degree"/>
+    <Entry value="1" text="Wasserstein second degree"/>
+    <Entry value="2" text="Persistence"/>
+    <Entry value="3" text="Shifting"/>
+</EnumerationDomain>
+<Hints>
+  <PropertyWidgetDecorator type="GenericDecorator"
+                           mode="visibility"
+                           property="Backend"
+                           value="3" />
+  </Hints>
+  <Documentation>
+    The metric used to compare branches in the algorithm.
+  </Documentation>
+</IntVectorProperty>
+
+<IntVectorProperty
+name="PathMetric"
+label="Path Metric"
+command="SetPathMetric"
+number_of_elements="1"
+default_values="0">
+<EnumerationDomain name="enum">
+    <Entry value="0" text="Persistence"/>
+</EnumerationDomain>
+<Hints>
+  <PropertyWidgetDecorator type="GenericDecorator"
+                           mode="visibility"
+                           property="Backend"
+                           value="4" />
+  </Hints>
+  <Documentation>
+    The metric used to compare paths in the algorithm.
+  </Documentation>
+</IntVectorProperty>
+
+<IntVectorProperty
+name="BranchDecomposition"
+command="SetBranchDecomposition"
+label="Use Branch Decomposition"
+number_of_elements="1"
+default_values="1">
+  <Hints>
+  <PropertyWidgetDecorator type="GenericDecorator"
+                           mode="visibility"
+                           property="Backend"
+                           value="2" />
+  </Hints>
+  <Documentation>
+    Use branch decomposition representation (each node is a persistence pair and no longer a critical point).
+  </Documentation>
+  <BooleanDomain name="bool"/>
+</IntVectorProperty>
+
+<IntVectorProperty
+name="NormalizedWasserstein"
+command="SetNormalizedWasserstein"
+label="Normalized Wasserstein"
+number_of_elements="1"
+default_values="1">
+  <Hints>
+  <PropertyWidgetDecorator type="CompositeDecorator">
+    <Expression type="and">
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="BranchDecomposition"
+                              value="1" />
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="2" />
+    </Expression>
+  </PropertyWidgetDecorator>
+  </Hints>
+  <Documentation>
+    Use normalized Wasserstein (set to true to have consistent geodesics, barycenters and clusters of merge trees).
+  </Documentation>
+  <BooleanDomain name="bool"/>
+</IntVectorProperty>
+
+<IntVectorProperty
+name="KeepSubtree"
+command="SetKeepSubtree"
+label="Keep Subtrees"
+number_of_elements="1"
+default_values="0">
+  <Hints>
+  <PropertyWidgetDecorator type="GenericDecorator"
+                           mode="visibility"
+                           property="Backend"
+                           value="2" />
+  </Hints>
+  <Documentation>
+    Keep subtree when destroying/inserting a node (set to false to have consistent geodesics, barycenters and clusters of merge trees).
+  </Documentation>
+  <BooleanDomain name="bool"/>
+</IntVectorProperty> 
+
+<IntVectorProperty
+name="AssignmentSolver"
+label="Assignment Solver"
+command="SetAssignmentSolver"
+number_of_elements="1"
+default_values="0">
+<EnumerationDomain name="enum">
+    <Entry value="0" text="Auction"/>
+    <Entry value="1" text="Exhaustive Search"/>
+    <Entry value="2" text="Munkres"/>
+</EnumerationDomain>
+  <Documentation>
+    The assignment solver used in the algorithm.
+  </Documentation>
+</IntVectorProperty>
+
+<PropertyGroup panel_widget="Line" label="Input options">
+  <Property name="Backend"/>
+  <Property name="BranchDecomposition"/>
+  <Property name="NormalizedWasserstein"/>
+  <Property name="KeepSubtree"/>
+  <Property name="BranchMetric"/>
+  <Property name="PathMetric"/>
+  <Property name="AssignmentSolver"/>
+</PropertyGroup>

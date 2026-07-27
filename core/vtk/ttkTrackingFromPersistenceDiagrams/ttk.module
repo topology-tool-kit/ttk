@@ -1,0 +1,10 @@
+NAME
+  ttkTrackingFromPersistenceDiagrams
+SOURCES
+  ttkTrackingFromPersistenceDiagrams.cpp
+HEADERS
+  ttkTrackingFromPersistenceDiagrams.h
+DEPENDS
+  trackingFromPersistenceDiagrams
+  ttkAlgorithm
+  ttkBottleneckDistance

@@ -1,0 +1,9 @@
+NAME
+  ttkDistanceField
+SOURCES
+  ttkDistanceField.cpp
+HEADERS
+  ttkDistanceField.h
+DEPENDS
+  distanceField
+  ttkAlgorithm

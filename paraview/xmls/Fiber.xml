@@ -1,0 +1,95 @@
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy
+     name="ttkFiber"
+     class="ttkFiber"
+     label="TTK Fiber">
+     <Documentation
+        long_help="TTK plugin for fiber computation on bivariate volumetric
+data."
+        short_help="TTK plugin for fiber computation on bivariate volumetric
+data.">
+       Given a point in the range, this plugin computes its fiber (i.e.
+pre-image) on bivariate volumetric data. The bivariate input data must be
+provided as two independent scalar fields attached as point data to the
+input geometry.
+
+Related publication:
+"Fast and Exact Fiber Surface Extraction for Tetrahedral Meshes",
+Pavol Klacansky, Julien Tierny, Hamish Carr, Zhao Geng
+IEEE Transactions on Visualization and Computer Graphics, 2016.
+     </Documentation>
+
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_array" attribute_type="point" number_of_components="1" />
+        <Documentation>
+          Dataset to process.
+        </Documentation>
+      </InputProperty>
+
+        <StringVectorProperty name="UComponent" label="U Component" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+            <ArrayListDomain name="array_list" number_of_components="1">
+                <RequiredProperties>
+                    <Property function="Input" name="Input" />
+                </RequiredProperties>
+            </ArrayListDomain>
+            <Documentation>U component of the bivariate field.</Documentation>
+        </StringVectorProperty>
+
+      <DoubleVectorProperty name="Uvalue"
+        label="U coordinate"
+        command="SetUValue"
+        number_of_elements="1"
+        default_values="0">
+        <Documentation>
+          U coordinate of the fiber.
+        </Documentation>
+      </DoubleVectorProperty>
+
+        <StringVectorProperty name="VComponent" label="V Component" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="1">
+            <ArrayListDomain name="array_list" number_of_components="1">
+                <RequiredProperties>
+                    <Property function="Input" name="Input" />
+                </RequiredProperties>
+            </ArrayListDomain>
+            <Documentation>V component of the bivariate field.</Documentation>
+        </StringVectorProperty>
+
+      <DoubleVectorProperty name="Vvalue"
+        label="V coordinate"
+        command="SetVValue"
+        number_of_elements="1"
+        default_values="0">
+        <Documentation>
+          V coordinate of the fiber.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="UComponent" />
+        <Property name="Uvalue" />
+        <Property name="VComponent" />
+        <Property name="Vvalue" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Bivariate Scalar Data" />
+      </Hints>
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

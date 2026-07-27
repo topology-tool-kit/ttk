@@ -1,0 +1,13 @@
+--- a/VTK/Rendering/RayTracing//vtkOSPRayPolyDataMapperNode.cxx	2021-09-25 08:37:05.770210866 +0200
++++ b/VTK/Rendering/RayTracing//vtkOSPRayPolyDataMapperNode.cxx	2021-09-25 09:17:22.813755921 +0200
+@@ -788,8 +788,8 @@
+     {
+       ospSetVec3f(oMaterial, "kd", diffusef[0], diffusef[1], diffusef[2]);
+     }
+-    ospSetVec3f(oMaterial, "Ks", specularf[0], specularf[1], specularf[2]);
+-    ospSetFloat(oMaterial, "Ns", specPower);
++    ospSetVec3f(oMaterial, "ks", specularf[0], specularf[1], specularf[2]);
++    ospSetFloat(oMaterial, "ns", specPower);
+     ospSetFloat(oMaterial, "d", static_cast<float>(opacity));
+   }
+ 

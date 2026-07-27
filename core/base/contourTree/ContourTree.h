@@ -17,16 +17,11 @@
 /// Proc. of ACM SODA 2000.
 ///
 
-#ifndef _CONTOUR_TREE_H
-#define _CONTOUR_TREE_H
+#pragma once
 
 #include <Triangulation.h>
 #include <UnionFind.h>
 
-#include <math.h>
-
-#include <queue>
-#include <set>
 #include <vector>
 
 namespace ttk {
@@ -35,104 +30,92 @@ namespace ttk {
   class Node;
 
   class Arc : virtual public Debug {
-
   public:
-    Arc() {
-      downNodeId_ = -1;
-      upNodeId_ = -1;
-    };
-
     inline int getDownNodeId() const {
       return downNodeId_;
-    };
+    }
 
     inline int getUpNodeId() const {
       return upNodeId_;
-    };
+    }
 
     inline void setDownNodeId(const int &downNodeId) {
       downNodeId_ = downNodeId;
-    };
+    }
 
     inline void setUpNodeId(const int &upNodeId) {
       upNodeId_ = upNodeId;
-    };
+    }
 
   protected:
-    int downNodeId_, upNodeId_;
+    int downNodeId_{-1}, upNodeId_{-1};
   };
 
   class SuperArc : public Arc {
-
   public:
     friend class SubLevelSetTree;
 
-    SuperArc() {
-      Arc();
-      pruned_ = false;
-    };
-
     inline void appendRegularNode(const int &nodeId) {
       regularNodeList_.push_back(nodeId);
-    };
+    }
 
     inline void appendBarycenter(const std::vector<double> &barycenter) {
       barycenterList_.push_back(barycenter);
-    };
+    }
 
     inline void appendSample(const std::vector<int> &sample) {
       sampleList_.push_back(sample);
-    };
+    }
 
     inline int getNumberOfRegularNodes() const {
       return (int)regularNodeList_.size();
-    };
+    }
 
     inline int getNumberOfBarycenters() const {
       return (int)barycenterList_.size();
-    };
+    }
 
     inline int getNumberOfSamples() const {
       return (int)sampleList_.size();
-    };
+    }
 
     inline int getRegularNodeId(const int &arcNodeId) const {
       if((arcNodeId < 0)
          || (((unsigned int)arcNodeId) >= regularNodeList_.size()))
         return -1;
       return regularNodeList_[arcNodeId];
-    };
+    }
 
     inline void getBarycenter(const int &id,
                               std::vector<double> &barycenter) const {
       for(unsigned int k = 0; k < 3; ++k)
         barycenter[k] = barycenterList_[id][k];
-    };
+    }
 
     inline void getBarycenter(const int &id, double barycenter[3]) const {
       for(unsigned int k = 0; k < 3; ++k)
         barycenter[k] = barycenterList_[id][k];
-    };
+    }
 
     inline void getSample(const int &id, std::vector<int> &sample) const {
       sample = sampleList_[id];
-    };
+    }
 
     inline void clearBarycenters() {
       barycenterList_.clear();
-    };
+    }
 
     inline void clearSamples() {
       sampleList_.clear();
-    };
+    }
 
     inline void clearRegularNodes() {
       regularNodeList_.clear();
-    };
+    }
 
     inline bool isPruned() const {
       return pruned_;
-    };
+    }
 
     void smooth(const std::vector<Node> &nodeList,
                 const std::vector<std::vector<double>> *vertexPositions,
@@ -144,80 +127,73 @@ namespace ttk {
                           bool order = true);
 
   protected:
-    bool pruned_;
-    std::vector<int> regularNodeList_;
-    std::vector<std::vector<double>> barycenterList_;
-    std::vector<std::vector<int>> sampleList_;
+    bool pruned_{false};
+    std::vector<int> regularNodeList_{};
+    std::vector<std::vector<double>> barycenterList_{};
+    std::vector<std::vector<int>> sampleList_{};
   };
 
   class Node : virtual public Debug {
-
   public:
-    Node() {
-      vertexId_ = -1;
-      layoutX_ = layoutY_ = 0;
-      pruned_ = false;
-    };
-
     inline void addDownArcId(const int &downArcId) {
       downArcList_.push_back(downArcId);
-    };
+    }
 
     inline void addDownSuperArcId(const int &downSuperArcId) {
       downSuperArcList_.push_back(downSuperArcId);
-    };
+    }
 
     inline void addUpArcId(const int &upArcId) {
       upArcList_.push_back(upArcId);
-    };
+    }
 
     inline void addUpSuperArcId(const int &upSuperArcId) {
       upSuperArcList_.push_back(upSuperArcId);
-    };
+    }
 
     inline int getDownArcId(const int &neighborId) const {
       if((neighborId < 0) || (neighborId >= (int)downArcList_.size()))
         return -1;
       return downArcList_[neighborId];
-    };
+    }
 
     inline int getDownSuperArcId(const int &neighborId) const {
       if((neighborId < 0) || (neighborId >= (int)downSuperArcList_.size()))
         return -1;
       return downSuperArcList_[neighborId];
-    };
+    }
 
     inline int getUpArcId(const int &neighborId) const {
       if((neighborId < 0) || (neighborId >= (int)upArcList_.size()))
         return -1;
       return upArcList_[neighborId];
-    };
+    }
 
     inline int getUpSuperArcId(const int &neighborId) const {
       if((neighborId < 0) || (neighborId >= (int)upSuperArcList_.size()))
         return -1;
       return upSuperArcList_[neighborId];
-    };
+    }
 
     inline int getNumberOfDownArcs() const {
       return (int)downArcList_.size();
-    };
+    }
 
     inline int getNumberOfDownSuperArcs() const {
       return (int)downSuperArcList_.size();
-    };
+    }
 
     inline int getNumberOfUpArcs() const {
       return (int)upArcList_.size();
-    };
+    }
 
     inline int getNumberOfUpSuperArcs() const {
       return (int)upSuperArcList_.size();
-    };
+    }
 
     inline int getVertexId() const {
       return vertexId_;
-    };
+    }
 
     inline int removeDownArcId(const int &arcId) {
       if((arcId < 0) || (arcId >= (int)downArcList_.size()))
@@ -235,20 +211,19 @@ namespace ttk {
 
     inline void setVertexId(const int &vertexId) {
       vertexId_ = vertexId;
-    };
+    }
 
   protected:
     friend class SubLevelSetTree;
 
-    int vertexId_;
-    bool pruned_;
-    double layoutX_, layoutY_;
-    std::vector<int> downArcList_, upArcList_;
-    std::vector<int> downSuperArcList_, upSuperArcList_;
+    int vertexId_{-1};
+    bool pruned_{false};
+    double layoutX_{}, layoutY_{};
+    std::vector<int> downArcList_{}, upArcList_{};
+    std::vector<int> downSuperArcList_{}, upSuperArcList_{};
   };
 
   class ContourTreeSimplificationMetric : virtual public Debug {
-
   public:
     friend class SubLevelSetTree;
 
@@ -259,19 +234,18 @@ namespace ttk {
       = 0;
 
   protected:
-    SubLevelSetTree *tree_;
+    SubLevelSetTree *tree_{};
   };
 
   class PersistenceMetric : public ContourTreeSimplificationMetric {
-
   public:
-    double computeSuperArcMetric(const int &downVertexId,
-                                 const int &upVertexId,
-                                 const std::vector<int> &interiorNodeIds);
+    double
+      computeSuperArcMetric(const int &downVertexId,
+                            const int &upVertexId,
+                            const std::vector<int> &interiorNodeIds) override;
   };
 
   class SubLevelSetTree : virtual public Debug {
-
   public:
     SubLevelSetTree();
 
@@ -306,59 +280,79 @@ namespace ttk {
     int exportToVtk(const std::string &fileName,
                     // fixes a bug in paraview, the voxel size of the cube file
                     // format is not taken into account...
-                    const std::vector<float> *origin = NULL,
-                    const std::vector<float> *voxelSize = NULL);
+                    const std::vector<float> *origin = nullptr,
+                    const std::vector<float> *voxelSize = nullptr);
 
     int flush();
 
     inline const Arc *getArc(const int &arcId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
       if((arcId < 0) || (arcId >= (int)arcList_.size()))
-        return NULL;
+        this->printErr("Out-of-bounds access in getArc: element "
+                       + std::to_string(arcId) + " in list of size "
+                       + std::to_string(arcList_.size()));
+#endif // !TTK_ENABLE_KAMIKAZE
       return &(arcList_[arcId]);
-    };
+    }
 
     // this list is sorted only if buildExtremumList has been called before.
     inline const std::vector<int> *getExtremumList() const {
       if(minimumList_)
         return minimumList_;
       return maximumList_;
-    };
+    }
 
     inline const Node *getNode(const int &nodeId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
       if((nodeId < 0) || (nodeId >= (int)nodeList_.size()))
-        return NULL;
+        this->printErr("Out-of-bounds access in getNode: element "
+                       + std::to_string(nodeId) + " in list of size "
+                       + std::to_string(nodeList_.size()));
+#endif // !TTK_ENABLE_KAMIKAZE
       return &(nodeList_[nodeId]);
-    };
+    }
 
     inline const Node *getNodeDownNeighbor(const Node *n,
                                            const int &neighborId) const {
-      if(!n)
-        return NULL;
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(n == nullptr)
+        this->printErr("Nullptr dereference in getNodeDownNeighbor");
+#endif // !TTK_ENABLE_KAMIKAZE
       return getNodeDownNeighbor(n - &(nodeList_[0]), neighborId);
-    };
+    }
 
     inline const Node *getNodeDownNeighbor(const int &nodeId,
                                            const int &neighborId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
       if((nodeId < 0) || (nodeId >= (int)nodeList_.size()))
-        return NULL;
+        this->printErr("Out-of-bounds access in getNodeDownNeighbor: element "
+                       + std::to_string(nodeId) + " in list of size "
+                       + std::to_string(nodeList_.size()));
+#endif // !TTK_ENABLE_KAMIKAZE
       return &(nodeList_[arcList_[nodeList_[nodeId].getDownArcId(neighborId)]
                            .getDownNodeId()]);
-    };
+    }
 
     inline const Node *getNodeUpNeighbor(const Node *n,
                                          const int &neighborId) const {
-      if(!n)
-        return NULL;
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(n == nullptr)
+        this->printErr("Nullptr dereference in getNodeUpNeighbor");
+#endif // !TTK_ENABLE_KAMIKAZE
       return getNodeUpNeighbor(n - &(nodeList_[0]), neighborId);
-    };
+    }
 
     inline const Node *getNodeUpNeighbor(const int &nodeId,
                                          const int &neighborId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
       if((nodeId < 0) || (nodeId >= (int)nodeList_.size()))
-        return NULL;
+        this->printErr("Out-of-bounds access in getNodeUpNeighbor: element "
+                       + std::to_string(nodeId) + " in list of size "
+                       + std::to_string(nodeList_.size()));
+#endif // !TTK_ENABLE_KAMIKAZE
       return &(nodeList_[arcList_[nodeList_[nodeId].getUpArcId(neighborId)]
                            .getUpNodeId()]);
-    };
+    }
 
     inline double getNodeScalar(const int &nodeId) const {
       if(!vertexScalars_)
@@ -370,15 +364,15 @@ namespace ttk {
 
     inline int getNumberOfArcs() const {
       return (int)arcList_.size();
-    };
+    }
 
     inline int getNumberOfSuperArcs() const {
       return (int)superArcList_.size();
-    };
+    }
 
     inline int getNumberOfNodes() const {
       return (int)nodeList_.size();
-    };
+    }
 
     int getPersistenceDiagram(
       std::vector<std::pair<double, double>> &diagram,
@@ -402,10 +396,14 @@ namespace ttk {
       = nullptr) const;
 
     inline const SuperArc *getSuperArc(const int &superArcId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
       if((superArcId < 0) || (superArcId >= (int)superArcList_.size()))
-        return NULL;
+        this->printErr("Out-of-bounds access in getSuperArc: element "
+                       + std::to_string(superArcId) + " in list of size "
+                       + std::to_string(superArcList_.size()));
+#endif // !TTK_ENABLE_KAMIKAZE
       return &(superArcList_[superArcId]);
-    };
+    }
 
     inline int getVertexScalar(const int &vertexId, double &scalar) {
 
@@ -422,41 +420,55 @@ namespace ttk {
     }
 
     inline const SuperArc *getVertexSuperArc(const int &vertexId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
       if((vertexId < 0) || (vertexId >= vertexNumber_))
-        return NULL;
+        this->printErr("Out-of-bounds access in getVertexSuperArc: element "
+                       + std::to_string(vertexId) + " in list of size "
+                       + std::to_string(vertexNumber_));
       if(vertex2superArc_[vertexId] == -1)
-        return NULL;
+        this->printErr("Invalid super arc id for vertex "
+                       + std::to_string(vertexId));
+#endif // !TTK_ENABLE_KAMIKAZE
 
       return &(superArcList_[vertex2superArc_[vertexId]]);
-    };
+    }
 
     inline int getVertexSuperArcId(const int &vertexId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
       if((vertexId < 0) || (vertexId >= vertexNumber_))
-        return -1;
+        this->printErr("Out-of-bounds access in getVertexSuperArcId: element "
+                       + std::to_string(vertexId) + " in list of size "
+                       + std::to_string(vertexNumber_));
+#endif // !TTK_ENABLE_KAMIKAZE
       return vertex2superArc_[vertexId];
-    };
+    }
 
     inline const Node *getVertexNode(const int &vertexId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
       if((vertexId < 0) || (vertexId >= vertexNumber_))
-        return NULL;
-      if(vertex2node_[vertexId] != -1)
-        return &(nodeList_[vertex2node_[vertexId]]);
-      return NULL;
-    };
+        this->printErr("Out-of-bounds access in getVertexNode: element "
+                       + std::to_string(vertexId) + " in list of size "
+                       + std::to_string(vertexNumber_));
+      if(vertex2node_[vertexId] == -1)
+        this->printErr("Invalid node id value in getVertexNode at index"
+                       + std::to_string(vertexId));
+#endif // !TTK_ENABLE_KAMIKAZE
+      return &(nodeList_[vertex2node_[vertexId]]);
+    }
 
     inline int getVertexNodeId(const int &vertexId) const {
       if((vertexId < 0) || (vertexId >= vertexNumber_))
         return -1;
       return vertex2node_[vertexId];
-    };
+    }
 
     bool isJoinTree() const {
-      return ((maximumList_ == NULL)
+      return ((maximumList_ == nullptr)
               || ((maximumList_) && (maximumList_->empty())));
     }
 
     bool isSplitTree() const {
-      return ((minimumList_ == NULL)
+      return ((minimumList_ == nullptr)
               || ((minimumList_) && (minimumList_->empty())));
     }
 
@@ -475,31 +487,32 @@ namespace ttk {
                         const Node *newDown,
                         const Node *newUp);
 
-    int print(std::ostream &stream, const int &debugLevel) const;
+    int print() const;
 
     inline void setMaximumList(std::vector<int> &maximumList) {
       maximumList_ = &(maximumList);
-    };
+    }
 
     inline void setMinimumList(std::vector<int> &minimumList) {
       minimumList_ = &(minimumList);
-    };
+    }
 
     inline void setNumberOfVertices(const int &vertexNumber) {
       vertexNumber_ = vertexNumber;
       vertex2superArc_.resize(vertexNumber, -1);
       vertex2superArcNode_.resize(vertexNumber, -1);
       vertex2node_.resize(vertexNumber, -1);
-    };
+    }
 
-    inline void setTriangulation(Triangulation *triangulation) {
+    inline void
+      setTriangulation(const AbstractTriangulation *const triangulation) {
       triangulation_ = triangulation;
     }
 
     inline void
       setVertexPositions(std::vector<std::vector<double>> *vertexPositions) {
       vertexPositions_ = vertexPositions;
-    };
+    }
 
     inline void setVertexScalars(const std::vector<real> *const vertexScalars) {
       vertexScalars_ = vertexScalars;
@@ -512,14 +525,15 @@ namespace ttk {
           maxScalar_ = (*vertexScalars_)[i];
         }
       }
-    };
+    }
 
     inline void setVertexSoSoffsets(std::vector<int> *vertexSoSoffsets) {
       vertexSoSoffsets_ = vertexSoSoffsets;
-    };
+      externalOffsets_ = true;
+    }
 
     virtual int simplify(const double &simplificationThreshold,
-                         ContourTreeSimplificationMetric *metric = NULL);
+                         ContourTreeSimplificationMetric *metric = nullptr);
 
     int sample(unsigned int samplingLevel = 3);
     int computeBarycenters();
@@ -558,37 +572,37 @@ namespace ttk {
 
     int openSuperArc(const int &nodeId);
 
-    int vertexNumber_;
-    bool maintainRegularVertices_;
-    double minScalar_, maxScalar_;
-    const std::vector<real> *vertexScalars_;
-    std::vector<int> *vertexSoSoffsets_;
-    Triangulation *triangulation_;
-    std::vector<int> *minimumList_, *maximumList_;
-    std::vector<Node> nodeList_, originalNodeList_;
-    std::vector<Arc> arcList_;
-    std::vector<SuperArc> superArcList_, originalSuperArcList_;
-    std::vector<int> vertex2node_, vertex2superArc_, vertex2superArcNode_;
-    std::vector<std::vector<double>> *vertexPositions_;
-    bool isSkeletonComputed_;
+    int vertexNumber_{0};
+    bool maintainRegularVertices_{true};
+    double minScalar_{}, maxScalar_{};
+    const std::vector<real> *vertexScalars_{};
+    std::vector<int> *vertexSoSoffsets_{};
+    bool externalOffsets_{false};
+    const AbstractTriangulation *triangulation_{};
+    std::vector<int> *minimumList_{}, *maximumList_{};
+    std::vector<Node> nodeList_{}, originalNodeList_{};
+    std::vector<Arc> arcList_{};
+    std::vector<SuperArc> superArcList_{}, originalSuperArcList_{};
+    std::vector<int> vertex2node_{}, vertex2superArc_{}, vertex2superArcNode_{};
+    std::vector<std::vector<double>> *vertexPositions_{};
+    bool isSkeletonComputed_{false};
   };
 
   class ContourTree : public SubLevelSetTree {
   public:
     ContourTree();
-    ~ContourTree();
 
     int build();
 
     inline const SubLevelSetTree *getMergeTree() const {
       return &mergeTree_;
-    };
+    }
 
     int getPersistencePairs(
       std::vector<std::pair<std::pair<int, int>, double>> &pairs,
       std::vector<std::pair<std::pair<int, int>, double>> *mergePairs = nullptr,
       std::vector<std::pair<std::pair<int, int>, double>> *splitPairs
-      = nullptr) const;
+      = nullptr) const override;
 
     int getPersistencePlot(
       std::vector<std::pair<double, int>> &plot,
@@ -606,9 +620,9 @@ namespace ttk {
 
     inline const SubLevelSetTree *getSplitTree() const {
       return &splitTree_;
-    };
+    }
 
-    inline int maintainRegularVertices(const bool &onOff) {
+    inline int maintainRegularVertices(const bool &onOff) override {
       mergeTree_.maintainRegularVertices(onOff);
       splitTree_.maintainRegularVertices(onOff);
       return 0;
@@ -620,12 +634,12 @@ namespace ttk {
     int setVertexNeighbors(const int &vertexId,
                            const std::vector<int> &neighborList);
 
-    int computeSkeleton(unsigned int arcResolution = 3);
-    int smoothSkeleton(unsigned int skeletonSmoothing);
-    int clearSkeleton();
+    int computeSkeleton(unsigned int arcResolution = 3) override;
+    int smoothSkeleton(unsigned int skeletonSmoothing) override;
+    int clearSkeleton() override;
 
     int simplify(const double &simplificationThreshold,
-                 ContourTreeSimplificationMetric *metric = NULL);
+                 ContourTreeSimplificationMetric *metric = nullptr) override;
 
   protected:
     int combineTrees();
@@ -636,8 +650,6 @@ namespace ttk {
 
     bool isNodeEligible(const Node *n) const;
 
-    SubLevelSetTree mergeTree_, splitTree_;
+    SubLevelSetTree mergeTree_{}, splitTree_{};
   };
 } // namespace ttk
-
-#endif

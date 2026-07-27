@@ -9,136 +9,95 @@
 /// data.csv file of a Cinema Spec D database.
 ///
 /// \param Input vtkDataSet to be stored (vtkDataSet)
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cinemaIO/">Cinema
+///   IO example</a> \n
 
 #pragma once
 
 // VTK includes
-#include <vtkInformation.h>
-#include <vtkNew.h>
-#include <vtkXMLPMultiBlockDataWriter.h>
+#include <ttkAlgorithm.h>
+#include <ttkMacros.h>
 
-// TTK includes
+// VTK Module
+#include <ttkCinemaWriterModule.h>
+
+// TTK Writer
 #include <ttkTopologicalCompressionWriter.h>
-#include <ttkWrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaWriter
-#else
-class ttkCinemaWriter
-#endif
-  : public vtkXMLPMultiBlockDataWriter,
-    public ttk::Wrapper {
+class TTKCINEMAWRITER_EXPORT ttkCinemaWriter : public ttkAlgorithm {
+public:
+  enum class FORMAT { VTK = 0, PNG = 1, TTK = 2 };
+
+private:
+  std::string DatabasePath{""};
+  int CompressionLevel{5};
+  bool IterateMultiBlock{true};
+  bool ForwardInput{true};
+  FORMAT Format{FORMAT::VTK};
+
+  // topological compression
+  double Tolerance{1.0};
+  double MaximumError{};
+  double ZFPTolerance{50};
+  int CompressionType{
+    static_cast<int>(ttk::CompressionType::PersistenceDiagram)};
+  int SQMethodPV{};
+  bool ZFPOnly{false};
+  bool Subdivide{false};
+  bool UseTopologicalSimplification{true};
 
 public:
   static ttkCinemaWriter *New();
-  vtkTypeMacro(ttkCinemaWriter, vtkXMLPMultiBlockDataWriter)
+  vtkTypeMacro(ttkCinemaWriter, ttkAlgorithm);
 
-    vtkSetMacro(DatabasePath, std::string);
+  vtkSetMacro(DatabasePath, const std::string &);
   vtkGetMacro(DatabasePath, std::string);
 
-  vtkSetMacro(OverrideDatabase, bool);
-  vtkGetMacro(OverrideDatabase, bool);
+  ttkSetEnumMacro(Format, FORMAT);
+  vtkGetEnumMacro(Format, FORMAT);
 
-  vtkSetMacro(CompressLevel, int);
-  vtkGetMacro(CompressLevel, int);
+  vtkSetMacro(CompressionLevel, int);
+  vtkGetMacro(CompressionLevel, int);
 
-  vtkSetMacro(UseTopologicalCompression, bool);
-  vtkGetMacro(UseTopologicalCompression, bool);
+  vtkSetMacro(IterateMultiBlock, bool);
+  vtkGetMacro(IterateMultiBlock, bool);
 
-#define TopoCompWriterGetSetMacro(NAME, TYPE) \
-  void Set##NAME(const TYPE _arg) {           \
-    this->ttkCompWriter_->Set##NAME(_arg);    \
-    this->Modified();                         \
-  }                                           \
-  TYPE Get##NAME() {                          \
-    return this->ttkCompWriter_->Get##NAME(); \
-  }
+  vtkSetMacro(ForwardInput, bool);
+  vtkGetMacro(ForwardInput, bool);
 
-  TopoCompWriterGetSetMacro(ScalarField, std::string);
-  TopoCompWriterGetSetMacro(Tolerance, double);
-  TopoCompWriterGetSetMacro(MaximumError, double);
-  TopoCompWriterGetSetMacro(ZFPBitBudget, double);
-  TopoCompWriterGetSetMacro(ZFPOnly, bool);
-  TopoCompWriterGetSetMacro(CompressionType, int);
-  TopoCompWriterGetSetMacro(Subdivide, bool);
-  TopoCompWriterGetSetMacro(UseTopologicalSimplification, bool);
+  vtkGetMacro(Tolerance, double);
+  vtkSetMacro(Tolerance, double);
+  vtkGetMacro(MaximumError, double);
+  vtkSetMacro(MaximumError, double);
+  vtkGetMacro(ZFPTolerance, double);
+  vtkSetMacro(ZFPTolerance, double);
+  vtkGetMacro(ZFPOnly, bool);
+  vtkSetMacro(ZFPOnly, bool);
+  vtkGetMacro(CompressionType, int);
+  vtkSetMacro(CompressionType, int);
+  vtkGetMacro(Subdivide, bool);
+  vtkSetMacro(Subdivide, bool);
+  vtkGetMacro(UseTopologicalSimplification, bool);
+  vtkSetMacro(UseTopologicalSimplification, bool);
+  vtkSetMacro(SQMethodPV, int);
 
-  void SetSQMethodPV(const int arg) {
-    this->ttkCompWriter_->SetSQMethodPV(arg);
-  }
-
-  // default ttk setters
-  vtkSetMacro(debugLevel_, int);
-  void SetThreads() {
-    threadNumber_
-      = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
-    Modified();
-  }
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
+  int DeleteDatabase();
+  int GetLockFilePath(std::string &path);
+  int InitializeLockFile();
 
 protected:
-  ttkCinemaWriter() {
-    SetDatabasePath("");
-    SetOverrideDatabase(true);
-    SetCompressLevel(9);
-    SetUseTopologicalCompression(false);
+  ttkCinemaWriter();
+  ~ttkCinemaWriter() override;
 
-    UseAllCores = false;
+  int ValidateDatabasePath();
+  int ProcessDataProduct(vtkDataObject *input);
 
-    SetNumberOfInputPorts(1);
-    SetNumberOfOutputPorts(1);
-  }
-  ~ttkCinemaWriter(){};
-
-  bool UseAllCores;
-  int ThreadNumber;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
-private:
-  std::string DatabasePath;
-  bool OverrideDatabase;
-  int CompressLevel;
-  bool UseTopologicalCompression;
-  vtkNew<ttkTopologicalCompressionWriter> ttkCompWriter_;
-
-  bool needsToAbort() override {
-    return GetAbortExecute();
-  };
-  int updateProgress(const float &progress) override {
-    UpdateProgress(progress);
-    return 0;
-  };
 };

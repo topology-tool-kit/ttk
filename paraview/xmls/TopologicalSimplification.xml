@@ -1,0 +1,795 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkTopologicalSimplification"
+      class="ttkTopologicalSimplification"
+      label="TTK TopologicalSimplification">
+      <Documentation
+        long_help="TTK plugin for the topological simplification of scalar data."
+        short_help="TTK plugin for the topological simplification of scalar
+        data.">
+
+        Given an input scalar field and a list of critical points to remove,
+        this plugin minimally edits the scalar field such that the listed critical
+        points disappear. This procedure is useful to speedup subsequent topological
+        data analysis when outlier critical points can be easily identified. It is
+        also useful for data simplification.
+
+        The list of critical points to remove must be associated with a point data
+        scalar field that represent the vertex global identifiers in the input
+        geometry.
+
+        Note that this plugin will also produce an output vertex offset scalar field
+        that can be used for further topological data analysis tasks to disambiguate
+        vertices on flat plateaus. For instance, this output vertex offset field
+        can specified to the ContourForests, IntegralLines, or
+        ScalarFieldCriticalPoints plugins.
+
+        Also, this plugin can be given a specific input vertex offset.
+
+        Related publications:
+        "Generalized Topological Simplification of Scalar Fields on Surfaces"
+        Julien Tierny, Valerio Pascucci
+        IEEE Transactions on Visualization and Computer Graphics.
+        Proc. of IEEE VIS 2012.
+
+        "Localized Topological Simplification of Scalar Data"
+        Jonas Lukasczyk, Christoph Garth, Ross Maciejewski, Julien Tierny
+        IEEE Transactions on Visualization and Computer Graphics.
+        Proc. of IEEE VIS 2020.
+        
+        "A Practical Solver for Scalar Data Topological Simplification"
+        Mohamed Kissi, Mathieu Pont, Joshua A. Levine, Julien Tierny
+        IEEE Transactions on Visualization and Computer Graphics.
+        Proc. of IEEE VIS 2024.
+
+        See also ScalarFieldCriticalPoints, IntegralLines, ContourForests,
+Identifiers.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/1manifoldLearning/
+
+        - https://topology-tool-kit.github.io/examples/1manifoldLearningCircles/
+
+        - https://topology-tool-kit.github.io/examples/2manifoldLearning/ 
+
+        - https://topology-tool-kit.github.io/examples/BuiltInExample1/
+
+        - https://topology-tool-kit.github.io/examples/contourTreeAlignment/
+
+        - https://topology-tool-kit.github.io/examples/ctBones/
+
+        - https://topology-tool-kit.github.io/examples/dragon/
+
+        - https://topology-tool-kit.github.io/examples/harmonicSkeleton/
+
+        - https://topology-tool-kit.github.io/examples/imageProcessing/
+
+        - https://topology-tool-kit.github.io/examples/interactionSites/
+
+        - https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/
+
+        - https://topology-tool-kit.github.io/examples/morsePersistence/
+
+        - https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/
+
+        - https://topology-tool-kit.github.io/examples/persistenceClustering0/
+
+        - https://topology-tool-kit.github.io/examples/persistenceClustering1/
+
+        - https://topology-tool-kit.github.io/examples/persistenceClustering2/
+
+        - https://topology-tool-kit.github.io/examples/persistenceClustering3/
+
+        - https://topology-tool-kit.github.io/examples/persistenceClustering4/
+
+        - https://topology-tool-kit.github.io/examples/tectonicPuzzle/
+
+        - https://topology-tool-kit.github.io/examples/topologicalOptimization_darkSky/
+
+        - https://topology-tool-kit.github.io/examples/topologicalOptimization_pegasus/
+
+        - https://topology-tool-kit.github.io/examples/topologicalOptimization_torus/
+
+        - https://topology-tool-kit.github.io/examples/tribute/
+
+        - https://topology-tool-kit.github.io/examples/uncertainStartingVortex/
+
+
+
+      </Documentation>
+
+      <InputProperty
+        name="Domain"
+        port_index="0"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet" />
+        </DataTypeDomain>
+        <InputArrayDomain name="input_array" attribute_type="point" number_of_components="1" />
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+        name="Constraints"
+        port_index="1"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet" />
+        </DataTypeDomain>
+        <InputArrayDomain name="input_array" attribute_type="point" number_of_components="1" />
+        <Documentation>
+          vtkPointSet that represent the constraints of the topological simplification.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+        name="Scalar Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Domain" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="Method"
+        label="Backend"
+        command="SetMethod"
+        number_of_elements="1"
+        default_values="0"
+        >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="LTS (IEEE VIS 2020)"/>
+          <Entry value="1" text="Legacy Approach (IEEE VIS 2012)"/>
+          <Entry value="2" text="Topological Optimization (IEEE VIS 2024)"/>
+        </EnumerationDomain>                      
+        <Documentation>
+          Choose the simplification algorithm.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="ForceInputOffsetScalarField"
+        command="SetForceInputOffsetScalarField"
+        label="Force Input Offset Field"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="0">
+      <BooleanDomain name="bool" />
+      <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   values="0 1" />
+          <!-- enable this widget when <property> equals <value> -->
+      </Hints>
+        <Documentation>
+          Check this box to force the usage of a specific input scalar field
+          as vertex offset (used to disambiguate flat plateaus).
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+        name="Input Offset Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="2"
+        animateable="0"
+        panel_visibility="advanced"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0"
+          >
+          <RequiredProperties>
+            <Property name="Domain" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputOffsetScalarField"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Select the input offset field (to disambiguate flat plateaus).
+        </Documentation>
+      </StringVectorProperty>
+
+
+      <IntVectorProperty name="ForceInputVertexScalarField"
+        label="Force Input Vertex ScalarField"
+        command="SetForceInputVertexScalarField"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   values="0 1" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+        name="Vertex Identifier Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
+        animateable="0"
+        panel_visibility="advanced"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0"
+          >
+          <RequiredProperties>
+            <Property name="Constraints" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputVertexScalarField"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Select the vertex identifier scalar field in the sources.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="ConsiderIdentifierAsBlackList"
+        command="SetConsiderIdentifierAsBlackList"
+        label="Remove selected extrema"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced"
+        >
+        <BooleanDomain name="bool" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   values="0 1" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+          Check this box to remove the selected extrema (instead of
+          removing all non-selected extrema).
+        </Documentation>
+      </IntVectorProperty>
+
+       <IntVectorProperty
+        name="MethodOptimization"
+        label="Gradient Descent Backend"
+        command="SetMethodOptimization"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced" >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Direct gradient descent"/>
+          <Entry value="1" text="Adam (requires TORCH)"/>
+        </EnumerationDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="2" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+          Employed backend for gradient descent. Direct gradient descent provides superior time performance with regard to automatic differentiation with Adam.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="PDCMethod"
+          label="Wasserstein Distance Backend"
+          command="SetPDCMethod"
+          number_of_elements="1"
+         default_values="1"
+         panel_visibility="advanced" >
+         <EnumerationDomain name="enum">
+          <Entry value="0" text="Progressive Approach"/>
+          <Entry value="1" text="Classical Auction"/>
+        </EnumerationDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="2" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+          Backend for Wasserstein distance computation.
+          The Auction algorithm is computationally more expensive than
+          the progressive approach, but more accurate.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="UseFastPersistenceUpdate"
+        command="SetUseFastPersistenceUpdate"
+        label="Fast Persistence Update"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="1">
+        <BooleanDomain name="bool" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                  mode="visibility"
+                                  property="Method"
+                                  value="2" />
+        <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+          Check this box to use fast persistence update (i.e. the persistence diagram will not be completely recomputed from scratch but only the required information will be updated).
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="FastAssignmentUpdate"
+        command="SetFastAssignmentUpdate"
+        label="Fast Assignment Update"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="1">
+        <BooleanDomain name="bool" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="2" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+          Check this box to use the fast assignement update (i.e. persistence pairs which are still between consecutive iterations will maintain their assignments).
+        </Documentation>
+      </IntVectorProperty> 
+
+
+      <DoubleVectorProperty
+        name="CoefStopCondition"
+        label="Stopping Condition Coefficient"
+        command="SetCoefStopCondition"
+        number_of_elements="1"
+        default_values="0.01"
+        >
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                  mode="visibility"
+                                  property="Method"
+                                  value="2" />
+        <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+          Coefficient used in the stopping condition of the algorithm: if the fraction between the current loss and the original loss (between the input and simplified diagrams) is smaller that this coefficient, the algorithm stops.
+        </Documentation>
+      </DoubleVectorProperty>
+
+
+
+
+      <IntVectorProperty
+          name="EpochNumber"
+          label="Maximum Iteration Number"
+          command="SetEpochNumber"
+          number_of_elements="1"
+          default_values="1000"
+          >
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="2" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+        Maximum Iteration Number (if the stopping condition has not been satisfied yet).
+      </Documentation>
+      </IntVectorProperty>
+
+
+
+      <IntVectorProperty
+          name="FinePairManagement"
+          label="Cancellation Primitive"
+          command="SetFinePairManagement"
+          number_of_elements="1"
+         default_values="0"
+         panel_visibility="advanced" >
+         <EnumerationDomain name="enum">
+          <Entry value="0" text="Fill and Cut"/>
+          <Entry value="1" text="Fill-only"/>
+          <Entry value="2" text="Cut-only"/>
+        </EnumerationDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="2" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+          Select the persistence pair cancellation primitive. For illustration, for pairs associated to topological handles of the sublevel sets, the primitive Fill-only will destroy a handle by filling a disc in its inside (only the death gradient is used). Cut-only will cut the handle (only the birth gradient is used). Fill and Cut will produce a compromise between the two (both birth and death gradients are used).
+        </Documentation>
+      </IntVectorProperty>
+
+
+      <IntVectorProperty
+        name="ChooseLearningRate"
+        command="SetChooseLearningRate"
+        label="Choose Learning Rate"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="0">
+        <BooleanDomain name="bool" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="2" />
+
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="MethodOptimization"
+                                   value="1" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+          Check this box to choose learning rate.
+        </Documentation>
+      </IntVectorProperty>
+    
+      <DoubleVectorProperty
+          name="LearningRate"
+          label="Learning Rate"
+          command="SetLearningRate"
+          number_of_elements="1"
+          default_values="0.0001"
+          >
+          <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="2" />
+
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="ChooseLearningRate"
+                                   value="1" />
+          
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="MethodOptimization"
+                                   value="1" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+        Learning Rate.
+      </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+          name="Alpha"
+          label="Gradient Step Size"
+          command="SetAlpha"
+          number_of_elements="1"
+          default_values="0.5"
+          >
+        <Hints>
+
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="2" />
+
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="MethodOptimization"
+                                   value="0" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+        Choose the gradient step size.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      
+      <IntVectorProperty
+        name="ConstraintAveraging"
+        command="SetConstraintAveraging"
+        label="Constraint Averaging"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="1">
+        <BooleanDomain name="bool" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                  mode="visibility"
+                                  property="Method"
+                                  value="2" />
+        <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+          If a given vertex is involved in both signal pairs (i.e. pairs to maintain) and non-signal pairs (i.e. pairs to remove), average the contributions of the constraints (otherwise, the vertex value will not change).
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="OptimizationWithoutMatching"
+        command="SetOptimizationWithoutMatching"
+        label="Online Ad-hoc simplification"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="0">
+        <BooleanDomain name="bool" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                  mode="visibility"
+                                  property="Method"
+                                  value="2" />
+        <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+          Enable on-line ad-hoc simplification (i.e., specify the non-signal pairs and the non-signal pairs will be re-evaluated at each iteration). Faster but less precise and more restrictive.
+        </Documentation>
+      </IntVectorProperty>
+    
+      <IntVectorProperty
+          name="ThresholdMethod"
+          label="Threshold Method"
+          command="SetThresholdMethod"
+          number_of_elements="1"
+         default_values="1"
+         panel_visibility="advanced" >
+         <EnumerationDomain name="enum">
+          <Entry value="0" text="Persistence"/>
+          <Entry value="1" text="PairType [Between]"/>
+          <Entry value="2" text="PairType [Select]"/>
+        </EnumerationDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                  mode="visibility"
+                                  property="Method"
+                                  value="2" />
+
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="OptimizationWithoutMatching"
+                                   value="1" />
+        </Hints>                       
+        <Documentation>
+          .
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+          name="Threshold"
+          label="Threshold"
+          command="SetThreshold"
+          number_of_elements="1"
+          default_values="0.01"
+           panel_visibility="advanced"
+          >
+          <Hints>
+            <PropertyWidgetDecorator type="GenericDecorator"
+                                  mode="visibility"
+                                  property="Method"
+                                  value="2" />
+
+            <PropertyWidgetDecorator type="GenericDecorator"
+                                    mode="visibility"
+                                    property="OptimizationWithoutMatching"
+                                    value="1" />
+            
+            <PropertyWidgetDecorator type="GenericDecorator"
+                                    mode="visibility"
+                                    property="ThresholdMethod"
+                                    value="0" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+        Threshold value.
+      </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+          name="LowerThreshold"
+          label="Lower Threshold"
+          command="SetLowerThreshold"
+          number_of_elements="1"
+        default_values="-1"
+         panel_visibility="advanced"
+          >
+          <Hints>
+            <PropertyWidgetDecorator type="GenericDecorator"
+                                  mode="visibility"
+                                  property="Method"
+                                  value="2" />
+
+            <PropertyWidgetDecorator type="GenericDecorator"
+                                    mode="visibility"
+                                    property="OptimizationWithoutMatching"
+                                    value="1" />
+
+            <PropertyWidgetDecorator type="GenericDecorator"
+                                    mode="visibility"
+                                    property="ThresholdMethod"
+                                    value="1" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+        Lower Threshold value.
+      </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="UpperThreshold"
+          label="Upper Threshold"
+          command="SetUpperThreshold"
+          number_of_elements="1"
+        default_values="2"
+         panel_visibility="advanced"
+          >
+          <Hints>
+            <PropertyWidgetDecorator type="GenericDecorator"
+                                  mode="visibility"
+                                  property="Method"
+                                  value="2" />
+
+            <PropertyWidgetDecorator type="GenericDecorator"
+                                    mode="visibility"
+                                    property="OptimizationWithoutMatching"
+                                    value="1" />
+
+            <PropertyWidgetDecorator type="GenericDecorator"
+                                    mode="visibility"
+                                    property="ThresholdMethod"
+                                    value="1" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+        Upper Threshold value.
+      </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="PairTypeToDelete"
+        label="Pair Type To Delete"
+        command="SetPairTypeToDelete"
+        number_of_elements="1"
+        default_values="1"
+         panel_visibility="advanced"
+        >
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                mode="visibility"
+                                property="Method"
+                                value="2" />
+                                
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                  mode="visibility"
+                                  property="OptimizationWithoutMatching"
+                                  value="1" />
+
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                  mode="visibility"
+                                  property="ThresholdMethod"
+                                  value="2" />
+        <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+          Pair type to delete value.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="PrintFrequency"
+          label="Print Frequency"
+          command="SetPrintFrequency"
+          number_of_elements="1"
+          default_values="10"
+          >
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="2" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+        A print is made every PrintFrequency iterations.
+      </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="AddPerturbation"
+        command="SetAddPerturbation"
+        label="Numerical Perturbation"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced"
+        >
+        <BooleanDomain name="bool" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   values="0 1" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+          Numerically perturb the output (to avoid the usage of an output
+          offset field for flat plateau disambiguation).
+        </Documentation>
+      </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="Scalar Field" />
+        <Property name="Method" />
+        <Property name="ForceInputVertexScalarField" />
+        <Property name="Vertex Identifier Field" />
+        <Property name="ForceInputOffsetScalarField" />
+        <Property name="Input Offset Field" />
+        <Property name="ConsiderIdentifierAsBlackList" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Solver options">
+        <Property name="MethodOptimization" />
+        <Property name="PDCMethod" />
+        <Property name="UseFastPersistenceUpdate" />
+        <Property name="FastAssignmentUpdate" />
+        <Property name="CoefStopCondition" />
+        <Property name="EpochNumber" />
+        <Property name="FinePairManagement"/>
+        <Property name="ChooseLearningRate"/>
+        <Property name="LearningRate"/>
+        <Property name="Alpha"/>
+        <Property name="ConstraintAveraging" />
+        <Property name="OptimizationWithoutMatching" />
+        <Property name="PrintFrequency" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="AddPerturbation" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

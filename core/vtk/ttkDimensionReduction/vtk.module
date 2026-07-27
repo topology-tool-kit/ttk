@@ -1,0 +1,4 @@
+NAME
+ ttkDimensionReduction
+DEPENDS
+ ttkAlgorithm

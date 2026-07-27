@@ -19,7 +19,7 @@
 /// Note that this filter will also produce an output vertex offset scalar field
 /// that can be used for further topological data analysis tasks to disambiguate
 /// vertices on flat plateaus. For instance, this output vertex offset field
-/// can specified to the ttkFTMTree, vtkIntegralLines, or
+/// can specified to the ttkMergeTree, vtkIntegralLines, or
 /// vtkScalarFieldCriticalPoints filters.
 ///
 /// Also, this filter can be given a specific input vertex offset.
@@ -35,131 +35,210 @@
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
-/// \b Related \b publication \n
+/// \b Related \b publications \n
 /// "Generalized Topological Simplification of Scalar Fields on Surfaces" \n
 /// Julien Tierny, Valerio Pascucci \n
-/// Proc. of IEEE VIS 2012.\n
-/// IEEE Transactions on Visualization and Computer Graphics, 2012.
+/// IEEE Transactions on Visualization and Computer Graphics.\n
+/// Proc. of IEEE VIS 2012.
 ///
+/// "Localized Topological Simplification of Scalar Data" \n
+/// Jonas Lukasczyk, Christoph Garth, Ross Maciejewski, Julien Tierny \n
+/// IEEE Transactions on Visualization and Computer Graphics.\n
+/// Proc. of IEEE VIS 2020.
+///
+/// "A Practical Solver for Scalar Data Topological Simplification"\n
+/// Mohamed Kissi, Mathieu Pont, Joshua A. Levine, Julien Tierny\n
+/// IEEE Transactions on Visualization and Computer Graphics.\n
+/// Proc. of IEEE VIS 2024.
+///
+/// \sa ttkTopologicalSimplificationByPersistence
 /// \sa ttkScalarFieldCriticalPoints
 /// \sa ttkIntegralLines
-/// \sa ttkFTMTree
+/// \sa ttkMergeTree
+/// \sa ttkMorseSmaleComplex
 /// \sa ttkIdentifiers
 /// \sa ttk::TopologicalSimplification
-#ifndef _TTK_TOPOLOGICALSIMPLIFICATION_H
-#define _TTK_TOPOLOGICALSIMPLIFICATION_H
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/1manifoldLearning/">1-Manifold
+///   Learning example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/1manifoldLearningCircles/">1-Manifold
+///   Learning Circles example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/2manifoldLearning/">
+///   2-Manifold Learning example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/BuiltInExample1/">BuiltInExample1
+///   example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/contourTreeAlignment/">Contour
+///   Tree Alignment example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/ctBones/">CT Bones
+///   example</a> \n
+///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
+///   example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/harmonicSkeleton/">
+///   Harmonic Skeleton example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/imageProcessing/">Image
+///   Processing example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/interactionSites/">
+///   Interaction sites</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/">Karhunen-Love
+///   Digits 64-Dimensions example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morsePersistence/">Morse
+///   Persistence example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/morseSmaleQuadrangulation/">Morse-Smale
+///   Quadrangulation example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 0 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 1 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 2 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 3 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceClustering0/">Persistence
+///   clustering 4 example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/tectonicPuzzle/">Tectonic
+///   Puzzle example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_darkSky/">Topological
+///   Optimization DarkSky example</a>\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_pegasus/">Topological
+///   Optimization for Pegasus Genus Repair example</a>\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_torus/">Topological
+///   Optimization for Torus Repair example</a>\n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/tribute/">Tribute
+///   example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/uncertainStartingVortex/">
+///   Uncertain Starting Vortex example</a> \n
+///
 
-// VTK includes -- to adapt
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkShortArray.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnsignedShortArray.h>
+#pragma once
+
+// VTK Module
+#include <ttkTopologicalSimplificationModule.h>
 
 // ttk code includes
 #include <TopologicalSimplification.h>
-#include <ttkWrapper.h>
+#include <ttkAlgorithm.h>
+#include <ttkPersistenceDiagramUtils.h>
+#include <ttkUtils.h>
 
-#include <ttkTriangulation.h>
+class vtkDataArray;
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTopologicalSimplification
-#else
-class ttkTopologicalSimplification
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKTOPOLOGICALSIMPLIFICATION_EXPORT ttkTopologicalSimplification
+  : public ttkAlgorithm,
+    protected ttk::TopologicalSimplification {
 
 public:
   static ttkTopologicalSimplification *New();
-  vtkTypeMacro(ttkTopologicalSimplification, vtkDataSetAlgorithm);
+  vtkTypeMacro(ttkTopologicalSimplification, ttkAlgorithm);
 
-  vtkSetMacro(debugLevel_, int);
+  vtkSetMacro(ForceInputOffsetScalarField, bool);
+  vtkGetMacro(ForceInputOffsetScalarField, bool);
 
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
+  vtkSetMacro(ConsiderIdentifierAsBlackList, bool);
+  vtkGetMacro(ConsiderIdentifierAsBlackList, bool);
 
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
+  vtkSetMacro(AddPerturbation, bool);
+  vtkGetMacro(AddPerturbation, bool);
 
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
+  vtkSetMacro(ForceInputVertexScalarField, bool);
+  vtkGetMacro(ForceInputVertexScalarField, bool);
 
-  vtkSetMacro(ForceInputOffsetScalarField, int);
-  vtkGetMacro(ForceInputOffsetScalarField, int);
+  vtkSetMacro(Method, int);
+  vtkGetMacro(Method, int);
 
-  vtkSetMacro(ConsiderIdentifierAsBlackList, int);
-  vtkGetMacro(ConsiderIdentifierAsBlackList, int);
+  vtkSetMacro(PersistenceThreshold, double);
+  vtkGetMacro(PersistenceThreshold, double);
 
-  vtkSetMacro(AddPerturbation, int);
-  vtkGetMacro(AddPerturbation, int);
+  vtkSetMacro(UseFastPersistenceUpdate, bool);
+  vtkGetMacro(UseFastPersistenceUpdate, bool);
 
-  vtkSetMacro(InputOffsetScalarFieldName, std::string);
-  vtkGetMacro(InputOffsetScalarFieldName, std::string);
+  vtkSetMacro(FastAssignmentUpdate, bool);
+  vtkGetMacro(FastAssignmentUpdate, bool);
 
-  vtkSetMacro(OutputOffsetScalarFieldName, std::string);
-  vtkGetMacro(OutputOffsetScalarFieldName, std::string);
+  vtkSetMacro(EpochNumber, int);
+  vtkGetMacro(EpochNumber, int);
 
-  vtkSetMacro(ForceInputVertexScalarField, int);
-  vtkGetMacro(ForceInputVertexScalarField, int);
+  vtkSetMacro(PDCMethod, int);
+  vtkGetMacro(PDCMethod, int);
 
-  vtkSetMacro(InputVertexScalarFieldName, std::string);
-  vtkGetMacro(InputVertexScalarFieldName, std::string);
+  vtkSetMacro(MethodOptimization, int);
+  vtkGetMacro(MethodOptimization, int);
 
-  vtkSetMacro(PeriodicBoundaryConditions, int);
-  vtkGetMacro(PeriodicBoundaryConditions, int);
+  vtkSetMacro(FinePairManagement, int);
+  vtkGetMacro(FinePairManagement, int);
 
-  int getTriangulation(vtkDataSet *input);
-  int getScalars(vtkDataSet *input);
-  int getIdentifiers(vtkPointSet *input);
-  int getOffsets(vtkDataSet *input);
+  vtkSetMacro(ChooseLearningRate, bool);
+  vtkGetMacro(ChooseLearningRate, bool);
 
-  template <typename VTK_TT>
-  int dispatch();
+  vtkSetMacro(LearningRate, double);
+  vtkGetMacro(LearningRate, double);
+
+  vtkSetMacro(Alpha, double);
+  vtkGetMacro(Alpha, double);
+
+  vtkSetMacro(CoefStopCondition, double);
+  vtkGetMacro(CoefStopCondition, double);
+
+  vtkSetMacro(OptimizationWithoutMatching, bool);
+  vtkGetMacro(OptimizationWithoutMatching, bool);
+
+  vtkSetMacro(ThresholdMethod, int);
+  vtkGetMacro(ThresholdMethod, int);
+
+  vtkSetMacro(Threshold, double);
+  vtkGetMacro(Threshold, double);
+
+  vtkSetMacro(LowerThreshold, int);
+  vtkGetMacro(LowerThreshold, int);
+
+  vtkSetMacro(UpperThreshold, int);
+  vtkGetMacro(UpperThreshold, int);
+
+  vtkSetMacro(PairTypeToDelete, int);
+  vtkGetMacro(PairTypeToDelete, int);
+
+  vtkSetMacro(ConstraintAveraging, bool);
+  vtkGetMacro(ConstraintAveraging, bool);
+
+  vtkSetMacro(PrintFrequency, int);
+  vtkGetMacro(PrintFrequency, int);
 
 protected:
   ttkTopologicalSimplification();
 
-  ~ttkTopologicalSimplification();
-
-  TTK_SETUP();
-
   int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
-  int ScalarFieldId;
-  int OffsetFieldId;
-  std::string ScalarField;
-  std::string InputOffsetScalarFieldName;
-  std::string OutputOffsetScalarFieldName;
-  bool ForceInputVertexScalarField;
-  std::string InputVertexScalarFieldName;
-  bool ForceInputOffsetScalarField;
-  bool PeriodicBoundaryConditions;
-  bool ConsiderIdentifierAsBlackList;
-  bool AddPerturbation;
-  bool hasUpdatedMesh_;
-
-  ttk::TopologicalSimplification topologicalSimplification_;
-  ttk::Triangulation *triangulation_;
-  vtkDataArray *identifiers_;
-  vtkDataArray *inputScalars_;
-  vtkDataArray *offsets_;
-  vtkDataArray *inputOffsets_;
+  bool ForceInputVertexScalarField{false};
+  bool ForceInputOffsetScalarField{false};
+  bool ConsiderIdentifierAsBlackList{false};
+  bool AddPerturbation{false};
+  int Method{0};
+  double PersistenceThreshold{0};
 };
-
-#endif // _TTK_TOPOLOGICALSIMPLIFICATION_H

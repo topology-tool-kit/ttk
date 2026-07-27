@@ -10,9 +10,18 @@
 ///
 /// \sa ttk::Triangulation
 /// \sa vtkFTRGraph.cpp %for a usage example.
+///
+/// \b Related \b publication \n
+/// "Task-based Augmented Reeb Graphs with Dynamic ST-Trees" \n
+/// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny \n
+/// EGPGV19: Eurographics Symposium on Parallel Graphics and Visualization
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/harmonicSkeleton/">
+///   Harmonic Skeleton example</a> \n
 
-#ifndef _FTRGRAPH_H
-#define _FTRGRAPH_H
+#pragma once
 
 // base code includes
 #include <Triangulation.h>
@@ -44,63 +53,61 @@ namespace ttk {
 
     struct DynGraphs {
       // one going up, one going down
-      DynamicGraph<idVertex> up, down;
+      DynamicGraph<idVertex> up{}, down{};
     };
 
     struct Valences {
-      std::vector<valence> lower, upper;
+      std::vector<valence> lower{}, upper{};
     };
 
     struct LocalForests {
       // one for upper link, one for lower link
-      LocalForest<idVertex> up, down;
+      LocalForest<idVertex> up{}, down{};
     };
 
     struct Star {
-      std::vector<idEdge> lower, upper;
+      std::vector<idEdge> lower{}, upper{};
     };
 
     struct Comp {
-      std::set<DynGraphNode<idVertex> *> lower, upper;
+      std::set<DynGraphNode<idVertex> *> lower{}, upper{};
     };
 
-    template <typename ScalarType>
+    template <typename ScalarType, typename triangulationType>
     class FTRGraph : public Allocable {
-    private:
-      // Exernal fields
-      Params params_;
-      Scalars<ScalarType> *const scalars_;
+      // External fields
+      Params params_{};
+      Scalars<ScalarType> scalars_{};
 
       // Internal fields
-      Graph graph_;
-      Mesh mesh_;
-      Propagations propagations_;
-      DynGraphs dynGraphs_;
-      Valences valences_;
+      Graph graph_{};
+      Mesh<triangulationType> mesh_{};
+      Propagations propagations_{};
+      DynGraphs dynGraphs_{};
+      Valences valences_{};
 
 #ifndef TTK_DISABLE_FTR_LAZY
-      Lazy lazy_;
+      Lazy lazy_{};
 #endif
 
 #ifdef TTK_ENABLE_FTR_TASK_STATS
       // Stats
-      DebugTimer sweepStart_;
-      std::vector<float> propTimes_;
-      idVertex nbProp_;
+      Timer sweepStart_{};
+      std::vector<float> propTimes_{};
+      idVertex nbProp_{};
 #endif
 
     public:
-      explicit FTRGraph(Triangulation *mesh);
+      explicit FTRGraph(triangulationType *mesh);
       FTRGraph();
-      virtual ~FTRGraph();
 
       /// build the Reeb Graph
       /// \pre If this TTK package uses ttk::Triangulation for fast mesh
-      /// traversals, the function setupTriangulation() must be called on this
-      /// object prior to this function, in a clearly distinct pre-processing
-      /// steps. An error will be returned otherwise.
-      /// \note In such a case, it is recommended to exclude
-      /// setupTriangulation() from any time performance measurement.
+      /// traversals, the function preconditionTriangulation() must be called on
+      /// this object prior to this function, in a clearly distinct
+      /// pre-processing steps. An error will be returned otherwise. \note In
+      /// such a case, it is recommended to exclude preconditionTriangulation()
+      /// from any time performance measurement.
       void build();
 
       // General documentation info:
@@ -138,9 +145,8 @@ namespace ttk {
       // must satisfy some pre-condition (see ttk::Triangulation for more
       // details). Such pre-condition functions are typically called from this
       // function.
-      inline int setupTriangulation(Triangulation *triangulation) {
+      inline int preconditionTriangulation(triangulationType *triangulation) {
         mesh_.setTriangulation(triangulation);
-
         if(triangulation) {
           mesh_.preprocess();
         }
@@ -151,26 +157,26 @@ namespace ttk {
       // Accessor on the graph
       // ---------------------
 
-      Graph &&extractOutputGraph(void) {
+      Graph &&extractOutputGraph() {
         return std::move(graph_);
       }
 
       // Parameters
       // ----------
 
-      /// The nuber of threads to be used during the computation
+      /// The number of threads to be used during the computation
       /// of the reeb graph
-      void setThreadNumber(const idThread nb) {
+      int setThreadNumber(const int nb) override {
         params_.threadNumber = nb;
         // Security, but do not rely on this one
         threadNumber_ = nb;
+        return 0;
       }
 
       /// Control the verbosity of the base code
-      virtual int setDebugLevel(const int &lvl) override {
-        Debug::setDebugLevel(lvl);
+      int setDebugLevel(const int &lvl) override {
         params_.debugLevel = lvl;
-        return 0;
+        return Debug::setDebugLevel(lvl);
       }
 
       void setParams(const Params &p) {
@@ -180,16 +186,17 @@ namespace ttk {
 
       /// Scalar field used to compute the Reeb Graph
       void setScalars(const void *scalars) {
-        scalars_->setScalars((ScalarType *)scalars);
+        scalars_.setScalars(
+          const_cast<ScalarType *>((const ScalarType *)scalars));
       }
 
       /// When several points have the same scalar value,
-      /// we use simulation of simplicity to distingish between
+      /// we use simulation of simplicity to distinguish between
       /// them in a morse discret geometry compliant way.
       /// This is explained in the TTK report.
       /// Set the array to use here
-      void setVertexSoSoffsets(std::vector<SimplexId> *sos) {
-        scalars_->setOffsets(sos);
+      void setVertexSoSoffsets(SimplexId *sos) {
+        scalars_.setOffsets(sos);
       }
 
       DynamicGraph<idVertex> &dynGraph(const Propagation *const lp) {
@@ -233,7 +240,7 @@ namespace ttk {
 
       // Print function (FTRGraphPrint)
 
-      std::string printMesh(void) const;
+      std::string printMesh() const;
 
       std::string printEdge(const idEdge edgeId,
                             const Propagation *const localProp) const;
@@ -243,9 +250,7 @@ namespace ttk {
 
       void printGraph(const int verbosity) const;
 
-      void printTime(DebugTimer &timer,
-                     const std::string &msg,
-                     const int lvl) const;
+      void printTime(Timer &timer, const std::string &msg) const;
 
       // Initialize functions (virtual inherit from Allocable)
       // called automatically by the build
@@ -262,7 +267,7 @@ namespace ttk {
       /// has been completely visited and then continue. When a 1 Saddle is met,
       /// we split the local propagation with a BFS to continue locally. if arc
       /// is supplied, this arc will be used for the growth NOTE: use an
-      /// insertion/deletion list to add lazyness on DynGraph
+      /// insertion/deletion list to add laziness on DynGraph
       void growthFromSeed(const idVertex seed,
                           Propagation *localProp,
                           idSuperArc currentArc = nullSuperArc);
@@ -282,7 +287,7 @@ namespace ttk {
         lowerComps(const std::vector<idEdge> &finishingEdges,
                    const Propagation *const localProp);
 
-      /// Symetric to lowerComps
+      /// Symmetric to lowerComps
       /// \ref lowerComps
       std::set<DynGraphNode<idVertex> *>
         upperComps(const std::vector<idEdge> &startingEdges,
@@ -294,7 +299,7 @@ namespace ttk {
       // return the number of component in lower/upper link
       std::pair<valence, valence> getLinkNbCC(const idVertex curVert,
                                               LocalForests &localForests,
-                                              VertCompFN comp);
+                                              const VertCompFN &comp);
 
       /// update (locally) the preimage graph (dynGraph) from that
       /// of immediately before f(v) to that of immediately after f(v).
@@ -377,7 +382,7 @@ namespace ttk {
 
       /// local growth replacing the global sort
       /// Add vertices above the current one in the propagation,
-      /// return true if vertices aboves the current one have been found.
+      /// return true if vertices above the current one have been found.
       /// Note, these vertices may not have been added if already marked as in
       /// the propagation.
       void localGrowth(Propagation *const localProp,
@@ -411,7 +416,7 @@ namespace ttk {
                          const std::set<DynGraphNode<idVertex> *> &upperComp,
                          const bool hidden = false);
 
-      // Retrun one triangle by upper CC of the vertex v
+      // Return one triangle by upper CC of the vertex v
       std::set<idCell> upCCtriangleSeeds(const idVertex v,
                                          const Propagation *const localProp);
 
@@ -424,7 +429,7 @@ namespace ttk {
                    const Propagation *const localProp);
 
       // bfs on triangles/edges crossing the level set at saddle, starting
-      // at seed. upper vertices encountred are added to newLocalProp
+      // at seed. upper vertices encountered are added to newLocalProp
       // : saddle is the starting saddle,
       // : seed is at first call the first triangle of this bfs (will change
       // during recursive call)
@@ -437,7 +442,7 @@ namespace ttk {
                           Propagation *const newLocalProp,
                           const idSuperArc arc);
 
-      // visit a vertex in terms of segmantation and history,
+      // visit a vertex in terms of segmentation and history,
       // also check if the current arc is merging through an opposite one.
       idSuperArc visit(Propagation *const localProp, const idSuperArc curArc);
 
@@ -446,7 +451,7 @@ namespace ttk {
       // Create a new propagation starting at leaf
       Propagation *newPropagation(const idVertex leaf, const bool fromMax);
 
-      // Compute the wieght of the edge in the dyngraph between e1 and e2.
+      // Compute the weight of the edge in the dyngraph between e1 and e2.
       // This weight is the min value of the two endpoints, we use the mirror
       // array (int)
       idVertex getWeight(const orderedEdge &e1,
@@ -478,5 +483,3 @@ namespace ttk {
 #include "FTRGraphPrint_Template.h"
 #include "FTRGraphPrivate_Template.h"
 #include "FTRGraph_Template.h"
-
-#endif // FTRGRAPH_H

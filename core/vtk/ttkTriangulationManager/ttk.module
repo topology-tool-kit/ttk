@@ -1,0 +1,10 @@
+NAME
+  ttkTriangulationManager
+SOURCES
+  ttkTriangulationManager.cpp
+HEADERS
+  ttkTriangulationManager.h
+DEPENDS
+  ttkAlgorithm
+  compactTriangulationPreconditioning
+  ttkPeriodicGhostsGeneration

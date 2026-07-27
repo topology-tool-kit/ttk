@@ -1,0 +1,92 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+        name="ttkPointSetToSurface"
+        class="ttkPointSetToSurface"
+        label="TTK PointSetToSurface">
+      <Documentation
+          long_help="TTK filter converting point set to surface"
+          short_help="Converts point set to surface.">
+        This filter generates a surface between points in a Point Set
+        according to the ordering of two given Point Data arrays.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/mergeTreePGA/
+
+        - https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/
+      </Documentation>
+
+      <InputProperty
+          name="Domain"
+          label="Input Data Set"
+          port_index="0"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPointSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input Domain" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+        name="InputOrderingXArray"
+        command="SetInputArrayToProcess"
+        label="Input Ordering X Array"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Domain" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the input ordering X array.
+        </Documentation>
+      </StringVectorProperty>
+      
+      <StringVectorProperty
+        name="InputOrderingYArray"
+        command="SetInputArrayToProcess"
+        label="Input Ordering Y Array"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Domain" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the input ordering Y array.
+        </Documentation>
+      </StringVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="InputOrderingXArray" />
+        <Property name="InputOrderingYArray" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Domain" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

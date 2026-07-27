@@ -1,0 +1,4 @@
+NAME
+ ttkPointDataConverter
+DEPENDS
+ ttkAlgorithm

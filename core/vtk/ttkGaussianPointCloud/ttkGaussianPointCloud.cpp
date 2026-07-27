@@ -1,54 +1,48 @@
+#include <vtkIdTypeArray.h>
+#include <vtkInformation.h>
+#include <vtkNew.h>
+#include <vtkPolyData.h>
+
 #include <ttkGaussianPointCloud.h>
+#include <ttkUtils.h>
 
-using namespace std;
-using namespace ttk;
+vtkStandardNewMacro(ttkGaussianPointCloud);
 
-vtkStandardNewMacro(ttkGaussianPointCloud)
+ttkGaussianPointCloud::ttkGaussianPointCloud() {
+  SetNumberOfInputPorts(0);
+  SetNumberOfOutputPorts(1);
+}
 
-  int ttkGaussianPointCloud::RequestData(vtkInformation *request,
-                                         vtkInformationVector **inputVector,
-                                         vtkInformationVector *outputVector) {
-
-  Memory m;
-
-  // Print status
-  {
-    stringstream msg;
-    msg << "[ttkGaussianPointCloud] Generating " << NumberOfSamples
-        << " samples in " << Dimension << "D..." << endl;
-    dMsg(cout, msg.str(), infoMsg);
+int ttkGaussianPointCloud::FillOutputPortInformation(int port,
+                                                     vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
+    return 1;
   }
+  return 0;
+}
 
-  // Prepare input and output
-  vtkInformation *outInfo = outputVector->GetInformationObject(0);
-  auto domain = vtkUnstructuredGrid::SafeDownCast(
-    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+int ttkGaussianPointCloud::RequestData(
+  vtkInformation *ttkNotUsed(request),
+  vtkInformationVector **ttkNotUsed(inputVector),
+  vtkInformationVector *outputVector) {
 
-  auto points = vtkSmartPointer<vtkPoints>::New();
+  auto domain = vtkPolyData::GetData(outputVector);
+
+  vtkNew<vtkPoints> points{};
   points->SetNumberOfPoints(NumberOfSamples);
 
-  // Set Wrapper
-  gaussianPointCloud_.setWrapper(this);
-
   if(points->GetDataType() == VTK_FLOAT) {
-    gaussianPointCloud_.generate<float>(
-      Dimension, NumberOfSamples, points->GetVoidPointer(0));
+    this->generate<float>(
+      Dimension, NumberOfSamples, RandomSeed,
+      static_cast<float *>(ttkUtils::GetVoidPointer(points)));
+  } else if(points->GetDataType() == VTK_DOUBLE) {
+    this->generate<double>(
+      Dimension, NumberOfSamples, RandomSeed,
+      static_cast<double *>(ttkUtils::GetVoidPointer(points)));
   }
 
-  if(points->GetDataType() == VTK_DOUBLE) {
-    gaussianPointCloud_.generate<double>(
-      Dimension, NumberOfSamples, points->GetVoidPointer(0));
-  }
-
-  domain->SetPoints(points);
-
-  // Print status
-  {
-    stringstream msg;
-    msg << "[ttkGaussianPointCloud] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
+  ttkUtils::CellVertexFromPoints(domain, points);
 
   return 1;
 }

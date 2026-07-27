@@ -1,0 +1,10 @@
+NAME
+  ttkCinemaWriter
+SOURCES
+  ttkCinemaWriter.cpp
+HEADERS
+  ttkCinemaWriter.h
+DEPENDS
+  ttkAlgorithm
+  ttkTopologicalCompressionWriter
+  Boost::boost

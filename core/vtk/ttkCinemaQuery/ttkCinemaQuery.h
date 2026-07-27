@@ -9,104 +9,71 @@
 /// This filter creates a temporary SQLite3 database from the input table,
 /// performs a SQL query, and then returns the result as a vtkTable.
 ///
-/// VTK wrapping code for the @CinemaQuery package.
+/// VTK wrapping code for the ttk::CinemaQuery package.
 ///
 /// \param Input Input table (vtkTable)
 /// \param Output Output table (vtkTable)
 ///
 /// sa ttk::CinemaQuery
+///
+/// \b Online \b examples: \n
+///   - <a href="https://topology-tool-kit.github.io/examples/cinemaIO/">Cinema
+///   IO example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/">
+///   Clustering Kelvin Helmholtz Instabilities example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/contourTreeAlignment/">Contour
+///   Tree Alignment example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeFeatureTracking/">Merge
+///   Tree Feature Tracking example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/molecularVibration/">Molecular
+///   Vibration example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/nestedTrackingFromOverlap/">Nested
+///   Tracking from Overlap example</a> \n
 
 #pragma once
 
+// VTK Module
+#include <ttkCinemaQueryModule.h>
+
 // VTK includes
-#include <vtkInformation.h>
-#include <vtkTableAlgorithm.h>
+#include <ttkAlgorithm.h>
 
 // TTK includes
 #include <CinemaQuery.h>
-#include <ttkWrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaQuery
-#else
-class ttkCinemaQuery
-#endif
-  : public vtkTableAlgorithm,
-    public ttk::Wrapper {
-
+class TTKCINEMAQUERY_EXPORT ttkCinemaQuery : public ttkAlgorithm,
+                                             protected ttk::CinemaQuery {
 public:
   static ttkCinemaQuery *New();
-  vtkTypeMacro(ttkCinemaQuery, vtkTableAlgorithm)
+  vtkTypeMacro(ttkCinemaQuery, ttkAlgorithm);
 
-    // default ttk setters
-    vtkSetMacro(debugLevel_, int);
-  void SetThreads() {
-    threadNumber_
-      = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
-    Modified();
-  }
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
+  vtkSetMacro(SQLStatement, const std::string &);
+  vtkGetMacro(SQLStatement, std::string);
 
-  vtkSetMacro(QueryString, std::string);
-  vtkGetMacro(QueryString, std::string);
+  vtkSetMacro(ExcludeColumnsWithRegexp, bool);
+  vtkGetMacro(ExcludeColumnsWithRegexp, bool);
 
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkTableAlgorithm::INPUT_IS_REPEATABLE(), 1);
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
+  vtkSetMacro(RegexpString, const std::string &);
+  vtkGetMacro(RegexpString, std::string);
 
 protected:
-  ttkCinemaQuery() {
-    QueryString = "";
-    UseAllCores = false;
+  ttkCinemaQuery();
+  ~ttkCinemaQuery() override;
 
-    SetNumberOfInputPorts(1);
-    SetNumberOfOutputPorts(1);
-  }
-  ~ttkCinemaQuery(){};
-
-  bool UseAllCores;
-  int ThreadNumber;
-
-  std::string QueryString;
-  ttk::CinemaQuery cinemaQuery;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
 private:
-  bool needsToAbort() override {
-    return GetAbortExecute();
-  };
-  int updateProgress(const float &progress) override {
-    UpdateProgress(progress);
-    return 0;
-  };
+  std::string SQLStatement{"SELECT * FROM InputTable0"};
+  bool ExcludeColumnsWithRegexp{false};
+  std::string RegexpString{".*"};
 };

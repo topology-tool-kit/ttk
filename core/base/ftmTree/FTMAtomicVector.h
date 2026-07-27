@@ -1,12 +1,11 @@
 /// \ingroup base
-/// \class ttk::AtomicVector
+/// \class ttk::FTMAtomicVector
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date 2017-02-09
 ///
-///\brief TTK processing package that manage a paralle vecrion of vector
+///\brief TTK processing package that manage a parallel vecrion of vector
 
-#ifndef ATOMICVECTOR_H
-#define ATOMICVECTOR_H
+#pragma once
 
 #ifdef TTK_ENABLE_OPENMP
 #include <omp.h>
@@ -21,14 +20,14 @@
 
 namespace ttk {
   template <typename type>
-  class AtomicVector : public std::vector<type> {
+  class FTMAtomicVector : public std::vector<type> {
   private:
     std::size_t nextId;
     // for initialization
     const type defaultValue;
 
   public:
-    AtomicVector(const std::size_t initSize = 1, const type &dv = type{})
+    FTMAtomicVector(const std::size_t initSize = 1, const type &dv = type{})
       : std::vector<type>(), nextId(0), defaultValue{dv} {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!initSize) {
@@ -43,7 +42,7 @@ namespace ttk {
     }
 
     // copy constructor
-    AtomicVector(const AtomicVector &other)
+    FTMAtomicVector(const FTMAtomicVector &other)
       : std::vector<type>(other), nextId(other.nextId) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!std::vector<type>::size()) {
@@ -52,9 +51,9 @@ namespace ttk {
 #endif
     }
 
-    AtomicVector(AtomicVector &&other) = default;
+    FTMAtomicVector(FTMAtomicVector &&other) noexcept = default;
 
-    virtual ~AtomicVector() = default;
+    virtual ~FTMAtomicVector() = default;
 
     // ---
     // STL
@@ -88,16 +87,16 @@ namespace ttk {
       nextId = nId;
     }
 
-    void clear(void) {
+    void clear() {
       reset();
 
       // Remove old content
-      std::size_t oldSize = std::vector<type>::size();
+      std::size_t const oldSize = std::vector<type>::size();
       std::vector<type>::clear();
       reserve(oldSize);
     }
 
-    std::size_t getNext(void) {
+    std::size_t getNext() {
       std::size_t resId;
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic capture
@@ -111,11 +110,11 @@ namespace ttk {
       return resId;
     }
 
-    std::size_t size(void) const {
+    std::size_t size() const {
       return nextId;
     }
 
-    bool empty(void) const {
+    bool empty() const {
       return nextId == 0;
     }
 
@@ -128,9 +127,12 @@ namespace ttk {
     // OPERATOR
     // --------
 
-    AtomicVector<type> &operator=(const AtomicVector<type> &other) {
-      std::vector<type>::operator=(other);
-      nextId = other.nextId;
+    FTMAtomicVector<type> &operator=(const FTMAtomicVector<type> &other) {
+      if(&other != this) {
+        std::vector<type>::operator=(other);
+        nextId = other.nextId;
+      }
+      return *this;
     }
 
     // ---------
@@ -138,8 +140,8 @@ namespace ttk {
     // ---------
     // allow foreach on the vector
 
-    typedef typename std::vector<type>::iterator iterator;
-    typedef typename std::vector<type>::const_iterator const_iterator;
+    using iterator = typename std::vector<type>::iterator;
+    using const_iterator = typename std::vector<type>::const_iterator;
 
     iterator end() {
       return this->begin() + nextId;
@@ -149,8 +151,8 @@ namespace ttk {
       return this->cbegin() + nextId;
     }
 
-    typedef typename std::vector<type>::reverse_iterator riterator;
-    typedef typename std::vector<type>::const_reverse_iterator const_riterator;
+    using riterator = typename std::vector<type>::reverse_iterator;
+    using const_riterator = typename std::vector<type>::const_reverse_iterator;
 
     riterator rbegin() {
       return this->rend() - (nextId - 1);
@@ -161,5 +163,3 @@ namespace ttk {
     }
   };
 } // namespace ttk
-
-#endif /* end of include guard: ATOMICVECTOR_H */

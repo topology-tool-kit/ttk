@@ -8,7 +8,7 @@ if(ENABLE_PROFILING)
   set(profiler_lib profiler)
 endif()
 
-# option (TTK_DISABLE_FTR_LAZY "Disable the lazyness optimization" OFF)
+# option (TTK_DISABLE_FTR_LAZY "Disable the laziness optimization" OFF)
 # mark_as_advanced(TTK_DISABLE_FTR_LAZY)
 
 option (TTK_ENABLE_FTR_TASK_STATS "print propagations death time (min only)" OFF)
@@ -22,7 +22,6 @@ mark_as_advanced(TTK_ENABLE_FTR_VERT_STATS)
 ttk_add_base_library(ftrGraph
   SOURCES
     Graph.cpp
-    Mesh.cpp
     FTRSegmentation.cpp
   HEADERS
     FTRAtomicUF.h
@@ -46,9 +45,10 @@ ttk_add_base_library(ftrGraph
     FTRSegmentation.h
     FTRSuperArc.h
     FTRTasks.h
-  LINK
+  DEPENDS
     triangulation
     scalarFieldCriticalPoints
+    Boost::boost
     ${profiler_lib}
     )
 

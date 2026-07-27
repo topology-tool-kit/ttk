@@ -3,8 +3,8 @@ ttk_add_base_library(integralLines
     IntegralLines.cpp
   HEADERS
     IntegralLines.h
-  LINK
+  DEPENDS
     geometry
     triangulation
+    scalarFieldCriticalPoints
     )
-

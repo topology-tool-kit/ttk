@@ -1,0 +1,124 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy
+     name="ttkSphereFromPoint"
+     class="ttkSphereFromPoint"
+     label="TTK SphereFromPoint">
+     <Documentation
+        long_help="TTK plugin that produces sphere-only glyphs."
+        short_help="TTK plugin that produces sphere-only glyphs.">
+          TTK plugin that produces sphere-only glyphs.
+     </Documentation>
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <Documentation>
+          Input point set.
+        </Documentation>
+      </InputProperty>
+
+      <DoubleVectorProperty
+         name="Radius"
+         label="Radius"
+         command="SetRadius"
+         number_of_elements="1"
+         default_values="0.5" >
+        <DoubleRangeDomain name="range" min="0" max="100" />
+         <Documentation>
+           Sphere radius.
+         </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+         name="ThetaResolution"
+         label="Theta Resolution"
+         command="SetThetaResolution"
+         number_of_elements="1"
+         default_values="20" >
+        <IntRangeDomain name="range" min="0" max="100" />
+         <Documentation>
+           Theta resolution.
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="StartTheta"
+         label="Start Theta"
+         command="SetStartTheta"
+         number_of_elements="1"
+         default_values="0" >
+        <IntRangeDomain name="range" min="0" max="360" />
+         <Documentation>
+           Start theta.
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="EndTheta"
+         label="End Theta"
+         command="SetEndTheta"
+         number_of_elements="1"
+         default_values="360" >
+        <IntRangeDomain name="range" min="0" max="360" />
+         <Documentation>
+           End theta.
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="PhiResolution"
+         label="Phi Resolution"
+         command="SetPhiResolution"
+         number_of_elements="1"
+         default_values="20" >
+        <IntRangeDomain name="range" min="0" max="100" />
+         <Documentation>
+           Phi resolution.
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="StartPhi"
+         label="Start Phi"
+         command="SetStartPhi"
+         number_of_elements="1"
+         default_values="0" >
+        <IntRangeDomain name="range" min="0" max="360" />
+         <Documentation>
+           Start phi.
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="EndPhi"
+         label="End Phi"
+         command="SetEndPhi"
+         number_of_elements="1"
+         default_values="180" >
+        <IntRangeDomain name="range" min="0" max="180" />
+         <Documentation>
+           End phi.
+         </Documentation>
+      </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+      
+      <Hints>
+        <ShowInMenu category="TTK - Misc" />
+      </Hints>
+
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

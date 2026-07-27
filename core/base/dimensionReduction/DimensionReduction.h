@@ -13,24 +13,100 @@
 ///
 /// \sa ttk::Triangulation
 /// \sa ttkDimensionReduction.cpp %for a usage example.
+///
+/// \b Online \b examples: \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/1manifoldLearning/">1-Manifold
+///   Learning example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/">
+///   Clustering Kelvin Helmholtz Instabilities example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/">Karhunen-Love
+///   Digits 64-Dimensions example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreeClustering/">Merge
+///   Tree Clustering example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/mergeTreePGA/">Merge
+///   Tree Principal Geodesic Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramPGA/">Persistence
+///   Diagram Principal Geodesic Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_householdAnalysis/">Persistent
+///   Generators Household Analysis example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/">Persistent
+///   Generators Periodic Picture example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topoAEppTeaser/">Topological
+///   Autoencoders++ Teaser example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/topoMapTeaser/">TopoMap
+///   Teaser example</a> \n
+///
+
+/// \b Related \b publication: \n
+/// "Topomap: A 0-dimensional homology preserving projection of high-dimensional
+/// data"\n Harish Doraiswamy, Julien Tierny, Paulo J. S. Silva, Luis Gustavo
+/// Nonato, and Claudio Silva\n Proc. of IEEE VIS 2020.\n IEEE Transactions on
+/// Visualization and Computer Graphics 27(2): 561-571, 2020. \n
+///
+/// "Topological Autoencoders" \n
+/// Michael Moor, Max Horn, Bastian Rieck, Karsten Borgwardt, \n
+/// Proceedings of the 37th International Conference on Machine Learning,
+/// 2020. \n
+///
+/// "Optimizing persistent homology-based functions" \n
+/// Mathieu Carriere, Frederic Chazal, Marc Glisse, Yuichi Ike,
+/// Hariprasad Kannan, Yuhei Umeda, \n
+/// Proceedings of the 38th International Conference on Machine Learning,
+/// 2021. \n
+///
+/// "Topological Autoencoders++: Fast and Accurate Cycle-Aware Dimensionality
+/// Reduction" \n
+/// MattÃ©o ClÃ©mot, Julie Digne, Julien Tierny, \n
+/// IEEE Transactions on Visualization and Computer Graphics.
+/// Accepted, to be presented at IEEE VIS 2026.
 
 #pragma once
 
-#include <Triangulation.h>
-#include <Wrapper.h>
+#include <Debug.h>
+#include <TopoMap.h>
+#include <TopologicalDimensionReduction.h>
 
 namespace ttk {
 
-  class DimensionReduction : public Debug {
+  class DimensionReduction : virtual public Debug {
 
   public:
     DimensionReduction();
-    ~DimensionReduction();
 
-    inline int setSEParameters(std::string &Affinity,
-                               float Gamma,
-                               std::string &EigenSolver,
-                               bool InputIsADistanceMatrix) {
+    /** Scikit-Learn Dimension Reduction algorithms */
+    enum class METHOD {
+      /** Spectral Embedding */
+      SE = 0,
+      /** Locally Linear Embedding */
+      LLE = 1,
+      /** Multi-Dimensional Scaling */
+      MDS = 2,
+      /** t-distributed Stochastic Neighbor Embedding */
+      T_SNE = 3,
+      /** IsoMap Embedding */
+      ISOMAP = 4,
+      /** Principal Component Analysis */
+      PCA = 5,
+      /** TopoMap */
+      TOPOMAP = 6,
+      /** AutoEncoder */
+      AE = 7,
+    };
+
+    inline void setSEParameters(const std::string &Affinity,
+                                const float Gamma,
+                                const std::string &EigenSolver,
+                                const bool InputIsADistanceMatrix) {
       if(InputIsADistanceMatrix) {
         se_Affinity = "precomputed";
       } else {
@@ -38,34 +114,32 @@ namespace ttk {
       }
       se_Gamma = Gamma;
       se_EigenSolver = EigenSolver;
-      return 0;
     }
 
-    inline int setLLEParameters(float Regularization,
-                                std::string &EigenSolver,
-                                float Tolerance,
-                                int MaxIteration,
-                                std::string &Method,
-                                float HessianTolerance,
-                                float ModifiedTolerance,
-                                std::string &NeighborsAlgorithm) {
+    inline void setLLEParameters(const float Regularization,
+                                 const std::string &EigenSolver,
+                                 const float Tolerance,
+                                 const int MaxIteration,
+                                 const std::string &Method_s,
+                                 const float HessianTolerance,
+                                 const float ModifiedTolerance,
+                                 const std::string &NeighborsAlgorithm) {
       lle_Regularization = Regularization;
       lle_EigenSolver = EigenSolver;
       lle_Tolerance = Tolerance;
       lle_MaxIteration = MaxIteration;
-      lle_Method = Method;
+      lle_Method = Method_s;
       lle_HessianTolerance = HessianTolerance;
       lle_ModifiedTolerance = ModifiedTolerance;
       lle_NeighborsAlgorithm = NeighborsAlgorithm;
-      return 0;
     }
 
-    inline int setMDSParameters(bool Metric,
-                                int Init,
-                                int MaxIteration,
-                                int Verbose,
-                                float Epsilon,
-                                bool Dissimilarity) {
+    inline void setMDSParameters(const bool Metric,
+                                 const int Init,
+                                 const int MaxIteration,
+                                 const int Verbose,
+                                 const float Epsilon,
+                                 const bool Dissimilarity) {
       mds_Metric = Metric;
       mds_Init = Init;
       mds_MaxIteration = MaxIteration;
@@ -76,20 +150,19 @@ namespace ttk {
       } else {
         mds_Dissimilarity = "euclidean";
       }
-      return 0;
     }
 
-    inline int setTSNEParameters(float Perplexity,
-                                 float Exaggeration,
-                                 float LearningRate,
-                                 int MaxIteration,
-                                 int MaxIterationProgress,
-                                 float GradientThreshold,
-                                 std::string &Metric,
-                                 std::string &Init,
-                                 int Verbose,
-                                 std::string &Method,
-                                 float Angle) {
+    inline void setTSNEParameters(const float Perplexity,
+                                  const float Exaggeration,
+                                  const float LearningRate,
+                                  const int MaxIteration,
+                                  const int MaxIterationProgress,
+                                  const float GradientThreshold,
+                                  const std::string &Metric,
+                                  const std::string &Init,
+                                  const int Verbose,
+                                  const std::string &Method_s,
+                                  const float Angle) {
       tsne_Perplexity = Perplexity;
       tsne_Exaggeration = Exaggeration;
       tsne_LearningRate = LearningRate;
@@ -99,155 +172,214 @@ namespace ttk {
       tsne_Metric = Metric;
       tsne_Init = Init;
       tsne_Verbose = Verbose;
-      tsne_Method = Method;
+      tsne_Method = Method_s;
       tsne_Angle = Angle;
-      return 0;
     }
 
-    inline int setISOParameters(std::string &EigenSolver,
-                                float Tolerance,
-                                int MaxIteration,
-                                std::string &PathMethod,
-                                std::string &NeighborsAlgorithm) {
+    inline void setISOParameters(const std::string &EigenSolver,
+                                 const float Tolerance,
+                                 const int MaxIteration,
+                                 const std::string &PathMethod,
+                                 const std::string &NeighborsAlgorithm) {
       iso_EigenSolver = EigenSolver;
       iso_Tolerance = Tolerance;
       iso_MaxIteration = MaxIteration;
       iso_PathMethod = PathMethod;
       iso_NeighborsAlgorithm = NeighborsAlgorithm;
-      return 0;
     }
 
-    inline int setPCAParameters(bool Copy,
-                                bool Whiten,
-                                std::string &SVDSolver,
-                                float Tolerance,
-                                std::string &MaxIteration) {
+    inline void setPCAParameters(const bool Copy,
+                                 const bool Whiten,
+                                 const std::string &SVDSolver,
+                                 const float Tolerance,
+                                 const std::string &MaxIteration) {
       pca_Copy = Copy;
       pca_Whiten = Whiten;
       pca_SVDSolver = SVDSolver;
       pca_Tolerance = Tolerance;
       pca_MaxIteration = MaxIteration;
-      return 0;
+    }
+    inline void setTopoParameters(const size_t AngularSampleNb, bool CheckMST) {
+      topomap_AngularSampleNb = AngularSampleNb;
+      topomap_CheckMST = CheckMST;
     }
 
-    inline int setInputModulePath(const std::string &modulePath) {
-      modulePath_ = modulePath;
-      return 0;
+    inline void setInputModulePath(const std::string &modulePath) {
+      ModulePath = modulePath;
     }
 
-    inline int setInputModuleName(const std::string &moduleName) {
-      moduleName_ = moduleName;
-      return 0;
+    inline void setInputModuleName(const std::string &moduleName) {
+      ModuleName = moduleName;
     }
 
-    inline int setInputFunctionName(const std::string &functionName) {
-      functionName_ = functionName;
-      return 0;
+    inline void setInputFunctionName(const std::string &functionName) {
+      FunctionName = functionName;
     }
 
-    inline int setInputMatrixDimensions(SimplexId numberOfRows,
-                                        SimplexId numberOfColumns) {
-      numberOfRows_ = numberOfRows;
-      numberOfColumns_ = numberOfColumns;
-      return 0;
+    inline void setInputMethod(METHOD method) {
+
+      this->Method = method;
+
+#ifndef TTK_ENABLE_SCIKIT_LEARN
+      if(this->Method != METHOD::TOPOMAP) {
+        this->printWrn("TTK has been built without scikit-learn.");
+        this->printWrn("Defaulting to the `TopoMap` backend.");
+        this->Method = METHOD::TOPOMAP;
+      }
+#endif
+
+      std::string methodName;
+      switch(this->Method) {
+        case METHOD::SE:
+          methodName = "Spectral Embedding";
+          break;
+        case METHOD::LLE:
+          methodName = "Locally Linear Embedding";
+          break;
+        case METHOD::MDS:
+          methodName = "Multi-Dimensional Scaling";
+          break;
+        case METHOD::T_SNE:
+          methodName = "t-distributed Stochastic Neighbor Embedding";
+          break;
+        case METHOD::ISOMAP:
+          methodName = "Isomap Embedding";
+          break;
+        case METHOD::PCA:
+          methodName = "Principal Component Analysis";
+          break;
+        case METHOD::TOPOMAP:
+          methodName = "TopoMap (IEEE VIS 2020)";
+          break;
+        case METHOD::AE:
+          methodName = "Autoencoder";
+          break;
+      }
+      this->printMsg("Using backend `" + methodName + "`");
     }
 
-    inline int setInputMatrix(void *data) {
-      matrix_ = data;
-      return 0;
+    inline void setInputNumberOfComponents(const int numberOfComponents) {
+      this->NumberOfComponents = numberOfComponents;
     }
 
-    inline int setInputMethod(int method) {
-      method_ = method;
-      return 0;
+    inline void setInputNumberOfNeighbors(const int numberOfNeighbors) {
+      this->NumberOfNeighbors = numberOfNeighbors;
     }
 
-    inline int setInputNumberOfComponents(int numberOfComponents) {
-      numberOfComponents_ = numberOfComponents;
-      return 0;
+    inline void setInputIsDeterministic(const int isDeterm) {
+      this->IsDeterministic = isDeterm;
     }
 
-    inline int setInputNumberOfNeighbors(int numberOfNeighbors) {
-      numberOfNeighbors_ = numberOfNeighbors;
-      return 0;
+    inline void setIsInputDistanceMatrix(const bool data) {
+      this->IsInputADistanceMatrix = data;
+      if(data) {
+        this->se_Affinity = "precomputed";
+        this->mds_Dissimilarity = "precomputed";
+        this->tsne_Metric = "precomputed";
+        this->iso_Metric = "precomputed";
+      } else {
+        this->se_Affinity = "nearest_neighbors";
+        this->mds_Dissimilarity = "euclidean";
+        this->tsne_Metric = "euclidean";
+        this->iso_Metric = "euclidean";
+      }
     }
 
-    inline int setInputIsDeterministic(int randomState) {
-      randomState_ = randomState;
-      return 0;
-    }
-
-    inline int setOutputComponents(std::vector<std::vector<double>> *data) {
-      embedding_ = data;
-      return 0;
-    }
-
-    bool isPythonFound() const;
-
-    int execute() const;
+    int execute(std::vector<std::vector<double>> &outputEmbedding,
+                const std::vector<double> &inputMatrix,
+                const int nRows,
+                const int nColumns,
+                int *insertionTimeForTopoMap = nullptr) const;
 
   protected:
     // se
-    std::string se_Affinity;
-    float se_Gamma;
-    std::string se_EigenSolver;
+    std::string se_Affinity{"nearest_neighbors"};
+    float se_Gamma{1};
+    std::string se_EigenSolver{"None"};
 
     // lle
-    float lle_Regularization;
-    std::string lle_EigenSolver;
-    float lle_Tolerance;
-    int lle_MaxIteration;
-    std::string lle_Method;
-    float lle_HessianTolerance;
-    float lle_ModifiedTolerance;
-    std::string lle_NeighborsAlgorithm;
+    float lle_Regularization{1e-3};
+    std::string lle_EigenSolver{"auto"};
+    float lle_Tolerance{1e-3};
+    int lle_MaxIteration{300};
+    std::string lle_Method{"standard"};
+    float lle_HessianTolerance{1e-3};
+    float lle_ModifiedTolerance{1e-3};
+    std::string lle_NeighborsAlgorithm{"auto"};
 
     // mds
-    bool mds_Metric;
-    int mds_Init;
-    int mds_MaxIteration;
-    int mds_Verbose;
-    float mds_Epsilon;
-    std::string mds_Dissimilarity;
+    bool mds_Metric{true};
+    int mds_Init{4};
+    int mds_MaxIteration{300};
+    int mds_Verbose{0};
+    float mds_Epsilon{0};
+    std::string mds_Dissimilarity{"euclidean"};
 
     // tsne
-    float tsne_Perplexity;
-    float tsne_Exaggeration;
-    float tsne_LearningRate;
-    int tsne_MaxIteration;
-    int tsne_MaxIterationProgress;
-    float tsne_GradientThreshold;
-    std::string tsne_Metric;
-    std::string tsne_Init;
-    int tsne_Verbose;
-    std::string tsne_Method;
-    float tsne_Angle;
+    float tsne_Perplexity{30};
+    float tsne_Exaggeration{12};
+    float tsne_LearningRate{200};
+    int tsne_MaxIteration{1000};
+    int tsne_MaxIterationProgress{300};
+    float tsne_GradientThreshold{1e-7};
+    std::string tsne_Metric{"euclidean"};
+    std::string tsne_Init{"random"};
+    int tsne_Verbose{0};
+    std::string tsne_Method{"barnes_hut"};
+    float tsne_Angle{0.5};
 
     // iso
-    std::string iso_EigenSolver;
-    float iso_Tolerance;
-    int iso_MaxIteration;
-    std::string iso_PathMethod;
-    std::string iso_NeighborsAlgorithm;
+    std::string iso_EigenSolver{"auto"};
+    float iso_Tolerance{1e-3};
+    int iso_MaxIteration{300};
+    std::string iso_PathMethod{"auto"};
+    std::string iso_NeighborsAlgorithm{"auto"};
+    std::string iso_Metric{"euclidean"};
 
     // pca
-    bool pca_Copy;
-    bool pca_Whiten;
-    std::string pca_SVDSolver;
-    float pca_Tolerance;
-    std::string pca_MaxIteration;
+    bool pca_Copy{true};
+    bool pca_Whiten{false};
+    std::string pca_SVDSolver{"auto"};
+    float pca_Tolerance{0};
+    std::string pca_MaxIteration{"auto"};
 
-    std::string modulePath_;
-    std::string moduleName_;
-    std::string functionName_;
-    SimplexId numberOfRows_;
-    SimplexId numberOfColumns_;
-    int method_;
-    int numberOfComponents_;
-    int numberOfNeighbors_;
-    int randomState_;
-    void *matrix_;
-    std::vector<std::vector<double>> *embedding_;
-    char majorVersion_;
+    // TopoMap
+    size_t topomap_AngularSampleNb;
+    bool topomap_CheckMST;
+    TopoMap::STRATEGY topomap_Strategy{TopoMap::STRATEGY::KRUSKAL};
+
+    // AutoEncoder
+    bool ae_CUDA{true};
+    bool ae_Deterministic{false};
+    int ae_Seed{0};
+    int ae_Epochs{1000};
+    double ae_LearningRate{1e-2};
+    TopologicalDimensionReduction::OPTIMIZER ae_Optimizer{
+      TopologicalDimensionReduction::OPTIMIZER::ADAM};
+    TopologicalDimensionReduction::REGUL ae_Method{
+      TopologicalDimensionReduction::REGUL::ASYMMETRIC_CASCADE};
+    TopologicalDimensionReduction::MODEL ae_Model{
+      TopologicalDimensionReduction::MODEL::AUTOENCODER};
+    std::string ae_Architecture{"32 32"};
+    std::string ae_Activation{"ReLU"};
+    int ae_BatchSize{0};
+    bool ae_BatchNormalization{true};
+    double ae_RegCoefficient{1e-2};
+    bool ae_PreOptimize{false};
+    int ae_PreOptimizeEpochs{1000};
+
+    // testing
+    std::string ModulePath{"default"};
+    std::string ModuleName{"dimensionReduction"};
+    std::string FunctionName{"doIt"};
+
+    METHOD Method;
+
+    int NumberOfComponents{2};
+    int NumberOfNeighbors{5};
+    int IsDeterministic{true};
+    char majorVersion_{'0'};
+    bool IsInputADistanceMatrix{false};
+    bool IsInputImages{false};
   };
 } // namespace ttk

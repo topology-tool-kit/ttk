@@ -1,0 +1,9 @@
+NAME
+  ttkConnectedComponents
+SOURCES
+  ttkConnectedComponents.cpp
+HEADERS
+  ttkConnectedComponents.h
+DEPENDS
+  ttkAlgorithm
+  connectedComponents

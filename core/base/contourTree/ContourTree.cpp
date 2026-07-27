@@ -1,5 +1,9 @@
 #include <ContourTree.h>
+
+#include <cmath>
 #include <iomanip>
+#include <queue>
+#include <set>
 
 using namespace std;
 using namespace ttk;
@@ -19,11 +23,12 @@ struct MyCmp {
   }
 
   bool operator()(int node1, int node2) {
-    int vertex1 = (*nodeList_)[node1].getVertexId();
-    int vertex2 = (*nodeList_)[node2].getVertexId();
-    bool cmp = ((*vertexScalars_)[vertex1] < (*vertexScalars_)[vertex2])
-               || ((*vertexScalars_)[vertex1] == (*vertexScalars_)[vertex2]
-                   && (*vertexOffsets_)[vertex1] < (*vertexOffsets_)[vertex2]);
+    int const vertex1 = (*nodeList_)[node1].getVertexId();
+    int const vertex2 = (*nodeList_)[node2].getVertexId();
+    bool const cmp
+      = ((*vertexScalars_)[vertex1] < (*vertexScalars_)[vertex2])
+        || ((*vertexScalars_)[vertex1] == (*vertexScalars_)[vertex2]
+            && (*vertexOffsets_)[vertex1] < (*vertexOffsets_)[vertex2]);
     if(isAscendingOrder_)
       return cmp;
     else
@@ -33,7 +38,7 @@ struct MyCmp {
 
 struct filtrationCtCmp {
   bool operator()(const pair<bool, pair<double, pair<int, int>>> &v0,
-                  const pair<bool, pair<double, pair<int, int>>> &v1) {
+                  const pair<bool, pair<double, pair<int, int>>> &v1) const {
 
     if(v0.first) {
       return ((v0.second.first < v1.second.first)
@@ -44,7 +49,7 @@ struct filtrationCtCmp {
               || ((v0.second.first == v1.second.first)
                   && (v0.second.second.first > v1.second.second.first)));
     }
-  };
+  }
 } filtrationCmp;
 
 struct _persistenceCmp {
@@ -80,7 +85,7 @@ struct _persistencePairCmp {
 void SuperArc::smooth(const vector<Node> &nodeList,
                       const vector<vector<double>> *vertexPositions,
                       bool order) {
-  int N = getNumberOfBarycenters();
+  int const N = getNumberOfBarycenters();
   if(N) {
     /// init ///
     vector<vector<double>> barycenterList(barycenterList_.size());
@@ -136,7 +141,7 @@ void SuperArc::sortRegularNodes(const vector<double> *vertexScalars,
                                 const vector<int> *vertexOffsets,
                                 const vector<Node> *nodeList,
                                 bool order) {
-  MyCmp cmp(vertexScalars, vertexOffsets, nodeList, order);
+  MyCmp const cmp(vertexScalars, vertexOffsets, nodeList, order);
 
   if(order)
     std::sort(regularNodeList_.begin(), regularNodeList_.end(), cmp);
@@ -144,10 +149,10 @@ void SuperArc::sortRegularNodes(const vector<double> *vertexScalars,
     std::sort(regularNodeList_.rbegin(), regularNodeList_.rend(), cmp);
 }
 
-double
-  PersistenceMetric::computeSuperArcMetric(const int &downVertexId,
-                                           const int &upVertexId,
-                                           const vector<int> &interiorNodeIds) {
+double PersistenceMetric::computeSuperArcMetric(
+  const int &downVertexId,
+  const int &upVertexId,
+  const vector<int> &ttkNotUsed(interiorNodeIds)) {
 
   if(!tree_)
     return -DBL_MAX;
@@ -161,17 +166,7 @@ double
 }
 
 SubLevelSetTree::SubLevelSetTree() {
-
-  vertexNumber_ = 0;
-  triangulation_ = NULL;
-  minimumList_ = NULL;
-  maximumList_ = NULL;
-  vertexSoSoffsets_ = NULL;
-  vertexScalars_ = NULL;
-  maintainRegularVertices_ = true;
-  vertexPositions_ = NULL;
-
-  isSkeletonComputed_ = false;
+  this->setDebugMsgPrefix("SubLevelSetTree");
 }
 
 int SubLevelSetTree::appendRegularNode(const int &superArcId,
@@ -199,7 +194,7 @@ int SubLevelSetTree::appendRegularNode(const int &superArcId,
 
 int SubLevelSetTree::build() {
 
-  DebugTimer timer;
+  Timer timer;
 
   if(!vertexNumber_)
     return -1;
@@ -207,8 +202,9 @@ int SubLevelSetTree::build() {
     return -2;
   if((!vertexSoSoffsets_) || ((int)vertexSoSoffsets_->size() != vertexNumber_))
     return -3;
-  if(triangulation_->isEmpty())
-    return -4;
+  // TODO uncomment after triangulation templatization
+  // if(triangulation_->isEmpty())
+  //   return -4;
   if((!minimumList_) && (!maximumList_))
     return -5;
   if((minimumList_) && (maximumList_))
@@ -216,14 +212,14 @@ int SubLevelSetTree::build() {
 
   vector<UnionFind> seeds;
   vector<vector<int>> seedSuperArcs;
-  vector<UnionFind *> vertexSeeds(vertexNumber_, (UnionFind *)NULL);
+  vector<UnionFind *> vertexSeeds(vertexNumber_, (UnionFind *)nullptr);
   vector<UnionFind *> starSets;
   vector<bool> visitedVertices(vertexNumber_, false);
 
   SimplexId vertexId = -1, nId = -1;
-  UnionFind *seed = NULL, *firstUf = NULL;
+  UnionFind *seed = nullptr, *firstUf = nullptr;
 
-  const vector<int> *extremumList = NULL;
+  const vector<int> *extremumList = nullptr;
 
   bool isMergeTree = true;
 
@@ -277,9 +273,9 @@ int SubLevelSetTree::build() {
     starSets.clear();
 
     merge = false;
-    firstUf = NULL;
+    firstUf = nullptr;
 
-    SimplexId neighborNumber
+    SimplexId const neighborNumber
       = triangulation_->getVertexNeighborNumber(vertexId);
     for(SimplexId i = 0; i < neighborNumber; i++) {
       triangulation_->getVertexNeighbor(vertexId, i, nId);
@@ -310,15 +306,15 @@ int SubLevelSetTree::build() {
 
     if(!vertexSeeds[vertexId]) {
 
-      vertexSeeds[vertexId] = makeUnion(starSets);
+      vertexSeeds[vertexId] = UnionFind::makeUnion(starSets);
 
-      int newNodeId = makeNode(vertexId);
+      int const newNodeId = makeNode(vertexId);
 
       if(merge) {
 
         vector<int> seedIds;
         for(int i = 0; i < (int)starSets.size(); i++) {
-          int seedId = starSets[i] - &(seeds[0]);
+          int const seedId = starSets[i] - &(seeds[0]);
           bool found = false;
           for(int j = 0; j < (int)seedIds.size(); j++) {
             if(seedIds[j] == seedId) {
@@ -331,18 +327,18 @@ int SubLevelSetTree::build() {
         }
 
         for(int i = 0; i < (int)seedIds.size(); i++) {
-          int superArcId
+          int const superArcId
             = seedSuperArcs[seedIds[i]][seedSuperArcs[seedIds[i]].size() - 1];
           closeSuperArc(superArcId, newNodeId);
         }
 
-        int seedId = vertexSeeds[vertexId] - &(seeds[0]);
+        int const seedId = vertexSeeds[vertexId] - &(seeds[0]);
         if(!filtrationFront.empty())
           seedSuperArcs[seedId].push_back(openSuperArc(newNodeId));
       } else if(starSets.size()) {
         // we're dealing with a degree-2 node
-        int seedId = starSets[0] - &(seeds[0]);
-        int superArcId
+        int const seedId = starSets[0] - &(seeds[0]);
+        int const superArcId
           = seedSuperArcs[seedId][seedSuperArcs[seedId].size() - 1];
 
         if(filtrationFront.empty()) {
@@ -359,24 +355,14 @@ int SubLevelSetTree::build() {
 
   } while(!filtrationFront.empty());
 
-  {
-    stringstream msg;
+  const std::string tree = isMergeTree ? "JoinTree" : "SplitTree";
+  this->printMsg(
+    tree + " computed", 1.0, timer.getElapsedTime(), this->threadNumber_);
+  this->printMsg(std::vector<std::vector<std::string>>{
+    {"#Nodes", std::to_string(getNumberOfNodes())},
+    {"#Arcs", std::to_string(getNumberOfArcs())}});
 
-    msg << "[ContourTree] ";
-
-    if(isMergeTree)
-      msg << "Join";
-    else
-      msg << "Split";
-
-    msg << "Tree computed in " << timer.getElapsedTime()
-        << " s. (n: " << getNumberOfNodes() << ", a:" << getNumberOfSuperArcs()
-        << ")" << endl;
-    dMsg(cout, msg.str(), 2);
-  }
-
-  if(debugLevel_ >= 4)
-    print(cout, 4);
+  print();
 
   return 0;
 }
@@ -388,7 +374,8 @@ int SubLevelSetTree::clearArc(const int &vertexId0, const int &vertexId1) {
   if((vertexId1 < 0) || (vertexId1 >= vertexNumber_))
     return -2;
 
-  int nodeId0 = vertex2node_[vertexId0], nodeId1 = vertex2node_[vertexId1];
+  const int nodeId0 = vertex2node_[vertexId0],
+            nodeId1 = vertex2node_[vertexId1];
 
   for(int i = 0; i < nodeList_[nodeId0].getNumberOfUpArcs(); i++) {
     if(nodeList_[arcList_[nodeList_[nodeId0].getUpArcId(i)].getUpNodeId()]
@@ -416,16 +403,16 @@ int SubLevelSetTree::clearRegularNode(const int &vertexId) {
   if((vertexId < 0) || (vertexId >= vertexNumber_))
     return -1;
 
-  int nodeId = vertex2node_[vertexId];
+  int const nodeId = vertex2node_[vertexId];
 
   if(!((nodeList_[nodeId].getNumberOfDownArcs() == 1)
        && (nodeList_[nodeId].getNumberOfUpArcs() == 1)))
     return -2;
 
-  int downArcId = nodeList_[nodeId].getDownArcId(0),
-      upArcId = nodeList_[nodeId].getUpArcId(0);
+  const int downArcId = nodeList_[nodeId].getDownArcId(0),
+            upArcId = nodeList_[nodeId].getUpArcId(0);
 
-  int upNodeId = arcList_[upArcId].getUpNodeId();
+  int const upNodeId = arcList_[upArcId].getUpNodeId();
 
   // removes the arcs from the current node
   nodeList_[nodeId].removeDownArcId(0);
@@ -452,7 +439,7 @@ int SubLevelSetTree::clearRoot(const int &vertexId) {
   if((vertexId < 0) || (vertexId >= vertexNumber_))
     return -1;
 
-  int nodeId = vertex2node_[vertexId];
+  int const nodeId = vertex2node_[vertexId];
 
   if((nodeList_[nodeId].getNumberOfDownArcs() == 1)
      && (!nodeList_[nodeId].getNumberOfUpArcs())) {
@@ -486,12 +473,12 @@ int SubLevelSetTree::exportArcPosToVtk(const int &arcId,
     myVoxelSize[0] = myVoxelSize[1] = myVoxelSize[2] = 1;
   }
 
-  double offset = myVoxelSize[0];
+  double const offset = myVoxelSize[0];
 
   vector<double> v;
 
-  int downNodeId = superArcList_[arcId].downNodeId_;
-  int upNodeId = superArcList_[arcId].upNodeId_;
+  int const downNodeId = superArcList_[arcId].downNodeId_;
+  int const upNodeId = superArcList_[arcId].upNodeId_;
 
   v = (*vertexPositions_)[nodeList_[downNodeId].vertexId_];
   // fix a bug in paraview
@@ -632,7 +619,7 @@ int SubLevelSetTree::exportNodePosToVtk(const int &nodeId,
     myVoxelSize[0] = myVoxelSize[1] = myVoxelSize[2] = 1;
   }
 
-  double offset = myVoxelSize[0];
+  double const offset = myVoxelSize[0];
 
   vector<double> v;
 
@@ -793,7 +780,7 @@ int SubLevelSetTree::exportToSvg(const string &fileName,
   if(!vertexScalars_)
     return -1;
 
-  bool hasLayout = buildPlanarLayout(scaleX, scaleY);
+  bool const hasLayout = buildPlanarLayout(scaleX, scaleY);
 
   // put the root right above the highest saddle
   double minY = -1, maxY = -1;
@@ -838,14 +825,12 @@ int SubLevelSetTree::exportToSvg(const string &fileName,
     }
   }
 
-  string dotFileName = fileName + ".dot";
+  string const dotFileName = fileName + ".dot";
 
   ofstream dotFile(dotFileName.data(), ios::out);
 
   if(!dotFile) {
-    stringstream msg;
-    msg << "[ContourTree] Could not open file `" << dotFileName << "'!" << endl;
-    dMsg(cerr, msg.str(), 1);
+    this->printErr("Could not open file `" + dotFileName + "'!");
     return -2;
   }
 
@@ -871,8 +856,8 @@ int SubLevelSetTree::exportToSvg(const string &fileName,
 
     if(!superArcList_[i].pruned_) {
 
-      int downNodeId = superArcList_[i].getDownNodeId();
-      int upNodeId = superArcList_[i].getUpNodeId();
+      int const downNodeId = superArcList_[i].getDownNodeId();
+      int const upNodeId = superArcList_[i].getUpNodeId();
 
       dotFile << "  \"f = ";
       dotFile << (*vertexScalars_)[nodeList_[downNodeId].vertexId_];
@@ -964,25 +949,17 @@ int SubLevelSetTree::exportToSvg(const string &fileName,
   stringstream commandLine;
   commandLine << "dot -Kneato -Tsvg " << dotFileName << " -o " << fileName
               << " &> /dev/null";
-  {
-    stringstream msg;
-    msg << "[ContourTree] Calling GraphViz to generate the SVG file." << endl;
-    msg << "[ContourTree] This may take a long time..." << endl;
-    dMsg(cout, msg.str(), 2);
-  }
+  this->printMsg("Calling GraphViz to generate the SVG file.");
+  this->printMsg("This may take a long time...");
 
-  int cmdRet = system(commandLine.str().data());
+  int const cmdRet = system(commandLine.str().data());
 
   if((!cmdRet) || (cmdRet == 256)) {
-    stringstream msg;
-    msg << "[ContourTree] Output file `" << fileName << "' generated in "
-        << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), 2);
+    this->printMsg(
+      "Output file `" + fileName + "' generated", 1.0, t.getElapsedTime(), 1);
   } else {
-    stringstream msg;
-    msg << "[ContourTree] Could not find the `GraphViz' package!" << endl;
-    msg << "[ContourTree] Please install it and re-run this program." << endl;
-    dMsg(cerr, msg.str(), 1);
+    this->printErr("Could not find the `GraphViz' package!");
+    this->printErr("Please install it and re-run this program.");
   }
 
   //   OsCall::rmFile(dotFileName);
@@ -1003,9 +980,7 @@ int SubLevelSetTree::exportToVtk(const string &fileName,
   ofstream o(fileName.data(), ios::out);
 
   if(!o) {
-    stringstream msg;
-    msg << "[ContourTree] Could not open file `" << fileName << "'!" << endl;
-    dMsg(cerr, msg.str(), 1);
+    this->printErr("Could not open file `" + fileName + "'!");
     return -3;
   }
 
@@ -1041,8 +1016,8 @@ int SubLevelSetTree::exportToVtk(const string &fileName,
   // node color
   for(int i = 0; i < (int)superArcList_.size(); i++) {
     if(!superArcList_[i].pruned_) {
-      int downNodeId = superArcList_[i].downNodeId_;
-      int upNodeId = superArcList_[i].upNodeId_;
+      int const downNodeId = superArcList_[i].downNodeId_;
+      int const upNodeId = superArcList_[i].upNodeId_;
 
       if(!nodeColorOut[downNodeId]) {
         o << "          ";
@@ -1081,8 +1056,8 @@ int SubLevelSetTree::exportToVtk(const string &fileName,
   int pointId = 0;
   for(int i = 0; i < (int)superArcList_.size(); i++) {
     if(!superArcList_[i].pruned_) {
-      int downNodeId = superArcList_[i].downNodeId_;
-      int upNodeId = superArcList_[i].upNodeId_;
+      int const downNodeId = superArcList_[i].downNodeId_;
+      int const upNodeId = superArcList_[i].upNodeId_;
 
       if(!nodePosOut[downNodeId]) {
         o << "            ";
@@ -1121,8 +1096,8 @@ int SubLevelSetTree::exportToVtk(const string &fileName,
 
   for(int i = 0; i < (int)superArcList_.size(); i++) {
     if(!superArcList_[i].pruned_) {
-      int downNodeId = superArcList_[i].downNodeId_;
-      int upNodeId = superArcList_[i].upNodeId_;
+      int const downNodeId = superArcList_[i].downNodeId_;
+      int const upNodeId = superArcList_[i].upNodeId_;
 
       if(!nodeMeshOut[downNodeId]) {
         o << "        " << nodeIds[downNodeId][0] << " "
@@ -1202,7 +1177,8 @@ int SubLevelSetTree::flush() {
 int SubLevelSetTree::buildExtremumList(vector<int> &extremumList,
                                        const bool &isSubLevelSet) {
 
-  if((!triangulation_) || triangulation_->isEmpty())
+  // TODO uncomment after triangulation templatization
+  if((!triangulation_) /*|| triangulation_->isEmpty()*/)
     return -1;
 
   if((!vertexScalars_) || (!vertexScalars_->size()))
@@ -1216,9 +1192,9 @@ int SubLevelSetTree::buildExtremumList(vector<int> &extremumList,
   for(SimplexId i = 0; i < triangulation_->getNumberOfVertices(); i++) {
 
     bool isExtremum = true;
-    SimplexId neighborNumber = triangulation_->getVertexNeighborNumber(i);
+    SimplexId const neighborNumber = triangulation_->getVertexNeighborNumber(i);
     for(SimplexId j = 0; j < neighborNumber; j++) {
-      SimplexId otherId;
+      SimplexId otherId = -1;
       triangulation_->getVertexNeighbor(i, j, otherId);
 
       if(isSubLevelSet) {
@@ -1306,16 +1282,12 @@ int SubLevelSetTree::getPersistenceDiagram(
   diagram.resize(pairs->size());
 
   for(int i = 0; i < (int)pairs->size(); i++) {
-    if((minimumList_) && (!maximumList_)) {
-      // join tree
-      diagram[i].first = (*vertexScalars_)[(*pairs)[i].first.first];
-      diagram[i].second = (*vertexScalars_)[(*pairs)[i].first.second];
-    } else if((maximumList_) && (!minimumList_)) {
+    if((maximumList_) && (!minimumList_)) {
       // split tree
       diagram[i].second = (*vertexScalars_)[(*pairs)[i].first.first];
       diagram[i].first = (*vertexScalars_)[(*pairs)[i].first.second];
     } else {
-      // contour tree
+      // join tree or contour tree
       diagram[i].first = (*vertexScalars_)[(*pairs)[i].first.first];
       diagram[i].second = (*vertexScalars_)[(*pairs)[i].first.second];
     }
@@ -1328,8 +1300,9 @@ int SubLevelSetTree::getPersistenceDiagram(
 
 int SubLevelSetTree::getPersistencePairs(
   vector<pair<pair<int, int>, double>> &pairs,
-  std::vector<std::pair<std::pair<int, int>, double>> *mergePairs,
-  std::vector<std::pair<std::pair<int, int>, double>> *splitPairs) const {
+  std::vector<std::pair<std::pair<int, int>, double>> *ttkNotUsed(mergePairs),
+  std::vector<std::pair<std::pair<int, int>, double>> *ttkNotUsed(
+    splitPairs)) const {
 
   Timer t;
 
@@ -1355,13 +1328,13 @@ int SubLevelSetTree::getPersistencePairs(
   for(int i = 0; i < getNumberOfSuperArcs(); ++i) {
     const SuperArc *a = getSuperArc(i);
     const Node *n = getNode(a->getDownNodeId());
-    int nodeId = n->getVertexId();
+    int const nodeId = n->getVertexId();
 
     if(!n->getNumberOfDownSuperArcs()) {
       // internal, split trees and merges trees have their leaves at the bottom
       double extremumScalar = 0;
       double saddleScalar = 0;
-      int saddleId = getNode(a->getUpNodeId())->getVertexId();
+      int const saddleId = getNode(a->getUpNodeId())->getVertexId();
 
       extremumScalar = (*vertexScalars_)[nodeId];
       saddleScalar = (*vertexScalars_)[saddleId];
@@ -1369,7 +1342,7 @@ int SubLevelSetTree::getPersistencePairs(
       pairs[leafId].first.first = nodeId;
       pairs[leafId].first.second = saddleId;
       pairs[leafId].second = fabs(saddleScalar - extremumScalar);
-      float persistence = pairs[leafId].second;
+      float const persistence = pairs[leafId].second;
       if(isnan(persistence))
         pairs[leafId].second = 0;
 
@@ -1401,11 +1374,11 @@ int SubLevelSetTree::getPersistencePairs(
           if(!(getNode(a->getUpNodeId())->getNumberOfUpSuperArcs()))
             break;
 
-          int nextArcId = getNode(a->getUpNodeId())->getUpSuperArcId(0);
+          int const nextArcId = getNode(a->getUpNodeId())->getUpSuperArcId(0);
           a = getSuperArc(nextArcId);
 
           if(a) {
-            int saddleId = getNode(a->getUpNodeId())->getVertexId();
+            int const saddleId = getNode(a->getUpNodeId())->getVertexId();
             if(!getNode(a->getUpNodeId())->getNumberOfDownSuperArcs())
               break;
 
@@ -1419,7 +1392,7 @@ int SubLevelSetTree::getPersistencePairs(
               saddleScalar = (*vertexScalars_)[saddleId];
               pairs[j].first.second = saddleId;
               pairs[j].second = fabs(saddleScalar - extremumScalar);
-              float persistence = pairs[j].second;
+              float const persistence = pairs[j].second;
               if(isnan(persistence))
                 pairs[j].second = 0;
               break;
@@ -1450,31 +1423,31 @@ int SubLevelSetTree::getPersistencePairs(
       pairs.back().second
         = fabs((*vertexScalars_)[pairs.back().first.first]
                - (*vertexScalars_)[pairs.back().first.second]);
-      float persistence = pairs.back().second;
+      float const persistence = pairs.back().second;
       if(isnan(persistence))
         pairs.back().second = 0;
       break;
     }
   }
 
-  if(debugLevel_ >= 4) {
-    stringstream msg;
-    msg << "[ContourTree] " << (isMergeTree ? "(0-1)" : "(1-2)") << " "
-        << pairs.size() << " pairs:" << endl;
-    for(int i = 0; i < (int)pairs.size(); i++) {
-      msg << "[ContourTree]    " << (isMergeTree ? "min" : "max") << "-#"
-          << pairs[i].first.first << " saddle-#" << pairs[i].first.second
-          << ", persistence=" << pairs[i].second << endl;
-    }
-    dMsg(cout, msg.str(), 4);
+  std::string const pairtype = isMergeTree ? "(0-1)" : "(1-2)";
+  std::string const pairextr = isMergeTree ? "min" : "max";
+
+  this->printMsg(
+    std::vector<std::vector<std::string>>{
+      {"#" + pairtype + " pairs", std::to_string(pairs.size())}},
+    debug::Priority::DETAIL);
+  for(const auto &p : pairs) {
+    this->printMsg(
+      std::vector<std::vector<std::string>>{
+        {"#" + pairextr, std::to_string(p.first.first)},
+        {"#saddles", std::to_string(p.first.second)},
+        {"Persistence", std::to_string(p.second)}},
+      debug::Priority::DETAIL);
   }
 
-  {
-    stringstream msg;
-    msg << "[ContourTree] " << pairs.size() << " persistence pairs computed in "
-        << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), 2);
-  }
+  this->printMsg(std::to_string(pairs.size()) + " persistence pairs computed",
+                 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -1495,8 +1468,8 @@ int SubLevelSetTree::getPersistencePlot(
 
   for(int i = 0; i < (int)plot.size(); i++) {
     plot[i].first = (*persistencePairs)[i].second;
-    if(plot[i].first < pow(10, -REAL_SIGNIFICANT_DIGITS)) {
-      plot[i].first = pow(10, -REAL_SIGNIFICANT_DIGITS);
+    if(plot[i].first < Geometry::powIntTen(-REAL_SIGNIFICANT_DIGITS)) {
+      plot[i].first = Geometry::powIntTen(-REAL_SIGNIFICANT_DIGITS);
     }
     plot[i].second = persistencePairs->size() - i;
   }
@@ -1508,11 +1481,8 @@ bool SubLevelSetTree::buildPlanarLayout(const double &scaleX,
                                         const double &scaleY) {
 
   if((minimumList_) && (maximumList_)) {
-    stringstream msg;
-    msg << "[ContourTree] Contour tree planar layout not implemented." << endl;
-    msg << "[ContourTree] Planar layout is only implemented for merge-trees."
-        << endl;
-    dMsg(cerr, msg.str(), 2);
+    this->printErr("Contour tree planar layout not implemented.");
+    this->printErr("Planar layout is only implemented for merge-trees.");
     return false;
   }
 
@@ -1523,8 +1493,8 @@ bool SubLevelSetTree::buildPlanarLayout(const double &scaleX,
 
   // 1) set the y coordinate for everyone
   for(int i = 0; i < (int)superArcList_.size(); i++) {
-    int downNodeId = superArcList_[i].downNodeId_;
-    int upNodeId = superArcList_[i].upNodeId_;
+    int const downNodeId = superArcList_[i].downNodeId_;
+    int const upNodeId = superArcList_[i].upNodeId_;
 
     nodeList_[downNodeId].layoutY_
       = ((*vertexScalars_)[nodeList_[downNodeId].vertexId_] - minScalar_)
@@ -1547,7 +1517,7 @@ bool SubLevelSetTree::buildPlanarLayout(const double &scaleX,
 
     if(!superArcList_[i].pruned_) {
 
-      int downNodeId = superArcList_[i].downNodeId_;
+      int const downNodeId = superArcList_[i].downNodeId_;
       if(!nodeList_[downNodeId].downSuperArcList_.size()) {
         pair<bool, pair<double, pair<int, int>>> n;
         n.first = (minimumList_ ? true : false);
@@ -1566,23 +1536,23 @@ bool SubLevelSetTree::buildPlanarLayout(const double &scaleX,
   // filtration loop
   do {
 
-    int vertexId = front.begin()->second.second.second;
+    int const vertexId = front.begin()->second.second.second;
     front.erase(front.begin());
 
-    int nodeId = vertex2node_[vertexId];
+    int const nodeId = vertex2node_[vertexId];
 
     // retrieve the number of leaves given by its children
     for(int i = 0; i < (int)nodeList_[nodeId].downSuperArcList_.size(); i++) {
-      int arcId = nodeList_[nodeId].downSuperArcList_[i];
-      int childId = superArcList_[arcId].downNodeId_;
+      int const arcId = nodeList_[nodeId].downSuperArcList_[i];
+      int const childId = superArcList_[arcId].downNodeId_;
 
       node2LeafNumber[nodeId] += node2LeafNumber[childId];
     }
 
     // add its parents to the front
     for(int i = 0; i < (int)nodeList_[nodeId].upSuperArcList_.size(); i++) {
-      int arcId = nodeList_[nodeId].upSuperArcList_[i];
-      int parentId = superArcList_[arcId].upNodeId_;
+      int const arcId = nodeList_[nodeId].upSuperArcList_[i];
+      int const parentId = superArcList_[arcId].upNodeId_;
 
       if(!inFront[parentId]) {
         pair<bool, pair<double, pair<int, int>>> n;
@@ -1609,7 +1579,7 @@ bool SubLevelSetTree::buildPlanarLayout(const double &scaleX,
 
   for(int i = 0; i < (int)superArcList_.size(); i++) {
     if(!superArcList_[i].pruned_) {
-      int upNodeId = superArcList_[i].upNodeId_;
+      int const upNodeId = superArcList_[i].upNodeId_;
       if(!nodeList_[upNodeId].upSuperArcList_.size()) {
         // that's it
         rootId = upNodeId;
@@ -1632,7 +1602,7 @@ bool SubLevelSetTree::buildPlanarLayout(const double &scaleX,
 
   do {
 
-    int nodeId = nodeQueue.front();
+    int const nodeId = nodeQueue.front();
     nodeQueue.pop();
 
     // get the number of leaves of the first child
@@ -1641,8 +1611,8 @@ bool SubLevelSetTree::buildPlanarLayout(const double &scaleX,
     if((nodeList_[nodeId].downSuperArcList_.size()) && (nodeId != subRootId)
        && (nodeId != rootId)) {
 
-      int arcId = nodeList_[nodeId].downSuperArcList_[0];
-      int childId = superArcList_[arcId].downNodeId_;
+      int const arcId = nodeList_[nodeId].downSuperArcList_[0];
+      int const childId = superArcList_[arcId].downNodeId_;
 
       ratio = node2LeafNumber[childId] / ((double)node2LeafNumber[nodeId]);
       if(ratio > 1)
@@ -1663,8 +1633,8 @@ bool SubLevelSetTree::buildPlanarLayout(const double &scaleX,
     // pass the right interval to the children and add them to the queue
     double xOffset = 0;
     for(int i = 0; i < (int)nodeList_[nodeId].downSuperArcList_.size(); i++) {
-      int arcId = nodeList_[nodeId].downSuperArcList_[i];
-      int childId = superArcList_[arcId].downNodeId_;
+      int const arcId = nodeList_[nodeId].downSuperArcList_[i];
+      int const childId = superArcList_[arcId].downNodeId_;
 
       ratio = node2LeafNumber[childId] / ((double)node2LeafNumber[nodeId]);
       if(ratio > 1)
@@ -1680,14 +1650,6 @@ bool SubLevelSetTree::buildPlanarLayout(const double &scaleX,
     }
 
   } while(!nodeQueue.empty());
-
-  // scale a bit
-  int maintainedArcNumber = 0;
-  for(int i = 0; i < (int)superArcList_.size(); i++) {
-    if(!superArcList_[i].pruned_) {
-      maintainedArcNumber++;
-    }
-  }
 
   // test
   //   for(int i = 0; i < (int) superArcList_.size(); i++){
@@ -1795,7 +1757,7 @@ int SubLevelSetTree::moveRegularNode(const Node *n,
                                      const Node *newUp) {
 
   int arcId = -1;
-  int nodeId = n - &(nodeList_[0]);
+  int const nodeId = n - &(nodeList_[0]);
 
   // remove n from oldDown and oldUp and update n
   for(int i = 0; i < oldUp->getNumberOfDownArcs(); i++) {
@@ -1851,12 +1813,13 @@ int SubLevelSetTree::moveRegularNode(const Node *n,
   return 0;
 }
 
-int SubLevelSetTree::print(ostream &stream, const int &debugLevel) const {
+int SubLevelSetTree::print() const {
 
-  stringstream msg;
+  stringstream const msg;
 
-  msg << "[ContourTree] Node list (" << getNumberOfNodes()
-      << " nodes):" << endl;
+  this->printMsg(
+    "Node list (" + std::to_string(getNumberOfNodes()) + " nodes):",
+    debug::Priority::DETAIL);
 
   int minCount = 0, saddleCount = 0, maxCount = 0, regularCount = 0;
 
@@ -1866,9 +1829,12 @@ int SubLevelSetTree::print(ostream &stream, const int &debugLevel) const {
     if(vertex2superArc_[n->getVertexId()] == -1) {
       // regular node
 
-      msg << "[ContourTree]\tId: " << i << ", VertId: " << n->getVertexId()
-          << ", D(" << n->getNumberOfDownSuperArcs() << ") U("
-          << n->getNumberOfUpSuperArcs() << ")" << endl;
+      this->printMsg(
+        std::vector<std::vector<std::string>>{
+          {"Id", std::to_string(i), "VertId", std::to_string(n->getVertexId()),
+           "D", std::to_string(n->getNumberOfDownSuperArcs()), "U",
+           std::to_string(n->getNumberOfUpSuperArcs())}},
+        debug::Priority::DETAIL);
 
       if(!n->getNumberOfDownSuperArcs())
         minCount++;
@@ -1878,8 +1844,11 @@ int SubLevelSetTree::print(ostream &stream, const int &debugLevel) const {
         saddleCount++;
     }
   }
-  msg << "[ContourTree] Arc list (" << getNumberOfSuperArcs()
-      << " arcs):" << endl;
+
+  this->printMsg(
+    "Arc list (" + std::to_string(getNumberOfSuperArcs()) + " arcs):",
+    debug::Priority::DETAIL);
+
   for(int i = 0; i < getNumberOfSuperArcs(); i++) {
     const SuperArc *a = getSuperArc(i);
 
@@ -1887,32 +1856,40 @@ int SubLevelSetTree::print(ostream &stream, const int &debugLevel) const {
                *up = getNode(a->getUpNodeId());
     if((up) && (down)) {
 
-      msg << "[ContourTree]\tId: " << i << ", D(" << down->getVertexId() << ") "
-          << "U(" << up->getVertexId() << ") "
-          << "V(" << a->getNumberOfRegularNodes() << ")" << endl;
+      this->printMsg(
+        std::vector<std::vector<std::string>>{
+          {"Id", std::to_string(i), "D",
+           std::to_string(down->getNumberOfDownSuperArcs()), "U",
+           std::to_string(up->getNumberOfUpSuperArcs()), "V",
+           std::to_string(a->getNumberOfRegularNodes())}},
+        debug::Priority::DETAIL);
     } else {
-      stringstream errMsg;
-      errMsg << "[ContourTree] Arc inconsistency! " << a->getDownNodeId()
-             << "->" << a->getUpNodeId() << endl;
-      dMsg(cerr, errMsg.str(), 1);
+      this->printErr("Arc inconsistency! " + std::to_string(a->getDownNodeId())
+                     + "->" + std::to_string(a->getUpNodeId()));
     }
 
-    if(debugLevel_ >= 5) {
-      for(int j = 0; j < a->getNumberOfRegularNodes(); j++) {
-        msg << "[ContourTree]\t\tRegular vertex "
-            << nodeList_[a->getRegularNodeId(j)].getVertexId() << endl;
-      }
+    for(int j = 0; j < a->getNumberOfRegularNodes(); j++) {
+      this->printMsg(
+        std::vector<std::vector<std::string>>{
+          {"Regular vertex",
+           std::to_string(nodeList_[a->getRegularNodeId(j)].getVertexId())}},
+        debug::Priority::VERBOSE);
     }
 
     regularCount += a->getNumberOfRegularNodes();
   }
 
-  msg << "[ContourTree] Vertex count: " << minCount << " m + " << saddleCount
-      << " s + " << maxCount << " M + " << regularCount
-      << " r = " << minCount + saddleCount + maxCount + regularCount
-      << " (in: " << vertexNumber_ << ")" << endl;
-
-  dMsg(stream, msg.str(), debugLevel);
+  this->printMsg(
+    std::vector<std::vector<std::string>>{
+      {"#Minima", std::to_string(minCount)},
+      {"#Saddles", std::to_string(saddleCount)},
+      {"#Maxima", std::to_string(maxCount)},
+      {"#Regular", std::to_string(regularCount)},
+      {"#Sum",
+       std::to_string(minCount + saddleCount + maxCount + regularCount)},
+      {"#Input vertices", std::to_string(vertexNumber_)},
+    },
+    debug::Priority::DETAIL);
 
   return 0;
 }
@@ -1943,11 +1920,8 @@ int SubLevelSetTree::simplify(const double &simplificationThreshold,
     return -3;
 
   if((minimumList_) && (maximumList_)) {
-    stringstream msg;
-    msg << "[ContourTree] Contour tree simplification not implemented." << endl;
-    msg << "[ContourTree] Simplification is only implemented for merge-trees."
-        << endl;
-    dMsg(cerr, msg.str(), 2);
+    this->printErr("Contour tree simplification not implemented.");
+    this->printErr("Simplification is only implemented for merge-trees.");
     return -4;
   }
 
@@ -1969,7 +1943,7 @@ int SubLevelSetTree::simplify(const double &simplificationThreshold,
 
   //   if(!unNormalizedThreshold) return -4;
 
-  vector<pair<real, int>> regularNodeList;
+  vector<pair<real, int>> const regularNodeList;
 
   int arcToSimplify = -1;
   double currentScore = 0, minScore;
@@ -1984,8 +1958,8 @@ int SubLevelSetTree::simplify(const double &simplificationThreshold,
 
       if(!superArcList_[i].pruned_) {
 
-        int downNodeId = superArcList_[i].downNodeId_;
-        int upNodeId = superArcList_[i].upNodeId_;
+        int const downNodeId = superArcList_[i].downNodeId_;
+        int const upNodeId = superArcList_[i].upNodeId_;
 
         if(!nodeList_[downNodeId].downSuperArcList_.size()) {
 
@@ -1994,11 +1968,7 @@ int SubLevelSetTree::simplify(const double &simplificationThreshold,
             superArcList_[i].regularNodeList_);
 
           if((currentScore < 0) || (currentScore > (maxScalar_ - minScalar_))) {
-
-            stringstream msg;
-            msg << "[ContourTree] Out-of-range score!"
-                << " (user-defined metric)" << endl;
-            dMsg(cerr, msg.str(), 4);
+            this->printWrn("Out-of-range score! (user-defined metric)");
           } else {
             if(currentScore < minScore) {
               arcToSimplify = i;
@@ -2019,8 +1989,8 @@ int SubLevelSetTree::simplify(const double &simplificationThreshold,
       break;
 
     // perform the simplification
-    int downNodeId = superArcList_[arcToSimplify].downNodeId_;
-    int upNodeId = superArcList_[arcToSimplify].upNodeId_;
+    int const downNodeId = superArcList_[arcToSimplify].downNodeId_;
+    int const upNodeId = superArcList_[arcToSimplify].upNodeId_;
 
     int pivotId = upNodeId;
     int leafId = downNodeId;
@@ -2031,9 +2001,9 @@ int SubLevelSetTree::simplify(const double &simplificationThreshold,
       leafId = downNodeId;
     }
 
-    bool isSimpleSaddle = (nodeList_[pivotId].downSuperArcList_.size()
-                             + nodeList_[pivotId].upSuperArcList_.size()
-                           == 3);
+    bool const isSimpleSaddle = (nodeList_[pivotId].downSuperArcList_.size()
+                                   + nodeList_[pivotId].upSuperArcList_.size()
+                                 == 3);
 
     int brotherId = 0;
 
@@ -2044,9 +2014,9 @@ int SubLevelSetTree::simplify(const double &simplificationThreshold,
       }
     }
 
-    int brotherExtremityId = superArcList_[brotherId].downNodeId_;
+    int const brotherExtremityId = superArcList_[brotherId].downNodeId_;
 
-    int parentId = nodeList_[pivotId].upSuperArcList_[0];
+    int const parentId = nodeList_[pivotId].upSuperArcList_[0];
 
     // 1) update the parent extremity (only if simple saddles)
     if(isSimpleSaddle) {
@@ -2125,28 +2095,20 @@ int SubLevelSetTree::simplify(const double &simplificationThreshold,
         vertexScalars_, vertexSoSoffsets_, &nodeList_);
     }
   }
-  {
-    stringstream msg;
-    msg << "[ContourTree] Regular node sorting: " << sortTimer.getElapsedTime()
-        << " s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
 
-  {
-    stringstream msg;
-    msg << "[ContourTree] " << simplifiedArcNumber << " super-arcs pruned in "
-        << t.getElapsedTime() << " s. (threshold " << simplificationThreshold
-        << ")" << endl;
-    dMsg(cout, msg.str(), 2);
-  }
+  this->printMsg("Regular node sorting", 1.0, sortTimer.getElapsedTime(),
+                 this->threadNumber_);
 
-  {
-    stringstream msg;
-    msg << "[ContourTree] Biggest simplification metric score: "
-        << maximumMetricScore << " ("
-        << maximumMetricScore * 100 / (maxScalar_ - minScalar_) << "%)" << endl;
-    dMsg(cout, msg.str(), 3);
-  }
+  this->printMsg(std::to_string(simplifiedArcNumber)
+                   + " super-arcs pruned (threshold="
+                   + std::to_string(simplificationThreshold) + ")",
+                 1.0, t.getElapsedTime(), this->threadNumber_);
+
+  this->printMsg(
+    "Biggest simplification metric score: " + std::to_string(maximumMetricScore)
+    + " ("
+    + std::to_string(maximumMetricScore * 100 / (maxScalar_ - minScalar_))
+    + "%)");
 
   return 0;
 }
@@ -2350,29 +2312,12 @@ int SubLevelSetTree::clearSkeleton() {
 }
 
 ContourTree::ContourTree() {
-}
-
-ContourTree::~ContourTree() {
-
-  /*  if(vertexSoSoffsets_){
-      vertexSoSoffsets_->clear();
-      delete vertexSoSoffsets_;
-      }
-
-      if(minimumList_){
-      minimumList_->clear();
-      delete minimumList_;
-      }
-
-      if(maximumList_){
-      maximumList_->clear();
-      delete maximumList_;
-      }*/
+  this->setDebugMsgPrefix("ContourTree");
 }
 
 int ContourTree::build() {
 
-  DebugTimer timer;
+  Timer timer;
 
   if(!vertexNumber_)
     return -1;
@@ -2384,9 +2329,11 @@ int ContourTree::build() {
   mergeTree_.setDebugLevel(debugLevel_);
   splitTree_.setDebugLevel(debugLevel_);
 
+  std::vector<int> localVertSoSoffsets{};
+
   // 0) init data structures
-  if(!vertexSoSoffsets_) {
-    vertexSoSoffsets_ = new vector<int>;
+  if(!externalOffsets_) {
+    vertexSoSoffsets_ = &localVertSoSoffsets;
     vertexSoSoffsets_->resize(vertexNumber_);
     for(int i = 0; i < (int)vertexSoSoffsets_->size(); i++)
       (*vertexSoSoffsets_)[i] = i;
@@ -2394,15 +2341,16 @@ int ContourTree::build() {
 
   // build the actual extrema list
 
-  minimumList_ = new vector<int>;
-  maximumList_ = new vector<int>;
+  std::vector<int> minimumVec, maximumVec;
+  minimumList_ = &minimumVec;
+  maximumList_ = &maximumVec;
 
   for(int i = 0; i < vertexNumber_; i++) {
 
     bool isMin = true, isMax = true;
-    SimplexId neighborNumber = triangulation_->getVertexNeighborNumber(i);
+    SimplexId const neighborNumber = triangulation_->getVertexNeighborNumber(i);
     for(SimplexId j = 0; j < neighborNumber; j++) {
-      SimplexId nId;
+      SimplexId nId = -1;
       triangulation_->getVertexNeighbor(i, j, nId);
 
       if(((*vertexScalars_)[nId] > (*vertexScalars_)[i])
@@ -2459,7 +2407,7 @@ int ContourTree::build() {
     }
   }
 
-  // note: at this point, the split tree is layed out upside down.
+  // note: at this point, the split tree is laid out upside down.
 
   // 3) merge the two trees into the contour tree
   combineTrees();
@@ -2467,37 +2415,30 @@ int ContourTree::build() {
   // 4) update the high level super arc structure
   finalize();
 
-  {
-    stringstream msg;
+  this->printMsg("ContourTree computed", 1.0, timer.getElapsedTime());
 
-    msg << "[ContourTree] ";
+  this->printMsg(std::vector<std::vector<std::string>>{
+    {"#Nodes", std::to_string(getNumberOfNodes())},
+    {"#Arcs", std::to_string(getNumberOfArcs())}});
 
-    msg << "ContourTree computed in " << timer.getElapsedTime()
-        << " s. (n: " << getNumberOfNodes() << ", a:" << getNumberOfSuperArcs()
-        << ")" << endl;
-    dMsg(cout, msg.str(), 1);
-  }
-
-  if(debugLevel_ >= 3)
-    print(cout, 3);
+  print();
 
   return 0;
 }
 
 int ContourTree::combineTrees() {
 
-  DebugTimer timer;
+  Timer timer;
 
   if((!mergeTree_.getNumberOfNodes()) || (!splitTree_.getNumberOfNodes()))
     return -1;
 
   queue<const Node *> nodeQueue;
-  const Node *mergeNode = NULL, *splitNode = NULL;
-  int initNumber = 0;
+  const Node *mergeNode = nullptr, *splitNode = nullptr;
 
   do {
 
-    int initQueueSize = (int)nodeQueue.size();
+    int const initQueueSize = (int)nodeQueue.size();
 
     for(int i = 0; i < mergeTree_.getNumberOfNodes(); i++) {
       mergeNode = mergeTree_.getNode(i);
@@ -2516,7 +2457,7 @@ int ContourTree::combineTrees() {
     if((int)nodeQueue.size() == initQueueSize)
       break;
 
-    const Node *n0 = NULL, *n1 = NULL, *other = NULL;
+    const Node *n0 = nullptr, *n1 = nullptr, *other = nullptr;
 
     do {
 
@@ -2538,14 +2479,14 @@ int ContourTree::combineTrees() {
         if(!((other->getNumberOfUpArcs())
              && (other->getNumberOfDownArcs() > 1))) {
 
-          n1 = NULL;
+          n1 = nullptr;
 
           if(n0->getNumberOfUpArcs()) {
 
             n1 = mergeTree_.getNodeUpNeighbor(n0, 0);
 
-            int newNode0 = makeNode(n0->getVertexId()),
-                newNode1 = makeNode(n1->getVertexId());
+            const int newNode0 = makeNode(n0->getVertexId()),
+                      newNode1 = makeNode(n1->getVertexId());
 
             // "we move v and its incident edge from JT to the contour tree".
             makeArc(newNode0, newNode1);
@@ -2588,14 +2529,14 @@ int ContourTree::combineTrees() {
         if(!((other->getNumberOfUpArcs())
              && (other->getNumberOfDownArcs() > 1))) {
 
-          n1 = NULL;
+          n1 = nullptr;
 
           if(n0->getNumberOfUpArcs()) {
 
             n1 = splitTree_.getNodeUpNeighbor(n0, 0);
 
-            int newNode0 = makeNode(n0->getVertexId()),
-                newNode1 = makeNode(n1->getVertexId());
+            const int newNode0 = makeNode(n0->getVertexId()),
+                      newNode1 = makeNode(n1->getVertexId());
 
             makeArc(newNode1, newNode0);
             splitTree_.clearArc(n0->getVertexId(), n1->getVertexId());
@@ -2621,8 +2562,6 @@ int ContourTree::combineTrees() {
       }
     } while(nodeQueue.size());
 
-    initNumber++;
-
     if((int)nodeList_.size() == vertexNumber_)
       break;
 
@@ -2630,41 +2569,18 @@ int ContourTree::combineTrees() {
   } while((int)nodeList_.size() < vertexNumber_);
 
   if((int)nodeList_.size() != vertexNumber_) {
-    stringstream msg;
-    msg << "[ContourTree] Incomplete contour tree! (" << nodeList_.size()
-        << " vs " << vertexNumber_ << ")" << endl;
-
-    dMsg(cerr, msg.str(), 0);
+    this->printErr("Incomplete contour tree! ("
+                   + std::to_string(nodeList_.size()) + " vs. "
+                   + std::to_string(vertexNumber_) + ")");
   }
 
-  {
-    stringstream msg;
-    msg << "[ContourTree] MergeTree and SplitTree combined in "
-        << timer.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), 2);
-  }
+  this->printMsg(
+    "MergeTree and SplitTree combined", 1.0, timer.getElapsedTime(), 1);
 
   return 0;
 }
 
 int ContourTree::finalize() {
-
-  int minCount = 0, mergeCount = 0, splitCount = 0, maxCount = 0, regCount = 0;
-
-  for(int i = 0; i < (int)nodeList_.size(); i++) {
-    if(!nodeList_[i].getNumberOfDownArcs()) {
-      minCount++;
-    } else if(!nodeList_[i].getNumberOfUpArcs()) {
-      maxCount++;
-    } else if((nodeList_[i].getNumberOfDownArcs() == 1)
-              && (nodeList_[i].getNumberOfUpArcs() == 1)) {
-      regCount++;
-    } else if(nodeList_[i].getNumberOfDownArcs() > 1) {
-      mergeCount++;
-    } else if(nodeList_[i].getNumberOfUpArcs() > 1) {
-      splitCount++;
-    }
-  }
 
   vector<bool> inQueue(nodeList_.size(), false);
   queue<int> nodeIdQueue;
@@ -2678,11 +2594,11 @@ int ContourTree::finalize() {
 
   while(nodeIdQueue.size()) {
 
-    int nodeId = nodeIdQueue.front();
+    int const nodeId = nodeIdQueue.front();
     nodeIdQueue.pop();
 
     for(int i = 0; i < nodeList_[nodeId].getNumberOfUpArcs(); i++) {
-      int nextNodeId = finalizeSuperArc(nodeId, i);
+      int const nextNodeId = finalizeSuperArc(nodeId, i);
 
       if(!inQueue[nextNodeId]) {
         nodeIdQueue.push(nextNodeId);
@@ -2701,7 +2617,7 @@ int ContourTree::finalizeSuperArc(const int &nodeId, const int &arcId) {
   if((arcId < 0) || (arcId >= nodeList_[nodeId].getNumberOfUpArcs()))
     return -2;
 
-  int superArcId = openSuperArc(nodeId);
+  int const superArcId = openSuperArc(nodeId);
 
   int currentNodeId = nodeId;
 
@@ -2743,7 +2659,7 @@ bool ContourTree::isNodeEligible(const Node *n) const {
   }
 #endif // TTK_ENABLE_KAMIKAZE
 
-  const Node *merge = NULL, *split = NULL;
+  const Node *merge = nullptr, *split = nullptr;
 
   if(mergeTree_.getNode(n - mergeTree_.getNode(0)) == n) {
     merge = n;
@@ -2896,7 +2812,7 @@ int ContourTree::getPersistencePairs(
   for(unsigned int i = 0; i < mergePairs->size(); ++i)
     pairs[i] = (*mergePairs)[i];
 
-  unsigned int shift = mergePairs->size();
+  unsigned int const shift = mergePairs->size();
   for(unsigned int i = 0; i < splitPairs->size(); ++i)
     pairs[shift + i] = (*splitPairs)[i];
 
@@ -2923,8 +2839,8 @@ int ContourTree::getPersistencePlot(
 
   for(int i = 0; i < (int)plot.size(); i++) {
     plot[i].first = (*pairs)[i].second;
-    if(plot[i].first < pow(10, -REAL_SIGNIFICANT_DIGITS)) {
-      plot[i].first = pow(10, -REAL_SIGNIFICANT_DIGITS);
+    if(plot[i].first < Geometry::powIntTen(-REAL_SIGNIFICANT_DIGITS)) {
+      plot[i].first = Geometry::powIntTen(-REAL_SIGNIFICANT_DIGITS);
     }
     plot[i].second = pairs->size() - i;
   }
@@ -2950,16 +2866,12 @@ int ContourTree::getPersistenceDiagram(
   diagram.resize(pairs->size());
 
   for(int i = 0; i < (int)pairs->size(); i++) {
-    if((minimumList_) && (!maximumList_)) {
-      // join tree
-      diagram[i].first = (*vertexScalars_)[(*pairs)[i].first.first];
-      diagram[i].second = (*vertexScalars_)[(*pairs)[i].first.second];
-    } else if((maximumList_) && (!minimumList_)) {
+    if((maximumList_) && (!minimumList_)) {
       // split tree
       diagram[i].second = (*vertexScalars_)[(*pairs)[i].first.first];
       diagram[i].first = (*vertexScalars_)[(*pairs)[i].first.second];
     } else {
-      // contour tree
+      // join tree or contour tree
       diagram[i].first = (*vertexScalars_)[(*pairs)[i].first.first];
       diagram[i].second = (*vertexScalars_)[(*pairs)[i].first.second];
     }

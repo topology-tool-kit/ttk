@@ -1,0 +1,126 @@
+<StringVectorProperty
+    name="Scalar Field"
+    command="SetInputArrayToProcess"
+    element_types="0 0 0 0 2"
+    number_of_elements="5"
+    default_values="0"
+    animateable="0"
+    >
+  <ArrayListDomain
+      name="array_list"
+      default_values="0">
+    <RequiredProperties>
+      <Property name="Input" function="Input" />
+    </RequiredProperties>
+  </ArrayListDomain>
+  <Documentation>
+    Select the scalar field to process.
+  </Documentation>
+</StringVectorProperty>
+
+<IntVectorProperty
+    name="CompressionType"
+    label="Compression type"
+    command="SetCompressionType"
+    number_of_elements="1"
+    default_values="0">
+  <EnumerationDomain name="enum">
+    <Entry value="0" text="Driven by persistence diagram"/>
+  </EnumerationDomain>
+  <Documentation>
+    Compression Type.
+  </Documentation>
+</IntVectorProperty>
+
+<DoubleVectorProperty
+    name="Tolerance"
+    command="SetTolerance"
+    label="Topological loss (persistence percentage)"
+    number_of_elements="1"
+    default_values="10">
+  <Documentation>
+    Topological loss expressed as a persistence threshold (normalized
+    between 0 and 100).
+  </Documentation>
+  <DoubleRangeDomain name="range" min="1" max="100" />
+</DoubleVectorProperty>
+
+<IntVectorProperty
+    name="Subdivide"
+    label="Enable maximum pointwise error control"
+    command="SetSubdivide"
+    number_of_elements="1"
+    default_values="0">
+  <BooleanDomain name="bool"/>
+  <Documentation>
+    Enable maximum pointwise error control.
+  </Documentation>
+</IntVectorProperty>
+
+<DoubleVectorProperty
+    name="MaximumError"
+    command="SetMaximumError"
+    label="Maximum pointwise error (percentage)"
+    number_of_elements="1"
+    default_values="10">
+  <Documentation>
+    Set the maximum allowed pointwise error (in percentage of the
+    function span).
+  </Documentation>
+  <DoubleRangeDomain name="range" min="1" max="100" />
+</DoubleVectorProperty>
+
+<DoubleVectorProperty
+    name="ZFPTolerance"
+    label="ZFP Relative Error Tolerance (extra)"
+    command="SetZFPTolerance"
+    number_of_elements="1"
+    default_values="50">
+  <Documentation>
+    Additionally compress the data with ZFP for improved geometrical
+    quality (relative error tolerance in % of scalar field range).
+  </Documentation>
+  <DoubleRangeDomain name="range" min="1" max="100" />
+</DoubleVectorProperty>
+
+<IntVectorProperty
+    name="ZFPOnly"
+    label="Use ZFP compressor only (no topological compression)"
+    command="SetZFPOnly"
+    number_of_elements="1"
+    default_values="0">
+  <BooleanDomain name="bool"/>
+  <Documentation>
+    Use ZFP only.
+  </Documentation>
+</IntVectorProperty>
+
+<IntVectorProperty
+    name="UseTopologicalSimplification"
+    label="Simplify at compression (slower)"
+    command="SetUseTopologicalSimplification"
+    number_of_elements="1"
+    default_values="1"
+    panel_visibility="advanced">
+  <BooleanDomain name="bool"/>
+  <Documentation>
+    Enable topological simplification at compression time (higher
+    compression factors, slower compression time).
+  </Documentation>
+</IntVectorProperty>
+
+<IntVectorProperty
+    name="SQMethod"
+    command="SetSQMethodPV"
+    animateable="0"
+    label="Use SQ compressor only (no topological compression)"
+    panel_visibility="advanced">
+  <EnumerationDomain name="enum">
+    <Entry value="0" text="No SQ (topological compression)."/>
+    <Entry value="1" text="Range-based SQ (lowest quality, faster)."/>
+    <Entry value="2" text="Domain-based SQ (highest quality, slower)."/>
+  </EnumerationDomain>
+  <Documentation>
+    Use SQ instead of topological compression.
+  </Documentation>
+</IntVectorProperty>

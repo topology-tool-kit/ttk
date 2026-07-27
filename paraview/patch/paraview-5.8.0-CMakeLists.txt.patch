@@ -1,0 +1,25 @@
+diff --git a/Applications/ParaView/CMakeLists.txt b/Applications/ParaView/CMakeLists.txt
+index d4597ab..a290a1a 100644
+--- a/Clients/ParaView/CMakeLists.txt
++++ b/Clients/ParaView/CMakeLists.txt
+@@ -16,9 +16,9 @@ if (PARAVIEW_ENABLE_EMBEDDED_DOCUMENTATION)
+ endif ()
+
+ if (DEFINED PARAVIEW_VERSION_NICKNAME)
+-  set(paraview_version "${PARAVIEW_VERSION_NICKNAME}")
++  set(paraview_version "[TTK 1.1] ${PARAVIEW_VERSION_NICKNAME}")
+ else ()
+-  set(paraview_version "${PARAVIEW_VERSION_FULL}")
++  set(paraview_version "[TTK 1.1] ${PARAVIEW_VERSION_FULL}")
+ endif ()
+ set(paraview_title "")
+
+@@ -51,7 +51,7 @@ paraview_client_add(
+   EXPORT            "ParaView"
+   APPLICATION_NAME  "ParaView"
+   TITLE             "ParaView ${paraview_version}"
+-  ORGANIZATION      "ParaView"
++  ORGANIZATION      "TTK"
+   VERSION           "${PARAVIEW_VERSION_MAJOR}.${PARAVIEW_VERSION_MINOR}.${PARAVIEW_VERSION_PATCH}"
+   MAIN_WINDOW_CLASS "ParaViewMainWindow"
+   BUNDLE_ICON       "${CMAKE_CURRENT_SOURCE_DIR}/pvIcon.icns"

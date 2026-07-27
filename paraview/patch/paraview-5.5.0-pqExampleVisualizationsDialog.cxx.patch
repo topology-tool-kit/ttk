@@ -2,7 +2,7 @@
 +++ b/Qt/ApplicationComponents/pqExampleVisualizationsDialog.cxx	2018-04-16 15:52:55.271002381 +0200
 @@ -19,13 +19,11 @@
    ui->setupUi(this);
- 
+
    QObject::connect(
 -    this->ui->CanExampleButton, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
 +    this->ui->Example1Button, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
@@ -15,7 +15,7 @@
 -    this->ui->HotGasAnalysisExampleButton, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
 +    this->ui->Example3Button, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
  }
- 
+
  //-----------------------------------------------------------------------------
 @@ -43,26 +41,21 @@
    {

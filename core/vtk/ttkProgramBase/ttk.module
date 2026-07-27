@@ -1,0 +1,9 @@
+NAME
+  ttkProgramBase
+SOURCES
+  ttkProgramBase.cpp
+HEADERS
+  ttkProgramBase.h
+DEPENDS
+  common
+  ttkAlgorithm

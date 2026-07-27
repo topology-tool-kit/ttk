@@ -1,33 +1,45 @@
-#include <iso646.h>
 #include <regex>
 #include <ttkImportEmbeddingFromTable.h>
+
+#include <ttkMacros.h>
+#include <ttkUtils.h>
+
+// VTK includes
+#include <vtkIdTypeArray.h>
+#include <vtkInformation.h>
+#include <vtkPointSet.h>
+#include <vtkTable.h>
 
 using namespace std;
 using namespace ttk;
 
 vtkStandardNewMacro(ttkImportEmbeddingFromTable)
 
-  // transmit abort signals
-  bool ttkImportEmbeddingFromTable::needsToAbort() {
-  return GetAbortExecute();
-}
-
-// transmit progress status
-int ttkImportEmbeddingFromTable::updateProgress(const float &progress) {
-
-  {
-    stringstream msg;
-    msg << "[ttkImportEmbeddingFromTable] " << progress * 100
-        << "% processed...." << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+  int ttkImportEmbeddingFromTable::FillInputPortInformation(
+    int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
+    return 1;
+  }
+  if(port == 1) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
+    return 1;
   }
 
-  UpdateProgress(progress);
+  return 0;
+}
+
+int ttkImportEmbeddingFromTable::FillOutputPortInformation(
+  int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
   return 0;
 }
 
 template <typename VTK_TT>
-inline void setPointFromData(vtkSmartPointer<vtkPoints> points,
+inline void setPointFromData(const vtkSmartPointer<vtkPoints> &points,
                              VTK_TT *xdata,
                              VTK_TT *ydata,
                              VTK_TT *zdata,
@@ -41,90 +53,64 @@ inline void setPointFromData(vtkSmartPointer<vtkPoints> points,
   }
 }
 
-int ttkImportEmbeddingFromTable::doIt(vtkPointSet *inputDataSet,
-                                      vtkTable *inputTable,
-                                      vtkPointSet *output) {
-  Memory m;
-
-  const SimplexId numberOfPoints = inputDataSet->GetNumberOfPoints();
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(numberOfPoints <= 0) {
-    cerr << "[ttkImportEmbeddingFromTable] Error: input has no point." << endl;
-    return -1;
-  }
-#endif
-
-  vtkAbstractArray *xarr
-    = XColumn.empty() ? nullptr : inputTable->GetColumnByName(XColumn.data());
-  vtkAbstractArray *yarr
-    = YColumn.empty() ? nullptr : inputTable->GetColumnByName(YColumn.data());
-  vtkAbstractArray *zarr
-    = ZColumn.empty() ? nullptr : inputTable->GetColumnByName(ZColumn.data());
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(xarr == nullptr or yarr == nullptr or zarr == nullptr) {
-    cerr << "[ttkImportEmbeddingFromTable] Error: invalid input columns."
-         << endl;
-    return -1;
-  }
-  if(xarr->GetNumberOfTuples() != numberOfPoints
-     or yarr->GetNumberOfTuples() != numberOfPoints
-     or zarr->GetNumberOfTuples() != numberOfPoints) {
-    cerr << "[ttkImportEmbeddingFromTable] Error: number of points on inputs "
-            "mismatch."
-         << endl;
-    return -1;
-  }
-  if(xarr->GetDataType() != yarr->GetDataType()
-     or xarr->GetDataType() != zarr->GetDataType()) {
-    cerr << "[ttkImportEmbeddingFromTable] Error: input columns has different "
-            "data types."
-         << endl;
-    return -1;
-  }
-#endif
-
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-  points->SetNumberOfPoints(numberOfPoints);
-
-  switch(xarr->GetDataType()) {
-    vtkTemplateMacro(setPointFromData(
-      points, static_cast<VTK_TT *>(xarr->GetVoidPointer(0)),
-      static_cast<VTK_TT *>(yarr->GetVoidPointer(0)),
-      static_cast<VTK_TT *>(zarr->GetVoidPointer(0)), Embedding2D));
-  }
-
-  output->ShallowCopy(inputDataSet);
-  output->SetPoints(points);
-
-  {
-    stringstream msg;
-    msg << "[ttkImportEmbeddingFromTable] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
-  return 0;
-}
-
 int ttkImportEmbeddingFromTable::RequestData(
-  vtkInformation *request,
+  vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
-  Memory m;
 
   vtkPointSet *inputDataSet = vtkPointSet::GetData(inputVector[0]);
   vtkTable *inputTable = vtkTable::GetData(inputVector[1]);
   vtkPointSet *output = vtkPointSet::GetData(outputVector);
 
-  doIt(inputDataSet, inputTable, output);
-
-  {
-    stringstream msg;
-    msg << "[ttkImportEmbeddingFromTable] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
+  const SimplexId numberOfPoints = inputDataSet->GetNumberOfPoints();
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(numberOfPoints <= 0) {
+    printErr("input has no point.");
+    return -1;
   }
+#endif
+
+  vtkDataArray *xarr = XColumn.empty()
+                         ? nullptr
+                         : vtkDataArray::SafeDownCast(
+                           inputTable->GetColumnByName(XColumn.data()));
+  vtkDataArray *yarr = YColumn.empty()
+                         ? nullptr
+                         : vtkDataArray::SafeDownCast(
+                           inputTable->GetColumnByName(YColumn.data()));
+  vtkDataArray *zarr = ZColumn.empty()
+                         ? nullptr
+                         : vtkDataArray::SafeDownCast(
+                           inputTable->GetColumnByName(ZColumn.data()));
+
+  if(xarr == nullptr or yarr == nullptr or zarr == nullptr) {
+    printErr("invalid input columns.");
+    return -1;
+  }
+  if(xarr->GetNumberOfTuples() != numberOfPoints
+     or yarr->GetNumberOfTuples() != numberOfPoints
+     or zarr->GetNumberOfTuples() != numberOfPoints) {
+    printErr("number of points on inputs mismatch.");
+    return -1;
+  }
+  if(xarr->GetDataType() != yarr->GetDataType()
+     or xarr->GetDataType() != zarr->GetDataType()) {
+    printErr("input columns has different data types.");
+    return -1;
+  }
+
+  vtkSmartPointer<vtkPoints> const points = vtkSmartPointer<vtkPoints>::New();
+  points->SetNumberOfPoints(numberOfPoints);
+
+  switch(xarr->GetDataType()) {
+    vtkTemplateMacro(setPointFromData(
+      points, static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(xarr)),
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(yarr)),
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(zarr)), Embedding2D));
+  }
+
+  output->ShallowCopy(inputDataSet);
+  output->SetPoints(points);
 
   return 1;
 }

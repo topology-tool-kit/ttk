@@ -1,0 +1,9 @@
+NAME
+  ttkDiscreteGradient
+SOURCES
+  ttkDiscreteGradient.cpp
+HEADERS
+  ttkDiscreteGradient.h
+DEPENDS
+  discreteGradient
+  ttkAlgorithm

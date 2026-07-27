@@ -1,0 +1,59 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+  our new filter. As a rule of thumb, try to locate the configuration for
+  a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+  that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkDataSetInterpolator"
+      class="ttkDataSetInterpolator"
+      label="TTK DataSetInterpolator">
+      <Documentation
+        long_help="TTK dataSetInterpolator plugin."
+        short_help="TTK dataSetInterpolator plugin.">
+        TTK dataSetInterpolator plugin documentation.
+      </Documentation>
+      <InputProperty
+        name="Source"
+        port_index="1"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Source" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+        name="Target"
+        port_index="0"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Misc" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

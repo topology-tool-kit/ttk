@@ -1,0 +1,28 @@
+diff --git i/CMake/ParaViewOptions.cmake w/CMake/ParaViewOptions.cmake
+index 0b2916e53..bf622cc9e 100644
+--- i/CMake/ParaViewOptions.cmake
++++ w/CMake/ParaViewOptions.cmake
+@@ -133,7 +133,7 @@ if (NOT WIN32)
+   unset(_has_fortran)
+ endif()
+ 
+-vtk_deprecated_setting(python_default PARAVIEW_USE_PYTHON PARAVIEW_ENABLE_PYTHON OFF)
++vtk_deprecated_setting(python_default PARAVIEW_USE_PYTHON PARAVIEW_ENABLE_PYTHON ON)
+ option(PARAVIEW_USE_PYTHON "Enable/Disable Python scripting support" "${python_default}")
+ 
+ # Currently, we're making `PARAVIEW_USE_QT` available only when doing CANONICAL
+diff --git i/CMakeLists.txt w/CMakeLists.txt
+index 0cea2ae43..b9fc7a736 100644
+--- i/CMakeLists.txt
++++ w/CMakeLists.txt
+@@ -44,8 +44,8 @@ endif ()
+ get_property(generator_is_multi_config GLOBAL
+   PROPERTY GENERATOR_IS_MULTI_CONFIG)
+ if (NOT CMAKE_BUILD_TYPE AND NOT generator_is_multi_config)
+-  message(STATUS "Setting build type to 'Debug' as none was specified.")
+-  set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
++  message(STATUS "Setting build type to 'Release' as none was specified.")
++  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+   # Set the possible values of build type for cmake-gui
+   set_property(CACHE CMAKE_BUILD_TYPE
+     PROPERTY

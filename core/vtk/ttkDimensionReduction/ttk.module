@@ -1,0 +1,9 @@
+NAME
+  ttkDimensionReduction
+SOURCES
+  ttkDimensionReduction.cpp
+HEADERS
+  ttkDimensionReduction.h
+DEPENDS
+  dimensionReduction
+  ttkAlgorithm

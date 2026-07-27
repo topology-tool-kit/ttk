@@ -1,0 +1,149 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+        name="ttkPersistentGenerators"
+        class="ttkPersistentGenerators"
+        label="TTK PersistentGenerators">
+      <Documentation
+          long_help="TTK plugin for the computation of persistent one-dimensional generators."
+          short_help="TTK plugin for the computation of persistent generators.">
+        TTK plugin for the computation of persistent one-dimensional generators.
+
+        Related publication:
+        'Discrete Morse Sandwich: Fast Computation of Persistence Diagrams for Scalar Data -- An Algorithm and A Benchmark'
+        Pierre Guillou, Jules Vidal, Julien Tierny
+        IEEE Transactions on Visualization and Computer Graphics, 2023.
+        arXiv:2206.13932, 2023.
+
+        Online examples:
+
+        - https://topology-tool-kit.github.io/examples/persistentGenerators_at/
+
+        - https://topology-tool-kit.github.io/examples/persistentGenerators_casting/
+
+        - https://topology-tool-kit.github.io/examples/persistentGenerators_darkSky/
+
+        - https://topology-tool-kit.github.io/examples/persistentGenerators_fertility/
+
+        - https://topology-tool-kit.github.io/examples/persistentGenerators_householdAnalysis/
+
+        - https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/
+
+        - https://topology-tool-kit.github.io/examples/persistentGenerators_skull/
+
+        https://topology-tool-kit.github.io/examples/topologicalOptimization_pegasus/
+
+      </Documentation>
+
+      <InputProperty
+          name="Input"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" attribute_type="point" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+          name="ScalarFieldNew"
+          label="Scalar Field"
+          command="SetInputArrayToProcess"
+          element_types="0 0 0 0 2"
+          number_of_elements="5"
+          default_values="0"
+          >
+        <ArrayListDomain
+            name="array_list"
+            default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+          name="ForceInputOffsetScalarField"
+          command="SetForceInputOffsetScalarField"
+          label="Force Input Offset Field"
+          number_of_elements="1"
+          panel_visibility="advanced"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to force the usage of a specific input scalar field
+          as vertex offset (used to disambiguate flat plateaus).
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+          name="InputOffsetScalarFieldNameNew"
+          label="Input Offset Field"
+          command="SetInputArrayToProcess"
+          element_types="0 0 0 0 2"
+          number_of_elements="5"
+          default_values="1"
+          panel_visibility="advanced"
+          >
+        <ArrayListDomain
+            name="array_list"
+            default_values="1"
+            >
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="ForceInputOffsetScalarField"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          Select the input offset field (used to disambiguate flat plateaus).
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+          name="PruneHandlesGenerators"
+          command="SetPruneHandlesGenerators"
+          label="Prune Handles Generators"
+          number_of_elements="1"
+          panel_visibility="advanced"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          On an Unstructured Grid dataset with topological handles,
+          check this box to prune handles generators queues.
+        </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="ScalarFieldNew" />
+        <Property name="ForceInputOffsetScalarField"/>
+        <Property name="InputOffsetScalarFieldNameNew"/>
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="PruneHandlesGenerators" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

@@ -1,9 +1,1 @@
-ttk_add_vtk_library(ttkPersistenceDiagram
-  SOURCES
-    ttkPersistenceDiagram.cpp
-  HEADERS
-    ttkPersistenceDiagram.h
-  LINK
-    persistenceDiagram
-    ttkTriangulation
-    )
+ttk_add_vtk_module()

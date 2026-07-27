@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="sources">
+      <SourceProxy name="ttkCinemaDarkroomCamera" class="ttkCinemaDarkroomCamera" label="TTK Darkroom Camera">
+          <Documentation long_help="Cinema Darkroom Compositing" short_help="Cinema Darkroom Compositing">
+This source generates a single vertex with point data to represent a camera that can be used for Cinema Darkroom rendering. The source can also be synchronized with the camera of an active view port.
+          </Documentation>
+
+          <DoubleVectorProperty name="Position" command="SetPosition" number_of_elements="3" default_values="1 1 1">
+            <Documentation>Camera Position.</Documentation>
+          </DoubleVectorProperty>
+          <DoubleVectorProperty name="Up" command="SetUp" number_of_elements="3" default_values="0 0 1">
+            <Documentation>Camera Up-Vector.</Documentation>
+          </DoubleVectorProperty>
+          <DoubleVectorProperty name="FocalPoint" command="SetFocalPoint" number_of_elements="3" default_values="0 0 0">
+            <Documentation>Camera Focal Point.</Documentation>
+          </DoubleVectorProperty>
+
+          <Property name="SyncCamera" command="SyncWithParaViewCamera" panel_widget="command_button">
+              <Documentation>Synchronize parameters with Camera of active ParaView renderview.</Documentation>
+          </Property>
+
+          <PropertyGroup panel_widget="Line" label="Output Options">
+              <Property name="Position" />
+              <Property name="Up" />
+              <Property name="FocalPoint" />
+              <Property name="SyncCamera" />
+          </PropertyGroup>
+
+          ${DEBUG_WIDGETS}
+
+          <Hints>
+              <ShowInMenu category="TTK" />
+          </Hints>
+        </SourceProxy>
+
+    </ProxyGroup>
+
+    <!-- ////////////////////////////////////////////////////////////////////-->
+    <!-- ////////////////////////////////////////////////////////////////////-->
+    <!-- ////////////////////////////////////////////////////////////////////-->
+
+    <ProxyGroup name="filters">
+
+        <!-- ////////////////////////////////////////////////////////////////-->
+
+        <SourceProxy name="ttkCinemaDarkroomCompositing" class="ttkCinemaDarkroomCompositing" label="TTK Darkroom Compositing">
+          <Documentation long_help="Cinema Darkroom Compositing" short_help="Cinema Darkroom Compositing">
+This filter composists all input vtkImageData objects at its first port based on a depth buffer.
+
+"Cinema Database Specification - Dietrich Release v1.2".
+D. Rogers, J. Woodring, J. Ahrens, J. Patchett, and J. Lukasczyk.
+Technical Report LA-UR-17-25072, Los Alamos National Laboratory. 2018.
+
+"Cinema Darkroom: A Deferred Rendering Framework for Large-Scale Datasets".
+J. Lukasczyk, C. Garth, M. Larsen, W. Engelke, I. Hotz, D. Rogers, J. Ahrens, and R. Maciejewski.
+IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
+          </Documentation>
+
+          <InputProperty name="Input" port_index="0" clean_command="RemoveAllInputs" command="AddInputConnection" multiple_input="1">
+              <ProxyGroupDomain name="groups">
+                  <Group name="sources" />
+                  <Group name="filters" />
+              </ProxyGroupDomain>
+              <DataTypeDomain name="input_type">
+                  <DataType value="vtkImageData" />
+                  <DataType value="vtkMultiBlockDataSet" />
+              </DataTypeDomain>
+              <InputArrayDomain name="input_array" attribute_type="point" />
+              <Documentation>vtkImageData objects that are going to be composed into one image based on a depth buffer.</Documentation>
+          </InputProperty>
+
+          <StringVectorProperty name="Depth" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+              <ArrayListDomain attribute_type="Scalars" name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>The array that contains depth values.</Documentation>
+          </StringVectorProperty>
+
+          <PropertyGroup panel_widget="Line" label="Input Options">
+              <Property name="Depth" />
+          </PropertyGroup>
+
+          ${DEBUG_WIDGETS}
+
+          <Hints>
+              <ShowInMenu category="TTK - Cinema" />
+          </Hints>
+        </SourceProxy>
+
+        <!-- ////////////////////////////////////////////////////////////////-->
+
+        <SourceProxy name="ttkCinemaDarkroomColorMapping" class="ttkCinemaDarkroomColorMapping" label="TTK Darkroom ColorMapping">
+          <Documentation long_help="Cinema Darkroom Color Mapping" short_help="Cinema Darkroom Color Mapping">
+This filter maps scalars to either a single color, a manually defined color map, or any predefined color map.
+
+"Cinema Database Specification - Dietrich Release v1.2".
+D. Rogers, J. Woodring, J. Ahrens, J. Patchett, and J. Lukasczyk.
+Technical Report LA-UR-17-25072, Los Alamos National Laboratory. 2018.
+
+"Cinema Darkroom: A Deferred Rendering Framework for Large-Scale Datasets".
+J. Lukasczyk, C. Garth, M. Larsen, W. Engelke, I. Hotz, D. Rogers, J. Ahrens, and R. Maciejewski.
+IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
+          </Documentation>
+
+          <InputProperty name="Input" command="SetInputConnection">
+              <ProxyGroupDomain name="groups">
+                  <Group name="sources" />
+                  <Group name="filters" />
+              </ProxyGroupDomain>
+              <DataTypeDomain name="input_type">
+                  <DataType value="vtkImageData" />
+              </DataTypeDomain>
+              <InputArrayDomain name="input_array" attribute_type="point" />
+              <Documentation>A vtkImageData object.</Documentation>
+          </InputProperty>
+
+          <StringVectorProperty name="Scalars" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+              <ArrayListDomain attribute_type="Scalars" name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>The array that contains the scalar values that going to be mapped to color.</Documentation>
+          </StringVectorProperty>
+
+          <IntVectorProperty name="ColorMap" command="SetColorMap" number_of_elements="1" default_values="-1">
+              <EnumerationDomain name="enum">
+                <Entry value="-2" text="Manual"/>
+                <Entry value="-1" text="Single"/>
+                <Entry value="0" text="R2B_EX"/>
+                <Entry value="1" text="Accent"/>
+                <Entry value="2" text="Blues"/>
+                <Entry value="3" text="BrBG"/>
+                <Entry value="4" text="BuGn"/>
+                <Entry value="5" text="BuPu"/>
+                <Entry value="6" text="Dark2"/>
+                <Entry value="7" text="GnBu"/><Entry value="8" text="Greens"/><Entry value="9" text="Greys"/><Entry value="10" text="OrRd"/><Entry value="11" text="Oranges"/><Entry value="12" text="PRGn"/><Entry value="13" text="Paired"/><Entry value="14" text="Pastel1"/><Entry value="15" text="Pastel2"/><Entry value="16" text="PiYG"/><Entry value="17" text="PuBu"/><Entry value="18" text="PuBuGn"/><Entry value="19" text="PuOr"/><Entry value="20" text="PuRd"/><Entry value="21" text="Purples"/><Entry value="22" text="RdBu"/><Entry value="23" text="RdGy"/><Entry value="24" text="RdPu"/><Entry value="25" text="RdYlBu"/><Entry value="26" text="RdYlGn"/><Entry value="27" text="Reds"/><Entry value="28" text="Set1"/><Entry value="29" text="Set2"/><Entry value="30" text="Set3"/><Entry value="31" text="Spectral"/><Entry value="32" text="YlGn"/><Entry value="33" text="YlGnBu"/><Entry value="34" text="YlOrBr"/><Entry value="35" text="YlOrRd"/><Entry value="36" text="autumn"/><Entry value="37" text="binary"/><Entry value="38" text="bone"/><Entry value="39" text="cool"/><Entry value="40" text="copper"/><Entry value="41" text="flag"/><Entry value="42" text="gist_earth"/><Entry value="43" text="gist_gray"/><Entry value="44" text="gist_heat"/><Entry value="45" text="gist_ncar"/><Entry value="46" text="gist_rainbow"/><Entry value="47" text="gist_stern"/><Entry value="48" text="gist_yarg"/><Entry value="49" text="gray"/><Entry value="50" text="hot"/>
+              </EnumerationDomain>
+              <Documentation>This option controls if the filter uses a single color, a manually defined color map, or any predefined color map for the mapping.</Documentation>
+          </IntVectorProperty>
+
+          <DoubleVectorProperty name="NANColor" label="NAN Color" command="SetNANColor" number_of_elements="3" default_values="0 0 0" panel_widget="color_selector">
+            <Documentation>The color that is used for Not-A-Number values.</Documentation>
+          </DoubleVectorProperty>
+
+          <DoubleVectorProperty name="SingleColor" command="SetSingleColor" number_of_elements="3" default_values="0 0 0" panel_widget="color_selector">
+            <Documentation>The color that is going to be used for fixed color mapping.</Documentation>
+            <Hints>
+                <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ColorMap" value="-1" />
+            </Hints>
+          </DoubleVectorProperty>
+
+          <StringVectorProperty name="ManualColorMap" command="SetManualColorMap" number_of_elements="1" default_values="0,0,0,0,1,1,1,1">
+            <Documentation>The manually defined color map in the from of a list of quadruples with normalized float values between 0 and 1: x0,r0,g0,b0, x1,r1,g1,b1, ...</Documentation>
+            <Hints>
+                <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ColorMap" value="-2" />
+            </Hints>
+          </StringVectorProperty>
+
+
+          <PropertyGroup panel_widget="Line" label="Input Options">
+              <Property name="Scalars" />
+          </PropertyGroup>
+          <PropertyGroup panel_widget="Line" label="Output Options">
+              <Property name="ColorMap" />
+              <Property name="NANColor" />
+              <Property name="SingleColor" />
+              <Property name="ManualColorMap" />
+          </PropertyGroup>
+
+          ${DEBUG_WIDGETS}
+
+          <Hints>
+              <ShowInMenu category="TTK - Cinema" />
+          </Hints>
+        </SourceProxy>
+
+        <!-- ////////////////////////////////////////////////////////////////-->
+
+        <SourceProxy name="ttkCinemaDarkroomSSAO" class="ttkCinemaDarkroomSSAO" label="TTK Darkroom SSAO">
+          <Documentation long_help="Cinema Darkroom Screen Space Ambient Occlusion" short_help="Cinema Darkroom Screen Space Ambient Occlusion">
+This filters computes Screen Space Ambient Occlusion based on a depth buffer.
+
+"Cinema Darkroom: A Deferred Rendering Framework for Large-Scale Datasets".
+J. Lukasczyk, C. Garth, M. Larsen, W. Engelke, I. Hotz, D. Rogers, J. Ahrens, and R. Maciejewski.
+IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
+          </Documentation>
+
+          <InputProperty name="Input" command="SetInputConnection">
+              <ProxyGroupDomain name="groups">
+                  <Group name="sources" />
+                  <Group name="filters" />
+              </ProxyGroupDomain>
+              <DataTypeDomain name="input_type">
+                  <DataType value="vtkImageData" />
+              </DataTypeDomain>
+              <InputArrayDomain name="input_array" attribute_type="point" />
+              <Documentation>A vtkImageData object.</Documentation>
+          </InputProperty>
+
+          <StringVectorProperty name="Depth" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+              <ArrayListDomain attribute_type="Scalars" name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>The array that contains depth values.</Documentation>
+          </StringVectorProperty>
+
+          <DoubleVectorProperty name="Radius" command="SetRadius" number_of_elements="1" default_values="0.05">
+            <DoubleRangeDomain name="range" min="0" max="1" />
+            <Documentation>The radius used for depth sampling defined as a fraction of the image height.</Documentation>
+          </DoubleVectorProperty>
+          <DoubleVectorProperty name="DiffArea" command="SetDiffArea" number_of_elements="1" default_values="0.5">
+            <DoubleRangeDomain name="range" min="0" max="1" />
+            <Documentation>Factor that controls self-shadowing.</Documentation>
+          </DoubleVectorProperty>
+
+          <PropertyGroup panel_widget="Line" label="Input Options">
+              <Property name="Depth" />
+          </PropertyGroup>
+          <PropertyGroup panel_widget="Line" label="Output Options">
+              <Property name="Radius" />
+              <Property name="DiffArea" />
+          </PropertyGroup>
+
+          ${DEBUG_WIDGETS}
+
+          <Hints>
+              <ShowInMenu category="TTK - Cinema" />
+          </Hints>
+        </SourceProxy>
+
+        <!-- ////////////////////////////////////////////////////////////////-->
+
+        <SourceProxy name="ttkCinemaDarkroomSSSAO" class="ttkCinemaDarkroomSSSAO" label="TTK Darkroom SSSAO">
+          <Documentation long_help="Cinema Darkroom Scalable Screen Space Occlusion" short_help="Cinema Darkroom Scalable Screen Space Occlusion">
+This filters computes Scalable Screen Space Ambient Occlusion based on a depth buffer.
+
+"Cinema Darkroom: A Deferred Rendering Framework for Large-Scale Datasets".
+J. Lukasczyk, C. Garth, M. Larsen, W. Engelke, I. Hotz, D. Rogers, J. Ahrens, and R. Maciejewski.
+IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
+          </Documentation>
+
+          <InputProperty name="Input" command="SetInputConnection">
+              <ProxyGroupDomain name="groups">
+                  <Group name="sources" />
+                  <Group name="filters" />
+              </ProxyGroupDomain>
+              <DataTypeDomain name="input_type">
+                  <DataType value="vtkImageData" />
+              </DataTypeDomain>
+              <InputArrayDomain name="input_array" attribute_type="point" />
+              <Documentation>A vtkImageData object.</Documentation>
+          </InputProperty>
+
+          <StringVectorProperty name="Depth" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+              <ArrayListDomain attribute_type="Scalars" name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>The array that contains depth values.</Documentation>
+          </StringVectorProperty>
+
+          <IntVectorProperty name="Samples" command="SetSamples" number_of_elements="1" default_values="32">
+            <IntRangeDomain name="range" min="1" max="1000" />
+            <Documentation>Number of depth samples.</Documentation>
+          </IntVectorProperty>
+          <DoubleVectorProperty name="Radius" command="SetRadius" number_of_elements="1" default_values="0.05">
+            <DoubleRangeDomain name="range" min="0" max="1" />
+            <Documentation>The radius used for depth sampling defined as a fraction of the image height.</Documentation>
+          </DoubleVectorProperty>
+          <DoubleVectorProperty name="DiffArea" command="SetDiffArea" number_of_elements="1" default_values="0.5">
+            <DoubleRangeDomain name="range" min="0" max="1" />
+            <Documentation>Factor that controls self-shadowing.</Documentation>
+          </DoubleVectorProperty>
+
+          <PropertyGroup panel_widget="Line" label="Input Options">
+              <Property name="Depth" />
+          </PropertyGroup>
+          <PropertyGroup panel_widget="Line" label="Output Options">
+              <Property name="Samples" />
+              <Property name="Radius" />
+              <Property name="DiffArea" />
+          </PropertyGroup>
+
+          ${DEBUG_WIDGETS}
+
+          <Hints>
+              <ShowInMenu category="TTK - Cinema" />
+          </Hints>
+        </SourceProxy>
+
+        <!-- ////////////////////////////////////////////////////////////////-->
+
+        <SourceProxy name="ttkCinemaDarkroomIBS" class="ttkCinemaDarkroomIBS" label="TTK Darkroom IBS">
+          <Documentation long_help="Cinema Darkroom Image Based Shading" short_help="Cinema Darkroom Image Based Shading">
+This filters computes Image Based Shading based on a depth, diffuse, and ambient occlusion buffer.
+
+"Dynamic Nested Tracking Graphs".
+J. Lukasczyk, C. Garth, G. H. Weber, T. Biedert, R. Maciejewski, H. Leitte.
+IEEE Transactions on Visualization and Computer Graphics. 2019
+
+"Cinema Darkroom: A Deferred Rendering Framework for Large-Scale Datasets".
+J. Lukasczyk, C. Garth, M. Larsen, W. Engelke, I. Hotz, D. Rogers, J. Ahrens, and R. Maciejewski.
+IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
+          </Documentation>
+
+          <InputProperty name="Input" command="SetInputConnection">
+              <ProxyGroupDomain name="groups">
+                  <Group name="sources" />
+                  <Group name="filters" />
+              </ProxyGroupDomain>
+              <DataTypeDomain name="input_type">
+                  <DataType value="vtkImageData" />
+              </DataTypeDomain>
+              <InputArrayDomain name="input_array" attribute_type="point" />
+              <Documentation>A vtkImageData object.</Documentation>
+          </InputProperty>
+
+          <StringVectorProperty name="Color" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+              <ArrayListDomain attribute_type="Scalars" name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>The array that contains diffuse values.</Documentation>
+          </StringVectorProperty>
+          <StringVectorProperty name="Depth" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="1">
+              <ArrayListDomain attribute_type="Scalars" name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>The array that contains depth values.</Documentation>
+          </StringVectorProperty>
+          <StringVectorProperty name="AO" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="2">
+              <ArrayListDomain attribute_type="Scalars" name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>The array that contains ambient occlusion values.</Documentation>
+          </StringVectorProperty>
+
+          <DoubleVectorProperty name="Strength" command="SetStrength" number_of_elements="1" default_values="1">
+            <DoubleRangeDomain name="range" min="0" max="10000" />
+            <Documentation>Strength of the silhouette effect.</Documentation>
+          </DoubleVectorProperty>
+          <DoubleVectorProperty name="Luminance" command="SetLuminance" number_of_elements="1" default_values="1">
+            <DoubleRangeDomain name="range" min="0" max="2" />
+            <Documentation>Luminance factor.</Documentation>
+          </DoubleVectorProperty>
+          <DoubleVectorProperty name="Ambient" command="SetAmbient" number_of_elements="1" default_values="0.2">
+            <DoubleRangeDomain name="range" min="0" max="2" />
+            <Documentation>Ambient light factor.</Documentation>
+          </DoubleVectorProperty>
+
+          <PropertyGroup panel_widget="Line" label="Input Options">
+              <Property name="Color" />
+              <Property name="Depth" />
+              <Property name="AO" />
+          </PropertyGroup>
+          <PropertyGroup panel_widget="Line" label="Output Options">
+              <Property name="Strength" />
+              <Property name="Luminance" />
+              <Property name="Ambient" />
+          </PropertyGroup>
+
+          ${DEBUG_WIDGETS}
+
+          <Hints>
+              <ShowInMenu category="TTK - Cinema" />
+          </Hints>
+        </SourceProxy>
+
+        <!-- ////////////////////////////////////////////////////////////////-->
+
+        <SourceProxy name="ttkCinemaDarkroomFXAA" class="ttkCinemaDarkroomFXAA" label="TTK Darkroom FXAA">
+          <Documentation long_help="Cinema Darkroom Fast Approximate Anti-Aliasing" short_help="Cinema Darkroom Fast Approximate Anti-Aliasing">
+This filters computes Fast Approximate Anti-Aliasing based on a color buffer.
+
+"Fast Approximate Anti-Aliasing (FXAA)".
+Timothy Lottes.
+NVIDIA Corporation. 2009
+
+"Cinema Darkroom: A Deferred Rendering Framework for Large-Scale Datasets".
+J. Lukasczyk, C. Garth, M. Larsen, W. Engelke, I. Hotz, D. Rogers, J. Ahrens, and R. Maciejewski.
+IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
+          </Documentation>
+
+          <InputProperty name="Input" command="SetInputConnection">
+              <ProxyGroupDomain name="groups">
+                  <Group name="sources" />
+                  <Group name="filters" />
+              </ProxyGroupDomain>
+              <DataTypeDomain name="input_type">
+                  <DataType value="vtkImageData" />
+              </DataTypeDomain>
+              <InputArrayDomain name="input_array" attribute_type="point" />
+              <Documentation>A vtkImageData object.</Documentation>
+          </InputProperty>
+
+          <StringVectorProperty name="Color" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+              <ArrayListDomain attribute_type="Scalars" name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>The array that contains color values.</Documentation>
+          </StringVectorProperty>
+
+          <PropertyGroup panel_widget="Line" label="Input Options">
+              <Property name="Color" />
+          </PropertyGroup>
+
+          ${DEBUG_WIDGETS}
+
+          <Hints>
+              <ShowInMenu category="TTK - Cinema" />
+          </Hints>
+        </SourceProxy>
+
+        <!-- ////////////////////////////////////////////////////////////////-->
+
+        <SourceProxy name="ttkCinemaDarkroomSSDoF" class="ttkCinemaDarkroomSSDoF" label="TTK Darkroom SSDoF">
+          <Documentation long_help="Cinema Darkroom Screen Space Depth of Field" short_help="Cinema Darkroom Screen Space Depth of Field">
+This filters computes Screen Space Depth of Field based on a depth and a color buffer.
+
+"Efficiently Simulating the Bokeh of Polygonal Apertures in a Post-Process Depth of Field Shader".
+L. McIntosh, B. E. Riecke and S. DiPaola. Computer Graphics Forum. 2012.
+
+"Cinema Darkroom: A Deferred Rendering Framework for Large-Scale Datasets".
+J. Lukasczyk, C. Garth, M. Larsen, W. Engelke, I. Hotz, D. Rogers, J. Ahrens, and R. Maciejewski.
+IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
+          </Documentation>
+
+          <InputProperty name="Input" command="SetInputConnection">
+              <ProxyGroupDomain name="groups">
+                  <Group name="sources" />
+                  <Group name="filters" />
+              </ProxyGroupDomain>
+              <DataTypeDomain name="input_type">
+                  <DataType value="vtkImageData" />
+              </DataTypeDomain>
+              <InputArrayDomain name="input_array" attribute_type="point" />
+              <Documentation>A vtkImageData object.</Documentation>
+          </InputProperty>
+
+          <StringVectorProperty name="Color" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+              <ArrayListDomain name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>The array that contains color values.</Documentation>
+          </StringVectorProperty>
+
+          <StringVectorProperty name="Depth" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="1">
+              <ArrayListDomain attribute_type="Scalars" name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>The array that contains depth values.</Documentation>
+          </StringVectorProperty>
+
+          <DoubleVectorProperty name="Radius" command="SetRadius" number_of_elements="1" default_values="0.05">
+            <DoubleRangeDomain name="range" min="0" max="1" />
+            <Documentation>The radius used for depth samplings defined as a fraction of the image height.</Documentation>
+          </DoubleVectorProperty>
+          <DoubleVectorProperty name="Aperture" command="SetAperture" number_of_elements="1" default_values="1">
+            <DoubleRangeDomain name="range" min="0" max="4" />
+            <Documentation>Size of the aperture.</Documentation>
+          </DoubleVectorProperty>
+          <DoubleVectorProperty name="FocalDepth" command="SetFocalDepth" number_of_elements="1" default_values="1">
+            <DoubleRangeDomain name="range" min="0" max="1" />
+            <Documentation>Depth value that is completely in focus.</Documentation>
+          </DoubleVectorProperty>
+          <DoubleVectorProperty name="MaxBlur" command="SetMaxBlur" number_of_elements="1" default_values="1">
+            <DoubleRangeDomain name="range" min="0" max="2" />
+            <Documentation>Maximum depth blur.</Documentation>
+          </DoubleVectorProperty>
+
+          <PropertyGroup panel_widget="Line" label="Input Options">
+              <Property name="Color" />
+              <Property name="Depth" />
+          </PropertyGroup>
+          <PropertyGroup panel_widget="Line" label="Output Options">
+              <Property name="Radius" />
+              <Property name="Aperture" />
+              <Property name="FocalDepth" />
+              <Property name="MaxBlur" />
+          </PropertyGroup>
+
+          ${DEBUG_WIDGETS}
+
+          <Hints>
+              <ShowInMenu category="TTK - Cinema" />
+          </Hints>
+        </SourceProxy>
+
+        <!-- ////////////////////////////////////////////////////////////////-->
+
+        <SourceProxy name="ttkCinemaDarkroomNoise" class="ttkCinemaDarkroomNoise" label="TTK Darkroom Noise">
+          <Documentation long_help="Cinema Darkroom Noise" short_help="Cinema Darkroom Noise">
+This filters generates noise of different types.
+          </Documentation>
+
+          <InputProperty name="Input" command="SetInputConnection">
+              <ProxyGroupDomain name="groups">
+                  <Group name="sources" />
+                  <Group name="filters" />
+              </ProxyGroupDomain>
+              <DataTypeDomain name="input_type">
+                  <DataType value="vtkImageData" />
+              </DataTypeDomain>
+              <Documentation>A vtkImageData object.</Documentation>
+          </InputProperty>
+
+          ${DEBUG_WIDGETS}
+
+          <Hints>
+              <ShowInMenu category="TTK - Cinema" />
+          </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

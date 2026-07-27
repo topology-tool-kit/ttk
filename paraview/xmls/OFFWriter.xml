@@ -1,0 +1,39 @@
+<ServerManagerConfiguration>
+
+  <ProxyGroup name="writers">
+    <!-- ================================================================== -->
+    <WriterProxy name="ttkOFFWriter" class="ttkOFFWriter" label="TTK OFFWriter">
+        <Documentation
+          long_help="Export a VTK Unstructured Grid into an Object Filed Format mesh."
+          short_help="Write an .off file.">
+          Export a VTK Unstructured Grid into an Object Filed Format mesh.
+        </Documentation>
+        <InputProperty name="Input" command="SetInputConnection">
+          <ProxyGroupDomain name="groups">
+            <Group name="sources"/>
+            <Group name="filters"/>
+          </ProxyGroupDomain>
+          <DataTypeDomain name="input_type" composite_data_supported="0">
+            <DataType value="vtkDataSet"/>
+          </DataTypeDomain>
+        </InputProperty>
+        <StringVectorProperty
+          name="FileName"
+          command="SetFilename"
+          number_of_elements="1">
+          <FileListDomain name="files"/>
+          <Documentation>
+              This property specifies the file name for the OFF writer.
+          </Documentation>
+        </StringVectorProperty>
+        <Hints>
+          <Property name="Input" show="0"/>
+          <Property name="FileName" show="0"/>
+          <WriterFactory extensions="off"
+                file_description="Object File Format" />
+        </Hints>
+    </WriterProxy>
+    <!-- End Writer -->
+  </ProxyGroup>
+
+</ServerManagerConfiguration>

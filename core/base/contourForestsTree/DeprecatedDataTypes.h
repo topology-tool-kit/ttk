@@ -17,8 +17,7 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef DATATYPES_H
-#define DATATYPES_H
+#pragma once
 
 #include <DataTypes.h>
 #include <limits>
@@ -97,5 +96,3 @@ namespace ttk {
     };
   } // namespace cf
 } // namespace ttk
-
-#endif /* end of include guard: DATATYPES_H */
