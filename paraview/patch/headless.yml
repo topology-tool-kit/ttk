@@ -45,6 +45,7 @@ jobs:
           -DPARAVIEW_USE_QT=OFF \
           -DVTK_USE_X=OFF \
           -DVTK_OPENGL_HAS_OSMESA=ON \
+          -DVTK_OPENGL_HAS_EGL=OFF \
           -DTTK_PARAVIEW_HEADLESS_DEPS=ON \
           -GNinja \
           $GITHUB_WORKSPACE
