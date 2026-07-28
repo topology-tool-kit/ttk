@@ -1,7 +1,7 @@
 #include <MergeTreeAxesAlgorithmUtils.h>
 #include <MergeTreeTorchUtils.h>
 #include <ttkMergeTreeAutoencoderDecoding.h>
-#include <ttkMergeTreeAutoencoderUtils.h>
+#include <ttkMergeTreeNeuralNetworkUtils.h>
 #include <ttkMergeTreeUtils.h>
 
 #include <vtkInformation.h>
@@ -141,6 +141,10 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
   else
     printMsg("Computation without normalized Wasserstein.");
 
+  auto diagramPairTypesArray = fd->GetArray("DiagramPairTypes");
+  if(diagramPairTypesArray)
+    DiagramPairTypes = diagramPairTypesArray->GetTuple1(0);
+
   // -----------------
   // Origins
   // -----------------
@@ -156,13 +160,13 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
   std::vector<vtkDataSet *> originsTreeSegmentations,
     originsPrimeTreeSegmentations;
 
-  bool useSadMaxPairs = (mixtureCoefficient_ == 0);
+  bool useSecondPairsType = (mixtureCoefficient_ == 0);
   isPersistenceDiagram_ = ttk::ftm::constructTrees<float>(
     origins, originsTrees, originsTreeNodes, originsTreeArcs,
-    originsTreeSegmentations, useSadMaxPairs);
-  ttk::ftm::constructTrees<float>(originsPrime, originsPrimeTrees,
-                                  originsTreeNodes, originsTreeArcs,
-                                  originsTreeSegmentations, useSadMaxPairs);
+    originsTreeSegmentations, useSecondPairsType, DiagramPairTypes);
+  ttk::ftm::constructTrees<float>(
+    originsPrime, originsPrimeTrees, originsTreeNodes, originsTreeArcs,
+    originsTreeSegmentations, useSecondPairsType, DiagramPairTypes);
   // If merge trees are provided in input and normalization is not asked
   convertToDiagram_
     = (not isPersistenceDiagram_ and not normalizedWasserstein_);
@@ -217,8 +221,8 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
   // -----------------
   // Vectors
   // -----------------
-  vSTensor_.resize(noLayers_);
-  vSPrimeTensor_.resize(noLayers_);
+  vSTensorCopy_.resize(noLayers_);
+  vSPrimeTensorCopy_.resize(noLayers_);
   auto vSPrime = vtkMultiBlockDataSet::SafeDownCast(vectors->GetBlock(1));
   std::vector<unsigned int *> allRevNodeCorr(noLayers_),
     allRevNodeCorrPrime(noLayers_);
@@ -227,7 +231,7 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
 #endif
-  for(unsigned int l = 0; l < vSTensor_.size(); ++l) {
+  for(unsigned int l = 0; l < vSTensorCopy_.size(); ++l) {
     auto layerVectorsTable = vtkTable::SafeDownCast(vS->GetBlock(l));
     auto layerVectorsPrimeTable = vtkTable::SafeDownCast(vSPrime->GetBlock(l));
     auto noRows = layerVectorsTable->GetNumberOfRows();
@@ -248,8 +252,8 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
               ->GetVariantValue(i)
               .ToFloat();
     }
-    vSTensor_[l] = torch::tensor(vSTensor).reshape({noRows, allNoAxes[l]});
-    vSPrimeTensor_[l]
+    vSTensorCopy_[l] = torch::tensor(vSTensor).reshape({noRows, allNoAxes[l]});
+    vSPrimeTensorCopy_[l]
       = torch::tensor(vSPrimeTensor).reshape({noRows2, allNoAxes[l]});
     allRevNodeCorr[l]
       = ttkUtils::GetPointer<unsigned int>(vtkDataArray::SafeDownCast(
@@ -287,9 +291,9 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
     originsMatchingVectorT[l].resize(array->GetNumberOfTuples());
     for(unsigned int i = 0; i < originsMatchingVectorT[l].size(); ++i)
       originsMatchingVectorT[l][i] = array->GetVariantValue(i).ToUnsignedInt();
-    reverseMatchingVector<float>(originsPrime_[l].mTree,
-                                 originsMatchingVectorT[l],
-                                 invOriginsMatchingVectorT[l]);
+    ttk::axa::reverseMatchingVector<float>(originsPrimeCopy_[l].mTree,
+                                           originsMatchingVectorT[l],
+                                           invOriginsMatchingVectorT[l]);
   }
   auto dataMatchingSize = getLatentLayerIndex() + 2;
   std::vector<std::vector<std::vector<ttk::ftm::idNode>>> dataMatchingVectorT(
@@ -319,7 +323,7 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
                         ->GetVariantValue(i)
                         .ToUnsignedInt()
                     : recs_[i][l - 1].mTree.tree.getNumberOfNodes());
-        reverseMatchingVector(
+        ttk::axa::reverseMatchingVector(
           noNodes, dataMatchingVectorT[l][i], invDataMatchingVectorT[l][i]);
       }
     }
@@ -343,10 +347,11 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
   std::vector<std::vector<double>> originsPersPercent, originsPersDiff;
   std::vector<double> originPersPercent, originPersDiff;
   std::vector<int> originPersistenceOrder;
-  ttk::wae::computeTrackingInformation(
-    origins_, originsPrime_, originsMatchingVectorT, invOriginsMatchingVectorT,
-    isPersistenceDiagram_, originsMatchingVector, originsPersPercent,
-    originsPersDiff, originPersPercent, originPersDiff, originPersistenceOrder);
+  ttk::wnn::computeTrackingInformation(
+    originsCopy_, originsPrimeCopy_, originsMatchingVectorT,
+    invOriginsMatchingVectorT, isPersistenceDiagram_, originsMatchingVector,
+    originsPersPercent, originsPersDiff, originPersPercent, originPersDiff,
+    originPersistenceOrder);
 
   // ------------------------------------------
   // --- Data
@@ -373,14 +378,14 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
       std::vector<std::vector<std::tuple<std::string, std::vector<double>>>>
         customDoubleArrays(recs_.size());
       unsigned int lShift = 1;
-      ttk::wae::computeCustomArrays(
+      ttk::wnn::computeCustomArrays(
         recs_, persCorrelationMatrix_, invDataMatchingVectorT,
         invReconstMatchingVectorT, originsMatchingVector,
         originsMatchingVectorT, originsPersPercent, originsPersDiff,
         originPersistenceOrder, l, lShift, customIntArrays, customDoubleArrays);
 
       // Create output
-      ttk::wae::makeManyOutput(trees, out_layer_i, customIntArrays,
+      ttk::wnn::makeManyOutput(trees, out_layer_i, customIntArrays,
                                customDoubleArrays, mixtureCoefficient_,
                                isPersistenceDiagram_, convertToDiagram_,
                                this->debugLevel_);
@@ -408,8 +413,9 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
     for(unsigned int i = 0; i < customRecs_.size(); ++i) {
       trees[i] = &(customRecs_[i].mTree);
       std::vector<ttk::ftm::idNode> matchingVector;
-      getInverseMatchingVector(origins_[0].mTree, customRecs_[i].mTree,
-                               customMatchings_[i], matchingVector);
+      ttk::axa::getInverseMatchingVector(originsCopy_[0].mTree,
+                                         customRecs_[i].mTree,
+                                         customMatchings_[i], matchingVector);
       customOriginPersOrder[i].resize(
         customRecs_[i].mTree.tree.getNumberOfNodes());
       for(unsigned int j = 0; j < matchingVector.size(); ++j) {
@@ -425,7 +431,7 @@ int ttkMergeTreeAutoencoderDecoding::RequestData(
     }
     vtkSmartPointer<vtkMultiBlockDataSet> dataCustom
       = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-    ttk::wae::makeManyOutput(trees, dataCustom, customRecsIntArrays,
+    ttk::wnn::makeManyOutput(trees, dataCustom, customRecsIntArrays,
                              customRecsDoubleArrays, mixtureCoefficient_,
                              isPersistenceDiagram_, convertToDiagram_,
                              this->debugLevel_);

@@ -30,9 +30,13 @@
 
         - https://topology-tool-kit.github.io/examples/2manifoldLearning/
 
+        - https://topology-tool-kit.github.io/examples/cosmicWeb/
+
         - https://topology-tool-kit.github.io/examples/imageProcessing/
 
         - https://topology-tool-kit.github.io/examples/karhunenLoveDigits64Dimensions/
+
+        - https://topology-tool-kit.github.io/examples/molecularVibration/
 
         - https://topology-tool-kit.github.io/examples/morseMolecule/
 
@@ -142,6 +146,42 @@
           Select the input offset field (to disambiguate flat plateaus).
         </Documentation>
       </StringVectorProperty>
+
+      <IntVectorProperty
+      name="DiscreteGradientBackend"
+      label="Discrete Gradient Backend"
+      command="SetDiscreteGradientBackend"
+        number_of_elements="1"
+        panel_visibility='advanced'
+        default_values="0"
+        >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Homotopic expansion algorithm (IEEE PAMI 2011)"/>
+          <Entry value="1" text="Stochastic algorithm (IEEE TVCG 2012)"/>
+        </EnumerationDomain>                      
+        <Documentation>
+          Method to compute the discrete gradient field (first step in Morse-Smale complex computation).
+        </Documentation>
+      </IntVectorProperty>
+
+
+      <IntVectorProperty name='StochasticGradientSeed'
+                   label='Random seed (stochastic gradient)'
+                   command='SetStochasticGradientSeed'
+                   number_of_elements='1'
+                   default_values='0'
+                   panel_visibility='advanced'>
+      <IntRangeDomain name='range' min='1' max='10000' />
+      <Hints>
+      <PropertyWidgetDecorator type='GenericDecorator'
+                             mode='visibility'
+                             property='DiscreteGradientBackend'
+                             value='1' />
+      </Hints>
+      <Documentation>
+        The seed for the random generator used by the stochastic backend.
+      </Documentation>
+      </IntVectorProperty>
 
        <IntVectorProperty name="ComputeCriticalPoints"
          label="Critical Points"
@@ -325,6 +365,8 @@
         <Property name="Scalar Field" />
         <Property name="ForceInputOffsetScalarField"/>
         <Property name="Offset Field"/>
+        <Property name="DiscreteGradientBackend"/>
+        <Property name="StochasticGradientSeed"/>
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">

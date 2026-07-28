@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04]
     steps:
     - uses: actions/checkout@v4
       name: Checkout TTK-ParaView source code
@@ -37,6 +37,7 @@ jobs:
           libqt5x11extras5-dev \
           libqt5svg5-dev \
           libgl1-mesa-dev \
+          libosmesa-dev \
           libxcursor-dev \
           ninja-build \
           dpkg-dev
@@ -75,20 +76,21 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-12, macos-14]
+        os: [macos-14, macos-15, macos-26]
+    env:
+      CCACHE_DIR: /Users/runner/work/ttk/.ccache
+      CCACHE_MAXSIZE: 200M
     steps:
     - uses: actions/checkout@v4
       name: Checkout TTK-ParaView source code
 
-    - name: Remove hosted Python
-      run: |
-        sudo rm -rf /Library/Frameworks/Python.framework/
-        sudo rm -rf /usr/local/Frameworks/Python.framework
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
 
     - name: Install macOS dependencies
       run: |
         # ParaView dependencies
-        brew reinstall python
         brew install --cask xquartz
         brew install mesa glew qt@5 ninja 
 
@@ -98,7 +100,6 @@ jobs:
         cmake \
           -DCMAKE_BUILD_TYPE=Release \
           -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5 \
-          -DPython3_ROOT_DIR=$(brew --prefix python) \
           -GNinja \
           $GITHUB_WORKSPACE
 
@@ -112,6 +113,22 @@ jobs:
         cd build
         cpack -G TGZ
 
+    - name: Install ParaView
+      run: |
+        cd build
+        sudo cmake --build . --target install
+        # pvpython does not embed the correct PYTHONPATH
+        echo "PYTHONPATH=/usr/local/lib/python3.13/site-packages:$PYTHONPATH" >> $GITHUB_ENV
+
+    - name: Test Python imports
+      run: |
+        echo "import vtk" | python3
+        echo "from paraview.simple import *" | python3
+        echo "import vtk" | pvpython
+        echo "from paraview.simple import *" | pvpython
+      env:
+        DYLD_LIBRARY_PATH: /usr/local/lib
+
     - name: Upload compressed binaries
       uses: actions/upload-artifact@v4
       with:
@@ -123,7 +140,7 @@ jobs:
   # Windows #
   # ------- #
   build-windows:
-    runs-on: windows-2022
+    runs-on: windows-latest
     env:
       CONDA_ROOT: C:\Miniconda
 
@@ -136,12 +153,42 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge qt-main python=3.10
+        conda install -c conda-forge qt-main python=3.10 ninja
 
     - name: Remove hosted Python
       shell: bash
       run: |
         rm -rf C:/hostedtoolcache/windows/Python
+
+    - name: Set up MSVC dev environment
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+
+    # MSVC 14.50+ (Visual Studio 18) removed the non-standard
+    # stdext::checked_array_iterator APIs, but the Qt 5 headers shipped by
+    # conda still use them. Restore make_checked_array_iterator as a plain
+    # pointer pass-through (its release-mode behavior) and force-include the
+    # shim in every C++ translation unit.
+    - name: Add shim for stdext removal in MSVC 14.50+
+      shell: bash
+      run: |
+        cat > "$CONDA_ROOT/stdext_shim.h" << 'EOF'
+        #ifndef STDEXT_SHIM_H
+        #define STDEXT_SHIM_H
+        #if defined(_MSC_VER) && _MSC_VER >= 1950
+        #include <cstddef>
+        namespace stdext
+        {
+        template <class T>
+        constexpr T* make_checked_array_iterator(T* array, std::size_t, std::size_t index = 0)
+        {
+          return array + index;
+        }
+        }
+        #endif
+        #endif
+        EOF
 
     - name: Create & configure ParaView build directory
       shell: cmd
@@ -149,12 +196,13 @@ jobs:
         cd ..
         mkdir b
         cd b
+        set CXXFLAGS=/FI%CONDA_ROOT%\stdext_shim.h
         cmake ^
           -DPython3_ROOT_DIR="%CONDA_ROOT%" ^
           -DCMAKE_AUTOUIC=OFF ^
           -DCMAKE_BUILD_TYPE=Release ^
-          -DVTKm_MODULE_ENABLE_vtkm_filter_scalar_topology=NO ^
-          -G"Visual Studio 17 2022" ^
+          -DPARAVIEW_USE_VISKORES=OFF ^
+          -G "Ninja" ^
           %GITHUB_WORKSPACE%
 
     - name: Build ParaView
@@ -162,6 +210,12 @@ jobs:
       run: |
         cd ..\b
         cmake --build . --config Release --parallel
+
+    - name: Install NSIS
+      shell: bash
+      run: |
+        choco install nsis -y
+        echo "C:\Program Files (x86)\NSIS" >> $GITHUB_PATH
 
     - name: Create ParaView package
       shell: bash
@@ -173,7 +227,7 @@ jobs:
     - name: Upload install executable
       uses: actions/upload-artifact@v4
       with:
-        name: ttk-paraview-windows-2022
+        name: ttk-paraview-windows-latest
         path: ttk-paraview.exe
 
 
@@ -215,14 +269,6 @@ jobs:
     - name: Fetch all uploaded artifacts
       uses: actions/download-artifact@v4
 
-    - name: Upload Ubuntu Focal .deb as Release Asset
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        tag: ${{ github.ref }}
-        file: ttk-paraview-ubuntu-20.04/ttk-paraview.deb
-        asset_name: ttk-paraview-$tag-ubuntu-20.04.deb
-
     - name: Upload Ubuntu Jammy .deb as Release Asset
       uses: svenstaro/upload-release-action@v2
       with:
@@ -239,32 +285,49 @@ jobs:
         file: ttk-paraview-ubuntu-24.04/ttk-paraview.deb
         asset_name: ttk-paraview-$tag-ubuntu-24.04.deb
 
-    - name: Upload MacOS 14 (arm64) .tar.gz as Release Asset
+    - name: Upload Ubuntu Noble Numbat .deb as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-paraview-ubuntu-26.04/ttk-paraview.deb
+        asset_name: ttk-paraview-$tag-ubuntu-26.04.deb
+
+    - name: Upload MacOS 26 .tar.gz as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-paraview-macos-26/ttk-paraview.tar.gz
+        asset_name: ttk-paraview-$tag-macos-26.tar.gz
+
+
+    - name: Upload MacOS 15 .tar.gz as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-paraview-macos-15/ttk-paraview.tar.gz
+        asset_name: ttk-paraview-$tag-macos-15.tar.gz
+
+    - name: Upload MacOS 14 .tar.gz as Release Asset
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ github.ref }}
         file: ttk-paraview-macos-14/ttk-paraview.tar.gz
-        asset_name: ttk-paraview-$tag-macos-14-arm64.tar.gz
-
-    - name: Upload MacOS 12 .tar.gz as Release Asset
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        tag: ${{ github.ref }}
-        file: ttk-paraview-macos-12/ttk-paraview.tar.gz
-        asset_name: ttk-paraview-$tag-macos-12.tar.gz
+        asset_name: ttk-paraview-$tag-macos-14.tar.gz
 
     - name: Upload .exe as Release Asset
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ github.ref }}
-        file: ttk-paraview-windows-2022/ttk-paraview.exe
+        file: ttk-paraview-windows-latest/ttk-paraview.exe
         asset_name: ttk-paraview-$tag.exe
 
     - name: Delete package artifacts
-      uses: geekyeggo/delete-artifact@v2
+      uses: geekyeggo/delete-artifact@v5
       with:
           name: |
               ttk-paraview*

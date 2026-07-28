@@ -68,6 +68,7 @@ private:
    */
   // Input options
   double oldEpsilonTree1;
+  int DiagramPairTypes = 0;
 
   // ----------------------
   // Data for visualization
@@ -97,15 +98,6 @@ public:
   using vtkAlgorithm::SetInputArrayToProcess;
   void SetInputArrayToProcess(const char *name) {
     vtkAlgorithm::SetInputArrayToProcess(0, 2, 0, 6, name);
-  }
-
-  void SetDoCompute(bool doCompute) {
-    doCompute_ = doCompute;
-    Modified();
-    resetDataVisualization();
-  }
-  bool GetDoCompute() {
-    return doCompute_;
   }
 
   void SetNormalizedWasserstein(bool nW) {
@@ -441,6 +433,13 @@ public:
   double GetJoinSplitMixtureCoefficient() {
     return mixtureCoefficient_;
   }
+
+  void SetDiagramPairTypes(int diagramPairTypes) {
+    DiagramPairTypes = diagramPairTypes;
+    Modified();
+    resetDataVisualization();
+  }
+  vtkGetMacro(DiagramPairTypes, int);
 
   void SetEpsilon1UseFarthestSaddle(bool epsilon1UseFarthestSaddle) {
     epsilon1UseFarthestSaddle_ = epsilon1UseFarthestSaddle;

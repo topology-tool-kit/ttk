@@ -1,0 +1,198 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkDimensionReductionMetrics" class="ttkDimensionReductionMetrics" label="TTK DimensionReductionMetrics">
+      <Documentation long_help="DimensionReductionMetrics Long" short_help="DimensionReductionMetrics Short">
+        <!--todo-->
+      </Documentation>
+
+      <!-- INPUT DATA OBJECTS -->
+      <InputProperty name="Input0" label="Input" port_index="0" command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable" />
+        </DataTypeDomain>
+        <Documentation>High-dimensional input point cloud.</Documentation>
+      </InputProperty>
+
+      <InputProperty name="Input1" label="Representation" port_index="1" command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable" />
+        </DataTypeDomain>
+        <Documentation>Low-dimensional representation.</Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+        name="SelectInputFieldsWithRegexp"
+        label="Select Input Fields with a Regexp"
+        command="SetSelectInputFieldsWithRegexp"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Select input scalar fields matching a regular expression.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty command="SetInputScalarFields"
+        clean_command="ClearInputScalarFields"
+        label="Input Columns"
+        name="InputScalarFields"
+        number_of_elements="0"
+        default_values="1"
+        number_of_elements_per_command="1"
+        repeat_command="1">
+        <ArrayListDomain name="array_list"
+          default_values="1">
+          <RequiredProperties>
+            <Property name="Input0"
+              function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <NoDefault />
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectInputFieldsWithRegexp"
+                                   value="0" />
+        </Hints>
+        <Documentation>
+          Select the scalar fields to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+         name="InputRegexp"
+         command="SetInputRegexpString"
+         number_of_elements="1"
+         default_values=".*" >
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectInputFieldsWithRegexp"
+                                   value="1" />
+        </Hints>
+         <Documentation>
+            This regexp will be used to filter the chosen fields. Only
+            matching ones will be selected.
+         </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+              name="SelectRepresentationFieldsWithRegexp"
+              label="Select Representation Fields with a Regexp"
+              command="SetSelectRepresentationFieldsWithRegexp"
+              number_of_elements="1"
+              default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Select representation scalar fields matching a regular expression.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty command="SetRepresentationScalarFields"
+                            clean_command="ClearRepresentationScalarFields"
+                            label="Representation Columns"
+                            name="RepresentationScalarFields"
+                            number_of_elements="0"
+                            default_values="1"
+                            number_of_elements_per_command="1"
+                            repeat_command="1">
+        <ArrayListDomain name="array_list"
+                         default_values="1">
+          <RequiredProperties>
+            <Property name="Input1"
+                      function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <NoDefault />
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectRepresentationFieldsWithRegexp"
+                                   value="0" />
+        </Hints>
+        <Documentation>
+          Select the scalar fields to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+              name="RepresentationRegexp"
+              command="SetRepresentationRegexpString"
+              number_of_elements="1"
+              default_values=".*" >
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectRepresentationFieldsWithRegexp"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          This regexp will be used to filter the chosen fields. Only
+          matching ones will be selected.
+        </Documentation>
+      </StringVectorProperty>
+
+      <!-- INPUT PARAMETER WIDGETS -->
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+      </PropertyGroup>
+
+      <!-- OUTPUT PARAMETER WIDGETS -->
+
+      <IntVectorProperty
+              name="Wasserstein"
+              label="Wasserstein"
+              command="SetWasserstein"
+              number_of_elements="1"
+              default_values="2">
+        <Documentation>
+          Value of the parameter p for the p-th Wasserstein distances computation.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+              name="SampleSize"
+              label="Triplet sample size"
+              command="SetSampleSize"
+              number_of_elements="1"
+              default_values="-1">
+        <Documentation>
+          Number of triplets sampled for the estimation of the triplet accuracy. If this value is -1 all the N(N-1)(N-2)/6 triplets will be used.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+              name="NeighborhoodSize"
+              label="Neighborhood size"
+              command="SetNeighborhoodSize"
+              number_of_elements="1"
+              default_values="10">
+        <Documentation>
+          Size of the neighborhood in the rank-based measures (trustworthiness, continuity...).
+        </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="Wasserstein" />
+        <Property name="SampleSize" />
+        <Property name="NeighborhoodSize" />
+      </PropertyGroup>
+
+      <!-- DEBUG -->
+      ${DEBUG_WIDGETS}
+
+      <!-- MENU CATEGORY -->
+      <Hints>
+        <ShowInMenu category="TTK - High Dimension / Point Cloud Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

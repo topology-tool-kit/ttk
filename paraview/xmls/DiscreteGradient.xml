@@ -55,6 +55,40 @@
       </StringVectorProperty>
 
       <IntVectorProperty
+        name="Backend"
+        label="Backend"
+        command="SetBackend"
+        number_of_elements="1"
+        default_values="0"
+        >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Homotopic expansion algorithm (IEEE PAMI 2011)"/>
+          <Entry value="1" text="Stochastic algorithm (IEEE TVCG 2012)"/>
+        </EnumerationDomain>                      
+        <Documentation>
+          Method to compute discrete gradient field.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name='StochasticGradientSeed'
+                   label='Random seed (stochastic gradient)'
+                   command='SetStochasticGradientSeed'
+                   number_of_elements='1'
+                   default_values='0'
+                   panel_visibility='advanced'>
+      <IntRangeDomain name='range' min='1' max='10000' />
+      <Hints>
+      <PropertyWidgetDecorator type='GenericDecorator'
+                             mode='visibility'
+                             property='Backend'
+                             value='1' />
+      </Hints>
+      <Documentation>
+        The seed for the random generator used by the stochastic backend.
+      </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
         name="ForceInputOffsetScalarField"
         command="SetForceInputOffsetScalarField"
         label="Force Input Offset Field"
@@ -107,6 +141,7 @@
           Compute the gradient glyphs.
         </Documentation>
       </IntVectorProperty>
+
 
       ${DEBUG_WIDGETS}
 

@@ -2,6 +2,8 @@
 
 #include <CommandLineParser.h>
 
+using namespace std;
+
 Editor::Editor() {
   this->setDebugMsgPrefix("Editor");
 }

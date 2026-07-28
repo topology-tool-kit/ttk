@@ -1,14 +1,11 @@
 ttk_add_base_library(mergeTreeAutoencoder
   SOURCES
     MergeTreeAutoencoder.cpp
-    MergeTreeAutoencoderUtils.cpp
-    MergeTreeTorchUtils.cpp
   HEADERS
     MergeTreeAutoencoder.h
-    MergeTreeAutoencoderUtils.h
-    MergeTreeTorchUtils.h
   DEPENDS
     mergeTreePrincipalGeodesics
+    mergeTreeNeuralNetwork
     geometry
 )
 

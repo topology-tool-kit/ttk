@@ -71,6 +71,15 @@
 /// "Algorithm and Theory of Computation Handbook (Second Edition)
 /// - Special Topics and Techniques" by Atallah and Blanton on page 97.
 ///
+/// 6) Distributed Discrete Morse Sandwich \n
+/// \b Related \b publication \n
+/// "Distributed Discrete Morse Sandwich: Efficient Computation of Persistence
+/// Diagrams for Massive Scalar Data" \n
+/// Eve Le Guillou, Pierre Fortin, Julien Tierny \n
+/// IEEE Transactions on Parallel and Distributed Systems, 2025. \n
+/// https://arxiv.org/abs/2505.21266, 2025. \n
+/// Fast, hybrid MPI-OpenMP backend for large-scale datasets on supercomputers.
+///
 /// \sa ttkMergeTreePP
 /// \sa ttkPersistenceCurve
 /// \sa ttkScalarFieldCriticalPoints
@@ -95,6 +104,9 @@
 ///   Clustering Kelvin Helmholtz Instabilities example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/ctBones/">CT Bones
 ///   example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/distributedPersistenceDiagram/">
+///   Distributed Persistence Diagram example</a> \n
 ///   - <a href="https://topology-tool-kit.github.io/examples/dragon/">Dragon
 ///   example</a> \n
 ///   - <a
@@ -133,6 +145,9 @@
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramClustering/">Persistence
 ///   Diagram Clustering example</a> \n
+///   - <a
+///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramDictionary/">Persistence
+///   Diagram Dictionary example</a> \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/persistenceDiagramDistance/">Persistence
 ///   Diagram Distance example</a> \n
@@ -196,6 +211,9 @@ public:
 
   vtkGetMacro(StoppingResolutionLevel, int);
   vtkSetMacro(StoppingResolutionLevel, int);
+
+  vtkSetMacro(UseTasks, bool);
+  vtkGetMacro(UseTasks, bool);
 
   vtkGetMacro(IsResumable, bool);
   vtkSetMacro(IsResumable, bool);

@@ -1,6 +1,4 @@
-#include <ttkMacros.h>
 #include <ttkRipsPersistenceDiagram.h>
-#include <ttkUtils.h>
 
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
@@ -8,17 +6,31 @@
 #include <vtkPointData.h>
 #include <vtkTable.h>
 
+#include <regex>
+
 vtkStandardNewMacro(ttkRipsPersistenceDiagram);
 
-int ttkRipsPersistenceDiagram::DiagramToVTU(
-  vtkUnstructuredGrid *vtu,
-  const std::vector<std::vector<ripser::pers_pair_t>> &diagram) {
+void DiagramToVTU(vtkUnstructuredGrid *vtu,
+                  const ttk::rpd::MultidimensionalDiagram &diagram,
+                  double SimplexMaximumDiameter) {
+
   const auto pd = vtu->GetPointData();
   const auto cd = vtu->GetCellData();
 
   int n_pairs = 0;
   for(auto const &diagram_d : diagram)
     n_pairs += diagram_d.size();
+
+  if(SimplexMaximumDiameter == ttk::rpd::inf) {
+    double maxFiniteValue = 0.;
+    for(auto const &diag : diagram) {
+      for(auto const &[b, d] : diag) {
+        if(d.second < ttk::rpd::inf)
+          maxFiniteValue = std::max(maxFiniteValue, d.second);
+      }
+    }
+    SimplexMaximumDiameter = 1.5 * maxFiniteValue;
+  }
 
   // point data arrays
   vtkNew<ttkSimplexIdTypeArray> vertsId{};
@@ -76,9 +88,7 @@ int ttkRipsPersistenceDiagram::DiagramToVTU(
       pairsDim->SetTuple1(i, d);
 
       const double death = std::min(SimplexMaximumDiameter, pair.second.second);
-      isFinite->SetTuple1(
-        i,
-        pair.second.second < std::numeric_limits<ripser::value_t>::infinity());
+      isFinite->SetTuple1(i, pair.second.second < ttk::rpd::inf);
       persistence->SetTuple1(i, death - pair.first.second);
       birthScalars->SetTuple1(i, pair.first.second);
       points->SetPoint(i0, pair.first.second, pair.first.second, 0);
@@ -120,8 +130,6 @@ int ttkRipsPersistenceDiagram::DiagramToVTU(
   isFinite->InsertTuple1(n_pairs, false);
   persistence->InsertTuple1(n_pairs, 0.);
   birthScalars->InsertTuple1(n_pairs, 0.);
-
-  return 1;
 }
 
 ttkRipsPersistenceDiagram::ttkRipsPersistenceDiagram() {
@@ -160,49 +168,88 @@ int ttkRipsPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
   if(!input)
     return 0;
 
+  if(SelectFieldsWithRegexp) {
+    // select all input columns whose name is matching the regexp
+    ScalarFields.clear();
+    const auto n = input->GetNumberOfColumns();
+    for(int i = 0; i < n; ++i) {
+      const auto &name = input->GetColumnName(i);
+      if(std::regex_match(name, std::regex(RegexpString))) {
+        ScalarFields.emplace_back(name);
+      }
+    }
+  }
+
+  if(input->GetNumberOfRows() <= 0 || ScalarFields.size() <= 0) {
+    this->printErr("Input matrix has invalid dimensions (rows: "
+                   + std::to_string(input->GetNumberOfRows())
+                   + ", columns: " + std::to_string(ScalarFields.size()) + ")");
+    return 0;
+  }
+
+  std::vector<vtkAbstractArray *> arrays;
+  arrays.reserve(ScalarFields.size());
+  for(const auto &s : ScalarFields)
+    arrays.push_back(input->GetColumnByName(s.data()));
+
   std::vector<std::vector<double>> points;
-  if(!InputIsDistanceMatrix) {
+  if(!InputIsDistanceMatrix || BackEnd == BACKEND::GEOMETRY) {
     const int numberOfPoints = input->GetNumberOfRows();
-    const int dimension = input->GetNumberOfColumns();
+    const int dimension = ScalarFields.size();
 
     points = std::vector<std::vector<double>>(numberOfPoints);
     for(int i = 0; i < numberOfPoints; ++i) {
       for(int j = 0; j < dimension; ++j)
-        points[i].push_back(input->GetValue(i, j).ToDouble());
+        points[i].push_back(arrays[j]->GetVariantValue(i).ToDouble());
     }
-    this->printMsg("Ripser starts (#dim: " + std::to_string(dimension)
-                     + ", #pts: " + std::to_string(numberOfPoints) + ")",
-                   1.0, tm.getElapsedTime(), 1);
+    this->printMsg(
+      "Computing Rips persistence diagram", 1.0, tm.getElapsedTime(), 1);
+    this->printMsg("#dimensions: " + std::to_string(dimension)
+                     + ", #points: " + std::to_string(numberOfPoints),
+                   0.0, tm.getElapsedTime(), 1);
   } else {
-    const int n
-      = std::min(input->GetNumberOfRows(), input->GetNumberOfColumns());
-    const int column_offset = input->GetNumberOfColumns() - n;
+    const unsigned n = input->GetNumberOfRows();
+    if(n != ScalarFields.size()) {
+      this->printErr("Input distance matrix is not squared.");
+      this->printErr("(rows: " + std::to_string(input->GetNumberOfRows())
+                     + ", columns: " + std::to_string(ScalarFields.size())
+                     + ")");
+      return 0;
+    }
 
     points = {std::vector<double>(n * (n - 1) / 2)};
-    for(int i = 1; i < n; ++i) {
-      for(int j = 0; j < i; ++j)
+    for(unsigned i = 1; i < n; ++i) {
+      for(unsigned j = 0; j < i; ++j)
         points[0][i * (i - 1) / 2 + j]
-          = input->GetValue(i, j + column_offset).ToDouble();
+          = arrays[j]->GetVariantValue(i).ToDouble();
     }
-    this->printMsg("Ripser starts (" + std::to_string(n) + "x"
-                     + std::to_string(n) + " dist mat)",
-                   1.0, tm.getElapsedTime(), 1);
+    this->printMsg(
+      "Computing Rips persistence diagram", 1.0, tm.getElapsedTime(), 1);
+    this->printMsg(
+      "(" + std::to_string(n) + "x" + std::to_string(n) + " distance matrix)",
+      0.0, tm.getElapsedTime(), 1);
   }
+
   this->printMsg(
-    "Simplex maximum dimension: " + std::to_string(SimplexMaximumDimension),
-    1.0, tm.getElapsedTime(), 1);
+    "Homology maximum dimension: " + std::to_string(HomologyMaximumDimension),
+    0.0, tm.getElapsedTime(), 1);
   this->printMsg(
-    "Simplex maximum diameter: " + std::to_string(SimplexMaximumDiameter), 1.0,
+    "Simplex maximum diameter: " + std::to_string(SimplexMaximumDiameter), 0.0,
     tm.getElapsedTime(), 1);
+  if(BackEnd == BACKEND::RIPSER)
+    this->printMsg("Backend: Ripser", 0.0, tm.getElapsedTime(), 1);
+  else if(BackEnd == BACKEND::GEOMETRY)
+    this->printMsg("Backend: Geometric", 0.0, tm.getElapsedTime(), 1);
 
-  std::vector<std::vector<ripser::pers_pair_t>> diagram(0);
+  ttk::rpd::MultidimensionalDiagram diagram(0);
 
-  const auto ret = this->execute(points, diagram);
-  if(ret != 0) {
+  if(this->execute(points, diagram) != 0)
     return 0;
-  }
 
-  DiagramToVTU(outputPersistenceDiagram, diagram);
+  DiagramToVTU(
+    outputPersistenceDiagram, diagram,
+    (BackEnd == BACKEND::GEOMETRY) ? ttk::rpd::inf : SimplexMaximumDiameter);
+
   this->printMsg("Complete", 1.0, tm.getElapsedTime(), 1);
 
   // shallow copy input Field Data

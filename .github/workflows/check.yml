@@ -1,33 +1,15 @@
 name: check_code
 
 on:
-  push:
-    # triggered on tag pushes with tags beginning with either "v" or "dev"
-    branch-ignore:
-      - '*'
-    tags:
-      - 'v*'
-      - 'dev*'
-      - 'ci*'
-      - 'check*'
-  pull_request:
-    # also triggered by pull requests on the "dev" & "mpi" branches
-    branches:
-      - 'dev'
-      - 'mpi'
-
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  workflow_call:
+  workflow_dispatch:
 
 env:
-  PV_TAG: v5.13.0-headless
+  PV_TAG: v6.1.1-headless
   PV_REPO: topology-tool-kit/ttk-paraview
 
 
 jobs:
-
 
   # ----------------------- #
   # Check source formatting #
@@ -105,6 +87,7 @@ jobs:
         # TTK dependencies
         sudo apt install -y \
           libboost-system-dev \
+          libcgal-dev \
           libeigen3-dev \
           libgraphviz-dev \
           libosmesa-dev \
@@ -117,8 +100,11 @@ jobs:
           doxygen \
           clang-tidy
 
-    - name: Install optional dependencies
-      uses: ./.github/actions/install-deps-unix
+    - name: Install optional Spectra dependency
+      uses: ./.github/actions/install-spectra-unix
+
+    - name: Install optional ZFP dependency
+      uses: ./.github/actions/install-zfp-unix
 
     - name: Fetch TTK-ParaView headless Debian package
       run: |
@@ -153,10 +139,12 @@ jobs:
 
     - name: Use Clang static analyzer
       if: matrix.config.sa
+      # "FastRipsPersistenceDiagram2.cpp" is excluded because static analysis fails on CGAL's "Mpzf.h" file
       run: |
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
+        | grep -v "FastRipsPersistenceDiagram2.cpp" \
         | xargs -n1 -P$(nproc) clang-tidy -p build --checks="-*,clang-analyzer-*" --warnings-as-errors="*" 2> /dev/null
 
     - name: Check Doxygen documentation warnings
@@ -171,7 +159,7 @@ jobs:
   # Check compiler warnings #
   # ----------------------- #
   check-warnings:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         kamikaze: [KAMIKAZE=TRUE, KAMIKAZE=FALSE]
@@ -191,6 +179,7 @@ jobs:
         # TTK dependencies
         sudo apt install -y \
           libboost-system-dev \
+          libcgal-dev \
           libeigen3-dev \
           libgraphviz-dev \
           libosmesa-dev \
@@ -203,13 +192,16 @@ jobs:
           clang-tools \
           libomp-dev
 
-    - name: Install optional dependencies
-      uses: ./.github/actions/install-deps-unix
+    - name: Install optional Spectra dependency
+      uses: ./.github/actions/install-spectra-unix
+
+    - name: Install optional ZFP dependency
+      uses: ./.github/actions/install-zfp-unix
 
     - name: Fetch TTK-ParaView headless Debian package
       run: |
         wget -O ttk-paraview-headless.deb \
-          https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless-ubuntu-22.04.deb
+          https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless-ubuntu-24.04.deb
 
     - name: Install ParaView .deb
       run: |
@@ -221,6 +213,7 @@ jobs:
         cd build
         cmake \
           -DCMAKE_BUILD_TYPE=${{ matrix.opt }} \
+          -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE \
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
           -DTTK_BUILD_STANDALONE_APPS=TRUE \

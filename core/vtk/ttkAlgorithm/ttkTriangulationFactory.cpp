@@ -42,7 +42,11 @@ static int checkCellTypes(vtkPointSet *object) {
 #endif
   {
     auto cellTypes = vtkSmartPointer<vtkCellTypes>::New();
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 6, 1)
+    object->GetDistinctCellTypes(cellTypes);
+#else
     object->GetCellTypes(cellTypes);
+#endif
     nTypes = cellTypes->GetNumberOfTypes();
   }
 
@@ -184,6 +188,12 @@ RegistryTriangulation
 
   double spacing[3];
   image->GetSpacing(spacing);
+
+  // 1D (not tested)
+  if(!spacing[1] && !spacing[2])
+    spacing[1] = 1;
+  if(!spacing[2]) // 2D (tested)
+    spacing[2] = 1;
 
   int dimensions[3];
   image->GetDimensions(dimensions);

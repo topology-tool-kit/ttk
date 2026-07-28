@@ -2,6 +2,21 @@
 =
 ### dev
 
+### 1.4.0
+- Cycle-aware dimensionality reduction (TopoAE++, IEEE TVCG 2026)
+- Reliable Tracking in HVI Fast Imaging (DebrisTracer, IEEE VIS 2026)
+- Distributed computation of persistent homology! (IEEE TPDS 2025)
+- Separatrix stability, a.k.a., BondMatcher (IEEE TVCG 2025)
+- Discrete vector field topology! (IEEE VIS 2024)
+- Persistence Diagram Dictionaries (IEEE TVCG 2024)
+- Merge tree barycenters with path mapping (IEEE VIS 2023)
+- Fast DelaunayRips persistence computation for point cloud data
+- New backend for TrackingFromFields (critical point based)
+- Stochastic discrete gradient (IEEE VIS 2012)
+- Fast planar Rips filtration persistence computation
+- Migration to ParaView 6.1.1
+- CI updates
+
 ### 1.3.0
 - Wasserstein Auto-Encoders of Merge Trees / Pers. Diagrams (IEEE TVCG 2024)
 - Topological simplification optimization (IEEE VIS 2024)

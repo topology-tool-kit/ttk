@@ -1,0 +1,17 @@
+name: 'Install dependencies for Unix'
+description: 'Install ZFP optional dependencies'
+runs:
+  using: "composite"
+  steps:
+
+    - name: Install ZFP dependency
+      shell: bash
+      run: |
+        wget https://github.com/LLNL/zfp/archive/1.0.0.tar.gz
+        tar xvf 1.0.0.tar.gz
+        mkdir build_zfp && cd build_zfp
+        cmake \
+          -DBUILD_SHARED_LIBS=OFF \
+          -DBUILD_TESTING=OFF \
+          ../zfp-1.0.0
+        sudo cmake --build . --target install --parallel

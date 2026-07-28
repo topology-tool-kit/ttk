@@ -1747,13 +1747,13 @@ int ImplicitTriangulationCRTP<Derived>::getTriangleVertexInternal(
       switch(localVertexId) {
         break;
         case 0:
-          vertexId = p[0] / 2 + p[1] * vshift_[0];
+          vertexId = p[0] + p[1] * vshift_[0];
           break;
         case 1:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + 1;
+          vertexId = p[0] + p[1] * vshift_[0] + 1;
           break;
         case 2:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0];
+          vertexId = p[0] + p[1] * vshift_[0] + vshift_[0];
           break;
       }
       break;
@@ -1761,13 +1761,13 @@ int ImplicitTriangulationCRTP<Derived>::getTriangleVertexInternal(
       switch(localVertexId) {
         break;
         case 0:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + 1;
+          vertexId = p[0] + p[1] * vshift_[0] + 1;
           break;
         case 1:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0] + 1;
+          vertexId = p[0] + p[1] * vshift_[0] + vshift_[0] + 1;
           break;
         case 2:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0];
+          vertexId = p[0] + p[1] * vshift_[0] + vshift_[0];
           break;
       }
   }
@@ -1820,13 +1820,13 @@ int ImplicitTriangulationCRTP<Derived>::getTriangleEdgeInternal(
       switch(localEdgeId) {
         break;
         case 0:
-          edgeId = p[0] / 2 + p[1] * eshift_[0];
+          edgeId = p[0] + p[1] * eshift_[0];
           break;
         case 1:
-          edgeId = esetshift_[0] + p[0] / 2 + p[1] * eshift_[2];
+          edgeId = esetshift_[0] + p[0] + p[1] * eshift_[2];
           break;
         case 2:
-          edgeId = esetshift_[1] + p[0] / 2 + p[1] * eshift_[4];
+          edgeId = esetshift_[1] + p[0] + p[1] * eshift_[4];
           break;
       }
       break;
@@ -1834,13 +1834,13 @@ int ImplicitTriangulationCRTP<Derived>::getTriangleEdgeInternal(
       switch(localEdgeId) {
         break;
         case 0:
-          edgeId = p[0] / 2 + (p[1] + 1) * eshift_[0];
+          edgeId = p[0] + (p[1] + 1) * eshift_[0];
           break;
         case 1:
-          edgeId = esetshift_[0] + (p[0] + 1) / 2 + p[1] * eshift_[2];
+          edgeId = esetshift_[0] + (p[0] + 1) + p[1] * eshift_[2];
           break;
         case 2:
-          edgeId = esetshift_[1] + p[0] / 2 + p[1] * eshift_[4];
+          edgeId = esetshift_[1] + p[0] + p[1] * eshift_[4];
           break;
       }
   }
@@ -2056,9 +2056,9 @@ SimplexId ImplicitTriangulationCRTP<Derived>::getTriangleNeighborNumber(
     const SimplexId id = triangleId % 2;
 
     if(id) {
-      if(p[0] / 2 == nbvoxels_[Di_] - 1 and p[1] == nbvoxels_[Dj_] - 1)
+      if(p[0] == nbvoxels_[Di_] - 1 and p[1] == nbvoxels_[Dj_] - 1)
         return 1;
-      else if(p[0] / 2 == nbvoxels_[Di_] - 1 or p[1] == nbvoxels_[Dj_] - 1)
+      else if(p[0] == nbvoxels_[Di_] - 1 or p[1] == nbvoxels_[Dj_] - 1)
         return 2;
       else
         return 3;
@@ -2093,9 +2093,9 @@ int ImplicitTriangulationCRTP<Derived>::getTriangleNeighbor(
     const SimplexId id = triangleId % 2;
 
     if(id) {
-      if(p[0] / 2 == nbvoxels_[Di_] - 1 and p[1] == nbvoxels_[Dj_] - 1)
+      if(p[0] == nbvoxels_[Di_] - 1 and p[1] == nbvoxels_[Dj_] - 1)
         neighborId = triangleId - 1;
-      else if(p[0] / 2 == nbvoxels_[Di_] - 1) {
+      else if(p[0] == nbvoxels_[Di_] - 1) {
         switch(localNeighborId) {
           case 0:
             neighborId = triangleId - 1;

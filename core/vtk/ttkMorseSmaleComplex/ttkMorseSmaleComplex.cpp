@@ -9,6 +9,7 @@
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIdTypeArray.h>
+#include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
@@ -47,7 +48,10 @@ int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
 
 template <typename vtkArrayType, typename vectorType>
 void setArray(vtkArrayType &vtkArray, vectorType &vector) {
-  ttkUtils::SetVoidArray(vtkArray, vector.data(), vector.size(), 1);
+  vtkArray->SetNumberOfTuples(vector.size());
+  for(unsigned int i = 0; i < vector.size(); i++) {
+    vtkArray->SetValue(i, vector[i]);
+  }
 }
 
 template <typename scalarType, typename triangulationType>
@@ -61,9 +65,13 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
   const int dimensionality = triangulation.getDimensionality();
   const auto scalars = ttkUtils::GetPointer<scalarType>(inputScalars);
 
-  const int ret = this->execute(
-    criticalPoints_, separatrices1_, separatrices2_, segmentations_, scalars,
-    inputScalars->GetMTime(), inputOffsets, triangulation);
+  OutputCriticalPoints criticalPoints_{};
+  Output1Separatrices separatrices1_{};
+  Output2Separatrices separatrices2_{};
+  const int ret
+    = this->execute(criticalPoints_, separatrices1_, separatrices2_,
+                    segmentations_, scalars, inputScalars->GetMTime(),
+                    inputOffsets, triangulation, StochasticGradientSeed);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret != 0) {
@@ -148,7 +156,6 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     pointData->AddArray(PLVertexIdentifiers);
     pointData->AddArray(manifoldSizeScalars);
   }
-
   // 1-separatrices
   if(ComputeAscendingSeparatrices1 or ComputeDescendingSeparatrices1
      or ComputeSaddleConnectors) {
@@ -177,7 +184,12 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
 #endif
 
     pointsCoords->SetNumberOfComponents(3);
-    setArray(pointsCoords, separatrices1_.pt.points_);
+    pointsCoords->SetNumberOfTuples(separatrices1_.pt.numberOfPoints_);
+    for(int i = 0; i < separatrices1_.pt.numberOfPoints_; i++) {
+      pointsCoords->SetTuple3(i, separatrices1_.pt.points_[3 * i],
+                              separatrices1_.pt.points_[3 * i + 1],
+                              separatrices1_.pt.points_[3 * i + 2]);
+    }
 
     smoothingMask->SetNumberOfComponents(1);
     smoothingMask->SetName(ttk::MaskScalarFieldName);
@@ -309,7 +321,12 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
 #endif
 
     pointsCoords->SetNumberOfComponents(3);
-    setArray(pointsCoords, separatrices2_.pt.points_);
+    pointsCoords->SetNumberOfTuples(separatrices2_.pt.points_.size());
+    for(int i = 0; i < separatrices2_.pt.numberOfPoints_; i++) {
+      pointsCoords->SetTuple3(i, separatrices2_.pt.points_[3 * i],
+                              separatrices2_.pt.points_[3 * i + 1],
+                              separatrices2_.pt.points_[3 * i + 2]);
+    }
 
     sourceIds->SetNumberOfComponents(1);
     sourceIds->SetName(ttk::MorseSmaleSourceIdName);
@@ -387,7 +404,6 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     cellData->AddArray(separatrixFunctionDiffs);
     cellData->AddArray(isOnBoundary);
   }
-
   return ret;
 }
 
@@ -395,7 +411,8 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
                                       vtkInformationVector **inputVector,
                                       vtkInformationVector *outputVector) {
 
-  const auto input = vtkDataSet::GetData(inputVector[0]);
+  const auto input
+    = vtkDataSet::SafeDownCast(vtkDataSet::GetData(inputVector[0]));
   auto outputCriticalPoints = vtkPolyData::GetData(outputVector, 0);
   auto outputSeparatrices1 = vtkPolyData::GetData(outputVector, 1);
   auto outputSeparatrices2 = vtkPolyData::GetData(outputVector, 2);
@@ -469,6 +486,7 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
     return -1;
   }
 #endif
+
   ascendingManifold->SetNumberOfComponents(1);
   ascendingManifold->SetNumberOfTuples(numberOfVertices);
   ascendingManifold->SetName(ttk::MorseSmaleAscendingName);
@@ -489,7 +507,37 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
   this->setSaddleConnectorsPersistenceThreshold(
     SaddleConnectorsPersistenceThreshold);
 
+  const auto imageDataInput = vtkImageData::SafeDownCast(input);
+
+  if(DiscreteGradientBackend == 0) {
+    this->setDiscreteGradientBackend(
+      DiscreteGradient::BACKEND::CLASSIC_BACKEND);
+  }
+  if(DiscreteGradientBackend == 1 && !imageDataInput) {
+    this->setDiscreteGradientBackend(
+      DiscreteGradient::BACKEND::CLASSIC_BACKEND);
+    this->printWrn("The stochastic gradient (IEEE TVCG 2012) can only");
+    this->printWrn("be used on vtkImageData (.vti).");
+    this->printWrn("Defaulting to homotopic expansion (IEEE PAMI 2011)");
+  }
+  if(DiscreteGradientBackend == 1 && imageDataInput) {
+    this->setDiscreteGradientBackend(
+      DiscreteGradient::BACKEND::STOCHASTIC_BACKEND);
+  }
+
   int ret{};
+
+  /*
+
+  WARNING :
+
+  When this->ReturnSaddleConnectors == false, the discrete gradient is stored in
+  the cache associated with the triangulation. If the user creates another
+  MorseSmaleComplex object and execute the filter with
+  this->ReturnSaddleConnectors==false, the output will be the gradient in the
+  cache which may not be calculated with the same parameters (backend or seed).
+
+  */
 
   ttkVtkTemplateMacro(
     inputScalars->GetDataType(), triangulation->getType(),
