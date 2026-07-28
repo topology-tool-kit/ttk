@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 env:
-  PV_TAG: v6.1.0-headless
+  PV_TAG: v6.1.1-headless
   PV_REPO: topology-tool-kit/ttk-paraview
   PV_DIR: C:\Program Files\TTK-ParaView
   TTK_DIR: C:\Program Files (x86)\ttk
@@ -29,7 +29,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-2022]
+        os: [windows-latest]
 
     steps:
     - uses: actions/checkout@v4
@@ -42,7 +42,7 @@ jobs:
       run: |
         conda install -c conda-forge libboost-devel glew eigen spectralib zfp  \
           sqlite scikit-learn graphviz ninja python=3.10 zlib qhull \
-          llvm-openmp clangxx=18
+          llvm-openmp ninja
         # add TTK & ParaView install folders to PATH
         echo "$PV_DIR/bin" >> $GITHUB_PATH
         echo "$TTK_DIR/bin" >> $GITHUB_PATH
@@ -65,11 +65,15 @@ jobs:
       run: |
         ttk-paraview-headless.exe /S
 
+    - name: Set up MSVC dev environment
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+
     - name: Create & configure TTK build directory
       shell: cmd
       run: |
         set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library\lib\cmake;%CONDA_ROOT%\Library\share\eigen3\cmake;%CONDA_ROOT%\Library\share\Qull\cmake;%CONDA_ROOT%\Library\cmake;%ProgramFiles%\TTK-ParaView\lib\cmake;
-        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         mkdir build
         cd build
         cmake ^
@@ -93,24 +97,18 @@ jobs:
           -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE ^
           -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE ^
           -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 ^
+          -G "Ninja" ^
           ..
-
-    - name: Fix clang-cl OpenMP flags in build.ninja
-      shell: bash
-      run: |
-        sed -i 's/-Xclang -fopenmp/-openmp/' build/build.ninja
 
     - name: Build & install TTK
       shell: cmd
       run: |
         cd build
-        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         cmake --build . --config Release --parallel --target install
 
     - name: Test C++ example
       shell: cmd
       run: |
-        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
         cd %GITHUB_WORKSPACE%\examples\c++
         mkdir build
@@ -122,7 +120,6 @@ jobs:
     - name: Test VTK-C++ example
       shell: cmd
       run: |
-        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         mkdir build

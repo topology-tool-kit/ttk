@@ -6,7 +6,7 @@ set(CMAKE_POLICY_DEFAULT_CMP0167 NEW)
 set(CMAKE_POLICY_DEFAULT_CMP0174 NEW)
 
 # The C is required to build with VTK when it has MPI
-project(ttk VERSION 1.3.0 LANGUAGES CXX C)
+project(ttk VERSION 1.4.0 LANGUAGES CXX C)
 
 if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
   message(FATAL_ERROR "Build in sources is not supported by TTK, please use a separate build folder")

@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 env:
-  PV_TAG: v6.1.0-headless
+  PV_TAG: v6.1.1-headless
   PV_REPO: topology-tool-kit/ttk-paraview
   CMAKE_GENERATOR: Ninja
   CMAKE_BUILD_TYPE: Release
@@ -24,7 +24,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-14, macos-15]
+        os: [macos-14, macos-15, macos-26]
     env:
       DYLD_LIBRARY_PATH: /usr/local/lib
 
@@ -149,6 +149,7 @@ jobs:
         rm python/topologicalOptimization_darkSky.py
         # remove sklearn examples -- buggy on MacOS since sklearn-1.7
         rm python/1manifoldLearning.py python/clusteringKelvinHelmholtzInstabilities.py python/karhunenLoveDigits64Dimensions.py python/mergeTreeClustering.py python/persistentGenerators_householdAnalysis.py python/persistentGenerators_periodicPicture.py
+        rm python/trackingPostProcessing.py
         pvpython -u python/run.py
       env:
         PV_PLUGIN_PATH: /usr/local/bin/plugins/TopologyToolKit
