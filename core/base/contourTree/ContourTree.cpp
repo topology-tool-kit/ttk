@@ -488,7 +488,7 @@ int SubLevelSetTree::exportArcPosToVtk(const int &arcId,
   }
   v[0] -= offset;
   v[2] += offset;
-  o << v[0] << " " << v[1] << " " << v[2] << endl;
+  o << v[0] << " " << v[1] << " " << v[2] << std::endl;
   vertexIds.push_back(pointId);
 
   v = (*vertexPositions_)[nodeList_[downNodeId].vertexId_];
@@ -499,7 +499,7 @@ int SubLevelSetTree::exportArcPosToVtk(const int &arcId,
   }
   v[0] += offset;
   v[2] += offset;
-  o << v[0] << " " << v[1] << " " << v[2] << endl;
+  o << v[0] << " " << v[1] << " " << v[2] << std::endl;
   vertexIds.push_back(pointId + 1);
 
   v = (*vertexPositions_)[nodeList_[downNodeId].vertexId_];
@@ -510,7 +510,7 @@ int SubLevelSetTree::exportArcPosToVtk(const int &arcId,
   }
   v[0] += offset;
   v[2] -= offset;
-  o << v[0] << " " << v[1] << " " << v[2] << endl;
+  o << v[0] << " " << v[1] << " " << v[2] << std::endl;
   vertexIds.push_back(pointId + 2);
 
   v = (*vertexPositions_)[nodeList_[downNodeId].vertexId_];
@@ -521,7 +521,7 @@ int SubLevelSetTree::exportArcPosToVtk(const int &arcId,
   }
   v[0] -= offset;
   v[2] -= offset;
-  o << v[0] << " " << v[1] << " " << v[2] << endl;
+  o << v[0] << " " << v[1] << " " << v[2] << std::endl;
   vertexIds.push_back(pointId + 3);
 
   v = (*vertexPositions_)[nodeList_[upNodeId].vertexId_];
@@ -532,7 +532,7 @@ int SubLevelSetTree::exportArcPosToVtk(const int &arcId,
   }
   v[0] -= offset;
   v[2] += offset;
-  o << v[0] << " " << v[1] << " " << v[2] << endl;
+  o << v[0] << " " << v[1] << " " << v[2] << std::endl;
   vertexIds.push_back(pointId + 4);
 
   v = (*vertexPositions_)[nodeList_[upNodeId].vertexId_];
@@ -543,7 +543,7 @@ int SubLevelSetTree::exportArcPosToVtk(const int &arcId,
   }
   v[0] += offset;
   v[2] += offset;
-  o << v[0] << " " << v[1] << " " << v[2] << endl;
+  o << v[0] << " " << v[1] << " " << v[2] << std::endl;
   vertexIds.push_back(pointId + 5);
 
   v = (*vertexPositions_)[nodeList_[upNodeId].vertexId_];
@@ -554,7 +554,7 @@ int SubLevelSetTree::exportArcPosToVtk(const int &arcId,
   }
   v[0] += offset;
   v[2] -= offset;
-  o << v[0] << " " << v[1] << " " << v[2] << endl;
+  o << v[0] << " " << v[1] << " " << v[2] << std::endl;
   vertexIds.push_back(pointId + 6);
 
   v = (*vertexPositions_)[nodeList_[upNodeId].vertexId_];
@@ -565,7 +565,7 @@ int SubLevelSetTree::exportArcPosToVtk(const int &arcId,
   }
   v[0] -= offset;
   v[2] -= offset;
-  o << v[0] << " " << v[1] << " " << v[2] << endl;
+  o << v[0] << " " << v[1] << " " << v[2] << std::endl;
   vertexIds.push_back(pointId + 7);
 
   return 0;
@@ -633,7 +633,7 @@ int SubLevelSetTree::exportNodePosToVtk(const int &nodeId,
   v[0] -= offset;
   v[1] -= offset;
   v[2] -= offset;
-  o << v[0] << " " << v[1] << " " << v[2] << endl;
+  o << v[0] << " " << v[1] << " " << v[2] << std::endl;
   vertexIds.push_back(pointId);
 
   v = (*vertexPositions_)[nodeList_[nodeId].vertexId_];
@@ -645,7 +645,7 @@ int SubLevelSetTree::exportNodePosToVtk(const int &nodeId,
   v[0] += offset;
   v[1] -= offset;
   v[2] -= offset;
-  o << v[0] << " " << v[1] << " " << v[2] << endl;
+  o << v[0] << " " << v[1] << " " << v[2] << std::endl;
   vertexIds.push_back(pointId + 1);
 
   v = (*vertexPositions_)[nodeList_[nodeId].vertexId_];
@@ -657,7 +657,7 @@ int SubLevelSetTree::exportNodePosToVtk(const int &nodeId,
   v[0] += offset;
   v[1] += offset;
   v[2] -= offset;
-  o << v[0] << " " << v[1] << " " << v[2] << endl;
+  o << v[0] << " " << v[1] << " " << v[2] << std::endl;
   vertexIds.push_back(pointId + 2);
 
   v = (*vertexPositions_)[nodeList_[nodeId].vertexId_];
@@ -669,7 +669,7 @@ int SubLevelSetTree::exportNodePosToVtk(const int &nodeId,
   v[0] -= offset;
   v[1] += offset;
   v[2] -= offset;
-  o << v[0] << " " << v[1] << " " << v[2] << endl;
+  o << v[0] << " " << v[1] << " " << v[2] << std::endl;
   vertexIds.push_back(pointId + 3);
 
   v = (*vertexPositions_)[nodeList_[nodeId].vertexId_];
@@ -681,7 +681,7 @@ int SubLevelSetTree::exportNodePosToVtk(const int &nodeId,
   v[0] -= offset;
   v[1] -= offset;
   v[2] += offset;
-  o << v[0] << " " << v[1] << " " << v[2] << endl;
+  o << v[0] << " " << v[1] << " " << v[2] << std::endl;
   vertexIds.push_back(pointId + 4);
 
   v = (*vertexPositions_)[nodeList_[nodeId].vertexId_];
@@ -693,7 +693,7 @@ int SubLevelSetTree::exportNodePosToVtk(const int &nodeId,
   v[0] += offset;
   v[1] -= offset;
   v[2] += offset;
-  o << v[0] << " " << v[1] << " " << v[2] << endl;
+  o << v[0] << " " << v[1] << " " << v[2] << std::endl;
   vertexIds.push_back(pointId + 5);
 
   v = (*vertexPositions_)[nodeList_[nodeId].vertexId_];
@@ -705,7 +705,7 @@ int SubLevelSetTree::exportNodePosToVtk(const int &nodeId,
   v[0] += offset;
   v[1] += offset;
   v[2] += offset;
-  o << v[0] << " " << v[1] << " " << v[2] << endl;
+  o << v[0] << " " << v[1] << " " << v[2] << std::endl;
   vertexIds.push_back(pointId + 6);
 
   v = (*vertexPositions_)[nodeList_[nodeId].vertexId_];
@@ -717,7 +717,7 @@ int SubLevelSetTree::exportNodePosToVtk(const int &nodeId,
   v[0] -= offset;
   v[1] += offset;
   v[2] += offset;
-  o << v[0] << " " << v[1] << " " << v[2] << endl;
+  o << v[0] << " " << v[1] << " " << v[2] << std::endl;
   vertexIds.push_back(pointId + 7);
 
   return 0;
@@ -737,7 +737,7 @@ int SubLevelSetTree::exportPersistenceCurve(const string &fileName) const {
   for(int i = 0; i < (int)persistencePlot.size(); i++) {
 
     file << setprecision(REAL_SIGNIFICANT_DIGITS) << persistencePlot[i].first
-         << " " << persistencePlot[i].second << endl;
+         << " " << persistencePlot[i].second << std::endl;
   }
 
   file.close();
@@ -759,11 +759,11 @@ int SubLevelSetTree::exportPersistenceDiagram(const string &fileName) const {
 
   for(int i = 0; i < (int)diagram.size(); i++) {
     file << setprecision(REAL_SIGNIFICANT_DIGITS) << diagram[i].first << " "
-         << diagram[i].first << endl;
+         << diagram[i].first << std::endl;
     file << setprecision(REAL_SIGNIFICANT_DIGITS) << diagram[i].first << " "
-         << diagram[i].second << endl;
+         << diagram[i].second << std::endl;
     file << setprecision(REAL_SIGNIFICANT_DIGITS) << diagram[i].first << " "
-         << diagram[i].first << endl;
+         << diagram[i].first << std::endl;
   }
 
   file.close();
@@ -839,7 +839,7 @@ int SubLevelSetTree::exportToSvg(const string &fileName,
     dotFile << "Join";
   else
     dotFile << "Split";
-  dotFile << " Tree\"{" << endl;
+  dotFile << " Tree\"{" << std::endl;
 
   double minValue = 0, maxValue = 0;
   for(int i = 0; i < (int)vertexScalars_->size(); i++) {
@@ -878,7 +878,7 @@ int SubLevelSetTree::exportToSvg(const string &fileName,
                 << (*vertexPositions_)[nodeList_[upNodeId].vertexId_][1] << " "
                 << (*vertexPositions_)[nodeList_[upNodeId].vertexId_][2] << ")";
       }
-      dotFile << "\"" << endl;
+      dotFile << "\"" << std::endl;
     }
   }
 
@@ -937,12 +937,12 @@ int SubLevelSetTree::exportToSvg(const string &fileName,
 
         dotFile << "]";
 
-        dotFile << endl;
+        dotFile << std::endl;
       }
     }
   }
 
-  dotFile << "}" << endl;
+  dotFile << "}" << std::endl;
 
   dotFile.close();
 
@@ -1003,15 +1003,15 @@ int SubLevelSetTree::exportToVtk(const string &fileName,
   vector<vector<int>> nodeIds(nodeList_.size());
   vector<vector<int>> arcIds(superArcList_.size());
 
-  o << "<?xml version=\"1.0\"?>" << endl;
+  o << "<?xml version=\"1.0\"?>" << std::endl;
   o << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\""
-    << " byte_order=\"LittleEndian\">" << endl;
-  o << "  <UnstructuredGrid>" << endl;
+    << " byte_order=\"LittleEndian\">" << std::endl;
+  o << "  <UnstructuredGrid>" << std::endl;
   o << "    <Piece NumberOfPoints=\"" << pointNumber << "\" NumberOfCells=\""
     << cellNumber << "\">";
-  o << "      <PointData Scalars=\"Color Code\">" << endl;
+  o << "      <PointData Scalars=\"Color Code\">" << std::endl;
   o << "        <DataArray type=\"Float32\" Name=\"Critical Color\""
-    << " format=\"ascii\" NumberOfComponents=\"1\">" << endl;
+    << " format=\"ascii\" NumberOfComponents=\"1\">" << std::endl;
 
   // node color
   for(int i = 0; i < (int)superArcList_.size(); i++) {
@@ -1022,13 +1022,13 @@ int SubLevelSetTree::exportToVtk(const string &fileName,
       if(!nodeColorOut[downNodeId]) {
         o << "          ";
         exportNodeColorToVtk(downNodeId, o);
-        o << endl;
+        o << std::endl;
         nodeColorOut[downNodeId] = true;
       }
       if(!nodeColorOut[upNodeId]) {
         o << "          ";
         exportNodeColorToVtk(upNodeId, o);
-        o << endl;
+        o << std::endl;
         nodeColorOut[upNodeId] = true;
       }
     }
@@ -1041,17 +1041,17 @@ int SubLevelSetTree::exportToVtk(const string &fileName,
       for(int j = 0; j < 8; j++) {
         o << "2 ";
       }
-      o << endl;
+      o << std::endl;
     }
   }
-  o << "          </DataArray>" << endl;
-  o << "        </PointData>" << endl;
+  o << "          </DataArray>" << std::endl;
+  o << "        </PointData>" << std::endl;
 
   // node position
 
-  o << "        <Points>" << endl;
+  o << "        <Points>" << std::endl;
   o << "          <DataArray type=\"Float32\" NumberOfComponents=\"3\""
-    << " format=\"ascii\">" << endl;
+    << " format=\"ascii\">" << std::endl;
 
   int pointId = 0;
   for(int i = 0; i < (int)superArcList_.size(); i++) {
@@ -1064,7 +1064,7 @@ int SubLevelSetTree::exportToVtk(const string &fileName,
         exportNodePosToVtk(
           downNodeId, pointId, nodeIds[downNodeId], origin, voxelSize, o);
         nodePosOut[downNodeId] = true;
-        o << endl;
+        o << std::endl;
         pointId += 8;
       }
       if(!nodePosOut[upNodeId]) {
@@ -1072,7 +1072,7 @@ int SubLevelSetTree::exportToVtk(const string &fileName,
         exportNodePosToVtk(
           upNodeId, pointId, nodeIds[upNodeId], origin, voxelSize, o);
         nodePosOut[upNodeId] = true;
-        o << endl;
+        o << std::endl;
         pointId += 8;
       }
     }
@@ -1081,18 +1081,18 @@ int SubLevelSetTree::exportToVtk(const string &fileName,
     if(!superArcList_[i].pruned_) {
       o << "            ";
       exportArcPosToVtk(i, pointId, arcIds[i], origin, voxelSize, o);
-      o << endl;
+      o << std::endl;
       pointId += 8;
     }
   }
-  o << "          </DataArray>" << endl;
-  o << "        </Points>" << endl;
+  o << "          </DataArray>" << std::endl;
+  o << "        </Points>" << std::endl;
 
   // cells now
-  o << "      <Cells>" << endl;
+  o << "      <Cells>" << std::endl;
 
   o << "        <DataArray type=\"Int32\" Name=\"connectivity\""
-    << " format=\"ascii\">" << endl;
+    << " format=\"ascii\">" << std::endl;
 
   for(int i = 0; i < (int)superArcList_.size(); i++) {
     if(!superArcList_[i].pruned_) {
@@ -1104,14 +1104,14 @@ int SubLevelSetTree::exportToVtk(const string &fileName,
           << nodeIds[downNodeId][1] << " " << nodeIds[downNodeId][2] << " "
           << nodeIds[downNodeId][3] << " " << nodeIds[downNodeId][4] << " "
           << nodeIds[downNodeId][5] << " " << nodeIds[downNodeId][6] << " "
-          << nodeIds[downNodeId][7] << endl;
+          << nodeIds[downNodeId][7] << std::endl;
         nodeMeshOut[downNodeId] = true;
       }
       if(!nodeMeshOut[upNodeId]) {
         o << "        " << nodeIds[upNodeId][0] << " " << nodeIds[upNodeId][1]
           << " " << nodeIds[upNodeId][2] << " " << nodeIds[upNodeId][3] << " "
           << nodeIds[upNodeId][4] << " " << nodeIds[upNodeId][5] << " "
-          << nodeIds[upNodeId][6] << " " << nodeIds[upNodeId][7] << endl;
+          << nodeIds[upNodeId][6] << " " << nodeIds[upNodeId][7] << std::endl;
         nodeMeshOut[upNodeId] = true;
       }
     }
@@ -1120,39 +1120,40 @@ int SubLevelSetTree::exportToVtk(const string &fileName,
     if(!superArcList_[i].pruned_) {
       o << "        " << arcIds[i][0] << " " << arcIds[i][1] << " "
         << arcIds[i][2] << " " << arcIds[i][3] << " " << arcIds[i][4] << " "
-        << arcIds[i][5] << " " << arcIds[i][6] << " " << arcIds[i][7] << endl;
+        << arcIds[i][5] << " " << arcIds[i][6] << " " << arcIds[i][7]
+        << std::endl;
     }
   }
 
-  o << "        </DataArray>" << endl;
+  o << "        </DataArray>" << std::endl;
 
   o << "        <DataArray type=\"Int32\" Name=\"offsets\""
-    << "  format=\"ascii\">" << endl;
+    << "  format=\"ascii\">" << std::endl;
   pointId = 8;
   for(int i = 0; i < nodeNumber; i++) {
-    o << "        " << pointId << endl;
+    o << "        " << pointId << std::endl;
     pointId += 8;
   }
   for(int i = 0; i < superArcNumber; i++) {
-    o << "        " << pointId << endl;
+    o << "        " << pointId << std::endl;
     pointId += 8;
   }
-  o << "        </DataArray>" << endl;
+  o << "        </DataArray>" << std::endl;
 
   o << "        <DataArray type=\"Int32\" Name=\"types\""
-    << " format=\"ascii\">" << endl;
+    << " format=\"ascii\">" << std::endl;
   for(int i = 0; i < nodeNumber; i++) {
-    o << "          12" << endl;
+    o << "          12" << std::endl;
   }
   for(int i = 0; i < superArcNumber; i++) {
-    o << "          12" << endl;
+    o << "          12" << std::endl;
   }
-  o << "        </DataArray>" << endl;
+  o << "        </DataArray>" << std::endl;
 
-  o << "      </Cells>" << endl;
-  o << "    </Piece>" << endl;
-  o << "  </UnstructuredGrid>" << endl;
-  o << "</VTKFile>" << endl;
+  o << "      </Cells>" << std::endl;
+  o << "    </Piece>" << std::endl;
+  o << "  </UnstructuredGrid>" << std::endl;
+  o << "</VTKFile>" << std::endl;
   o.close();
 
   return 0;

@@ -461,9 +461,9 @@ void ttkContourForests::getSkeletonArcs() {
         }
       }
     } else {
-      // cout << " pruned _ :" <<
+      // std::cout << " pruned _ :" <<
       // tree_->getNode(a->getDownNodeId())->getVertexId() << " -  "
-      //<< tree_->getNode(a->getUpNodeId())->getVertexId() << endl;
+      //<< tree_->getNode(a->getUpNodeId())->getVertexId() << std::endl;
     }
   }
 
@@ -688,11 +688,11 @@ void ttkContourForests::getCriticalPoints() {
   }
   //{
   // stringstream msg;
-  // msg << "[ttkContourForests] List of critical points :" << endl;
+  // msg << "[ttkContourForests] List of critical points :" << std::endl;
   // for (unsigned int it = 0; it < criticalPoints_->size(); ++it)
   // msg << "[ttkContourForests]   NodeId:" << (*criticalPoints_)[it]
-  //<< ", VertexId:" << tree_->getNode(it)->getVertexId() << endl;
-  // dMsg(cout, msg.str(), advancedInfoMsg);
+  //<< ", VertexId:" << tree_->getNode(it)->getVertexId() << std::endl;
+  // dMsg(std::cout, msg.str(), advancedInfoMsg);
   //}
 }
 
@@ -979,15 +979,15 @@ void ttkContourForests::getSegmentation(vtkDataSet *input) {
       regionId = currentZone++;
       // regionId = i;
 
-      // cout << "arc : " << tree_->printArc(i);
-      // cout << " span : " << regionSpan;
-      // cout << " coords : ";
-      // cout << coordDown[0] << ",";
-      // cout << coordDown[1] << ",";
-      // cout << coordDown[2] << " || ";
-      // cout << coordUp[0] << ",";
-      // cout << coordUp[1] << ",";
-      // cout << coordUp[2] << endl;
+      // std::cout << "arc : " << tree_->printArc(i);
+      // std::cout << " span : " << regionSpan;
+      // std::cout << " coords : ";
+      // std::cout << coordDown[0] << ",";
+      // std::cout << coordDown[1] << ",";
+      // std::cout << coordDown[2] << " || ";
+      // std::cout << coordUp[0] << ",";
+      // std::cout << coordUp[1] << ",";
+      // std::cout << coordUp[2] << std::endl;
 
       scalarsRegionId->SetTuple1(
         tree_->getNode(downNodeId)->getVertexId(), regionId);
@@ -1008,18 +1008,18 @@ void ttkContourForests::getSegmentation(vtkDataSet *input) {
           ++j) {
         SimplexId const nodeId = tree_->getSuperArc(i)->getRegularNodeId(j);
         SimplexId const vertexId = nodeId;
-        // cout << vertexId << ", ";
+        // std::cout << vertexId << ", ";
         if(tree_->getSuperArc(i)->isMasqued(j)) {
-          // cout << vertexId << ", ";
+          // std::cout << vertexId << ", ";
           continue;
         }
 
-        // cout << vertexId << ", ";
+        // std::cout << vertexId << ", ";
         scalarsRegionId->SetTuple1(vertexId, regionId);
         scalarsRegionSize->SetTuple1(vertexId, regionSize);
         scalarsRegionSpan->SetTuple1(vertexId, regionSpan);
       }
-      // cout << endl;
+      // std::cout << std::endl;
 
       // RegionType
       if((upNodeType == CriticalType::Local_minimum

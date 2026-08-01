@@ -228,7 +228,7 @@ std::vector<int> ttk::PersistenceDiagramClustering::execute(
           } else {
             std::get<0>(t) = data_min_idx[i][bidder_id];
           }
-          // cout<<" IDS :  "<<bidder_id<<" "<<std::get<0>(t)<<endl;
+          // std::cout<<" IDS :  "<<bidder_id<<" "<<std::get<0>(t)<<std::endl;
           if(std::get<1>(t) < 0) {
             std::get<1>(t) = -1;
           }
