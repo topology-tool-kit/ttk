@@ -1093,11 +1093,6 @@ namespace ttk {
           // For the one who will continue, it will be override later
           vertex2Node(neigh->find()->getOrigin())->setTermination(closingNode);
 
-          // std::cout <<
-          // getNode(getCorrespondingNode(neigh->find()->getOrigin()))->getVertexId()
-          //<< " terminate on " << getNode(closingNode)->getVertexId() <<
-          //std::endl;
-
           if((isJT && isLower(neigh->find()->getOrigin(), farOrigin))
              || (!isJT && isHigher(neigh->find()->getOrigin(), farOrigin))) {
             // here we keep the continuing the most persitant pair.
@@ -1123,7 +1118,7 @@ namespace ttk {
         // std::cout << "  " << getNode(closingNode)->getVertexId() << " have
         // origin at "
         //<< getNode(getCorrespondingNode(farOrigin))->getVertexId() <<
-        //std::endl;
+        // std::endl;
 
         this->printMsg("Saddle node id: " + std::to_string(currentVertex),
                        debug::Priority::DETAIL);
