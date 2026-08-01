@@ -24,8 +24,8 @@ Debug::Debug() {
 Debug::~Debug() {
   if((lastObject_) && (ttk::goodbyeMsg_)) {
 
-    printMsg(
-      "Goodbye :)", debug::Priority::PERFORMANCE, debug::LineMode::NEW, std::cout);
+    printMsg("Goodbye :)", debug::Priority::PERFORMANCE, debug::LineMode::NEW,
+             std::cout);
 
     ttk::goodbyeMsg_ = false;
   }

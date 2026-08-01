@@ -215,7 +215,8 @@ idSuperArc MergeTree::openSuperArc(const idNode &downNodeId,
                                    const bool overlapA) {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(downNodeId >= getNumberOfNodes()) {
-    std::cout << "[Merge Tree] openSuperArc on a inexisting node !" << std::endl;
+    std::cout << "[Merge Tree] openSuperArc on a inexisting node !"
+              << std::endl;
     return -2;
   }
 #endif
@@ -265,12 +266,14 @@ void MergeTree::closeSuperArc(const idSuperArc &superArcId,
 #ifndef TTK_ENABLE_KAMIKAZE
 
   if(superArcId >= getNumberOfSuperArcs()) {
-    std::cout << "[Merge Tree] closeSuperArc on a inexisting arc !" << std::endl;
+    std::cout << "[Merge Tree] closeSuperArc on a inexisting arc !"
+              << std::endl;
     return;
   }
 
   if(upNodeId >= getNumberOfNodes()) {
-    std::cout << "[Merge Tree] closeOpenedArc on a inexisting node !" << std::endl;
+    std::cout << "[Merge Tree] closeOpenedArc on a inexisting node !"
+              << std::endl;
     return;
   }
 
@@ -517,7 +520,7 @@ idNode MergeTree::makeNode(const SimplexId &vertexId, const SimplexId &term) {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId < 0 || vertexId >= scalars_->size) {
     std::cout << "[Merge Tree] make node, wrong vertex :" << vertexId << " on "
-         << scalars_->size << std::endl;
+              << scalars_->size << std::endl;
     return -1;
   }
 #endif
@@ -555,11 +558,11 @@ void MergeTree::delNode(
       std::cout << std::endl << "[MergeTree]:delNode won't delete ";
       std::cout << mainNode->getVertexId() << " (root) with ";
       std::cout << static_cast<unsigned>(mainNode->getNumberOfDownSuperArcs())
-           << " down ";
+                << " down ";
       std::cout << static_cast<unsigned>(mainNode->getNumberOfUpSuperArcs())
-           << " up ";
+                << " up ";
       std::cout << " partition : " << static_cast<unsigned>(treeData_.partition)
-           << std::endl;
+                << std::endl;
       return;
     }
 #endif
@@ -947,7 +950,8 @@ idSuperArc MergeTree::hideAndClearLeadingTo(const idNode &baseNode,
       while(p != baseNode && getNode(p)->getUpValence()) {
         // SHOULD HAVE ONLY ONE ARC
         if(getNode(p)->getUpValence() != 1)
-          std::cout << "Noise with up valence ! (hide&clear Leading to)" << std::endl;
+          std::cout << "Noise with up valence ! (hide&clear Leading to)"
+                    << std::endl;
 
         a = getNode(p)->getUpSuperArcId(0);
         p = getSuperArc(a)->getUpNodeId();
@@ -972,7 +976,7 @@ void MergeTree::printTree2() {
 #endif
   {
     std::cout << "Partition : " << static_cast<unsigned>(treeData_.partition)
-         << std::endl;
+              << std::endl;
 
     std::cout << "Nodes----------" << std::endl;
     for(idNode nid = 0; nid < getNumberOfNodes(); nid++) {
@@ -1077,7 +1081,8 @@ void MergeTree::markThisArc(vector<ExtendedUnionFind *> &ufArray,
     // Parent have never been seen : recopy UF
     ufArray[parentNodeId] = ufArray[curNodeId]->find();
     ufArray[parentNodeId]->find()->setOrigin(curSegmenSize);
-    // std::cout << "will merge " << getNode(curNodeId)->getVertexId() << std::endl;
+    // std::cout << "will merge " << getNode(curNodeId)->getVertexId() <<
+    // std::endl;
   } else {
     // The parent have already been visited : merge UF and segmentation
     const auto &oldSegmentationSize
@@ -1114,8 +1119,8 @@ idSuperArc MergeTree::newUpArc(const idNode &curNodeId,
     }
   }
 
-  // std::cout << "node " << getNode(curNodeId)->getVertexId() << " have no up arc to
-  // take" << std::endl;
+  // std::cout << "node " << getNode(curNodeId)->getVertexId() << " have no up
+  // arc to take" << std::endl;
   return keepArc;
 }
 
@@ -1138,8 +1143,8 @@ idSuperArc MergeTree::newDownArc(const idNode &curNodeId,
     }
   }
 
-  // std::cout << "node " << printNode(curNodeId) << " have no down arc to take" <<
-  // std::endl;
+  // std::cout << "node " << printNode(curNodeId) << " have no down arc to take"
+  // << std::endl;
   return keepArc;
 }
 
@@ -1156,7 +1161,8 @@ tuple<idNode, idNode, SimplexId> MergeTree::createReceptArc(
   idNode upNode = root;
 
   if(DEBUG) {
-    std::cout << " create receptarc for root : " << printNode(root) << std::endl;
+    std::cout << " create receptarc for root : " << printNode(root)
+              << std::endl;
     std::cout << " custom valence : " << valenceOffsets[root].first;
     std::cout << " + " << valenceOffsets[root].second << std::endl;
   }
@@ -1184,7 +1190,8 @@ tuple<idNode, idNode, SimplexId> MergeTree::createReceptArc(
     const idNode tmpUp = getSuperArc(downArc)->getUpNodeId();
 
     if(DEBUG) {
-      std::cout << "change down to " << getNode(downNode)->getVertexId() << std::endl;
+      std::cout << "change down to " << getNode(downNode)->getVertexId()
+                << std::endl;
       std::cout << " new segmentation : " << segmentationSize << std::endl;
     }
 
@@ -1203,7 +1210,8 @@ tuple<idNode, idNode, SimplexId> MergeTree::createReceptArc(
   }
 
   if(DEBUG) {
-    std::cout << " continue receptarc for root : " << printNode(root) << std::endl;
+    std::cout << " continue receptarc for root : " << printNode(root)
+              << std::endl;
     std::cout << " custom valence : " << valenceOffsets[root].first;
     std::cout << " + " << valenceOffsets[root].second << std::endl;
   }
@@ -1222,7 +1230,8 @@ tuple<idNode, idNode, SimplexId> MergeTree::createReceptArc(
     const idNode tmpDown = getSuperArc(upArc)->getDownNodeId();
 
     if(DEBUG) {
-      std::cout << "change up to " << getNode(upNode)->getVertexId() << std::endl;
+      std::cout << "change up to " << getNode(upNode)->getVertexId()
+                << std::endl;
       std::cout << " new segmentation : " << segmentationSize << std::endl;
     }
 
@@ -1272,7 +1281,8 @@ tuple<idNode, idNode, SimplexId> MergeTree::createReceptArc(
     if(tmpUp != nullSuperArc)
       segmentationSize += getSuperArc(tmpUp)->getVertSize() + 2;
 
-    // std::cout << " special : new segmentation : " << segmentationSize << std::endl;
+    // std::cout << " special : new segmentation : " << segmentationSize <<
+    // std::endl;
   }
 
   return make_tuple(downNode, upNode, segmentationSize);

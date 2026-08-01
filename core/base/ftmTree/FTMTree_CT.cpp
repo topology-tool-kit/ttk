@@ -65,7 +65,7 @@ int FTMTree_CT::combine() {
 
   if(DEBUG) {
     std::cout << "growingNodes : " << growingNodes.size()
-         << " in : " << stepTime.getElapsedTime() << std::endl;
+              << " in : " << stepTime.getElapsedTime() << std::endl;
   }
 
   // Warning, have a reserve here, can't make it at the begnining, need build
@@ -98,7 +98,7 @@ int FTMTree_CT::combine() {
         growingNodes.emplace(isJT, currentNodeId);
         if(DEBUG) {
           std::cout << "repush in growing:" << isJT
-               << "::" << xt->printNode(currentNodeId) << std::endl;
+                    << "::" << xt->printNode(currentNodeId) << std::endl;
         }
       }
     }
@@ -143,10 +143,10 @@ int FTMTree_CT::combine() {
 
       if(yt->getNode(correspondingNodeId)->getNumberOfDownSuperArcs() > 1) {
         if(DEBUG) {
-          std::cout << "put remain:" << isJT << "::" << xt->printNode(currentNodeId)
-               << std::endl;
-          std::cout << " which is in yt : " << yt->printNode(correspondingNodeId)
-               << std::endl;
+          std::cout << "put remain:" << isJT
+                    << "::" << xt->printNode(currentNodeId) << std::endl;
+          std::cout << " which is in yt : "
+                    << yt->printNode(correspondingNodeId) << std::endl;
         }
 #ifdef TTK_ENABLE_FTM_TREE_DUAL_QUEUE_COMBINE
         remainingNodes.emplace(isJT, currentNodeId);

@@ -272,12 +272,14 @@ void FTMTree_MT::closeSuperArc(idSuperArc superArcId, idNode upNodeId) {
 #ifndef TTK_ENABLE_KAMIKAZE
 
   if(superArcId >= getNumberOfSuperArcs()) {
-    std::cout << "[Merge Tree] closeSuperArc on a inexisting arc !" << std::endl;
+    std::cout << "[Merge Tree] closeSuperArc on a inexisting arc !"
+              << std::endl;
     return;
   }
 
   if(upNodeId >= getNumberOfNodes()) {
-    std::cout << "[Merge Tree] closeOpenedArc on a inexisting node !" << std::endl;
+    std::cout << "[Merge Tree] closeOpenedArc on a inexisting node !"
+              << std::endl;
     return;
   }
 
@@ -298,9 +300,9 @@ void FTMTree_MT::delNode(idNode node) {
       std::cout << std::endl << "[FTMTree_MT]:delNode won't delete ";
       std::cout << mainNode->getVertexId() << " (root) with ";
       std::cout << static_cast<unsigned>(mainNode->getNumberOfDownSuperArcs())
-           << " down ";
+                << " down ";
       std::cout << static_cast<unsigned>(mainNode->getNumberOfUpSuperArcs())
-           << " up ";
+                << " up ";
       return;
     }
 #endif

@@ -94,7 +94,8 @@ int ContourForestsTree::combine(
   treeData_.leaves.reserve(jt_.getLeaves().size() + st_.getLeaves().size());
 
   if(growingNodes.empty()) {
-    std::cout << "[ContourForestsTree::combine ] Nothing to combine" << std::endl;
+    std::cout << "[ContourForestsTree::combine ] Nothing to combine"
+              << std::endl;
   }
 
   // seed : to keep crossing edges;
@@ -159,8 +160,8 @@ int ContourForestsTree::combine(
 
       if(yt->getNode(correspondingNodeId)->getNumberOfDownSuperArcs() > 1) {
         if(DEBUG) {
-          std::cout << "re-enqueue and ignore " << yt->printNode(correspondingNodeId)
-               << std::endl;
+          std::cout << "re-enqueue and ignore "
+                    << yt->printNode(correspondingNodeId) << std::endl;
         }
 
         growingNodes.emplace(head.first, head.second);
@@ -264,7 +265,8 @@ int ContourForestsTree::combine(
     {
       if(DEBUG) {
         std::cout << " delete xt (" << (xt == &jt_)
-             << ") node :" << xt->getNode(head.second)->getVertexId() << std::endl;
+                  << ") node :" << xt->getNode(head.second)->getVertexId()
+                  << std::endl;
       }
 
       xt->delNode(head.second, storage);
@@ -281,9 +283,9 @@ int ContourForestsTree::combine(
             yt->getNode(correspondingNodeId)->getNumberOfDownSuperArcs());
           std::cout << " down";
           std::cout << " and : "
-               << static_cast<unsigned>(
-                    yt->getNode(correspondingNodeId)->getNumberOfUpSuperArcs())
-               << " up" << std::endl;
+                    << static_cast<unsigned>(yt->getNode(correspondingNodeId)
+                                               ->getNumberOfUpSuperArcs())
+                    << " up" << std::endl;
         }
 
         yt->delNode(correspondingNodeId, storage, arcVertList, arcVertSize);

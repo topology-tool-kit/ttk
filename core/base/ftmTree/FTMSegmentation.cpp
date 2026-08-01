@@ -173,7 +173,8 @@ void ArcRegion::concat(const ArcRegion &r) {
 void ArcRegion::createSegmentation(const Scalars *s) {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(segmentation_.size()) {
-    std::cout << "createSegmentation called on an already segmented region" << std::endl;
+    std::cout << "createSegmentation called on an already segmented region"
+              << std::endl;
   }
 #endif
 

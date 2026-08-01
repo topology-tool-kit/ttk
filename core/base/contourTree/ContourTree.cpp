@@ -1120,7 +1120,8 @@ int SubLevelSetTree::exportToVtk(const string &fileName,
     if(!superArcList_[i].pruned_) {
       o << "        " << arcIds[i][0] << " " << arcIds[i][1] << " "
         << arcIds[i][2] << " " << arcIds[i][3] << " " << arcIds[i][4] << " "
-        << arcIds[i][5] << " " << arcIds[i][6] << " " << arcIds[i][7] << std::endl;
+        << arcIds[i][5] << " " << arcIds[i][6] << " " << arcIds[i][7]
+        << std::endl;
     }
   }
 

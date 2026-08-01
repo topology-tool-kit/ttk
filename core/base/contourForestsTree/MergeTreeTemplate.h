@@ -1060,7 +1060,8 @@ namespace ttk {
         currentNode = makeNode(currentVertex);
         getNode(currentNode)->setOrigin(currentNode);
         currentArc = openSuperArc(currentNode, overlapB, overlapA);
-        // if(overlap && partition_ == 1) std::cout << currentVertex << std::endl;
+        // if(overlap && partition_ == 1) std::cout << currentVertex <<
+        // std::endl;
         treeData_.leaves.emplace_back(currentNode);
 
         if(params_->debugLevel >= static_cast<int>(debug::Priority::DETAIL)) {
@@ -1094,7 +1095,8 @@ namespace ttk {
 
           // std::cout <<
           // getNode(getCorrespondingNode(neigh->find()->getOrigin()))->getVertexId()
-          //<< " terminate on " << getNode(closingNode)->getVertexId() << std::endl;
+          //<< " terminate on " << getNode(closingNode)->getVertexId() <<
+          //std::endl;
 
           if((isJT && isLower(neigh->find()->getOrigin(), farOrigin))
              || (!isJT && isHigher(neigh->find()->getOrigin(), farOrigin))) {
@@ -1103,7 +1105,8 @@ namespace ttk {
             // current leaf (or is the root) It might be not intuitive but it is
             // more convenient for degenerate cases
             farOrigin = neigh->find()->getOrigin();
-            // std::cout << "find origin  " << farOrigin << " for " << currentVertex
+            // std::cout << "find origin  " << farOrigin << " for " <<
+            // currentVertex
             // << " " << isJT
             //<< std::endl;
           }
@@ -1117,9 +1120,10 @@ namespace ttk {
         seed->setOrigin(farOrigin);
         getNode(closingNode)->setOrigin(getCorrespondingNodeId(farOrigin));
 
-        // std::cout << "  " << getNode(closingNode)->getVertexId() << " have origin
-        // at "
-        //<< getNode(getCorrespondingNode(farOrigin))->getVertexId() << std::endl;
+        // std::cout << "  " << getNode(closingNode)->getVertexId() << " have
+        // origin at "
+        //<< getNode(getCorrespondingNode(farOrigin))->getVertexId() <<
+        //std::endl;
 
         this->printMsg("Saddle node id: " + std::to_string(currentVertex),
                        debug::Priority::DETAIL);
