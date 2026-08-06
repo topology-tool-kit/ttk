@@ -10,7 +10,7 @@ ttk::DelaunayRipsPersistenceDiagram::DelaunayRipsPersistenceDiagram() {
 int ttk::DelaunayRipsPersistenceDiagram::execute(
   const PointCloud &points, MultidimensionalDiagram &ph) const {
 
-#ifdef TTK_ENABLE_CGAL
+#if defined(TTK_ENABLE_CGAL) && defined(TTK_ENABLE_EIGEN)
   const unsigned dim = points[0].size();
   if(points.size() <= dim) {
     printErr("Not enough points");
@@ -42,7 +42,7 @@ int ttk::DelaunayRipsPersistenceDiagram::execute(
 #else
   TTK_FORCE_USE(points);
   TTK_FORCE_USE(ph);
-  printErr("TTK was not compiled with CGAL:");
+  printErr("TTK was not compiled with CGAL or Eigen:");
   printErr("this filter is not available.");
   return 1;
 #endif
@@ -54,7 +54,7 @@ int ttk::DelaunayRipsPersistenceDiagram::execute(
   std::vector<Generator1> &generators1,
   std::vector<Generator2> &generators2) const {
 
-#ifdef TTK_ENABLE_CGAL
+#if defined(TTK_ENABLE_CGAL) && defined(TTK_ENABLE_EIGEN)
   const unsigned dim = points[0].size();
   if(dim > 3) {
     printErr("Input dimension too large: " + std::to_string(dim) + ">3");
@@ -87,7 +87,7 @@ int ttk::DelaunayRipsPersistenceDiagram::execute(
   TTK_FORCE_USE(ph);
   TTK_FORCE_USE(generators1);
   TTK_FORCE_USE(generators2);
-  printErr("TTK was not compiled with CGAL:");
+  printErr("TTK was not compiled with CGAL or Eigen:");
   printErr("this filter is not available.");
   return 1;
 #endif
