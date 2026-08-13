@@ -12,7 +12,11 @@
 #include <CinemaImaging.h>
 
 #ifdef TTK_ENABLE_EMBREE
+#ifdef TTK_EMBREE4
+#include <embree4/rtcore.h>
+#else
 #include <embree3/rtcore.h>
+#endif
 #include <limits>
 #include <string>
 #endif // TTK_ENABLE_EMBREE
