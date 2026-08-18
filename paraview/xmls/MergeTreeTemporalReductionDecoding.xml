@@ -19,6 +19,11 @@ Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.
 Proc. of IEEE VIS 2021.
 IEEE Transactions on Visualization and Computer Graphics, 2021
 
+'Merge Tree Geodesics and Barycenters with Path Mappings'
+F. Wetzels, M. Pont, J. Tierny and C. Garth.
+Proc. of IEEE VIS 2023.
+IEEE Transactions on Visualization and Computer Graphics, 2024
+
 Online examples:
 - https://topology-tool-kit.github.io/examples/mergeTreeTemporalReduction/
       </Documentation>
@@ -78,6 +83,18 @@ Online examples:
                   <Documentation>
                     The assignment solver used in the algorithm.
                   </Documentation>
+                </IntVectorProperty>
+                
+                <IntVectorProperty
+                name="UsePathMappings"
+                command="SetUsePathMappings"
+                label="Use Path Mapping Distance"
+                number_of_elements="1"
+                default_values="0">
+                  <Documentation>
+                    Use the path mapping distance instead of wasserstein distance.
+                  </Documentation>
+                  <BooleanDomain name="bool"/>
                 </IntVectorProperty>
                 
                <!-- Output options -->
@@ -149,6 +166,7 @@ Online examples:
                 
             <PropertyGroup panel_widget="Line" label="Input options">
               <Property name="AssignmentSolver"/>
+              <Property name="UsePathMappings"/>
             </PropertyGroup>
             
             <PropertyGroup panel_widget="Line" label="Output options">

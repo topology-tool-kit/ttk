@@ -20,6 +20,14 @@ panel_visibility="advanced">
                               mode="visibility"
                               property="Backend"
                               value="2" />
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="3" />
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="4" />
     </Expression>
   </PropertyWidgetDecorator>
   </Hints>
@@ -81,6 +89,14 @@ default_values="5">
                               mode="visibility"
                               property="Backend"
                               value="2" />
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="3" />
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="4" />
     </Expression>
   </PropertyWidgetDecorator>
   </Hints>
@@ -177,6 +193,14 @@ default_values="0">
                               mode="visibility"
                               property="Backend"
                               value="2" />
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="3" />
+      <PropertyWidgetDecorator type="GenericDecorator"
+                              mode="visibility"
+                              property="Backend"
+                              value="4" />
     </Expression>
   </PropertyWidgetDecorator>
   </Hints>

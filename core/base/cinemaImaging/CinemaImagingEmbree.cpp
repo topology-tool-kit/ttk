@@ -66,8 +66,13 @@ int ttk::CinemaImagingEmbree::renderImage(
                    + std::to_string(resX) + "x" + std::to_string(resY) + ")",
                  0, 0, this->threadNumber_, ttk::debug::LineMode::REPLACE);
 
+#ifdef TTK_EMBREE4
+  struct RTCIntersectArguments args;
+  rtcInitIntersectArguments(&args);
+#else
   struct RTCIntersectContext context;
   rtcInitIntersectContext(&context);
+#endif
 
   const auto normalize = [](double out[3], const double in[3]) {
     const double temp = sqrt(in[0] * in[0] + in[1] * in[1] + in[2] * in[2]);
@@ -148,7 +153,11 @@ int ttk::CinemaImagingEmbree::renderImage(
         rayhit.ray.flags = 0;
         rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
         rayhit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
+#ifdef TTK_EMBREE4
+        rtcIntersect1(scene, &rayhit, &args);
+#else
         rtcIntersect1(scene, &context, &rayhit);
+#endif
 
         // write depth
         const bool hitPrimitive = rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID;
@@ -194,7 +203,11 @@ int ttk::CinemaImagingEmbree::renderImage(
         rayhit.ray.flags = 0;
         rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
         rayhit.hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
+#ifdef TTK_EMBREE4
+        rtcIntersect1(scene, &rayhit, &args);
+#else
         rtcIntersect1(scene, &context, &rayhit);
+#endif
 
         // write depth
         const bool hitPrimitive = rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID;

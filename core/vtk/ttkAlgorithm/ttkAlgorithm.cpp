@@ -1018,7 +1018,7 @@ int ttkAlgorithm::ProcessRequest(vtkInformation *request,
   }
 
   this->printErr("Unsupported pipeline pass:");
-  request->Print(cout);
+  request->Print(std::cout);
 
   return 0;
 }

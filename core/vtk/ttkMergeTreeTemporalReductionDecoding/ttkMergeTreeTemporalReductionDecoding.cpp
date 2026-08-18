@@ -279,6 +279,7 @@ int ttkMergeTreeTemporalReductionDecoding::runOutput(
     visuMaker.setPlanarLayout(PlanarLayout);
     visuMaker.setBranchDecompositionPlanarLayout(
       BranchDecompositionPlanarLayout);
+    visuMaker.setPathPlanarLayout(PathPlanarLayout);
     visuMaker.setRescaleTreesIndividually(RescaleTreesIndividually);
     visuMaker.setOutputSegmentation(OutputSegmentation);
     visuMaker.setDimensionSpacing(DimensionSpacing);

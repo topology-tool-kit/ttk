@@ -141,8 +141,8 @@ void ContourForests::stitchTree(const char treetype) {
       = make_pair(parallelData_.interfaces[i].getSeed(), false);
 
     if(DEBUG) {
-      cout << "partition : " << static_cast<unsigned>(i);
-      cout << " seed is : " << seedPair.first << endl << endl;
+      std::cout << "partition : " << static_cast<unsigned>(i);
+      std::cout << " seed is : " << seedPair.first << std::endl << std::endl;
     }
 
     // For each superarc crossing the upper boundary :
@@ -169,14 +169,15 @@ void ContourForests::stitchTree(const char treetype) {
       MergeTree *otherTree = getTreePart(otherPartition);
 
       if(DEBUG) {
-        cout << "crossing arc is " << curTree->printArc(arc) << endl;
+        std::cout << "crossing arc is " << curTree->printArc(arc) << std::endl;
       }
 
       if(DEBUG) {
-        cout << "stitch vertex : " << stitchVertex << endl;
-        cout << "on partition " << static_cast<unsigned>(otherPartition)
-             << endl;
-        cout << "crossing arc is now " << curTree->printArc(arc) << endl;
+        std::cout << "stitch vertex : " << stitchVertex << std::endl;
+        std::cout << "on partition " << static_cast<unsigned>(otherPartition)
+                  << std::endl;
+        std::cout << "crossing arc is now " << curTree->printArc(arc)
+                  << std::endl;
       }
 
       const idNode &curTreeStitchNodeId
@@ -188,7 +189,8 @@ void ContourForests::stitchTree(const char treetype) {
         if(DEBUG) {
           const idSuperArc &sa
             = otherTree->getCorrespondingSuperArcId(stitchVertex);
-          cout << "other tree arc is : " << otherTree->printArc(sa) << endl;
+          std::cout << "other tree arc is : " << otherTree->printArc(sa)
+                    << std::endl;
         }
         const auto &arcToHide
           = otherTree->reverseInsertNode(curTreeStitchNode, true);
@@ -198,8 +200,8 @@ void ContourForests::stitchTree(const char treetype) {
         otherTreeAlreadyHide = true;
 
         if(DEBUG) {
-          cout << "hide arc in other : " << otherTree->printArc(arcToHide)
-               << endl;
+          std::cout << "hide arc in other : " << otherTree->printArc(arcToHide)
+                    << std::endl;
         }
       }
 
@@ -208,10 +210,11 @@ void ContourForests::stitchTree(const char treetype) {
       Node *otherTreeStitchNode = otherTree->getNode(otherTreeStitchNodeId);
 
       if(DEBUG) {
-        cout << "Stitch nodes : " << endl;
-        cout << "current : " << curTree->printNode(curTreeStitchNodeId) << endl;
-        cout << "other   : " << otherTree->printNode(otherTreeStitchNodeId)
-             << endl;
+        std::cout << "Stitch nodes : " << std::endl;
+        std::cout << "current : " << curTree->printNode(curTreeStitchNodeId)
+                  << std::endl;
+        std::cout << "other   : " << otherTree->printNode(otherTreeStitchNodeId)
+                  << std::endl;
       }
 
       // Now we can remove all arc above the stitch vertex in the current tree
@@ -225,14 +228,14 @@ void ContourForests::stitchTree(const char treetype) {
       // clear its down arcs if it is the stitch node.
       if(stitchVertex == seedPair.first) {
         if(DEBUG) {
-          cout << "stitch vertex is seed" << endl;
+          std::cout << "stitch vertex is seed" << std::endl;
         }
         // we have'nt clear it yet
         if(!seenSeed[otherPartition]) {
           seenSeed[otherPartition] = true;
           otherTree->removeInternalDownArcs(otherTreeStitchNodeId);
           if(DEBUG) {
-            cout << "clear below stitch vert " << endl;
+            std::cout << "clear below stitch vert " << std::endl;
           }
         }
       } else if(!otherTreeAlreadyHide && crossing->getDownCT() == i) {
@@ -242,11 +245,11 @@ void ContourForests::stitchTree(const char treetype) {
           otherTreeStitchNodeId, currentBelowSeed);
 
         if(DEBUG) {
-          cout << "hide arc leading to: ";
+          std::cout << "hide arc leading to: ";
           if(arcToHide != nullSuperArc) {
-            cout << otherTree->printArc(arcToHide) << endl;
+            std::cout << otherTree->printArc(arcToHide) << std::endl;
           } else {
-            cout << "not found" << endl;
+            std::cout << "not found" << std::endl;
           }
         }
       }
@@ -275,18 +278,19 @@ void ContourForests::stitchTree(const char treetype) {
       if(crossNextInterface) {
         otherTree->addCrossingAbove(otherTree->getNumberOfSuperArcs() - 1);
         if(DEBUG) {
-          cout << "new crossing above" << endl;
+          std::cout << "new crossing above" << std::endl;
         }
       }
 
       if(DEBUG) {
-        cout << "arc added :" << endl;
-        cout << "current : "
-             << curTree->printArc(curTree->getNumberOfSuperArcs() - 1) << endl;
-        cout << "other   : "
-             << otherTree->printArc(otherTree->getNumberOfSuperArcs() - 1)
-             << endl;
-        cout << endl << endl;
+        std::cout << "arc added :" << std::endl;
+        std::cout << "current : "
+                  << curTree->printArc(curTree->getNumberOfSuperArcs() - 1)
+                  << std::endl;
+        std::cout << "other   : "
+                  << otherTree->printArc(otherTree->getNumberOfSuperArcs() - 1)
+                  << std::endl;
+        std::cout << std::endl << std::endl;
       }
 
     } // for each arc of this curTree
@@ -381,8 +385,9 @@ void ContourForests::unifyTree(const char treetype) {
         leavesNodes.emplace(partition, l);
 
         if(DEBUG) {
-          cout << "will see : partition : " << static_cast<unsigned>(partition);
-          cout << " leaf node " << currentTree->printNode(l) << endl;
+          std::cout << "will see : partition : "
+                    << static_cast<unsigned>(partition);
+          std::cout << " leaf node " << currentTree->printNode(l) << std::endl;
         }
 
         // seen once
@@ -409,10 +414,11 @@ void ContourForests::unifyTree(const char treetype) {
     Node *currentNode = currentTree->getNode(currentNodeId);
 
     if(DEBUG) {
-      cout << endl;
-      cout << "process : partition : "
-           << static_cast<unsigned>(currentPartition) << endl;
-      cout << " node " << currentTree->printNode(currentNodeId) << endl;
+      std::cout << std::endl;
+      std::cout << "process : partition : "
+                << static_cast<unsigned>(currentPartition) << std::endl;
+      std::cout << " node " << currentTree->printNode(currentNodeId)
+                << std::endl;
     }
 
     // create or recover in tmpTree
@@ -433,12 +439,13 @@ void ContourForests::unifyTree(const char treetype) {
       SuperArc *upArc = currentTree->getSuperArc(upArcId);
 
       if(DEBUG) {
-        cout << " process arc " << currentTree->printArc(upArcId) << endl;
+        std::cout << " process arc " << currentTree->printArc(upArcId)
+                  << std::endl;
       }
 
       if(!upArc->isVisible()) {
         if(DEBUG) {
-          cout << " - ignore not visible" << endl;
+          std::cout << " - ignore not visible" << std::endl;
         }
         continue;
       }
@@ -469,14 +476,15 @@ void ContourForests::unifyTree(const char treetype) {
            && currentNode->getNumberOfDownSuperArcs() == 1) {
           upArc = currentTree->getSuperArc(currentNode->getUpSuperArcId(0));
           if(DEBUG) {
-            cout << " cross : "
-                 << currentTree->printArc(currentNode->getUpSuperArcId(0));
-            cout << endl;
+            std::cout << " cross : "
+                      << currentTree->printArc(currentNode->getUpSuperArcId(0));
+            std::cout << std::endl;
           }
         } else {
           // no longer regular : stop here
           if(DEBUG) {
-            cout << "stop at " << currentTree->printNode(currentNodeId) << endl;
+            std::cout << "stop at " << currentTree->printNode(currentNodeId)
+                      << std::endl;
           }
           break;
         }
@@ -492,7 +500,8 @@ void ContourForests::unifyTree(const char treetype) {
       tmpTree.closeSuperArc(newArcId_tt, closingNode_tt, false, false);
 
       if(DEBUG) {
-        cout << " Create arc : " << tmpTree.printArc(newArcId_tt) << endl;
+        std::cout << " Create arc : " << tmpTree.printArc(newArcId_tt)
+                  << std::endl;
       }
 
       // push current vertex TODO
@@ -511,14 +520,14 @@ void ContourForests::unifyTree(const char treetype) {
       if(nbVisit[closingVertex] == downVal) {
         leavesNodes.emplace(closingPartition, closingNodeId);
         if(DEBUG) {
-          cout << " push : partition : "
-               << static_cast<unsigned>(closingPartition) << endl;
-          cout << " push : node : " << closingTree->printNode(closingNodeId)
-               << endl;
+          std::cout << " push : partition : "
+                    << static_cast<unsigned>(closingPartition) << std::endl;
+          std::cout << " push : node : "
+                    << closingTree->printNode(closingNodeId) << std::endl;
         }
       } else if(DEBUG) {
-        cout << " visit : " << nbVisit[closingVertex] << endl;
-        cout << " downVal : " << downVal << endl;
+        std::cout << " visit : " << nbVisit[closingVertex] << std::endl;
+        std::cout << " downVal : " << downVal << std::endl;
       }
     } // end for each up arc
   } // end while leavesNodes
@@ -547,34 +556,34 @@ void ContourForests::printVectCT() {
   int arcCTUp, arcCTDown;
 
   for(idPartition nb = 0; nb < parallelParams_.nbPartitions; ++nb) {
-    cout << "CT " << nb << endl;
-    cout << "Nodes" << endl;
+    std::cout << "CT " << nb << std::endl;
+    std::cout << "Nodes" << std::endl;
 
     for(const auto &n : parallelData_.trees[nb].getNodes()) {
       if(!n.isHidden()) {
-        cout << "Node  " << n.getVertexId();
+        std::cout << "Node  " << n.getVertexId();
 
         if(n.isHidden())
-          cout << " X ";
+          std::cout << " X ";
 
-        cout << endl;
-        cout << "  arc up : ";
+        std::cout << std::endl;
+        std::cout << "  arc up : ";
 
         for(idSuperArc i = 0; i < n.getNumberOfUpSuperArcs(); ++i) {
-          cout << n.getUpSuperArcId(i) << " ";
+          std::cout << n.getUpSuperArcId(i) << " ";
         }
 
-        cout << endl << " arc down : ";
+        std::cout << std::endl << " arc down : ";
 
         for(idSuperArc i = 0; i < n.getNumberOfDownSuperArcs(); ++i) {
-          cout << n.getDownSuperArcId(i) << " ";
+          std::cout << n.getDownSuperArcId(i) << " ";
         }
 
-        cout << endl;
+        std::cout << std::endl;
       }
     }
 
-    cout << "Arcs" << endl;
+    std::cout << "Arcs" << std::endl;
 
     for(const auto &sa : parallelData_.trees[nb].getSuperArc()) {
       if(!sa.isHidden()) {
@@ -582,48 +591,48 @@ void ContourForests::printVectCT() {
         arcCTUp = sa.getUpCT();
 
         if(sa.getDownNodeId() == nullNodes) {
-          cout << "||";
+          std::cout << "||";
         } else {
-          cout << static_cast<unsigned>(arcCTDown) << ":";
-          cout << parallelData_.trees[arcCTDown]
-                    .getNode(sa.getDownNodeId())
-                    ->getVertexId();
+          std::cout << static_cast<unsigned>(arcCTDown) << ":";
+          std::cout << parallelData_.trees[arcCTDown]
+                         .getNode(sa.getDownNodeId())
+                         ->getVertexId();
         }
 
         if(sa.isHidden())
-          cout << " <X> ";
+          std::cout << " <X> ";
         else if(!sa.isVisible())
-          cout << " <-> ";
+          std::cout << " <-> ";
         else
-          cout << " <> ";
+          std::cout << " <> ";
 
         if(sa.getUpNodeId() == nullNodes) {
-          cout << "||";
+          std::cout << "||";
         } else {
-          cout << static_cast<unsigned>(arcCTUp) << ":";
-          cout << parallelData_.trees[arcCTUp]
-                    .getNode(sa.getUpNodeId())
-                    ->getVertexId();
+          std::cout << static_cast<unsigned>(arcCTUp) << ":";
+          std::cout << parallelData_.trees[arcCTUp]
+                         .getNode(sa.getUpNodeId())
+                         ->getVertexId();
         }
 
-        cout << endl;
+        std::cout << std::endl;
       }
     }
 
     if(true) {
-      cout << "Leaves" << endl;
+      std::cout << "Leaves" << std::endl;
 
       for(const auto &l : parallelData_.trees[nb].getLeaves())
-        cout << " " << l;
+        std::cout << " " << l;
 
-      cout << endl;
+      std::cout << std::endl;
 
-      cout << "Roots" << endl;
+      std::cout << "Roots" << std::endl;
 
       for(const auto &r : parallelData_.trees[nb].getRoots())
-        cout << " " << r;
+        std::cout << " " << r;
 
-      cout << endl;
+      std::cout << std::endl;
     }
   }
 }

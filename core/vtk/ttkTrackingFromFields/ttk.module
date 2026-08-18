@@ -8,4 +8,5 @@ DEPENDS
   trackingFromCriticalPoints
   trackingFromFields
   trackingFromPersistenceDiagrams
+  trackingPostProcessing
   ttkAlgorithm

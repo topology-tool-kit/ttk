@@ -11,6 +11,11 @@
 /// Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.\n
 /// Proc. of IEEE VIS 2021.\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2021
+///
+/// \b Related \b publication \n
+/// "Edit Distance between Merge Trees" \n
+/// R. Sridharamurthy, T. B. Masood, A. Kamakshidasan and V. Natarajan. \n
+/// IEEE Transactions on Visualization and Computer Graphics, 2020.
 
 #pragma once
 

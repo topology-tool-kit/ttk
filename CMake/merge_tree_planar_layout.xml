@@ -17,6 +17,25 @@ panel_visibility="advanced">
   <BooleanDomain name="bool"/>
 </IntVectorProperty>
 
+<IntVectorProperty
+name="PathPlanarLayout"
+command="SetPathPlanarLayout"
+label="Path Planar Layout"
+number_of_elements="1"
+default_values="0"
+panel_visibility="advanced">
+  <Hints>
+  <PropertyWidgetDecorator type="GenericDecorator"
+                           mode="visibility"
+                           property="MergeTreePlanarLayout"
+                           value="1" />
+  </Hints>
+  <Documentation>
+    
+  </Documentation>
+  <BooleanDomain name="bool"/>
+</IntVectorProperty>
+
 <DoubleVectorProperty
 name="BranchSpacing"
 command="SetBranchSpacing"
@@ -184,6 +203,7 @@ default_values="0.05">
 
 <PropertyGroup panel_widget="Line" label="Output options">
   <Property name="BranchDecompositionPlanarLayout"/>
+  <Property name="PathPlanarLayout"/>
   <Property name="BranchSpacing"/>
   <Property name="ImportantPairs"/>
   <Property name="MaximumImportantPairs"/>
