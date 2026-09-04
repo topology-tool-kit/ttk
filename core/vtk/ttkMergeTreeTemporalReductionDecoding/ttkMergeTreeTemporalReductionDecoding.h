@@ -1,6 +1,7 @@
 /// \ingroup vtk
 /// \class ttkMergeTreeTemporalReductionDecoding
 /// \author Mathieu Pont (mathieu.pont@lip6.fr)
+/// \author Florian Wetzels (wetzels@cs.uni-kl.de)
 /// \date 2021.
 ///
 /// \brief TTK VTK-filter that wraps the ttk::MergeTreeTemporalReductionDecoding
@@ -27,6 +28,12 @@
 /// Mathieu Pont, Jules Vidal, Julie Delon, Julien Tierny.\n
 /// Proc. of IEEE VIS 2021.\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2021
+
+/// \b Related \b publication \n
+/// "Merge Tree Geodesics and Barycenters with Path Mappings" \n
+/// F. Wetzels, M. Pont, J. Tierny and C. Garth.\n
+/// Proc. of IEEE VIS 2023.\n
+/// IEEE Transactions on Visualization and Computer Graphics, 2024
 ///
 /// \b Online \b examples: \n
 ///   - <a
@@ -85,6 +92,7 @@ private:
   bool OutputTrees = true;
   bool PlanarLayout = false;
   bool BranchDecompositionPlanarLayout = false;
+  bool PathPlanarLayout = false;
   double BranchSpacing = 1.;
   bool RescaleTreesIndividually = false;
   double DimensionSpacing = 1.;
@@ -145,6 +153,15 @@ public:
     return assignmentSolverID_;
   }
 
+  void SetUsePathMappings(double usePM) {
+    usePathMappings_ = usePM;
+    Modified();
+    resetDataVisualization();
+  }
+  double GetPathMappings() {
+    return usePathMappings_;
+  }
+
   // Output Options
   vtkSetMacro(OutputTrees, bool);
   vtkGetMacro(OutputTrees, bool);
@@ -154,6 +171,9 @@ public:
 
   vtkSetMacro(BranchDecompositionPlanarLayout, bool);
   vtkGetMacro(BranchDecompositionPlanarLayout, bool);
+
+  vtkSetMacro(PathPlanarLayout, bool);
+  vtkGetMacro(PathPlanarLayout, bool);
 
   vtkSetMacro(BranchSpacing, double);
   vtkGetMacro(BranchSpacing, double);

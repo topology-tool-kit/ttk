@@ -270,7 +270,7 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
       header += "FILE";
       firstRow += rDataProductPath;
 
-      csvFile << header << endl << firstRow << endl;
+      csvFile << header << std::endl << firstRow << std::endl;
 
       // Close file
       csvFile.close();

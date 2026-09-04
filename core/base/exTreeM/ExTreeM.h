@@ -969,11 +969,11 @@ namespace ttk {
 #endif
           for(ttk::SimplexId i = 0; i < (ttk::SimplexId)saddleTriplets.size();
               i++) {
-            auto &triplet = saddleTriplets[i];
+            auto &eTriplet = saddleTriplets[i];
             ttk::SimplexId temp;
-            for(int p = 0; p < triplet[44]; p++) {
+            for(int p = 0; p < eTriplet[44]; p++) {
               // TODO if OMP 5.1 is widespread: use omp atomic compare
-              const auto &max = triplet[p];
+              const auto &max = eTriplet[p];
               if(max != globalMax) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic read
@@ -1010,14 +1010,14 @@ namespace ttk {
             ttk::SimplexId maximum = i;
             auto largestSaddle = largestSaddlesForMax[maximum];
             if(largestSaddle < (ttk::SimplexId)saddleTriplets.size()) {
-              const auto &triplet = saddleTriplets[largestSaddle];
-              if(triplet[0]
+              const auto &eTriplet = saddleTriplets[largestSaddle];
+              if(eTriplet[0]
                  == maximum) { // smallest maximum reachable from the saddle
                 changed = true;
                 pairs[maximum]
                   = std::make_pair(saddlesLocalToGlobal[largestSaddle],
                                    maximaLocalToGlobal[maximum]);
-                auto largestMax = triplet[triplet[44] - 1];
+                auto largestMax = eTriplet[eTriplet[44] - 1];
                 maximumPointer[maximum] = largestMax;
                 maximaTriplets[maximum]
                   = (std::make_pair(largestSaddle, largestMax));
@@ -1068,13 +1068,13 @@ namespace ttk {
 #pragma omp for schedule(guided)
 #endif
           for(size_t i = 0; i < saddleTriplets.size(); i++) {
-            auto &triplet = saddleTriplets[i];
-            for(int r = 0; r < triplet[44]; r++) {
-              triplet[r] = maximumPointer[triplet[r]];
+            auto &eTriplet = saddleTriplets[i];
+            for(int r = 0; r < eTriplet[44]; r++) {
+              eTriplet[r] = maximumPointer[eTriplet[r]];
             }
-            sortAndRemoveDuplicates(triplet);
-            if(triplet[44] == 1) {
-              triplet[44] = 0;
+            sortAndRemoveDuplicates(eTriplet);
+            if(eTriplet[44] == 1) {
+              eTriplet[44] = 0;
             }
           }
 #ifdef TTK_ENABLE_OPENMP
@@ -1112,17 +1112,17 @@ namespace ttk {
      *
      * @param[inout] triplet reachable maxima from a saddle
      */
-    void sortAndRemoveDuplicates(std::array<ttk::SimplexId, 45> &triplet) {
-      std::sort(triplet.begin(), triplet.begin() + triplet[44]);
+    void sortAndRemoveDuplicates(std::array<ttk::SimplexId, 45> &eTriplet) {
+      std::sort(eTriplet.begin(), eTriplet.begin() + eTriplet[44]);
       int tempPointer = 1;
-      for(int p = 1; p < triplet[44]; p++) {
-        if(triplet[p - 1]
-           != triplet[p]) { // if we have a new value, we step ahead
-          triplet[tempPointer] = triplet[p];
+      for(int p = 1; p < eTriplet[44]; p++) {
+        if(eTriplet[p - 1]
+           != eTriplet[p]) { // if we have a new value, we step ahead
+          eTriplet[tempPointer] = eTriplet[p];
           tempPointer++;
         }
       }
-      triplet[44] = tempPointer;
+      eTriplet[44] = tempPointer;
     }
 
     /**
@@ -1173,14 +1173,14 @@ namespace ttk {
 
       for(ttk::SimplexId b = 0; b < (ttk::SimplexId)maximaTriplets.size();
           b++) {
-        auto &triplet = maximaTriplets[b];
+        auto &eTriplet = maximaTriplets[b];
         auto &branch = branches[b];
         auto branchMaxId = maximaLocalToGlobal[b];
         branch.vertices.emplace_back(order[branchMaxId], branchMaxId);
 
-        auto parent = triplet.second;
+        auto parent = eTriplet.second;
         if(parent != b) {
-          auto saddle = saddlesLocalToGlobal[triplet.first];
+          auto saddle = saddlesLocalToGlobal[eTriplet.first];
           auto orderForSaddle = order[saddle];
           branch.vertices.emplace_back(orderForSaddle, saddle);
           branch.parentBranch
@@ -1189,7 +1189,7 @@ namespace ttk {
           branches[parent].vertices.emplace_back(orderForSaddle, saddle);
         } else {
           branch.vertices.emplace_back(
-            -1, triplet.first); // triplet.first == globalMin
+            -1, eTriplet.first); // triplet.first == globalMin
         }
       }
       this->printMsg("Built up maxima vectors", 0,
@@ -1369,24 +1369,24 @@ namespace ttk {
       for(ttk::SimplexId i = 0; i < nSaddles; i++) {
         const auto &gId = saddles[i];
         const auto &nNeighbors = triangulation->getVertexNeighborNumber(gId);
-        auto &triplet = saddleTriplets[i];
+        auto &eTriplet = saddleTriplets[i];
         auto &thisOrder = order[gId];
         ttk::SimplexId neighborId = 0;
-        triplet[44] = 0;
+        eTriplet[44] = 0;
         for(int j = 0; j < nNeighbors; j++) {
           triangulation->getVertexNeighbor(gId, j, neighborId);
           //  get the manifold result for this neighbor
           if(order[neighborId] > thisOrder) {
-            triplet[triplet[44]] = tempArray[descendingManifold[neighborId]];
-            triplet[44]++;
+            eTriplet[eTriplet[44]] = tempArray[descendingManifold[neighborId]];
+            eTriplet[44]++;
           }
         }
-        sortAndRemoveDuplicates(triplet);
+        sortAndRemoveDuplicates(eTriplet);
       }
       ttk::SimplexId edgesInEG = 0;
       for(ttk::SimplexId i = 0; i < nSaddles; i++) {
-        auto &triplet = saddleTriplets[i];
-        edgesInEG += triplet[44];
+        auto &eTriplet = saddleTriplets[i];
+        edgesInEG += eTriplet[44];
       }
       this->printMsg("#Edges in the EG: " + std::to_string(edgesInEG));
       this->printMsg("Finished building the saddleTriplets", 0,

@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 env:
-  PV_TAG: v6.1.0-headless
+  PV_TAG: v6.1.1-headless
   PV_REPO: topology-tool-kit/ttk-paraview
   CMAKE_GENERATOR: Ninja
   CMAKE_BUILD_TYPE: Release
@@ -24,7 +24,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04]
 
     steps:
     - uses: actions/checkout@v4
@@ -54,19 +54,33 @@ jobs:
     - name: Run sccache-cache
       uses: mozilla-actions/sccache-action@v0.0.9
 
-    - name: Install optional Spectra dependency
+    - name: Install spectra on ubuntu-22.04
+      if: matrix.os == 'ubuntu-22.04'
       uses: ./.github/actions/install-spectra-unix
 
-    - name: Install optional ZFP dependency
+    - name: Install zfp on ubuntu-22.04
+      if: matrix.os == 'ubuntu-22.04'
       uses: ./.github/actions/install-zfp-unix
 
-    # TODO: try to replicate for mac
-    - name: Install Torch
+    - name: Install Ubuntu's spectra and zfp
+      if: matrix.os != 'ubuntu-22.04'
+      shell: bash
+      run: |
+        sudo apt install -y libspectra-dev libzfp-dev
+
+    - name: Install Official Torch
+      if: matrix.os != 'ubuntu-26.04'
       shell: bash
       run: |
         wget https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.9.1%2Bcpu.zip
         unzip libtorch-shared-with-deps-2.9.1+cpu.zip
         sudo cp -R libtorch/* /usr/local/
+
+    - name: Install Ubuntu Torch
+      if: matrix.os == 'ubuntu-26.04'
+      shell: bash
+      run: |
+        # sudo apt install -y libtorch-dev
 
     - name: Fetch TTK-ParaView headless Debian package
       run: |
@@ -119,14 +133,15 @@ jobs:
     needs: test-build
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04]
         testSet: [pyTests, screenshotTests]
     steps:
     - name: Install Ubuntu dependencies
       run: |
         sudo apt update
 
-    - name: Install Torch
+    - name: Install Official Torch
+      if: matrix.os != 'ubuntu-26.04'
       shell: bash
       run: |
         wget https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.9.1%2Bcpu.zip
@@ -223,6 +238,14 @@ jobs:
         rm python/mpiExample.py
         # remove examples which fill up the memory
         rm python/topologicalOptimization_darkSky.py
+
+        VERS=$(hostnamectl | grep "Operating System")
+        if [[ "$VERS" == *"26.04"* ]]; then
+          rm python/contourTreeAlignment.py
+          rm python/geometryApproximation.py
+          rm python/harmonicSkeleton.py
+        fi
+
         pvpython -u python/run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]

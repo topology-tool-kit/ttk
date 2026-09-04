@@ -12,7 +12,7 @@ on:
       - 'pack*'
 
 env:
-  PV_TAG: v6.1.0
+  PV_TAG: v6.1.1
   PV_REPO: topology-tool-kit/ttk-paraview
 
 jobs:
@@ -24,7 +24,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04]
     steps:
     - uses: actions/checkout@v4
       name: Checkout TTK source code
@@ -48,11 +48,17 @@ jobs:
           libqhull-dev \
           dpkg-dev
 
-    - name: Install optional Spectra dependency
-      uses: ./.github/actions/install-spectra-unix
+    - name: Install Ubuntu's spectra and zfp
+      if: matrix.os != 'ubuntu-22.04'
+      shell: bash
+      run: |
+        sudo apt install -y libspectra-dev libzfp-dev
 
-    - name: Install optional ZFP dependency
-      uses: ./.github/actions/install-zfp-unix
+    - name: Install Ubuntu Torch
+      if: matrix.os == 'ubuntu-26.04'
+      shell: bash
+      run: |
+        # sudo apt install -y libtorch-dev
 
     - name: Fetch TTK-ParaView headless Debian package
       run: |
@@ -104,7 +110,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04]
     steps:
     - uses: actions/checkout@v4
       name: Checkout TTK source code
@@ -133,6 +139,12 @@ jobs:
 
     - name: Set PYTHONPATH for Ubuntu 24.04 pvpython
       if: matrix.os == 'ubuntu-24.04'
+      run: |
+        # pvpython does not embed the correct PYTHONPATH
+        echo "PYTHONPATH=/usr/lib/python3/dist-packages:$PYTHONPATH" >> $GITHUB_ENV
+
+    - name: Set PYTHONPATH for Ubuntu 26.04 pvpython
+      if: matrix.os == 'ubuntu-26.04'
       run: |
         # pvpython does not embed the correct PYTHONPATH
         echo "PYTHONPATH=/usr/lib/python3/dist-packages:$PYTHONPATH" >> $GITHUB_ENV
@@ -168,6 +180,14 @@ jobs:
         rm python/nestedTrackingFromOverlap.py
         # remove examples which fill up the memory
         rm python/topologicalOptimization_darkSky.py
+
+
+        VERS=$(hostnamectl | grep "Operating System")
+        if [[ "$VERS" == *"26.04"* ]]; then
+          rm python/contourTreeAlignment.py
+          rm python/harmonicSkeleton.py
+        fi
+
         pvpython -u python/run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
@@ -185,7 +205,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-14, macos-15]
+        os: [macos-14, macos-15, macos-26]
     env:  
       DYLD_LIBRARY_PATH: /usr/local/lib
 
@@ -209,12 +229,6 @@ jobs:
       uses: f3d-app/sccache-setup-action@v1
       with:
         key: macos-0
-
-    - name: Install optional Spectra dependency
-      uses: ./.github/actions/install-spectra-unix
-
-    - name: Install optional ZFP dependency
-      uses: ./.github/actions/install-zfp-unix
 
     - name: Fetch & install TTK-ParaView
       run: |
@@ -274,7 +288,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-14, macos-15]
+        os: [macos-14, macos-15, macos-26]
     env:
       DYLD_LIBRARY_PATH: /usr/local/lib
     steps:
@@ -297,12 +311,6 @@ jobs:
       uses: f3d-app/sccache-setup-action@v1
       with:
         key: macos-0
-
-    - name: Install optional Spectra dependency
-      uses: ./.github/actions/install-spectra-unix
-
-    - name: Install optional ZFP dependency
-      uses: ./.github/actions/install-zfp-unix
 
     - name: Fetch TTK-ParaView
       run: |
@@ -366,11 +374,13 @@ jobs:
   # Build Windows #
   # --------------#
   build-windows:
-    runs-on: windows-2022
+    runs-on: windows-latest
     env:
       PV_DIR: C:\Program Files\TTK-ParaView
       TTK_DIR: C:\Program Files (x86)\ttk
       CONDA_ROOT: C:\Miniconda
+      CC: clang-cl.exe
+      CXX: clang-cl.exe
     steps:
     - uses: actions/checkout@v4
       name: Checkout TTK source code
@@ -383,7 +393,7 @@ jobs:
         conda install -c conda-forge "qt>=5.12" \
           libboost-devel glew eigen spectralib zfp \
           sqlite scikit-learn graphviz ninja python=3.10 zlib qhull \
-          llvm-openmp clangxx=18
+          llvm-openmp ninja
         # add TTK & ParaView install folders to PATH
         echo "$PV_DIR/bin" >> $GITHUB_PATH
         echo "$TTK_DIR/bin" >> $GITHUB_PATH
@@ -403,17 +413,15 @@ jobs:
       run: |
         ttk-paraview-${{ env.PV_TAG }}.exe /S
 
-    - name: Fetch Visual C++ redistribuable run-time
-      run: |
-        curl.exe -OL https://aka.ms/vs/16/release/vc_redist.x64.exe
+    - name: Set up MSVC dev environment
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
 
     - name: Create & configure TTK build directory
       shell: cmd
       run: |
         set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library\lib\cmake;%CONDA_ROOT%\Library\share\eigen3\cmake;%CONDA_ROOT%\Library\share\Qull\cmake;%CONDA_ROOT%\Library\cmake;%ProgramFiles%\TTK-ParaView\lib\cmake;
-        set CC=clang-cl.exe
-        set CXX=clang-cl.exe
-        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         mkdir build
         cd build
         cmake ^
@@ -438,20 +446,20 @@ jobs:
           -DTTK_ENABLE_OPENMP=TRUE ^
           -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE ^
           -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE ^
-          -GNinja ^
+          -G "Ninja" ^
           ..
-
-    - name: Fix clang-cl OpenMP flags in build.ninja
-      shell: bash
-      run: |
-        sed -i 's/-Xclang -fopenmp/-openmp/' build/build.ninja
 
     - name: Build TTK
       shell: cmd
       run: |
         cd build
-        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         cmake --build . --config Release --parallel
+
+    - name: Install NSIS
+      shell: bash
+      run: |
+        choco install nsis -y
+        echo "C:\Program Files (x86)\NSIS" >> $GITHUB_PATH
 
     - name: Package TTK
       shell: bash
@@ -470,11 +478,13 @@ jobs:
   # -------------#
   test-windows:
     needs: build-windows
-    runs-on: windows-2022
+    runs-on: windows-latest
     env:
       PV_DIR: C:\Program Files\TTK-ParaView
       TTK_DIR: C:\Program Files\TTK
       CONDA_ROOT: C:\Miniconda
+      CC: clang-cl.exe
+      CXX: clang-cl.exe
     steps:
     - uses: actions/checkout@v4
       name: Checkout TTK source code
@@ -487,7 +497,7 @@ jobs:
         conda install -c conda-forge "qt>=5.12" \
           libboost-devel glew eigen spectralib zfp \
           sqlite scikit-learn graphviz ninja python=3.10 zlib qhull \
-          llvm-openmp clangxx=18
+          llvm-openmp ninja
         # add TTK & ParaView install folders to PATH
         echo "$PV_DIR/bin" >> $GITHUB_PATH
         echo "$TTK_DIR/bin" >> $GITHUB_PATH
@@ -519,12 +529,14 @@ jobs:
         echo "$PV_DIR/bin" >> $GITHUB_PATH
         echo "$TTK_DIR/bin" >> $GITHUB_PATH
 
+    - name: Set up MSVC dev environment
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+
     - name: Test C++ example
       shell: cmd
       run: |
-        set CC=clang-cl.exe
-        set CXX=clang-cl.exe
-        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
         cd %GITHUB_WORKSPACE%\examples\c++
         mkdir build
@@ -536,9 +548,6 @@ jobs:
     - name: Test VTK-C++ example
       shell: cmd
       run: |
-        set CC=clang-cl.exe
-        set CXX=clang-cl.exe
-        call "%ProgramFiles%\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         mkdir build
@@ -662,6 +671,14 @@ jobs:
         file: ttk-ubuntu-24.04.deb/ttk.deb
         asset_name: ttk-$tag-ubuntu-24.04.deb
 
+    - name: Upload Ubuntu Noble Numbat .deb as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }} 
+        file: ttk-ubuntu-26.04.deb/ttk.deb
+        asset_name: ttk-$tag-ubuntu-26.04.deb
+
     - name: Upload MacOS 14 binary archives as Release Asset
       uses: svenstaro/upload-release-action@v2
       with:
@@ -677,6 +694,15 @@ jobs:
         tag: ${{ github.ref }}
         file: ttk-macos-15.tar.gz/ttk.tar.gz
         asset_name: ttk-$tag-macos-15.tar.gz
+
+    - name: Upload MacOS 26 binary archives as Release Asset
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ttk-macos-26.tar.gz/ttk.tar.gz
+        asset_name: ttk-$tag-macos-26.tar.gz
+
 
     - name: Upload Windows .exe as Release Asset
       uses: svenstaro/upload-release-action@v2

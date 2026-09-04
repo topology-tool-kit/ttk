@@ -9,7 +9,7 @@ ttk_add_base_library(eigenField
     triangulation
     )
 
-if(TTK_ENABLE_SPECTRA)
+if(TTK_ENABLE_SPECTRA AND TTK_ENABLE_EIGEN)
   target_compile_definitions(eigenField PRIVATE TTK_ENABLE_EIGEN)
   target_link_libraries(eigenField PRIVATE Eigen3::Eigen)
   target_compile_definitions(eigenField PRIVATE TTK_ENABLE_SPECTRA)

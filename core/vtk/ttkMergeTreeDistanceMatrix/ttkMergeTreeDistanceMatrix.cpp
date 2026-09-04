@@ -175,6 +175,9 @@ int ttkMergeTreeDistanceMatrix::run(
       metric = "Shifting cost";
     else
       return 1;
+    epsilonTree2_ = epsilonTree1_;
+    epsilon2Tree2_ = epsilon2Tree1_;
+    epsilon3Tree2_ = epsilon3Tree1_;
     printMsg("BranchMetric: " + metric);
   }
   if(baseModule_ == 2) {
@@ -184,16 +187,16 @@ int ttkMergeTreeDistanceMatrix::run(
       metric = "Persistence difference";
     else
       return 1;
+    epsilonTree2_ = epsilonTree1_;
+    epsilon2Tree2_ = epsilon2Tree1_;
+    epsilon3Tree2_ = epsilon3Tree1_;
     printMsg("PathMetric: " + metric);
   }
 
   // --- Call base
   std::vector<std::vector<double>> treesDistMat(
     numInputs, std::vector<double>(numInputs));
-  if(baseModule_ == 0)
-    execute<dataType>(intermediateTrees, intermediateTrees2, treesDistMat);
-  else
-    execute<dataType>(intermediateTrees, treesDistMat);
+  execute<dataType>(intermediateTrees, intermediateTrees2, treesDistMat);
 
   // --- Create output
   auto treesDistTable = vtkTable::GetData(outputVector);

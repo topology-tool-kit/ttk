@@ -620,8 +620,8 @@ int ttk::ReebSpace::printConnectivity(const ReebSpaceData &data) const {
 //       << " tets) triangulated in "
 //       << t.getElapsedTime() << " s. ("
 //       << threadNumber_
-//       << " thread(s))" << endl;
-//     dMsg(cout, msg.str(), timeMsg);
+//       << " thread(s))" << std::endl;
+//     dMsg(std::cout, msg.str(), timeMsg);
 //   }
 //
 //   return 0;

@@ -288,7 +288,7 @@ void ttkUtils::SetVoidArray(vtkDataArray *array,
     vtkTemplateMacro(
       auto *aosArray = vtkAOSDataArrayTemplate<VTK_TT>::FastDownCast(array);
       if(aosArray) { aosArray->SetVoidArray(data, size, save); } else {
-        std::cerr << "SetVoidArray on incompatible vtkDataArray:" << endl;
+        std::cerr << "SetVoidArray on incompatible vtkDataArray:" << std::endl;
         array->Print(std::cerr);
       });
   }

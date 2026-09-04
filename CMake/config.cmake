@@ -180,7 +180,11 @@ else()
   message(STATUS "Zlib not found, disabling Zlib support in TTK.")
 endif()
 
-find_package(EMBREE 3.4 QUIET)
+# TTK supports embree 3 (>= 3.4) and embree 4, prefer embree 4 if available
+find_package(EMBREE 4 QUIET)
+if(NOT EMBREE_FOUND)
+  find_package(EMBREE 3.4 QUIET)
+endif()
 if(EMBREE_FOUND)
   option(TTK_ENABLE_EMBREE "Enable embree raytracing for ttkCinemaImaging" ON)
   message(STATUS "Found Embree ${EMBREE_VERSION} (${EMBREE_LIBRARY})")

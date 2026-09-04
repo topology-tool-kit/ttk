@@ -2,7 +2,7 @@
 
 #include <geoPHUtils.h>
 
-#ifdef TTK_ENABLE_CGAL
+#if defined(TTK_ENABLE_CGAL) && defined(TTK_ENABLE_EIGEN)
 
 #include <CGAL/Delaunay_triangulation.h>
 #include <CGAL/Epick_d.h>
@@ -736,7 +736,7 @@ namespace ttk::gph {
     DisjointSets UF_msa(N_msa);
 
     concurrent_msa_connectivity.cvisit_all(
-#ifdef __cpp_lib_execution
+#if defined(__cpp_lib_execution) && defined(TTK_ENABLE_TBB)
       std::execution::par,
 #endif
       [&](const auto &x) {
