@@ -330,7 +330,7 @@ namespace ttk {
                                        const SimplexId &size) {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-        // cout << "size " << sizeVertList_ << " add " << size << " on " <<
+        // std::cout << "size " << sizeVertList_ << " add " << size << " on " <<
         // allocSgm_ << std::endl;
         if(sizeVertList_ + size >= allocSgm_) {
           std::cerr << "SEGMENTATION SIZE PROBLEM :" << std::endl;

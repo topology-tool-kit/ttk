@@ -37,7 +37,7 @@ int ttkProgramBase::load(const std::vector<std::string> &inputPaths) {
     } else {
       stringstream msg;
       msg << "[ttkProgramBase] Unknown input extension `" << extension << "' :("
-          << endl;
+          << std::endl;
       printErr(msg.str());
       return -1;
     }

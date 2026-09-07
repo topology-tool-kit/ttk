@@ -85,7 +85,7 @@ public:
 
   vtkTypeMacro(ttkIntegralLines, ttkAlgorithm);
 
-  enum class BACKEND{
+  enum class BACKEND {
     ONESKELETON = 0,
     NUMERICAL = 1,
     DISCRETE = 2,

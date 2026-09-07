@@ -14,34 +14,34 @@ Graph::~Graph() = default;
 std::string Graph::print(const int verbosity) const {
   stringstream res;
   if(verbosity >= 1) {
-    res << "Graph:" << endl;
-    res << "leaves: " << leaves_.size() << endl;
-    res << "nodes: " << nodes_.size() << endl;
-    res << "arcs: " << arcs_.size() << endl;
+    res << "Graph:" << std::endl;
+    res << "leaves: " << leaves_.size() << std::endl;
+    res << "nodes: " << nodes_.size() << std::endl;
+    res << "arcs: " << arcs_.size() << std::endl;
   }
 
   if(verbosity >= 2) {
-    res << "visible arcs: " << getNumberOfVisibleArcs() << endl;
+    res << "visible arcs: " << getNumberOfVisibleArcs() << std::endl;
   }
 
   if(verbosity >= 3) {
-    res << "Leaves: " << endl;
+    res << "Leaves: " << std::endl;
     for(const auto &v : leaves_) {
       res << get<0>(v) << " ";
     }
-    res << endl;
+    res << std::endl;
   }
 
   if(verbosity >= 4) {
-    res << "Nodes:" << endl;
+    res << "Nodes:" << std::endl;
     const idNode nbn = nodes_.size();
     for(idNode i = 0; i < nbn; ++i) {
-      res << printNode(i) << endl;
+      res << printNode(i) << std::endl;
     }
-    res << "Arcs:" << endl;
+    res << "Arcs:" << std::endl;
     const idSuperArc nba = arcs_.size();
     for(idSuperArc i = 0; i < nba; ++i) {
-      res << printArc(i) << endl;
+      res << printArc(i) << std::endl;
     }
   }
 

@@ -653,19 +653,19 @@ namespace ttk {
       // {
 
       // for (idInterface i = 0; i < parallelParams_.nbInterfaces; i++) {
-      // cout << "interface : " << i << endl;
+      // std::cout << "interface : " << i << std::endl;
 
-      // cout << "upper" << endl;
+      // std::cout << "upper" << std::endl;
       // for (const SimplexId &v : parallelData_.interfaces[i].getUpper()) {
-      // cout << v << ", ";
+      // std::cout << v << ", ";
       //}
 
-      // cout << endl << "lower" << endl;
+      // std::cout << std::endl << "lower" << std::endl;
       // for (const SimplexId &v : parallelData_.interfaces[i].getLower()) {
-      // cout << v << ", ";
+      // std::cout << v << ", ";
       //}
 
-      // cout << endl;
+      // std::cout << std::endl;
       //}
 
       // }

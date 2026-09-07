@@ -42,16 +42,16 @@ namespace ttk {
        * @param isForward Forward or backward vpath (default: forward).
        */
       template <class triangulationType>
-      int execute(
-        const triangulationType *triangulation,
-        const std::vector<ttk::dcg::Cell> &seeds,
-        std::vector<std::vector<std::vector<ttk::dcg::Cell>>> &output,
-        const bool &isForward = false);
+      int execute(const triangulationType *triangulation,
+                  const std::vector<ttk::dcg::Cell> &seeds,
+                  std::vector<std::vector<std::vector<ttk::dcg::Cell>>> &output,
+                  const bool &isForward = false);
 
       /**
        * @brief Triangulation preconditioning.
        */
-      inline void preconditionTriangulation(AbstractTriangulation *triangulation){
+      inline void
+        preconditionTriangulation(AbstractTriangulation *triangulation) {
 
         // see dms precondition
         dcg_.preconditionTriangulation(triangulation);
@@ -62,12 +62,11 @@ namespace ttk {
       }
 
       inline void setInputScalarField(const void *const scalars,
-        const size_t &mTime){
+                                      const size_t &mTime) {
         this->dcg_.setInputScalarField(scalars, mTime);
       }
 
     protected:
-
       dcg::DiscreteGradient dcg_{};
     };
   } // namespace vp
@@ -78,7 +77,7 @@ int ttk::vp::VPaths::execute(
   const triangulationType *triangulation,
   const std::vector<dcg::Cell> &seeds,
   std::vector<std::vector<std::vector<dcg::Cell>>> &output,
-  const bool &isForward){
+  const bool &isForward) {
 
   // fetching discrete gradient (or pre-computing it)
   dcg_.setDebugLevel(debugLevel_);
@@ -98,30 +97,25 @@ int ttk::vp::VPaths::execute(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
 #endif
-  for(int i = 0; i < (int) seeds.size(); i++){
-    if(!isForward){
+  for(int i = 0; i < (int)seeds.size(); i++) {
+    if(!isForward) {
       dcg_.getAllDescendingPaths(seeds[i], output[i], *triangulation);
-    }
-    else{
+    } else {
       dcg_.getAllAscendingPaths(seeds[i], output[i], *triangulation);
     }
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp critical
 #endif
-    printMsg("  - Seed-#"
-      + std::to_string(seeds[i].id_)
-      + " (dim: "
-      + std::to_string(seeds[i].dim_)
-      + ", f: "
-      + std::to_string(isForward)
-      + "): "
-      + std::to_string(output[i].size()) + " path(s).",
-        debug::Priority::DETAIL);
+    printMsg("  - Seed-#" + std::to_string(seeds[i].id_)
+               + " (dim: " + std::to_string(seeds[i].dim_)
+               + ", f: " + std::to_string(isForward)
+               + "): " + std::to_string(output[i].size()) + " path(s).",
+             debug::Priority::DETAIL);
   }
 
-  printMsg("Computed v-path(s) from "
-    + std::to_string(output.size()) + " seed(s)", 1,
+  printMsg(
+    "Computed v-path(s) from " + std::to_string(output.size()) + " seed(s)", 1,
     t.getElapsedTime(), threadNumber_);
 
   return 0;

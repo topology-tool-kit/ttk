@@ -25,7 +25,7 @@
 #include <omp.h>
 #endif
 
-#ifdef __cpp_lib_execution
+#if defined(__cpp_lib_execution) && defined(TTK_ENABLE_TBB)
 #include <execution>
 #endif
 

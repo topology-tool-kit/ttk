@@ -224,7 +224,7 @@ namespace ttk {
           }
         }
       }
-      // cout<<msg.str()<<endl;
+      // std::cout<<msg.str()<<std::endl;
     }
 
     inline void printOldClustering() {

@@ -908,7 +908,7 @@ namespace ttk::gph {
       UF_msa = DisjointSets(N_msa);
 
       msa_edges.cvisit_all(
-#ifdef __cpp_lib_execution
+#if defined(__cpp_lib_execution) && defined(TTK_ENABLE_TBB)
         std::execution::par,
 #endif
         [&](const auto &x) {

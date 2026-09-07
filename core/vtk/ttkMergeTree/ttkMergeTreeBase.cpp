@@ -289,9 +289,9 @@ int ttkMergeTreeBase::getSkeletonArcs(vtkUnstructuredGrid *outputSkeletonArcs) {
 
   // const SimplexId p_size = points->GetNumberOfPoints();
   // const SimplexId s_size = tree->getNumberOfVertices();
-  // cout << "arcs points " << p_size << endl;
-  // cout << "scal points " << s_size << endl;
-  // cout << "nb arcs     " << tree->getNumberOfSuperArcs()<< endl;
+  // std::cout << "arcs points " << p_size << std::endl;
+  // std::cout << "scal points " << s_size << std::endl;
+  // std::cout << "nb arcs     " << tree->getNumberOfSuperArcs()<< std::endl;
   // if(p_size != s_size){
   //    exit(3);
   // }
@@ -358,17 +358,17 @@ void ttkMergeTreeBase::printCSVStats() {
   for(auto &t : ftmTree_) {
     switch(GetTreeType()) {
       case ftm::TreeType::Join:
-        cout << "JT" << endl;
+        std::cout << "JT" << std::endl;
         printCSVTree(t.tree.getTree(ftm::TreeType::Join));
         break;
       case ftm::TreeType::Split:
-        cout << "ST" << endl;
+        std::cout << "ST" << std::endl;
         printCSVTree(t.tree.getTree(ftm::TreeType::Split));
         break;
       default:
-        cout << "JT" << endl;
+        std::cout << "JT" << std::endl;
         printCSVTree(t.tree.getTree(ftm::TreeType::Join));
-        cout << "ST" << endl;
+        std::cout << "ST" << std::endl;
         printCSVTree(t.tree.getTree(ftm::TreeType::Split));
         break;
     }
@@ -380,19 +380,19 @@ void ttkMergeTreeBase::printCSVTree(
   using namespace ttk::ftm;
 
   const idSuperArc nbArc = tree->getNumberOfLeaves();
-  cout << "begin; ";
+  std::cout << "begin; ";
   for(idSuperArc a = 0; a < nbArc; a++) {
-    cout << tree->getActiveTasks(a).begin << "; ";
+    std::cout << tree->getActiveTasks(a).begin << "; ";
   }
-  cout << endl << "end; ";
+  std::cout << std::endl << "end; ";
   for(idSuperArc a = 0; a < nbArc; a++) {
-    cout << tree->getActiveTasks(a).end << "; ";
+    std::cout << tree->getActiveTasks(a).end << "; ";
   }
-  cout << endl << "origing; ";
+  std::cout << std::endl << "origing; ";
   for(idSuperArc a = 0; a < nbArc; a++) {
-    cout << tree->getActiveTasks(a).origin << "; ";
+    std::cout << tree->getActiveTasks(a).origin << "; ";
   }
-  cout << endl;
+  std::cout << std::endl;
 }
 #endif
 

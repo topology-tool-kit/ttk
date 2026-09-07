@@ -4,9 +4,8 @@ using namespace std;
 using namespace ttk;
 using namespace vp;
 
-VPaths::VPaths(){
+VPaths::VPaths() {
   this->setDebugMsgPrefix("VPaths");
 }
 
 VPaths::~VPaths() = default;
-

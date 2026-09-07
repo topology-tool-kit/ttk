@@ -60,8 +60,8 @@ namespace ttk {
                           const std::array<SimplexId, 3> &lowVerts,
                           const std::array<float, 3> &lowVertWeights,
                           const std::array<uint8_t, 3> &faces)
-        : Cell{dim, id}, lowVerts_{lowVerts},
-          lowVertWeights_{lowVertWeights}, faces_{faces} {
+        : Cell{dim, id}, lowVerts_{lowVerts}, lowVertWeights_{lowVertWeights},
+          faces_{faces} {
       }
 
       // ID values for Outward vertices in current Outward star

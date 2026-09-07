@@ -1911,9 +1911,10 @@ int DiscreteGradient::getAscendingPath(const Cell &cell,
 }
 
 template <typename triangulationType>
-  int DiscreteGradient::getAllAscendingPaths(const Cell &cell,
-    std::vector<std::vector<Cell> > &vpaths,
-    const triangulationType &triangulation) const{
+int DiscreteGradient::getAllAscendingPaths(
+  const Cell &cell,
+  std::vector<std::vector<Cell>> &vpaths,
+  const triangulationType &triangulation) const {
 
   vpaths.clear();
 
@@ -1941,8 +1942,7 @@ template <typename triangulationType>
     const Cell &currentCell = stackEntry.currentCell_;
     const SimplexId pairedCofacetId = getPairedCell(currentCell, triangulation);
 
-
-    if((currentCell.id_ != cell.id_)&&(isCellCritical(currentCell))){
+    if((currentCell.id_ != cell.id_) && (isCellCritical(currentCell))) {
       // currentCell is a critical simplex: this path has terminated.
       // the simplex has already been added to the stack path
       vpaths.push_back(stackEntry.partialPath_);
@@ -1955,7 +1955,7 @@ template <typename triangulationType>
     // check all cofacets
     int cofacetNumber = -1;
 
-    switch(currentCell.dim_){
+    switch(currentCell.dim_) {
       case 1:
         cofacetNumber = triangulation.getEdgeTriangleNumber(currentCell.id_);
         break;
@@ -1969,9 +1969,9 @@ template <typename triangulationType>
 
     bool hasProgressed = false;
 
-    for(int i = 0; i < cofacetNumber; i++){
+    for(int i = 0; i < cofacetNumber; i++) {
       int cofacetId = -1;
-      switch(currentCell.dim_){
+      switch(currentCell.dim_) {
         case 1:
           triangulation.getEdgeTriangle(currentCell.id_, i, cofacetId);
           break;
@@ -1982,7 +1982,7 @@ template <typename triangulationType>
           triangulation.getVertexEdge(currentCell.id_, i, cofacetId);
           break;
       }
-      if(cofacetId != pairedCofacetId){
+      if(cofacetId != pairedCofacetId) {
 
         // we don't want to go down the v-path, we want to go backwards
         Cell cofacet;
@@ -1999,9 +1999,9 @@ template <typename triangulationType>
 
         simplexNumber = cofacet.dim_ + 1;
 
-        for(int j = 0; j < simplexNumber; j++){
+        for(int j = 0; j < simplexNumber; j++) {
           SimplexId simplexId = -1;
-          switch(cofacet.dim_){
+          switch(cofacet.dim_) {
             case 1:
               triangulation.getEdgeVertex(cofacet.id_, j, simplexId);
               break;
@@ -2019,10 +2019,11 @@ template <typename triangulationType>
           const SimplexId simplexPair = getPairedCell(simplex, triangulation);
 
           if(isCellCritical(simplex)) {
-            // always terminate here — don't continue the path through a critical cell
+            // always terminate here — don't continue the path through a
+            // critical cell
             newStackEntry.partialPath_.push_back(simplex);
             vpaths.push_back(newStackEntry.partialPath_);
-            hasProgressed = true;  // prevent the fallback push too
+            hasProgressed = true; // prevent the fallback push too
             // do NOT push to stack
           } else if(simplexPair == cofacet.id_) {
             newStackEntry.partialPath_.push_back(simplex);
@@ -2033,7 +2034,7 @@ template <typename triangulationType>
         }
       }
     }
-    if(!hasProgressed){
+    if(!hasProgressed) {
       // example: boundary edge paired with its interior cofacet, we stop the
       // backward vpath here.
       vpaths.push_back(stackEntry.partialPath_);
