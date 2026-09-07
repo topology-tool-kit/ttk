@@ -377,6 +377,16 @@ namespace ttk {
     template <typename T>
     T magnitude(const T *o, const T *d);
 
+    /// Normalize a list of barycentric weights: the negative weights
+    /// (induced by numerical inaccuracies) are clamped to zero and the
+    /// remaining ones are re-scaled, such that they sum up to one.
+    /// \param baryCentrics Input/output barycentric weights.
+    /// \return Returns 0 upon success, negative values otherwise (in
+    /// particular, -2 if the input weights are degenerated, in which case the
+    /// output weights are those of the barycenter).
+    template <typename T>
+    int normalizeBarycentricWeights(std::vector<T> &baryCentrics);
+
     /// Compute the integer power of a floating-point value
     /// (std::pow is optimised for floating-point exponents)
     template <typename T>

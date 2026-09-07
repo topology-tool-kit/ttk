@@ -253,32 +253,6 @@ namespace ttk {
         return 0;
       }
 
-      static inline int
-        normalizeBarycentricWeights(std::vector<float> &barycentricWeights) {
-
-        if(barycentricWeights.empty())
-          return -1;
-
-        float sum = 0;
-        for(int i = 0; i < (int)barycentricWeights.size(); i++) {
-          if(barycentricWeights[i] < 0)
-            barycentricWeights[i] = 0;
-          sum += barycentricWeights[i];
-        }
-
-        if(!(sum > 0)) {
-          // degenerated weights: fall back on the barycenter
-          for(int i = 0; i < (int)barycentricWeights.size(); i++)
-            barycentricWeights[i] = 1.0 / barycentricWeights.size();
-          return -2;
-        }
-
-        for(int i = 0; i < (int)barycentricWeights.size(); i++)
-          barycentricWeights[i] /= sum;
-
-        return 0;
-      }
-
       /**
        * @brief Triangulation preconditioning.
        */
@@ -361,7 +335,7 @@ int ttk::nil::NumericalIntegralLines::computeIntegralLine(
     // no valid input coordinates: start from the barycenter of the seed
     current.barycentricWeights_.assign(
       seed.second + 1, 1.0 / (seed.second + 1));
-  normalizeBarycentricWeights(current.barycentricWeights_);
+  ttk::Geometry::normalizeBarycentricWeights(current.barycentricWeights_);
 
   output.push_back(current);
 
@@ -584,7 +558,7 @@ int ttk::nil::NumericalIntegralLines::doGradientStep(
       for(int i = 0; i <= current.simplexDimension_; i++)
         weights[i]
           = current.barycentricWeights_[i] + travelDistance * velocity[i];
-      normalizeBarycentricWeights(weights);
+      ttk::Geometry::normalizeBarycentricWeights(weights);
 
       hasMoved = true;
     }
@@ -1007,7 +981,7 @@ int ttk::nil::NumericalIntegralLines::getSubSimplex(
     subSimplex.simplexId_ = simplexId;
     subSimplex.simplexDimension_ = simplexDimension;
     subSimplex.barycentricWeights_ = barycentricWeights;
-    normalizeBarycentricWeights(subSimplex.barycentricWeights_);
+    ttk::Geometry::normalizeBarycentricWeights(subSimplex.barycentricWeights_);
     return 0;
   }
 
@@ -1031,7 +1005,7 @@ int ttk::nil::NumericalIntegralLines::getSubSimplex(
      < 0)
     return -3;
 
-  normalizeBarycentricWeights(subSimplex.barycentricWeights_);
+  ttk::Geometry::normalizeBarycentricWeights(subSimplex.barycentricWeights_);
 
   return 0;
 }

@@ -535,6 +535,34 @@ T Geometry::magnitude(const T *o, const T *d) {
 }
 
 template <typename T>
+int Geometry::normalizeBarycentricWeights(std::vector<T> &baryCentrics) {
+
+  if(baryCentrics.empty())
+    return -1;
+
+  T sum = 0;
+
+  for(size_t i = 0; i < baryCentrics.size(); i++) {
+    // clamp the negative weights induced by numerical inaccuracies
+    if(baryCentrics[i] < 0)
+      baryCentrics[i] = 0;
+    sum += baryCentrics[i];
+  }
+
+  if(!(sum > 0)) {
+    // degenerated weights: fall back on the barycenter
+    for(size_t i = 0; i < baryCentrics.size(); i++)
+      baryCentrics[i] = 1.0 / baryCentrics.size();
+    return -2;
+  }
+
+  for(size_t i = 0; i < baryCentrics.size(); i++)
+    baryCentrics[i] /= sum;
+
+  return 0;
+}
+
+template <typename T>
 void Geometry::projectOnTrianglePlane(const T *p,
                                       const T *a,
                                       const T *normTri,
@@ -885,6 +913,8 @@ void Geometry::transposeMatrix(const std::vector<std::vector<T>> &a,
   template TYPE Geometry::magnitudeFlatten<TYPE>(                              \
     std::vector<std::vector<TYPE>> const &);                                   \
   template TYPE Geometry::magnitude<TYPE>(TYPE const *, TYPE const *);         \
+  template int Geometry::normalizeBarycentricWeights<TYPE>(                    \
+    std::vector<TYPE> &);                                                      \
   template void Geometry::projectOnTrianglePlane<TYPE>(                        \
     TYPE const *, TYPE const *, TYPE const *, TYPE *);                         \
   template void Geometry::projectOnEdge<TYPE>(                                 \

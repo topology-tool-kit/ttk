@@ -402,6 +402,9 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
         vtkCell *cell = seeds->GetCell(i);
         seedCells[i].dim_ = cell->GetCellDimension();
         seedCells[i].id_ = identifiers[i];
+
+        printf("cell: %d (d=%d)\n",
+          seedCells[i].id_, seedCells[i].dim_);
       }
 
       std::vector<std::vector<std::vector<ttk::dcg::Cell>>> outputPaths;
