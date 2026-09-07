@@ -237,9 +237,9 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
     ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds,
     idSpareStorage);
 
-  if(!isRunningWithMPI){
+  if(!isRunningWithMPI) {
 
-    if(BackEnd == BACKEND::NUMERICAL){
+    if(BackEnd == BACKEND::NUMERICAL) {
       printMsg("Selected `numerical` backend.");
 
       ttk::nil::NumericalIntegralLines num;
@@ -254,12 +254,13 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       num.setInputScalarField(inputScalars->GetVoidPointer(0));
 
       // setup the seeds (simplexId, dimension)
-      std::vector<std::pair<SimplexId, int> > seedCells(seeds->GetNumberOfCells());
+      std::vector<std::pair<SimplexId, int>> seedCells(
+        seeds->GetNumberOfCells());
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-      for(int i = 0; i < (int) seedCells.size(); i++){
+      for(int i = 0; i < (int)seedCells.size(); i++) {
         vtkCell *cell = seeds->GetCell(i);
         seedCells[i].first = identifiers[i];
         seedCells[i].second = cell->GetCellDimension();
@@ -268,20 +269,18 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       std::vector<std::vector<ttk::nil::PathPoint>> outputPaths;
 
       int status{};
-      ttkVtkTemplateMacro(inputScalars->GetDataType(),
-                          triangulation->getType(),
-                            (status = num.execute<VTK_TT, TTK_TT>(
-                              static_cast<TTK_TT *>(triangulation->getData()),
-                              seedCells, outputPaths,
-                              // isForward?
-                              Direction == 0)));
+      ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
+                          (status = num.execute<VTK_TT, TTK_TT>(
+                             static_cast<TTK_TT *>(triangulation->getData()),
+                             seedCells, outputPaths,
+                             // isForward?
+                             Direction == 0)));
 
       if(status)
         return status;
 
       return 1;
-    }
-    else if(BackEnd == BACKEND::DISCRETE){
+    } else if(BackEnd == BACKEND::DISCRETE) {
       printMsg("Selected `discrete` backend.");
 
       ttk::vp::VPaths vpaths;
@@ -293,8 +292,8 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       vpaths.preconditionTriangulation(triangulation);
 
       // setup the data
-      vpaths.setInputScalarField(inputScalars->GetVoidPointer(0),
-        inputScalars->GetMTime());
+      vpaths.setInputScalarField(
+        inputScalars->GetVoidPointer(0), inputScalars->GetMTime());
       vpaths.setInputOffsets(
         static_cast<SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)));
 
@@ -303,7 +302,7 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-      for(int i = 0; i < (int) seedCells.size(); i++){
+      for(int i = 0; i < (int)seedCells.size(); i++) {
         vtkCell *cell = seeds->GetCell(i);
         seedCells[i].dim_ = cell->GetCellDimension();
         seedCells[i].id_ = identifiers[i];
@@ -312,19 +311,19 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       std::vector<std::vector<std::vector<ttk::dcg::Cell>>> outputPaths;
 
       int status{};
-      ttkTemplateMacro(triangulation->getType(),
-                       status = vpaths.execute(
-                         static_cast<TTK_TT *>(triangulation->getData()),
-                         seedCells, outputPaths,
-                         // isForward?
-                         Direction == 0));
+      ttkTemplateMacro(
+        triangulation->getType(),
+        status = vpaths.execute(static_cast<TTK_TT *>(triangulation->getData()),
+                                seedCells, outputPaths,
+                                // isForward?
+                                Direction == 0));
 
       if(status)
         return status;
 
       int pointNumber{0};
-      for(auto &seedPaths : outputPaths){
-        for(auto &path : seedPaths){
+      for(auto &seedPaths : outputPaths) {
+        for(auto &path : seedPaths) {
           pointNumber += path.size();
         }
       }
@@ -366,36 +365,35 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       int pointId = 0;
       int localSeedId = 0;
       int pathPointId = 0;
-      for(auto &seedPaths : outputPaths){
+      for(auto &seedPaths : outputPaths) {
 
         int forkId = 0;
-        for(auto &path : seedPaths){
+        for(auto &path : seedPaths) {
 
           pathPointId = 0;
 
           int simplexNumber = path.size();
 
-          for(auto &c : path){
+          for(auto &c : path) {
             float point[3];
             triangulation->getCellIncenter(c.id_, c.dim_, point);
             pointCoords->SetTuple3(pointId, point[0], point[1], point[2]);
-            vertexSeedId->SetTuple1(pointId, (int) seedCells[localSeedId].id_);
-            vertexSimplexId->SetTuple1(pointId, (int) c.id_);
-            vertexSimplexDimension->SetTuple1(pointId, (int) c.dim_);
-            if((!pointId)||(pointId == pointNumber - 1)){
+            vertexSeedId->SetTuple1(pointId, (int)seedCells[localSeedId].id_);
+            vertexSimplexId->SetTuple1(pointId, (int)c.id_);
+            vertexSimplexDimension->SetTuple1(pointId, (int)c.dim_);
+            if((!pointId) || (pointId == pointNumber - 1)) {
               outputMaskField->SetTuple1(pointId, 0);
-            }
-            else{
+            } else {
               outputMaskField->SetTuple1(pointId, 1);
             }
             pointId++;
             pathPointId++;
 
-            if(pathPointId > 1){
+            if(pathPointId > 1) {
               vtkIdType edgeIds[2] = {pointId - 2, pointId - 1};
               outputPathGeometry->InsertNextCell(VTK_LINE, 2, edgeIds);
-              cellSeedId->InsertNextValue((int) seedCells[localSeedId].id_);
-              cellForkId->InsertNextValue((int) forkId);
+              cellSeedId->InsertNextValue((int)seedCells[localSeedId].id_);
+              cellForkId->InsertNextValue((int)forkId);
               cellSimplexNumber->InsertNextValue((simplexNumber));
             }
           }
@@ -419,8 +417,7 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
 
       return 1;
     }
-  }
-  else{
+  } else {
     if(BackEnd != BACKEND::ONESKELETON)
       printWrn("Distributed run, defaulting to the `OneSkeleton` backend.");
   }
