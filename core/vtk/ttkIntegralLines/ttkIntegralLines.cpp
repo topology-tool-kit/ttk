@@ -574,11 +574,11 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       }
       numberOfPointsInSeeds = inputIdentifiers.size();
     } else {
-      std::vector<ttk::SimplexId> idSpareStorage{};
+      std::vector<ttk::SimplexId> lIdSpareStorage{};
       ttk::SimplexId *inputIdentifierGlobalId;
       inputIdentifierGlobalId = this->GetIdentifierArrayPtr(
         ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds,
-        idSpareStorage);
+        lIdSpareStorage);
       ttk::SimplexId localId = 0;
       for(int i = 0; i < numberOfPointsInSeeds; i++) {
         localId = triangulation->getVertexLocalId(inputIdentifierGlobalId[i]);
@@ -595,11 +595,11 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
     this->setGlobalElementCounter(numberOfPointsInSeeds);
     inputIdentifiers.resize(numberOfPointsInSeeds);
     totalSeeds = numberOfPointsInSeeds;
-    std::vector<ttk::SimplexId> idSpareStorage{};
+    std::vector<ttk::SimplexId> lIdSpareStorage{};
     ttk::SimplexId *inputIdentifierGlobalId;
     inputIdentifierGlobalId = this->GetIdentifierArrayPtr(
       ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds,
-      idSpareStorage);
+      lIdSpareStorage);
     for(int i = 0; i < numberOfPointsInSeeds; i++) {
       inputIdentifiers.at(i)
         = triangulation->getVertexLocalId(inputIdentifierGlobalId[i]);
