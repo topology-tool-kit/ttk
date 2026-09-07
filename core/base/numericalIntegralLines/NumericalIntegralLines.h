@@ -299,7 +299,9 @@ namespace ttk {
 
         // precondition boundary
         triangulation->preconditionBoundaryVertices();
-        triangulation->preconditionBoundaryEdges();
+        if(triangulation->getDimensionality() > 1)
+          // in 1D, edges are cells (and the boundary is made of vertices)
+          triangulation->preconditionBoundaryEdges();
 
         if(triangulation->getDimensionality() == 3) {
           triangulation->preconditionTriangles();
@@ -900,11 +902,15 @@ int ttk::nil::NumericalIntegralLines::getCofaces(
   SimplexId cofaceId = -1;
 
   if(!simplexDimension) {
-    // the edges of the star of the vertex
-    const SimplexId edgeNumber = triangulation->getVertexEdgeNumber(simplexId);
-    for(SimplexId i = 0; i < edgeNumber; i++) {
-      triangulation->getVertexEdge(simplexId, i, cofaceId);
-      cofaces.push_back(std::make_pair(cofaceId, 1));
+    if(cellDimension > 1) {
+      // the edges of the star of the vertex
+      // (in 1D, edges are cells: they are collected below)
+      const SimplexId edgeNumber
+        = triangulation->getVertexEdgeNumber(simplexId);
+      for(SimplexId i = 0; i < edgeNumber; i++) {
+        triangulation->getVertexEdge(simplexId, i, cofaceId);
+        cofaces.push_back(std::make_pair(cofaceId, 1));
+      }
     }
 
     if(cellDimension == 3) {
