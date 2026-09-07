@@ -279,6 +279,102 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       if(status)
         return status;
 
+      int pointNumber{0};
+      for(auto &path : outputPaths) {
+        pointNumber += path.size();
+      }
+
+      vtkNew<vtkUnstructuredGrid> outputPathGeometry;
+
+      vtkNew<vtkFloatArray> pointCoords{};
+      vtkNew<vtkIntArray> vertexSeedId{};
+      vtkNew<vtkIntArray> cellSeedId{};
+      vtkNew<vtkIntArray> vertexSimplexId{};
+      vtkNew<vtkIntArray> vertexSimplexDimension{};
+      vtkNew<vtkIntArray> cellSimplexNumber{};
+      vtkNew<vtkDoubleArray> vertexDistanceFromSeed{};
+      vtkNew<vtkUnsignedCharArray> outputMaskField{};
+
+      pointCoords->SetNumberOfComponents(3);
+      pointCoords->SetNumberOfTuples(pointNumber);
+
+      vertexSeedId->SetNumberOfComponents(1);
+      vertexSeedId->SetNumberOfTuples(pointNumber);
+      vertexSeedId->SetName("SeedIdentifier");
+
+      vertexSimplexId->SetNumberOfComponents(1);
+      vertexSimplexId->SetNumberOfTuples(pointNumber);
+      vertexSimplexId->SetName("SimplexIdentifier");
+
+      vertexSimplexDimension->SetNumberOfComponents(1);
+      vertexSimplexDimension->SetNumberOfTuples(pointNumber);
+      vertexSimplexDimension->SetName("SimplexDimension");
+
+      vertexDistanceFromSeed->SetNumberOfComponents(1);
+      vertexDistanceFromSeed->SetNumberOfTuples(pointNumber);
+      vertexDistanceFromSeed->SetName("DistanceFromSeed");
+
+      outputMaskField->SetNumberOfComponents(1);
+      outputMaskField->SetNumberOfTuples(pointNumber);
+      outputMaskField->SetName(ttk::MaskScalarFieldName);
+
+      cellSeedId->SetName("SeedIdentifier");
+      cellSimplexNumber->SetName("SimplexNumber");
+
+      int pointId = 0;
+      for(int i = 0; i < (int)outputPaths.size(); i++) {
+
+        const int simplexNumber = outputPaths[i].size();
+        double distanceFromSeed = 0;
+        std::array<float, 3> point{}, previousPoint{};
+
+        for(int j = 0; j < simplexNumber; j++) {
+
+          const ttk::nil::PathPoint &pathPoint = outputPaths[i][j];
+
+          // the path points are expressed by their barycentric coordinates
+          // within their simplex
+          num.getPointCoordinates(triangulation, pathPoint, point);
+
+          if(j)
+            distanceFromSeed
+              += ttk::Geometry::distance(previousPoint.data(), point.data());
+
+          pointCoords->SetTuple3(pointId, point[0], point[1], point[2]);
+          vertexSeedId->SetTuple1(pointId, (int)seedCells[i].first);
+          vertexSimplexId->SetTuple1(pointId, (int)pathPoint.simplexId_);
+          vertexSimplexDimension->SetTuple1(
+            pointId, pathPoint.simplexDimension_);
+          vertexDistanceFromSeed->SetTuple1(pointId, distanceFromSeed);
+          // mask out the extremities of the integral line
+          outputMaskField->SetTuple1(
+            pointId, ((!j) || (j == simplexNumber - 1)) ? 0 : 1);
+          pointId++;
+
+          if(j) {
+            vtkIdType edgeIds[2] = {pointId - 2, pointId - 1};
+            outputPathGeometry->InsertNextCell(VTK_LINE, 2, edgeIds);
+            cellSeedId->InsertNextValue((int)seedCells[i].first);
+            cellSimplexNumber->InsertNextValue(simplexNumber);
+          }
+
+          previousPoint = point;
+        }
+      }
+
+      vtkNew<vtkPoints> pointSet{};
+      pointSet->SetData(pointCoords);
+      outputPathGeometry->SetPoints(pointSet);
+      outputPathGeometry->GetPointData()->AddArray(vertexSeedId);
+      outputPathGeometry->GetPointData()->AddArray(outputMaskField);
+      outputPathGeometry->GetPointData()->AddArray(vertexSimplexId);
+      outputPathGeometry->GetPointData()->AddArray(vertexSimplexDimension);
+      outputPathGeometry->GetPointData()->AddArray(vertexDistanceFromSeed);
+      outputPathGeometry->GetCellData()->AddArray(cellSeedId);
+      outputPathGeometry->GetCellData()->AddArray(cellSimplexNumber);
+
+      output->ShallowCopy(outputPathGeometry);
+
       return 1;
     } else if(BackEnd == BACKEND::DISCRETE) {
       printMsg("Selected `discrete` backend.");
