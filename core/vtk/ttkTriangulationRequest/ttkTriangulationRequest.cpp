@@ -260,7 +260,8 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
           case SIMPLEX::VERTEX: {
             const auto vid = addVertex(si);
             cells->InsertNextCell(VTK_VERTEX, 1, &vid);
-            cellIds->InsertNextTuple1(vid);
+            // report the identifier of the vertex (not that of the point)
+            cellIds->InsertNextTuple1(si);
             cellDims->InsertNextTuple1(0);
           } break;
 
@@ -493,7 +494,8 @@ int ttkTriangulationRequest::RequestData(vtkInformation *ttkNotUsed(request),
               if(triangulation->isVertexOnBoundary(v)) {
                 const auto vid = addVertex(v);
                 cells->InsertNextCell(VTK_VERTEX, 1, &vid);
-                cellIds->InsertNextTuple1(vid);
+                // report the identifier of the vertex (not that of the point)
+                cellIds->InsertNextTuple1(v);
                 cellDims->InsertNextTuple1(0);
               }
             }
