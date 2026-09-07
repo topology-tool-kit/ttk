@@ -11,6 +11,7 @@
 #include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkGenericCell.h>
 #include <vtkInformation.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
@@ -258,12 +259,21 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
         seeds->GetNumberOfCells());
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel num_threads(threadNumber_)
 #endif
-      for(int i = 0; i < (int)seedCells.size(); i++) {
-        vtkCell *cell = seeds->GetCell(i);
-        seedCells[i].first = identifiers[i];
-        seedCells[i].second = cell->GetCellDimension();
+      {
+        // GetCell(vtkIdType) returns a shared internal cell object: only the
+        // vtkGenericCell overload is thread-safe.
+        vtkNew<vtkGenericCell> cell{};
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp for
+#endif
+        for(int i = 0; i < (int)seedCells.size(); i++) {
+          seeds->GetCell(i, cell);
+          seedCells[i].first = identifiers[i];
+          seedCells[i].second = cell->GetCellDimension();
+        }
       }
 
       std::vector<std::vector<ttk::nil::PathPoint>> outputPaths;
@@ -396,12 +406,21 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       std::vector<ttk::dcg::Cell> seedCells(seeds->GetNumberOfCells());
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel num_threads(threadNumber_)
 #endif
-      for(int i = 0; i < (int)seedCells.size(); i++) {
-        vtkCell *cell = seeds->GetCell(i);
-        seedCells[i].dim_ = cell->GetCellDimension();
-        seedCells[i].id_ = identifiers[i];
+      {
+        // GetCell(vtkIdType) returns a shared internal cell object: only the
+        // vtkGenericCell overload is thread-safe.
+        vtkNew<vtkGenericCell> cell{};
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp for
+#endif
+        for(int i = 0; i < (int)seedCells.size(); i++) {
+          seeds->GetCell(i, cell);
+          seedCells[i].dim_ = cell->GetCellDimension();
+          seedCells[i].id_ = identifiers[i];
+        }
       }
 
       std::vector<std::vector<std::vector<ttk::dcg::Cell>>> outputPaths;
@@ -477,11 +496,10 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
             vertexSeedId->SetTuple1(pointId, (int)seedCells[localSeedId].id_);
             vertexSimplexId->SetTuple1(pointId, (int)c.id_);
             vertexSimplexDimension->SetTuple1(pointId, (int)c.dim_);
-            if((!pointId) || (pointId == pointNumber - 1)) {
-              outputMaskField->SetTuple1(pointId, 0);
-            } else {
-              outputMaskField->SetTuple1(pointId, 1);
-            }
+            // mask out the extremities of the integral line
+            outputMaskField->SetTuple1(
+              pointId,
+              ((!pathPointId) || (pathPointId == simplexNumber - 1)) ? 0 : 1);
             pointId++;
             pathPointId++;
 
