@@ -1952,6 +1952,14 @@ int DiscreteGradient::getAllAscendingPaths(
     if(currentCell.dim_ != cell.dim_)
       continue;
 
+    if(currentCell.dim_ >= dimensionality_) {
+      // currentCell is a maximal simplex: it admits no cofacet at all (in
+      // particular, the star of a triangle is only defined in 3D). the
+      // ascending path terminates here.
+      vpaths.push_back(stackEntry.partialPath_);
+      continue;
+    }
+
     // check all cofacets
     int cofacetNumber = -1;
 
