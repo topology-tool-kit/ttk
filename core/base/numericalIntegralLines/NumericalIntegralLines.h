@@ -141,6 +141,29 @@ namespace ttk {
                                  float *slope = nullptr) const;
 
       /**
+       * @brief Identify the simplex which takes the flow over at the input
+       * point.
+       *
+       * The flow is taken over by the coface of the input simplex which
+       * maximizes the slope of the scalar field (the steepest one) among the
+       * cofaces which admit the advection. Note that the gradient restricted
+       * to a face of a simplex is the projection of the gradient of the
+       * simplex: the slope of a coface is therefore always larger than (or
+       * equal to) that of its faces.
+       *
+       * @param point Input point (simplex, dimension, barycentric weights).
+       * @param isForward Forward or backward advection.
+       * @param next Output point (same location, expressed in the coface).
+       * @return 0 if a coface takes the flow over (negative values otherwise,
+       * in which case \p next is left untouched).
+       */
+      template <class dataType, class triangulationType>
+      int getFlowSimplex(const triangulationType *triangulation,
+                         const PathPoint &point,
+                         const bool &isForward,
+                         PathPoint &next) const;
+
+      /**
        * @brief Retrieve the identifier of the face of the input simplex which
        * is spanned by the input vertices.
        */
@@ -336,6 +359,19 @@ int ttk::nil::NumericalIntegralLines::computeIntegralLine(
     current.barycentricWeights_.assign(
       seed.second + 1, 1.0 / (seed.second + 1));
   ttk::Geometry::normalizeBarycentricWeights(current.barycentricWeights_);
+
+  // the seed simplex is where the integral line starts, not necessarily the
+  // simplex within which the advection takes place. generically, a point in
+  // the interior of a face is immediately advected within one of its cofaces
+  // (for instance, the mid-point of an edge is taken over by one of the
+  // triangles of its star). hand the flow over right away: this does not move
+  // the point, it only re-expresses it in the coface. if no coface admits the
+  // advection, the seed simplex constrains the flow and is kept as is.
+  PathPoint flowPoint;
+  if(getFlowSimplex<dataType, triangulationType>(
+       triangulation, current, isForward, flowPoint)
+     == 0)
+    current = flowPoint;
 
   output.push_back(current);
 
@@ -572,66 +608,10 @@ int ttk::nil::NumericalIntegralLines::doGradientStep(
     return -1;
 
   // 2) identify the simplex in which the advection carries on.
-  // the flow is taken over by the coface of the exit face which maximizes the
-  // slope of the scalar field (the steepest one) among the cofaces which admit
-  // the advection. note that the gradient restricted to a face of a simplex is
-  // the projection of the gradient of the simplex: the slope of a coface is
-  // therefore always larger than (or equal to) that of the exit face.
-  std::vector<std::pair<SimplexId, int>> cofaces;
-  getCofaces(
-    triangulation, exitPoint.simplexDimension_, exitPoint.simplexId_, cofaces);
-
-  std::vector<SimplexId> exitVertices, cofaceVertices;
-  getVertexIdentifiers(triangulation, exitPoint.simplexDimension_,
-                       exitPoint.simplexId_, exitVertices);
-
-  PathPoint bestPoint;
-  bestPoint.simplexDimension_ = -1;
-  float bestSlope = 0;
-
-  for(int i = 0; i < (int)cofaces.size(); i++) {
-
-    PathPoint candidate;
-    candidate.simplexId_ = cofaces[i].first;
-    candidate.simplexDimension_ = cofaces[i].second;
-
-    getVertexIdentifiers(triangulation, candidate.simplexDimension_,
-                         candidate.simplexId_, cofaceVertices);
-
-    // express the advected point in the barycentric basis of the coface
-    if(mapBarycentricWeights(exitVertices, exitPoint.barycentricWeights_,
-                             cofaceVertices, candidate.barycentricWeights_)
-       < 0)
-      continue;
-
-    float slope = 0;
-    if(getBarycentricVelocity<dataType, triangulationType>(
-         triangulation, candidate.simplexDimension_, candidate.simplexId_,
-         isForward, velocity, &slope)
-       < 0)
-      continue;
-
-    if(!isMotionAdmissible(candidate.barycentricWeights_, velocity))
-      // the advection would immediately leave this coface
-      continue;
-
-    // steepest slope: along a unit direction, the variation of the scalar
-    // field is given by the magnitude of the gradient.
-    // ties (the gradient of the coface is aligned with one of its faces) are
-    // settled in favor of the coface of highest dimension (i.e. the least
-    // constrained advection).
-    if((slope > bestSlope)
-       || ((slope > bestSlope * (1 - relativeEpsilon_))
-           && (candidate.simplexDimension_ > bestPoint.simplexDimension_))) {
-      bestSlope = slope;
-      bestPoint = candidate;
-    }
-  }
-
-  if(bestPoint.simplexDimension_ >= 0) {
-    next = bestPoint;
+  if(getFlowSimplex<dataType, triangulationType>(
+       triangulation, exitPoint, isForward, next)
+     == 0)
     return REGULAR_STEP;
-  }
 
   // no coface takes the flow over.
   const bool isOnBoundary = isOnDomainBoundary(
@@ -750,6 +730,79 @@ int ttk::nil::NumericalIntegralLines::getBarycentricVelocity(
     // the barycentric weights sum up to 1
     velocity[0] -= scale * barycentricGradient[i];
   }
+
+  return 0;
+}
+
+template <class dataType, class triangulationType>
+int ttk::nil::NumericalIntegralLines::getFlowSimplex(
+  const triangulationType *triangulation,
+  const PathPoint &point,
+  const bool &isForward,
+  PathPoint &next) const {
+
+  // the flow is taken over by the coface of the input simplex which maximizes
+  // the slope of the scalar field (the steepest one) among the cofaces which
+  // admit the advection. note that the gradient restricted to a face of a
+  // simplex is the projection of the gradient of the simplex: the slope of a
+  // coface is therefore always larger than (or equal to) that of its faces.
+  std::vector<std::pair<SimplexId, int>> cofaces;
+  getCofaces(triangulation, point.simplexDimension_, point.simplexId_, cofaces);
+
+  std::vector<SimplexId> pointVertices, cofaceVertices;
+  getVertexIdentifiers(
+    triangulation, point.simplexDimension_, point.simplexId_, pointVertices);
+
+  std::vector<float> velocity;
+
+  PathPoint bestPoint;
+  bestPoint.simplexDimension_ = -1;
+  float bestSlope = 0;
+
+  for(int i = 0; i < (int)cofaces.size(); i++) {
+
+    PathPoint candidate;
+    candidate.simplexId_ = cofaces[i].first;
+    candidate.simplexDimension_ = cofaces[i].second;
+
+    getVertexIdentifiers(triangulation, candidate.simplexDimension_,
+                         candidate.simplexId_, cofaceVertices);
+
+    // express the advected point in the barycentric basis of the coface
+    if(mapBarycentricWeights(pointVertices, point.barycentricWeights_,
+                             cofaceVertices, candidate.barycentricWeights_)
+       < 0)
+      continue;
+
+    float slope = 0;
+    if(getBarycentricVelocity<dataType, triangulationType>(
+         triangulation, candidate.simplexDimension_, candidate.simplexId_,
+         isForward, velocity, &slope)
+       < 0)
+      continue;
+
+    if(!isMotionAdmissible(candidate.barycentricWeights_, velocity))
+      // the advection would immediately leave this coface
+      continue;
+
+    // steepest slope: along a unit direction, the variation of the scalar
+    // field is given by the magnitude of the gradient.
+    // ties (the gradient of the coface is aligned with one of its faces) are
+    // settled in favor of the coface of highest dimension (i.e. the least
+    // constrained advection).
+    if((slope > bestSlope)
+       || ((slope > bestSlope * (1 - relativeEpsilon_))
+           && (candidate.simplexDimension_ > bestPoint.simplexDimension_))) {
+      bestSlope = slope;
+      bestPoint = candidate;
+    }
+  }
+
+  if(bestPoint.simplexDimension_ < 0)
+    // no coface takes the flow over
+    return -1;
+
+  next = bestPoint;
 
   return 0;
 }
