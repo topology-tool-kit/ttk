@@ -263,7 +263,9 @@ int ttk::PlanarGraphLayout::computeDotString(
   // ---------------------------------------------------------------------------
 
   // Build Dot String
-  { dotString = headString + nodeString + edgeString + rankString + "}"; }
+  {
+    dotString = headString + nodeString + edgeString + rankString + "}";
+  }
 
   // Print Status
   this->printMsg("Generating DOT string", 1, t.getElapsedTime());

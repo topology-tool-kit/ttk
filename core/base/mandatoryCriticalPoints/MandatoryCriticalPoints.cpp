@@ -1016,11 +1016,15 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-      { upperLca.preprocess(); }
+      {
+        upperLca.preprocess();
+      }
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-      { lowerLca.preprocess(); }
+      {
+        lowerLca.preprocess();
+      }
     }
 
     // Link lists for each thread

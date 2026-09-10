@@ -24,7 +24,9 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP4
 #pragma omp single nowait
 #endif
-          { leafSearch(mesh); }
+          {
+            leafSearch(mesh);
+          }
         }
         printTime(precomputeTime, "leafSearch", 3);
       }

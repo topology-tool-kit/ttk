@@ -69,7 +69,9 @@ namespace ttk {
           // WARNING: In parallel we do not want to make reserve as it can lead
           // to data race, we should not enter here
 #pragma omp critical(AtomicUFReserve)
-          { std::vector<type>::resize(newSize, defaultValue); }
+          {
+            std::vector<type>::resize(newSize, defaultValue);
+          }
 
         } else
 #endif

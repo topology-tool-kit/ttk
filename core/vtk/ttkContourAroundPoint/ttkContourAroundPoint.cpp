@@ -122,7 +122,7 @@ bool ttkContourAroundPoint::preprocessPts(vtkUnstructuredGrid *nodes,
   if(!scalarBuf || !codeBuf)
     return false;
 
-    // ---- Cell data ---- //
+  // ---- Cell data ---- //
 
 #ifndef NDEBUG // each arc should of course be defined by exactly two vertices
   auto cells = arcs->GetCells();

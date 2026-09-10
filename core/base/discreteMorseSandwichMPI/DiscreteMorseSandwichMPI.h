@@ -2768,7 +2768,9 @@ void ttk::DiscreteMorseSandwichMPI::unpackGhostPresence(
           // Add the entry to the map
           if(lid == -1 || getSimplexRank(lid) != ttk::MPIrank_) {
 #pragma omp critical
-            { localGhostPresenceMap[vp.extremaId_] = ghost; }
+            {
+              localGhostPresenceMap[vp.extremaId_] = ghost;
+            }
           } else {
             lid = localTriangToLocalVectExtrema.find(lid)->second;
             extremaLocks[lid].lock();

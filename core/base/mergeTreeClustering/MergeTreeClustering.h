@@ -341,7 +341,7 @@ namespace ttk {
       for(unsigned int i = 0; i < trees.size(); ++i)
         identified[i] = (upperBound_[i] <= centroidScore[bestCentroid_[i]]);
 
-        // Step 3
+      // Step 3
 #ifdef TTK_ENABLE_OPENMP4
 #pragma omp parallel for schedule(dynamic) shared(centroids, centroids2) \
   num_threads(this->threadNumber_) if(parallelize_)
