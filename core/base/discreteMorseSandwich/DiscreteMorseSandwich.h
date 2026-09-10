@@ -699,32 +699,31 @@ void ttk::DiscreteMorseSandwich::getMaxSaddlePairs(
   const auto dim = this->dg_.getDimensionality();
 
   auto saddle2ToMaxima
-    = dim == 3 ? getSaddle2ToMaxima(
-                   criticalSaddles,
-                   [&triangulation](
-                     const SimplexId a, const SimplexId i, SimplexId &r) {
-                     return triangulation.getTriangleStar(a, i, r);
-                   },
-                   [&triangulation](const SimplexId a) {
-                     return triangulation.getTriangleStarNumber(a);
-                   },
-                   [&triangulation](const SimplexId a) {
-                     return triangulation.isTriangleOnBoundary(a);
-                   },
-                   triangulation)
-               : getSaddle2ToMaxima(
-                   criticalSaddles,
-                   [&triangulation](
-                     const SimplexId a, const SimplexId i, SimplexId &r) {
-                     return triangulation.getEdgeStar(a, i, r);
-                   },
-                   [&triangulation](const SimplexId a) {
-                     return triangulation.getEdgeStarNumber(a);
-                   },
-                   [&triangulation](const SimplexId a) {
-                     return triangulation.isEdgeOnBoundary(a);
-                   },
-                   triangulation);
+    = dim == 3
+        ? getSaddle2ToMaxima(
+          criticalSaddles,
+          [&triangulation](const SimplexId a, const SimplexId i, SimplexId &r) {
+            return triangulation.getTriangleStar(a, i, r);
+          },
+          [&triangulation](const SimplexId a) {
+            return triangulation.getTriangleStarNumber(a);
+          },
+          [&triangulation](const SimplexId a) {
+            return triangulation.isTriangleOnBoundary(a);
+          },
+          triangulation)
+        : getSaddle2ToMaxima(
+          criticalSaddles,
+          [&triangulation](const SimplexId a, const SimplexId i, SimplexId &r) {
+            return triangulation.getEdgeStar(a, i, r);
+          },
+          [&triangulation](const SimplexId a) {
+            return triangulation.getEdgeStarNumber(a);
+          },
+          [&triangulation](const SimplexId a) {
+            return triangulation.isEdgeOnBoundary(a);
+          },
+          triangulation);
 
   Timer tmseq{};
 

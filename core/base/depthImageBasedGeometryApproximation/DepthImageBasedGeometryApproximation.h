@@ -253,16 +253,16 @@ int ttk::DepthImageBasedGeometryApproximation::execute(
         triangleDistortions[triangleDistortionOffset++]
           = isNaN(i0Depth) || isNaN(i2Depth) || isNaN(i1Depth)
               ? myNan
-              : std::max(absDiff(i0Depth, i1Depth),
-                         std::max(absDiff(i1Depth, i2Depth),
-                                  absDiff(i0Depth, i2Depth)));
+              : std::max(
+                absDiff(i0Depth, i1Depth),
+                std::max(absDiff(i1Depth, i2Depth), absDiff(i0Depth, i2Depth)));
 
         triangleDistortions[triangleDistortionOffset++]
           = isNaN(i1Depth) || isNaN(i2Depth) || isNaN(i3Depth)
               ? myNan
-              : std::max(absDiff(i1Depth, i3Depth),
-                         std::max(absDiff(i3Depth, i2Depth),
-                                  absDiff(i2Depth, i1Depth)));
+              : std::max(
+                absDiff(i1Depth, i3Depth),
+                std::max(absDiff(i3Depth, i2Depth), absDiff(i2Depth, i1Depth)));
       }
     }
   }
