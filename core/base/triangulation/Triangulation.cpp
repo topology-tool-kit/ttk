@@ -43,7 +43,7 @@ Triangulation::Triangulation(const Triangulation &rhs)
 
 Triangulation::Triangulation(Triangulation &&rhs) noexcept
   : AbstractTriangulation(
-      std::move(*static_cast<AbstractTriangulation *>(&rhs))),
+    std::move(*static_cast<AbstractTriangulation *>(&rhs))),
     abstractTriangulation_{nullptr},
     explicitTriangulation_{std::move(rhs.explicitTriangulation_)},
     implicitTriangulation_{std::move(rhs.implicitTriangulation_)},

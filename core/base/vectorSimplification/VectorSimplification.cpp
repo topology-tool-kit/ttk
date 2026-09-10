@@ -21,10 +21,9 @@ void ttk::VectorSimplification::displayStats(
        std::count_if(pairs.begin(), pairs.end(),
                      [](const CandidatePair &a) { return a.type == 0; }))},
     {" #Saddle-saddle pairs",
-     std::to_string(dim == 3 ? std::count_if(pairs.begin(), pairs.end(),
-                                             [](const CandidatePair &a) {
-                                               return a.type == 1;
-                                             })
+     std::to_string(dim == 3 ? std::count_if(
+                      pairs.begin(), pairs.end(),
+                      [](const CandidatePair &a) { return a.type == 1; })
                              : 0)},
     {" #Saddle-max pairs",
      std::to_string(std::count_if(
