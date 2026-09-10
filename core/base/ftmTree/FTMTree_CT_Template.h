@@ -102,61 +102,61 @@ namespace ttk {
         this->printMsg({"- final number of nodes :", nbNodes});
       }
   }
-// clang-format on
-// clang format fail to use the right indentation level
-// here, but it break the code if not disabled...
+    // clang-format on
+    // clang format fail to use the right indentation level
+    // here, but it break the code if not disabled...
 
-// ------------------------------------------------------------------------
+    // ------------------------------------------------------------------------
 
-template <class triangulationType>
-int FTMTree_CT::leafSearch(const triangulationType *mesh) {
-  const auto nbScalars = scalars_->size;
-  const auto chunkSize = getChunkSize();
-  const auto chunkNb = getChunkCount();
+    template <class triangulationType>
+    int FTMTree_CT::leafSearch(const triangulationType *mesh) {
+      const auto nbScalars = scalars_->size;
+      const auto chunkSize = getChunkSize();
+      const auto chunkNb = getChunkCount();
 
-  // Extrema extract and launch tasks
-  for(SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId) {
+      // Extrema extract and launch tasks
+      for(SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId) {
 #ifdef TTK_ENABLE_OPENMP4
 #pragma omp task firstprivate(chunkId)
 #endif
-    {
-      const SimplexId lowerBound = chunkId * chunkSize;
-      const SimplexId upperBound
-        = std::min(nbScalars, (chunkId + 1) * chunkSize);
-      for(SimplexId v = lowerBound; v < upperBound; ++v) {
-        const auto &neighNumb = mesh->getVertexNeighborNumber(v);
-        valence upval = 0;
-        valence downval = 0;
+        {
+          const SimplexId lowerBound = chunkId * chunkSize;
+          const SimplexId upperBound
+            = std::min(nbScalars, (chunkId + 1) * chunkSize);
+          for(SimplexId v = lowerBound; v < upperBound; ++v) {
+            const auto &neighNumb = mesh->getVertexNeighborNumber(v);
+            valence upval = 0;
+            valence downval = 0;
 
-        for(valence n = 0; n < neighNumb; ++n) {
-          SimplexId neigh{-1};
-          mesh->getVertexNeighbor(v, n, neigh);
-          if(scalars_->isLower(neigh, v)) {
-            ++downval;
-          } else {
-            ++upval;
+            for(valence n = 0; n < neighNumb; ++n) {
+              SimplexId neigh{-1};
+              mesh->getVertexNeighbor(v, n, neigh);
+              if(scalars_->isLower(neigh, v)) {
+                ++downval;
+              } else {
+                ++upval;
+              }
+            }
+
+            jt_.setValence(v, downval);
+            st_.setValence(v, upval);
+
+            if(!downval) {
+              jt_.makeNode(v);
+            }
+
+            if(!upval) {
+              st_.makeNode(v);
+            }
           }
         }
-
-        jt_.setValence(v, downval);
-        st_.setValence(v, upval);
-
-        if(!downval) {
-          jt_.makeNode(v);
-        }
-
-        if(!upval) {
-          st_.makeNode(v);
-        }
       }
-    }
-  }
 
 #ifdef TTK_ENABLE_OPENMP4
 #pragma omp taskwait
 #endif
-  return 0;
-}
+      return 0;
+    }
 
-} // namespace ftm
+  } // namespace ftm
 } // namespace ttk
