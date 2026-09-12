@@ -1548,6 +1548,124 @@ int DiscreteGradient::getDescendingPath(
       }
 
     } while(connectedEdgeId != -1);
+  } else {
+    printWrn("Descending path not implemented for this simplex dimension!");
+  }
+
+  return 0;
+}
+
+template <typename triangulationType>
+int DiscreteGradient::getAllDescendingPaths(
+  const Cell &cell,
+  std::vector<std::vector<Cell>> &vpaths,
+  const triangulationType &triangulation) const {
+
+  vpaths.clear();
+
+  using vPath = std::vector<Cell>;
+
+  // Each stack entry carries the current partial path and the current simplex.
+  // We use DFS to enumerate all paths (branching is possible at each step).
+  struct StackEntry {
+    vPath partialPath_;
+    Cell currentCell_;
+  };
+
+  std::stack<StackEntry> stack;
+
+  // Bootstrap: push the starting simplex onto the stack
+  {
+    StackEntry stackEntry;
+    stackEntry.currentCell_ = cell;
+    stackEntry.partialPath_.push_back(cell);
+    stack.push(std::move(stackEntry));
+  }
+
+  while(!stack.empty()) {
+
+    StackEntry stackEntry = std::move(stack.top());
+    stack.pop();
+
+    const Cell &currentCell = stackEntry.currentCell_;
+
+    // 1. Follow the gradient arrow out of `currentCell`
+    const SimplexId pairedId = getPairedCell(currentCell, triangulation);
+
+    if(pairedId == -1) {
+      // currentCell is a critical simplex: this path has terminated.
+      vpaths.push_back(stackEntry.partialPath_);
+      continue;
+    }
+
+    // The gradient arrow takes us to a (dim+1)-simplex
+    const int pairedDim = currentCell.dim_ + 1;
+    Cell paired;
+    paired.dim_ = pairedDim;
+    paired.id_ = pairedId;
+
+    // Append the paired simplex to the path
+    stackEntry.partialPath_.push_back(paired);
+
+    // 2. Enumerate all facets of `paired` of dimension `dim`
+    // The discrete gradient arrow *entering* `paired` came from `currentCell`.
+    // We continue the path by following gradient arrows out of the OTHER
+    // facets of `paired` (i.e., cofacets of `paired` in dimension dim
+    // that are themselves paired to a simplex of dimension dim+1,
+    // or terminate if critical).
+    //
+    // Standard discrete Morse theory: we look at all dim-faces of `paired`,
+    // exclude `currentCell` itself, and for each remaining face that is paired
+    // (i.e., its gradient arrow points to some (dim+1)-simplex, not back
+    // to `paired`), we spawn a new path branch.
+
+    SimplexId numFacets = 0;
+    if(pairedDim == 1) {
+      numFacets = 2;
+    } else if(pairedDim == 2) {
+      numFacets = 3;
+    } else if(pairedDim == 3) {
+      numFacets = 4;
+    }
+
+    bool anyBranch = false;
+
+    for(SimplexId f = 0; f < numFacets; ++f) {
+      SimplexId facetId = -1;
+
+      if(pairedDim == 1) {
+        triangulation.getEdgeVertex(pairedId, f, facetId);
+      } else if(pairedDim == 2) {
+        triangulation.getTriangleEdge(pairedId, f, facetId);
+      } else if(pairedDim == 3) {
+        triangulation.getCellTriangle(pairedId, f, facetId);
+      }
+
+      if(facetId == -1)
+        continue;
+
+      // Skip the facet we just came from
+      if(facetId == currentCell.id_)
+        continue;
+
+      // This facet is a dim-simplex; start a new branch of the V-path from it
+      Cell nextSimplex;
+      nextSimplex.dim_ = currentCell.dim_;
+      nextSimplex.id_ = facetId;
+
+      StackEntry newStackEntry;
+      // copy currentCellentCell_ path
+      newStackEntry.partialPath_ = stackEntry.partialPath_;
+      newStackEntry.partialPath_.push_back(nextSimplex);
+      newStackEntry.currentCell_ = nextSimplex;
+      stack.push(std::move(newStackEntry));
+      anyBranch = true;
+    }
+
+    // If no other facet was found (degenerate case), terminate the path here
+    if(!anyBranch) {
+      vpaths.push_back(stackEntry.partialPath_);
+    }
   }
 
   return 0;
@@ -1719,6 +1837,8 @@ int DiscreteGradient::getAscendingPath(const Cell &cell,
 
         // stop at convergence caused by boundary effect
       } while(currentId != oldId);
+    } else {
+      printWrn("Ascending path not implemented for this simplex dimension!");
     }
   } else if(dimensionality_ == 3) {
     if(cell.dim_ == 3) {
@@ -1780,6 +1900,155 @@ int DiscreteGradient::getAscendingPath(const Cell &cell,
 
         // stop at convergence caused by boundary effect
       } while(currentId != oldId);
+    } else {
+      printWrn("Ascending path not implemented for this simplex dimension!");
+    }
+  } else {
+    printWrn("Ascending path not implemented for this input dimension!");
+  }
+
+  return 0;
+}
+
+template <typename triangulationType>
+int DiscreteGradient::getAllAscendingPaths(
+  const Cell &cell,
+  std::vector<std::vector<Cell>> &vpaths,
+  const triangulationType &triangulation) const {
+
+  vpaths.clear();
+
+  using vPath = std::vector<Cell>;
+
+  struct StackEntry {
+    vPath partialPath_;
+    Cell currentCell_;
+  };
+
+  std::stack<StackEntry> stack;
+
+  {
+    StackEntry stackEntry;
+    stackEntry.currentCell_ = cell;
+    stackEntry.partialPath_.push_back(cell);
+    stack.push(std::move(stackEntry));
+  }
+
+  while(!stack.empty()) {
+
+    StackEntry stackEntry = std::move(stack.top());
+    stack.pop();
+
+    const Cell &currentCell = stackEntry.currentCell_;
+    const SimplexId pairedCofacetId = getPairedCell(currentCell, triangulation);
+
+    if((currentCell.id_ != cell.id_) && (isCellCritical(currentCell))) {
+      // currentCell is a critical simplex: this path has terminated.
+      // the simplex has already been added to the stack path
+      vpaths.push_back(stackEntry.partialPath_);
+      continue;
+    }
+
+    if(currentCell.dim_ != cell.dim_)
+      continue;
+
+    if(currentCell.dim_ >= dimensionality_) {
+      // currentCell is a maximal simplex: it admits no cofacet at all (in
+      // particular, the star of a triangle is only defined in 3D). the
+      // ascending path terminates here.
+      vpaths.push_back(stackEntry.partialPath_);
+      continue;
+    }
+
+    // check all cofacets
+    SimplexId cofacetNumber = -1;
+
+    switch(currentCell.dim_) {
+      case 1:
+        cofacetNumber = triangulation.getEdgeTriangleNumber(currentCell.id_);
+        break;
+      case 2:
+        cofacetNumber = triangulation.getTriangleStarNumber(currentCell.id_);
+        break;
+      default:
+        cofacetNumber = triangulation.getVertexEdgeNumber(currentCell.id_);
+        break;
+    }
+
+    bool hasProgressed = false;
+
+    for(SimplexId i = 0; i < cofacetNumber; i++) {
+      SimplexId cofacetId = -1;
+      switch(currentCell.dim_) {
+        case 1:
+          triangulation.getEdgeTriangle(currentCell.id_, i, cofacetId);
+          break;
+        case 2:
+          triangulation.getTriangleStar(currentCell.id_, i, cofacetId);
+          break;
+        default:
+          triangulation.getVertexEdge(currentCell.id_, i, cofacetId);
+          break;
+      }
+      if(cofacetId != pairedCofacetId) {
+
+        // we don't want to go down the v-path, we want to go backwards
+        Cell cofacet;
+        cofacet.dim_ = currentCell.dim_ + 1;
+        cofacet.id_ = cofacetId;
+
+        // the path shared by all the branches below (one per face of the
+        // cofacet): each branch extends its own copy of it
+        std::vector<Cell> cofacetPath = stackEntry.partialPath_;
+        cofacetPath.push_back(cofacet);
+
+        // now find the simplex we came from
+        int simplexNumber = -1;
+
+        simplexNumber = cofacet.dim_ + 1;
+
+        for(int j = 0; j < simplexNumber; j++) {
+          SimplexId simplexId = -1;
+          switch(cofacet.dim_) {
+            case 1:
+              triangulation.getEdgeVertex(cofacet.id_, j, simplexId);
+              break;
+            case 2:
+              triangulation.getTriangleEdge(cofacet.id_, j, simplexId);
+              break;
+            default:
+              triangulation.getCellTriangle(cofacet.id_, j, simplexId);
+              break;
+          }
+
+          Cell simplex;
+          simplex.id_ = simplexId;
+          simplex.dim_ = cofacet.dim_ - 1;
+          const SimplexId simplexPair = getPairedCell(simplex, triangulation);
+
+          if(isCellCritical(simplex)) {
+            // always terminate here — don't continue the path through a
+            // critical cell
+            std::vector<Cell> criticalPath = cofacetPath;
+            criticalPath.push_back(simplex);
+            vpaths.push_back(std::move(criticalPath));
+            hasProgressed = true; // prevent the fallback push too
+            // do NOT push to stack
+          } else if(simplexPair == cofacet.id_) {
+            StackEntry newStackEntry;
+            newStackEntry.partialPath_ = cofacetPath;
+            newStackEntry.partialPath_.push_back(simplex);
+            newStackEntry.currentCell_ = simplex;
+            stack.push(std::move(newStackEntry));
+            hasProgressed = true;
+          }
+        }
+      }
+    }
+    if(!hasProgressed) {
+      // example: boundary edge paired with its interior cofacet, we stop the
+      // backward vpath here.
+      vpaths.push_back(stackEntry.partialPath_);
     }
   }
 

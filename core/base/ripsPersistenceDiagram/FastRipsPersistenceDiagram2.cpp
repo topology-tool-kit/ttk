@@ -152,8 +152,8 @@ void FastRipsPersistenceDiagram2::computeRips0And1Persistence(
                      e.d)) { // RNG edge
         critical.push_back(e);
         rng_.push_back(e);
-        if constexpr(std::is_same_v<T,
-                                    EdgeSets3> || std::is_same_v<T, EdgeSets4>)
+        if constexpr(std::is_same_v<T, EdgeSets3>
+                     || std::is_same_v<T, EdgeSets4>)
           ph[1].emplace_back(e.e);
       } else { // not RNG edge : merge neighboring polygons
         const int poly1 = UF.find(e.f1);

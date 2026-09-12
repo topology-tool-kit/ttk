@@ -13,13 +13,13 @@ lines of the gradient of an input scalar field.">
 
 The filter takes on its input a scalar field attached as point data to an
 input geometry (either 2D or 3D, either regular grids or triangulations)
-and computes the forward or backward integral lines along the edges of the
-input mesh, given a list of input sources.
+and computes the forward or backward integral lines, given a list of input sources. Several backends are available:
 
-The sources are specified with a vtkPointSet on which is attached as point
-data a scalar field that represent the vertex identifiers of the sources in
-the input geometry (use the Identifiers plugin prior to the selection of the
-sources if necessary to create such an identifier field).
+- the 'OneSkeleton' backend follows the flow along the edges of the mesh. This backend supports MPI computation.
+- the 'Numerical' backend computes integral lines following the piecewise constant gradient of each simplex (i.e., it is going through the simplices)
+- the 'Discrete' backend computes a discrete integral line (a.k.a. v-path), following the discrete Morse theory model.
+
+The sources are specified with a vtkPointSet, containing the simplices from which to start the integral lines. Each simplex is associated to its global identifier, passed as a point data array for vertices or cell data array in general for simplices of arbitrary dimension. Use PointAndCellIds to compute those in advance (the name of the generated field must then be provided to this filter).
 
       Online examples:
 
@@ -110,7 +110,7 @@ sources if necessary to create such an identifier field).
       </IntVectorProperty>
 
         <StringVectorProperty name="InputVertexScalarField"
-                              label="Vertex identifier field"
+                              label="Seed identifier field"
                               command="SetInputArrayToProcess"
                               element_types="0 0 0 0 2"
                               number_of_elements="5"
@@ -132,7 +132,7 @@ sources if necessary to create such an identifier field).
             value="1" />
         </Hints>
         <Documentation>
-          Select the vertex identifier scalar field in the sources.
+          Select the seed identifier scalar field in the sources.
         </Documentation>
       </StringVectorProperty>
 
@@ -178,6 +178,26 @@ plateaus).
         </Documentation>
       </StringVectorProperty>
 
+      <IntVectorProperty
+           name="BackEnd"
+           label="Backend"
+           command="SetBackEnd"
+           number_of_elements="1"
+           default_values="0"
+           panel_visibility="advanced" >
+         <EnumerationDomain name="enum">
+          <Entry value="0" text="OneSkeleton"/>
+          <Entry value="1" text="Numerical"/>
+          <Entry value="2" text="Discrete"/>
+        </EnumerationDomain>
+        <Documentation>
+            Backend for the computation of the integral lines.
+            - the 'OneSkeleton' backend follows the flow along the edges of the mesh. This backend supports MPI computation.
+- the 'Numerical' backend computes integral lines following the piecewise constant gradient of each simplex (i.e., it is going through the simplices)
+- the 'Discrete' backend computes a discrete integral line (a.k.a. v-path), following the discrete Morse theory model.
+        </Documentation>
+      </IntVectorProperty>
+
       <IntVectorProperty name="EnableForking"
         label="Enable Forking"
         command="SetEnableForking"
@@ -185,6 +205,9 @@ plateaus).
         default_values="0"
         panel_visibility="advanced">
         <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="BackEnd" values="0" />
+        </Hints>
         <Documentation>
         Enables forking when the integral line comes accross a saddle vertex.
         In that case, it will spawn as many new integral lines as there are
@@ -202,6 +225,7 @@ plateaus).
         <Property name="InputVertexScalarField" />
         <Property name="ForceInputOffsetScalarField" />
         <Property name="OffsetScalarField" />
+        <Property name="BackEnd" />
         <Property name="EnableForking" />
       </PropertyGroup>
 

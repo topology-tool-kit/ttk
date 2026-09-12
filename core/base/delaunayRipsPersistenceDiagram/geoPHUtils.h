@@ -3,7 +3,7 @@
 #include <RipsPersistenceDiagramUtils.h>
 
 #include <boost/version.hpp>
-#if((BOOST_VERSION / 100) % 1000) >= 81
+#if ((BOOST_VERSION / 100) % 1000) >= 81
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <boost/unordered/unordered_flat_set.hpp>
 #else
@@ -11,7 +11,7 @@
 #include <boost/unordered/unordered_set.hpp>
 #endif
 
-#if((BOOST_VERSION / 100) % 1000) >= 84
+#if ((BOOST_VERSION / 100) % 1000) >= 84
 #include <boost/unordered/concurrent_flat_map.hpp>
 #define TTK_CONCURRENT_HASHTABLE_AVAILABLE
 #endif
@@ -47,7 +47,7 @@ namespace ttk::gph {
   template <unsigned DIM>
   using PointCloud = std::vector<PointD<DIM>>;
 
-#if((BOOST_VERSION / 100) % 1000) >= 81
+#if ((BOOST_VERSION / 100) % 1000) >= 81
   template <typename X, typename Y>
   using HashMap = boost::unordered_flat_map<X, Y>;
   template <typename X>
@@ -59,7 +59,7 @@ namespace ttk::gph {
   using HashSet = boost::unordered_set<X>;
 #endif
 
-#if((BOOST_VERSION / 100) % 1000) >= 84
+#if ((BOOST_VERSION / 100) % 1000) >= 84
   template <typename X, typename Y>
   using ConcurrentHashMap = boost::concurrent_flat_map<X, Y>;
 #endif

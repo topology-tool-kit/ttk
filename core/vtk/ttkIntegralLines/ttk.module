@@ -6,4 +6,6 @@ HEADERS
   ttkIntegralLines.h
 DEPENDS
   integralLines
+  numericalIntegralLines
+  vPaths
   ttkAlgorithm

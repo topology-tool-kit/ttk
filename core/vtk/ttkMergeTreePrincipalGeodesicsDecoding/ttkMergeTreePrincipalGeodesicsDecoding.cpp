@@ -499,7 +499,7 @@ int ttkMergeTreePrincipalGeodesicsDecoding::runOutput(
      and (inputMTrees.empty() or baryMatchings_.empty()))
     printWrn("Please provide input trees and correlation matrix to transfer "
              "input trees information.");
-    // TODO fix if an interpolation is empty
+  // TODO fix if an interpolation is empty
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
 #endif

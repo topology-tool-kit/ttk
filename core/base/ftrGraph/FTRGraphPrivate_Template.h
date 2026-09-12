@@ -38,7 +38,9 @@ void ttk::ftr::FTRGraph<ScalarType, triangulationType>::growthFromSeed(
         --nbProp_;
       }
 #pragma omp critical(stats)
-      { curTime = sweepStart_.getElapsedTime(); }
+      {
+        curTime = sweepStart_.getElapsedTime();
+      }
       propTimes_[curProp - 1] = curTime;
     }
 #endif
@@ -72,7 +74,9 @@ void ttk::ftr::FTRGraph<ScalarType, triangulationType>::growthFromSeed(
           --nbProp_;
         }
 #pragma omp critical(stats)
-        { curTime = sweepStart_.getElapsedTime(); }
+        {
+          curTime = sweepStart_.getElapsedTime();
+        }
         propTimes_[curProp - 1] = curTime;
       }
 #endif
@@ -214,7 +218,9 @@ void ttk::ftr::FTRGraph<ScalarType, triangulationType>::growthFromSeed(
             --nbProp_;
           }
 #pragma omp critical(stats)
-          { curTime = sweepStart_.getElapsedTime(); }
+          {
+            curTime = sweepStart_.getElapsedTime();
+          }
           propTimes_[curProp - 1] = curTime;
         }
 #endif
@@ -244,7 +250,9 @@ void ttk::ftr::FTRGraph<ScalarType, triangulationType>::growthFromSeed(
         --nbProp_;
       }
 #pragma omp critical(stats)
-      { curTime = sweepStart_.getElapsedTime(); }
+      {
+        curTime = sweepStart_.getElapsedTime();
+      }
       propTimes_[curProp - 1] = curTime;
     }
 #endif
@@ -336,7 +344,9 @@ void ttk::ftr::FTRGraph<ScalarType, triangulationType>::growthFromSeed(
           --nbProp_;
         }
 #pragma omp critical(stats)
-        { curTime = sweepStart_.getElapsedTime(); }
+        {
+          curTime = sweepStart_.getElapsedTime();
+        }
         propTimes_[curProp - 1] = curTime;
       }
 #endif
@@ -382,7 +392,9 @@ void ttk::ftr::FTRGraph<ScalarType, triangulationType>::growthFromSeed(
       --nbProp_;
     }
 #pragma omp critical(stats)
-    { curTime = sweepStart_.getElapsedTime(); }
+    {
+      curTime = sweepStart_.getElapsedTime();
+    }
     propTimes_[curProp - 1] = curTime;
   }
 #endif

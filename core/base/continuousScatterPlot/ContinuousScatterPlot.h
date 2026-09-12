@@ -499,7 +499,7 @@ int ttk::ContinuousScatterPlot::execute(
             if(v < 0.0 or (u + v) > 1.0)
               continue;
 
-              // triangle/ray intersection below
+            // triangle/ray intersection below
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update
 #endif

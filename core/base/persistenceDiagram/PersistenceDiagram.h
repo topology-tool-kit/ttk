@@ -934,9 +934,8 @@ int ttk::PersistenceDiagram::executeDiscreteMorseSandwichMPI(
            && triangulation->getSimplexRank(lid, simplexType)
                 == ttk::MPIrank_) {
           // Add the relevant data
-          struct dataResponse res {
-            .lid_ = element.lid_, .isBirth_ = element.isBirth_
-          };
+          struct dataResponse res{
+            .lid_ = element.lid_, .isBirth_ = element.isBirth_};
           ttk::SimplexId vLid = dmsMPI_.getCellGreaterVertex(
             Cell{element.dim_ + (1 - element.isBirth_), lid}, *triangulation);
           res.vertexGid_ = triangulation->getVertexGlobalId(vLid);

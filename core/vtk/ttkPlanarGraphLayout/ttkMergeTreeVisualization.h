@@ -1281,7 +1281,7 @@ public:
           // Insert point
           // --------------
           auto getPoint
-            = [&](vtkUnstructuredGrid *vtu, int pointID, double(&point)[3]) {
+            = [&](vtkUnstructuredGrid *vtu, int pointID, double (&point)[3]) {
                 if(not vtu)
                   return;
                 if(not isPersistenceDiagram or convertedToDiagram) {

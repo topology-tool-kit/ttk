@@ -50,7 +50,9 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *ttkNotUsed(request),
 
   //==================================================================================================================
   // Print status
-  { this->printMsg("RequestData"); }
+  {
+    this->printMsg("RequestData");
+  }
 
   //==================================================================================================================
   // Prepare input

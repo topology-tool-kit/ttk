@@ -1021,13 +1021,17 @@ int ttk::MandatoryCriticalPoints::buildSubTrees(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp critical
 #endif
-      { lowerMinimumList_.push_back(i); }
+      {
+        lowerMinimumList_.push_back(i);
+      }
     }
     if(isUpperMax) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp critical
 #endif
-      { upperMaximumList_.push_back(i); }
+      {
+        upperMaximumList_.push_back(i);
+      }
     }
   }
 

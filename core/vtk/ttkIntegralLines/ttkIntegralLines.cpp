@@ -10,6 +10,8 @@
 #include <vtkDataObject.h>
 #include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
+#include <vtkGenericCell.h>
 #include <vtkInformation.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
@@ -225,6 +227,315 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
   vtkDataArray *inputOffsets = this->GetOrderArray(
     domain, 0, triangulation, false, 1, ForceInputOffsetScalarField);
 
+  bool isRunningWithMPI = false;
+
+#ifdef TTK_ENABLE_MPI
+  isRunningWithMPI = ttk::isRunningWithMPI();
+#endif
+
+  std::vector<ttk::SimplexId> idSpareStorage{};
+  ttk::SimplexId *identifiers = this->GetIdentifierArrayPtr(
+    ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds,
+    idSpareStorage);
+
+  if(!isRunningWithMPI) {
+
+    if(BackEnd == BACKEND::NUMERICAL) {
+      printMsg("Selected `numerical` backend.");
+
+      ttk::nil::NumericalIntegralLines num;
+
+      num.setDebugLevel(debugLevel_);
+      num.setThreadNumber(threadNumber_);
+
+      // setup the mesh
+      num.preconditionTriangulation(triangulation);
+
+      // setup the data
+      num.setInputScalarField(inputScalars->GetVoidPointer(0));
+
+      // setup the seeds (simplexId, dimension)
+      std::vector<std::pair<SimplexId, int>> seedCells(
+        seeds->GetNumberOfCells());
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel num_threads(threadNumber_)
+#endif
+      {
+        // GetCell(vtkIdType) returns a shared internal cell object: only the
+        // vtkGenericCell overload is thread-safe.
+        vtkNew<vtkGenericCell> cell{};
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp for
+#endif
+        for(int i = 0; i < (int)seedCells.size(); i++) {
+          seeds->GetCell(i, cell);
+          seedCells[i].first = identifiers[i];
+          seedCells[i].second = cell->GetCellDimension();
+        }
+      }
+
+      std::vector<std::vector<ttk::nil::PathPoint>> outputPaths;
+
+      int status{};
+      ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
+                          (status = num.execute<VTK_TT, TTK_TT>(
+                             static_cast<TTK_TT *>(triangulation->getData()),
+                             seedCells, outputPaths,
+                             // isForward?
+                             Direction == 0)));
+
+      if(status)
+        return status;
+
+      int pointNumber{0};
+      for(auto &path : outputPaths) {
+        pointNumber += path.size();
+      }
+
+      vtkNew<vtkUnstructuredGrid> outputPathGeometry;
+
+      vtkNew<vtkFloatArray> pointCoords{};
+      vtkNew<vtkIntArray> vertexSeedId{};
+      vtkNew<vtkIntArray> cellSeedId{};
+      vtkNew<vtkIntArray> vertexSimplexId{};
+      vtkNew<vtkIntArray> vertexSimplexDimension{};
+      vtkNew<vtkIntArray> cellSimplexNumber{};
+      vtkNew<vtkDoubleArray> vertexDistanceFromSeed{};
+      vtkNew<vtkUnsignedCharArray> outputMaskField{};
+
+      pointCoords->SetNumberOfComponents(3);
+      pointCoords->SetNumberOfTuples(pointNumber);
+
+      vertexSeedId->SetNumberOfComponents(1);
+      vertexSeedId->SetNumberOfTuples(pointNumber);
+      vertexSeedId->SetName("SeedIdentifier");
+
+      vertexSimplexId->SetNumberOfComponents(1);
+      vertexSimplexId->SetNumberOfTuples(pointNumber);
+      vertexSimplexId->SetName("SimplexIdentifier");
+
+      vertexSimplexDimension->SetNumberOfComponents(1);
+      vertexSimplexDimension->SetNumberOfTuples(pointNumber);
+      vertexSimplexDimension->SetName("SimplexDimension");
+
+      vertexDistanceFromSeed->SetNumberOfComponents(1);
+      vertexDistanceFromSeed->SetNumberOfTuples(pointNumber);
+      vertexDistanceFromSeed->SetName("DistanceFromSeed");
+
+      outputMaskField->SetNumberOfComponents(1);
+      outputMaskField->SetNumberOfTuples(pointNumber);
+      outputMaskField->SetName(ttk::MaskScalarFieldName);
+
+      cellSeedId->SetName("SeedIdentifier");
+      cellSimplexNumber->SetName("SimplexNumber");
+
+      int pointId = 0;
+      for(int i = 0; i < (int)outputPaths.size(); i++) {
+
+        const int simplexNumber = outputPaths[i].size();
+        double distanceFromSeed = 0;
+        std::array<float, 3> point{}, previousPoint{};
+
+        for(int j = 0; j < simplexNumber; j++) {
+
+          const ttk::nil::PathPoint &pathPoint = outputPaths[i][j];
+
+          // the path points are expressed by their barycentric coordinates
+          // within their simplex
+          num.getPointCoordinates(triangulation, pathPoint, point);
+
+          if(j)
+            distanceFromSeed
+              += ttk::Geometry::distance(previousPoint.data(), point.data());
+
+          pointCoords->SetTuple3(pointId, point[0], point[1], point[2]);
+          vertexSeedId->SetTuple1(pointId, (int)seedCells[i].first);
+          vertexSimplexId->SetTuple1(pointId, (int)pathPoint.simplexId_);
+          vertexSimplexDimension->SetTuple1(
+            pointId, pathPoint.simplexDimension_);
+          vertexDistanceFromSeed->SetTuple1(pointId, distanceFromSeed);
+          // mask out the extremities of the integral line
+          outputMaskField->SetTuple1(
+            pointId, ((!j) || (j == simplexNumber - 1)) ? 0 : 1);
+          pointId++;
+
+          if(j) {
+            vtkIdType edgeIds[2] = {pointId - 2, pointId - 1};
+            outputPathGeometry->InsertNextCell(VTK_LINE, 2, edgeIds);
+            cellSeedId->InsertNextValue((int)seedCells[i].first);
+            cellSimplexNumber->InsertNextValue(simplexNumber);
+          }
+
+          previousPoint = point;
+        }
+      }
+
+      vtkNew<vtkPoints> pointSet{};
+      pointSet->SetData(pointCoords);
+      outputPathGeometry->SetPoints(pointSet);
+      outputPathGeometry->GetPointData()->AddArray(vertexSeedId);
+      outputPathGeometry->GetPointData()->AddArray(outputMaskField);
+      outputPathGeometry->GetPointData()->AddArray(vertexSimplexId);
+      outputPathGeometry->GetPointData()->AddArray(vertexSimplexDimension);
+      outputPathGeometry->GetPointData()->AddArray(vertexDistanceFromSeed);
+      outputPathGeometry->GetCellData()->AddArray(cellSeedId);
+      outputPathGeometry->GetCellData()->AddArray(cellSimplexNumber);
+
+      output->ShallowCopy(outputPathGeometry);
+
+      return 1;
+    } else if(BackEnd == BACKEND::DISCRETE) {
+      printMsg("Selected `discrete` backend.");
+
+      ttk::vp::VPaths vpaths;
+
+      vpaths.setDebugLevel(debugLevel_);
+      vpaths.setThreadNumber(threadNumber_);
+
+      // setup the mesh
+      vpaths.preconditionTriangulation(triangulation);
+
+      // setup the data
+      vpaths.setInputScalarField(
+        inputScalars->GetVoidPointer(0), inputScalars->GetMTime());
+      vpaths.setInputOffsets(
+        static_cast<SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)));
+
+      std::vector<ttk::dcg::Cell> seedCells(seeds->GetNumberOfCells());
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel num_threads(threadNumber_)
+#endif
+      {
+        // GetCell(vtkIdType) returns a shared internal cell object: only the
+        // vtkGenericCell overload is thread-safe.
+        vtkNew<vtkGenericCell> cell{};
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp for
+#endif
+        for(int i = 0; i < (int)seedCells.size(); i++) {
+          seeds->GetCell(i, cell);
+          seedCells[i].dim_ = cell->GetCellDimension();
+          seedCells[i].id_ = identifiers[i];
+        }
+      }
+
+      std::vector<std::vector<std::vector<ttk::dcg::Cell>>> outputPaths;
+
+      int status{};
+      ttkTemplateMacro(
+        triangulation->getType(),
+        status = vpaths.execute(static_cast<TTK_TT *>(triangulation->getData()),
+                                seedCells, outputPaths,
+                                // isForward?
+                                Direction == 0));
+
+      if(status)
+        return status;
+
+      int pointNumber{0};
+      for(auto &seedPaths : outputPaths) {
+        for(auto &path : seedPaths) {
+          pointNumber += path.size();
+        }
+      }
+
+      vtkNew<vtkUnstructuredGrid> outputPathGeometry;
+
+      vtkNew<vtkFloatArray> pointCoords{};
+      vtkNew<vtkIntArray> vertexSeedId{};
+      vtkNew<vtkIntArray> cellSeedId{};
+      vtkNew<vtkIntArray> cellForkId{};
+      vtkNew<vtkIntArray> vertexSimplexId{};
+      vtkNew<vtkIntArray> vertexSimplexDimension{};
+      vtkNew<vtkIntArray> cellSimplexNumber{};
+      vtkNew<vtkUnsignedCharArray> outputMaskField{};
+
+      pointCoords->SetNumberOfComponents(3);
+      pointCoords->SetNumberOfTuples(pointNumber);
+
+      vertexSeedId->SetNumberOfComponents(1);
+      vertexSeedId->SetNumberOfTuples(pointNumber);
+      vertexSeedId->SetName("SeedIdentifier");
+
+      vertexSimplexId->SetNumberOfComponents(1);
+      vertexSimplexId->SetNumberOfTuples(pointNumber);
+      vertexSimplexId->SetName("SimplexIdentifier");
+
+      vertexSimplexDimension->SetNumberOfComponents(1);
+      vertexSimplexDimension->SetNumberOfTuples(pointNumber);
+      vertexSimplexDimension->SetName("SimplexDimension");
+
+      outputMaskField->SetNumberOfComponents(1);
+      outputMaskField->SetNumberOfTuples(pointNumber);
+      outputMaskField->SetName(ttk::MaskScalarFieldName);
+
+      cellSeedId->SetName("SeedIdentifier");
+      cellForkId->SetName("ForkIdentifier");
+      cellSimplexNumber->SetName("SimplexNumber");
+
+      int pointId = 0;
+      int localSeedId = 0;
+      int pathPointId = 0;
+      for(auto &seedPaths : outputPaths) {
+
+        int forkId = 0;
+        for(auto &path : seedPaths) {
+
+          pathPointId = 0;
+
+          int simplexNumber = path.size();
+
+          for(auto &c : path) {
+            float point[3];
+            triangulation->getCellIncenter(c.id_, c.dim_, point);
+            pointCoords->SetTuple3(pointId, point[0], point[1], point[2]);
+            vertexSeedId->SetTuple1(pointId, (int)seedCells[localSeedId].id_);
+            vertexSimplexId->SetTuple1(pointId, (int)c.id_);
+            vertexSimplexDimension->SetTuple1(pointId, (int)c.dim_);
+            // mask out the extremities of the integral line
+            outputMaskField->SetTuple1(
+              pointId,
+              ((!pathPointId) || (pathPointId == simplexNumber - 1)) ? 0 : 1);
+            pointId++;
+            pathPointId++;
+
+            if(pathPointId > 1) {
+              vtkIdType edgeIds[2] = {pointId - 2, pointId - 1};
+              outputPathGeometry->InsertNextCell(VTK_LINE, 2, edgeIds);
+              cellSeedId->InsertNextValue((int)seedCells[localSeedId].id_);
+              cellForkId->InsertNextValue((int)forkId);
+              cellSimplexNumber->InsertNextValue((simplexNumber));
+            }
+          }
+          forkId++;
+        }
+        localSeedId++;
+      }
+
+      vtkNew<vtkPoints> pointSet{};
+      pointSet->SetData(pointCoords);
+      outputPathGeometry->SetPoints(pointSet);
+      outputPathGeometry->GetPointData()->AddArray(vertexSeedId);
+      outputPathGeometry->GetPointData()->AddArray(outputMaskField);
+      outputPathGeometry->GetPointData()->AddArray(vertexSimplexId);
+      outputPathGeometry->GetPointData()->AddArray(vertexSimplexDimension);
+      outputPathGeometry->GetCellData()->AddArray(cellSeedId);
+      outputPathGeometry->GetCellData()->AddArray(cellForkId);
+      outputPathGeometry->GetCellData()->AddArray(cellSimplexNumber);
+
+      output->ShallowCopy(outputPathGeometry);
+
+      return 1;
+    }
+  } else {
+    if(BackEnd != BACKEND::ONESKELETON)
+      printWrn("Distributed run, defaulting to the `OneSkeleton` backend.");
+  }
+
   const ttk::SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
   this->setVertexNumber(numberOfPointsInDomain);
   int numberOfPointsInSeeds = seeds->GetNumberOfPoints();
@@ -281,11 +592,11 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
       }
       numberOfPointsInSeeds = inputIdentifiers.size();
     } else {
-      std::vector<ttk::SimplexId> idSpareStorage{};
+      std::vector<ttk::SimplexId> lIdSpareStorage{};
       ttk::SimplexId *inputIdentifierGlobalId;
       inputIdentifierGlobalId = this->GetIdentifierArrayPtr(
         ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds,
-        idSpareStorage);
+        lIdSpareStorage);
       ttk::SimplexId localId = 0;
       for(int i = 0; i < numberOfPointsInSeeds; i++) {
         localId = triangulation->getVertexLocalId(inputIdentifierGlobalId[i]);
@@ -302,21 +613,17 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
     this->setGlobalElementCounter(numberOfPointsInSeeds);
     inputIdentifiers.resize(numberOfPointsInSeeds);
     totalSeeds = numberOfPointsInSeeds;
-    std::vector<ttk::SimplexId> idSpareStorage{};
+    std::vector<ttk::SimplexId> lIdSpareStorage{};
     ttk::SimplexId *inputIdentifierGlobalId;
     inputIdentifierGlobalId = this->GetIdentifierArrayPtr(
       ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds,
-      idSpareStorage);
+      lIdSpareStorage);
     for(int i = 0; i < numberOfPointsInSeeds; i++) {
       inputIdentifiers.at(i)
         = triangulation->getVertexLocalId(inputIdentifierGlobalId[i]);
     }
   }
 #else
-  std::vector<ttk::SimplexId> idSpareStorage{};
-  ttk::SimplexId *identifiers = this->GetIdentifierArrayPtr(
-    ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds,
-    idSpareStorage);
   std::unordered_set<ttk::SimplexId> isSeed;
   for(ttk::SimplexId k = 0; k < numberOfPointsInSeeds; ++k) {
     isSeed.insert(identifiers[k]);
