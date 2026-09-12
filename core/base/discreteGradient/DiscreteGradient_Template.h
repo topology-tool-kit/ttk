@@ -1961,7 +1961,7 @@ int DiscreteGradient::getAllAscendingPaths(
     }
 
     // check all cofacets
-    int cofacetNumber = -1;
+    SimplexId cofacetNumber = -1;
 
     switch(currentCell.dim_) {
       case 1:
@@ -1977,8 +1977,8 @@ int DiscreteGradient::getAllAscendingPaths(
 
     bool hasProgressed = false;
 
-    for(int i = 0; i < cofacetNumber; i++) {
-      int cofacetId = -1;
+    for(SimplexId i = 0; i < cofacetNumber; i++) {
+      SimplexId cofacetId = -1;
       switch(currentCell.dim_) {
         case 1:
           triangulation.getEdgeTriangle(currentCell.id_, i, cofacetId);
