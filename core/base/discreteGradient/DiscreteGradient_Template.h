@@ -1997,10 +1997,10 @@ int DiscreteGradient::getAllAscendingPaths(
         cofacet.dim_ = currentCell.dim_ + 1;
         cofacet.id_ = cofacetId;
 
-        StackEntry newStackEntry;
-        newStackEntry.partialPath_ = stackEntry.partialPath_;
-        newStackEntry.partialPath_.push_back(cofacet);
-        newStackEntry.currentCell_ = cofacet;
+        // the path shared by all the branches below (one per face of the
+        // cofacet): each branch extends its own copy of it
+        std::vector<Cell> cofacetPath = stackEntry.partialPath_;
+        cofacetPath.push_back(cofacet);
 
         // now find the simplex we came from
         int simplexNumber = -1;
@@ -2029,11 +2029,14 @@ int DiscreteGradient::getAllAscendingPaths(
           if(isCellCritical(simplex)) {
             // always terminate here — don't continue the path through a
             // critical cell
-            newStackEntry.partialPath_.push_back(simplex);
-            vpaths.push_back(newStackEntry.partialPath_);
+            std::vector<Cell> criticalPath = cofacetPath;
+            criticalPath.push_back(simplex);
+            vpaths.push_back(std::move(criticalPath));
             hasProgressed = true; // prevent the fallback push too
             // do NOT push to stack
           } else if(simplexPair == cofacet.id_) {
+            StackEntry newStackEntry;
+            newStackEntry.partialPath_ = cofacetPath;
             newStackEntry.partialPath_.push_back(simplex);
             newStackEntry.currentCell_ = simplex;
             stack.push(std::move(newStackEntry));

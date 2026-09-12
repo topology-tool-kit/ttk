@@ -936,7 +936,7 @@ int ttk::nil::NumericalIntegralLines::getCofaces(
         = triangulation->getVertexEdgeNumber(simplexId);
       for(SimplexId i = 0; i < edgeNumber; i++) {
         triangulation->getVertexEdge(simplexId, i, cofaceId);
-        cofaces.push_back(std::make_pair(cofaceId, 1));
+        cofaces.emplace_back(cofaceId, 1);
       }
     }
 
@@ -946,7 +946,7 @@ int ttk::nil::NumericalIntegralLines::getCofaces(
         = triangulation->getVertexTriangleNumber(simplexId);
       for(SimplexId i = 0; i < triangleNumber; i++) {
         triangulation->getVertexTriangle(simplexId, i, cofaceId);
-        cofaces.push_back(std::make_pair(cofaceId, 2));
+        cofaces.emplace_back(cofaceId, 2);
       }
     }
 
@@ -954,7 +954,7 @@ int ttk::nil::NumericalIntegralLines::getCofaces(
     const SimplexId starNumber = triangulation->getVertexStarNumber(simplexId);
     for(SimplexId i = 0; i < starNumber; i++) {
       triangulation->getVertexStar(simplexId, i, cofaceId);
-      cofaces.push_back(std::make_pair(cofaceId, cellDimension));
+      cofaces.emplace_back(cofaceId, cellDimension);
     }
 
     return 0;
@@ -967,7 +967,7 @@ int ttk::nil::NumericalIntegralLines::getCofaces(
         = triangulation->getEdgeTriangleNumber(simplexId);
       for(SimplexId i = 0; i < triangleNumber; i++) {
         triangulation->getEdgeTriangle(simplexId, i, cofaceId);
-        cofaces.push_back(std::make_pair(cofaceId, 2));
+        cofaces.emplace_back(cofaceId, 2);
       }
     }
 
@@ -975,7 +975,7 @@ int ttk::nil::NumericalIntegralLines::getCofaces(
     const SimplexId starNumber = triangulation->getEdgeStarNumber(simplexId);
     for(SimplexId i = 0; i < starNumber; i++) {
       triangulation->getEdgeStar(simplexId, i, cofaceId);
-      cofaces.push_back(std::make_pair(cofaceId, cellDimension));
+      cofaces.emplace_back(cofaceId, cellDimension);
     }
 
     return 0;
@@ -985,7 +985,7 @@ int ttk::nil::NumericalIntegralLines::getCofaces(
   const SimplexId starNumber = triangulation->getTriangleStarNumber(simplexId);
   for(SimplexId i = 0; i < starNumber; i++) {
     triangulation->getTriangleStar(simplexId, i, cofaceId);
-    cofaces.push_back(std::make_pair(cofaceId, cellDimension));
+    cofaces.emplace_back(cofaceId, cellDimension);
   }
 
   return 0;
