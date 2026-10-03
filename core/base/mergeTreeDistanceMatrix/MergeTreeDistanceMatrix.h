@@ -142,18 +142,17 @@ namespace ttk {
     void executeParaImpl(std::vector<ftm::MergeTree<dataType>> &trees,
                          std::vector<std::vector<double>> &distanceMatrix,
                          bool isFirstInput = true) {
-      for(unsigned int i = 0; i < distanceMatrix.size(); ++i) {
+      for(unsigned int ind = 0;
+          ind < distanceMatrix.size() * distanceMatrix.size(); ++ind) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(i) UNTIED() shared(distanceMatrix, trees)
+#pragma omp task firstprivate(ind) UNTIED() shared(distanceMatrix, trees)
         {
 #endif
-          if(i % std::max(int(distanceMatrix.size() / 10), 1) == 0) {
-            std::stringstream stream;
-            stream << i << " / " << distanceMatrix.size();
-            printMsg(stream.str());
-          }
-          distanceMatrix[i][i] = 0.0;
-          for(unsigned int j = i + 1; j < distanceMatrix[0].size(); ++j) {
+          unsigned int i = ind % distanceMatrix.size();
+          unsigned int j = ind / distanceMatrix.size();
+          if(i == j)
+            distanceMatrix[i][i] = 0.0;
+          else if(j > i) {
             // Execute
             if(baseModule_ == 0) {
               MergeTreeDistance mergeTreeDistance;
