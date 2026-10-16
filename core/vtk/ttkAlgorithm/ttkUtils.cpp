@@ -258,11 +258,9 @@ void *ttkUtils::WriteVoidPointer(vtkDataArray *array,
                                  vtkIdType numValues) {
   void *outPtr = nullptr;
   switch(array->GetDataType()) {
-    vtkTemplateMacro(auto *aosArray
-                     = vtkAOSDataArrayTemplate<VTK_TT>::FastDownCast(array);
-                     if(aosArray) {
-                       outPtr = aosArray->WriteVoidPointer(valueIdx, numValues);
-                     });
+    vtkTemplateMacro(
+      auto *aosArray = vtkAOSDataArrayTemplate<VTK_TT>::FastDownCast(array);
+      if(aosArray) { outPtr = aosArray->WritePointer(valueIdx, numValues); });
   }
   return outPtr;
 }
