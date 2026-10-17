@@ -12,6 +12,8 @@
 #include <vtkMultiBlockDataSet.h>
 #include <vtkPointSet.h>
 
+#include <ttkUtils.h>
+
 vtkStandardNewMacro(ttkGridLayout);
 
 ttkGridLayout::ttkGridLayout() {
@@ -75,7 +77,7 @@ int ttkGridLayout::TranslateObject(vtkDataObject *input,
   } else if(inputAsPS) {
     size_t const nCoords = inputAsPS->GetNumberOfPoints() * 3;
     auto points = inputAsPS->GetPoints();
-    auto pointCoords = (float *)points->GetVoidPointer(0);
+    auto pointCoords = ttkUtils::GetPointer<float>(points->GetData());
     for(size_t i = 0; i < nCoords; i += 3) {
       pointCoords[i + colAxis] += dw;
       pointCoords[i + rowAxis] += dh;
