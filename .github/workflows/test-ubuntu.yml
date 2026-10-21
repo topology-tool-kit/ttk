@@ -200,7 +200,7 @@ jobs:
           rm ttk-data/states/persistentGenerators_darkSky.pvsm
         fi
         if [[ "$VERS" == *"26.04"* ]]; then
-          rm ttk-data/states/mergeTreeBarycenter_pathMapping.pvsm
+          rm ttk-data/states/mergeTreeClustering.pvsm
         fi
         # remove buggy example
         # related issue: https://github.com/topology-tool-kit/ttk/issues/1055
