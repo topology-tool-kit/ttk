@@ -201,7 +201,7 @@ jobs:
         fi
         if [[ "$VERS" == *"26.04"* ]]; then
           rm ttk-data/states/mergeTreeClustering.pvsm
-          rm ttk-data/states/molecularVibration.pvsm
+          rm ttk-data/states/mergeTreePGA.pvsm
         fi
         # remove buggy example
         # related issue: https://github.com/topology-tool-kit/ttk/issues/1055
