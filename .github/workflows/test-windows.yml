@@ -35,7 +35,7 @@ jobs:
     - uses: actions/checkout@v4
       name: Checkout TTK source code
 
-    - uses: s-weigand/setup-conda@v1
+    - uses: conda-incubator/setup-miniconda@v3
 
     - name: Install dependencies with conda
       shell: bash
