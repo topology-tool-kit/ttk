@@ -141,6 +141,7 @@ jobs:
       continue-on-error: true
       shell: cmd
       run: |
+        set PATH=%CONDA_ROOT%;%CONDA_ROOT%\Library\bin;%PATH%
         set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
         cd %GITHUB_WORKSPACE%\examples\python
         python example.py ..\data\inputData.vtu
@@ -148,6 +149,7 @@ jobs:
     - name: Test pvpython example
       shell: cmd
       run: |
+        set PATH=%CONDA_ROOT%;%CONDA_ROOT%\Library\bin;%PATH%
         set PYTHONPATH=%CONDA_ROOT%\Lib
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd %GITHUB_WORKSPACE%\examples\pvpython
@@ -169,6 +171,7 @@ jobs:
     - name: Resample large datasets
       shell: cmd
       run: |
+        set PATH=%CONDA_ROOT%;%CONDA_ROOT%\Library\bin;%PATH%
         set PYTHONPATH=%CONDA_ROOT%\Lib
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
@@ -177,6 +180,7 @@ jobs:
     - name: Run ttk-data Python scripts
       shell: cmd
       run: |
+        set PATH=%CONDA_ROOT%;%CONDA_ROOT%\Library\bin;%PATH%
         set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib;%CONDA_ROOT%\DLLs
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
