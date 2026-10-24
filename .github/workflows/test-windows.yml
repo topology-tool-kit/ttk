@@ -129,11 +129,11 @@ jobs:
       shell: cmd
       run: |
         set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library;%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
-        set PATH=%CONDA_ROOT%\Library\bin;%PATH%
+        set PATH=%CONDA_ROOT%;%CONDA_ROOT%\Library\bin;%PATH%
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         mkdir build
         cd build
-        cmake -DOpenMP_libomp_LIBRARY="%VCToolsInstallDir%lib\x64\libomp.lib" .. || exit /b 1
+        cmake -DPython3_ROOT_DIR="%CONDA_ROOT%" -DOpenMP_libomp_LIBRARY="%VCToolsInstallDir%lib\x64\libomp.lib" .. || exit /b 1
         cmake --build . --config Release --parallel || exit /b 1
         ttkExample-vtk-c++.exe -i ..\..\data\inputData.vtu
 
