@@ -100,6 +100,7 @@ jobs:
           -DTTK_BUILD_STANDALONE_APPS=TRUE ^
           -DTTK_ENABLE_KAMIKAZE=TRUE ^
           -DTTK_ENABLE_OPENMP=TRUE ^
+          -DOpenMP_libomp_LIBRARY="%VCToolsInstallDir%lib\x64\libomp.lib" ^
           -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE ^
           -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE ^
           -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 ^
@@ -120,7 +121,7 @@ jobs:
         cd %GITHUB_WORKSPACE%\examples\c++
         mkdir build
         cd build
-        cmake .. || exit /b 1
+        cmake -DOpenMP_libomp_LIBRARY="%VCToolsInstallDir%lib\x64\libomp.lib" .. || exit /b 1
         cmake --build . --config Release --parallel || exit /b 1
         ttkExample-c++.exe -i ..\..\data\inputData.off
 
@@ -132,7 +133,7 @@ jobs:
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         mkdir build
         cd build
-        cmake .. || exit /b 1
+        cmake -DOpenMP_libomp_LIBRARY="%VCToolsInstallDir%lib\x64\libomp.lib" .. || exit /b 1
         cmake --build . --config Release --parallel || exit /b 1
         ttkExample-vtk-c++.exe -i ..\..\data\inputData.vtu
 
