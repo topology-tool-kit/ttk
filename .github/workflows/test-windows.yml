@@ -14,7 +14,7 @@ env:
   CXX: clang-cl.exe
   CMAKE_GENERATOR: Ninja
   CMAKE_BUILD_TYPE: Release
-  CMAKE_CC_COMPILER_LAUNCHER: sccache
+  CMAKE_C_COMPILER_LAUNCHER: sccache
   CMAKE_CXX_COMPILER_LAUNCHER: sccache
   SCCACHE_GHA_ENABLED: "true"
   SCCACHE_IDLE_TIMEOUT: 0
@@ -48,7 +48,7 @@ jobs:
         conda install -y -c conda-forge \
           libboost-devel glew eigen spectralib zfp  \
           sqlite scikit-learn graphviz ninja python=3.10 zlib qhull \
-          llvm-openmp ninja
+          llvm-openmp
         # add TTK & ParaView install folders to PATH
         echo "$PV_DIR/bin" >> $GITHUB_PATH
         echo "$TTK_DIR/bin" >> $GITHUB_PATH
@@ -115,23 +115,25 @@ jobs:
     - name: Test C++ example
       shell: cmd
       run: |
-        set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
+        set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library;%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
+        set PATH=%CONDA_ROOT%\Library\bin;%PATH%
         cd %GITHUB_WORKSPACE%\examples\c++
         mkdir build
         cd build
-        cmake ..
-        cmake --build . --config Release --parallel
+        cmake .. || exit /b 1
+        cmake --build . --config Release --parallel || exit /b 1
         ttkExample-c++.exe -i ..\..\data\inputData.off
 
     - name: Test VTK-C++ example
       shell: cmd
       run: |
-        set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
+        set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library;%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
+        set PATH=%CONDA_ROOT%\Library\bin;%PATH%
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         mkdir build
         cd build
-        cmake ..
-        cmake --build . --config Release --parallel
+        cmake .. || exit /b 1
+        cmake --build . --config Release --parallel || exit /b 1
         ttkExample-vtk-c++.exe -i ..\..\data\inputData.vtu
 
     - name: Test Python example [TEMPORARILY NOT ENFORCED] 
@@ -178,11 +180,11 @@ jobs:
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
         rm python/nestedTrackingFromOverlap.py
-        # tmp removal of mpi example
+        rem tmp removal of mpi example
         rm python/mpiExample.py
-        # remove examples which fill up the memory
+        rem remove examples which fill up the memory
         rm python/topologicalOptimization_darkSky.py
-        # remove examples using raster features
+        rem remove examples using raster features
         rm python/geometryApproximation.py
         pvpython.exe -u python\run.py
 
