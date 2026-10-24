@@ -9,7 +9,7 @@ env:
   PV_REPO: topology-tool-kit/ttk-paraview
   PV_DIR: C:\Program Files\TTK-ParaView
   TTK_DIR: C:\Program Files (x86)\ttk
-  CONDA_ROOT: C:\Miniconda
+  CONDA_ROOT: C:\Miniconda\envs\ttk
   CC: clang-cl.exe
   CXX: clang-cl.exe
   CMAKE_GENERATOR: Ninja
@@ -79,7 +79,7 @@ jobs:
     - name: Create & configure TTK build directory
       shell: cmd
       run: |
-        set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library\lib\cmake;%CONDA_ROOT%\Library\share\eigen3\cmake;%CONDA_ROOT%\Library\share\Qull\cmake;%CONDA_ROOT%\Library\cmake;%ProgramFiles%\TTK-ParaView\lib\cmake;
+        set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library\lib\cmake;%CONDA_ROOT%\Library\share\eigen3\cmake;%CONDA_ROOT%\Library\share\Qhull\cmake;%CONDA_ROOT%\Library\cmake;%ProgramFiles%\TTK-ParaView\lib\cmake;
         mkdir build
         cd build
         cmake ^
