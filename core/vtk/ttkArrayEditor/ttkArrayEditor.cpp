@@ -233,7 +233,6 @@ int ttkArrayEditor::RequestData(vtkInformation *ttkNotUsed(request),
                                  ? targetArray->GetNumberOfValues()
                                      / this->TargetArrayIndexation[1]
                                  : targetArray->GetNumberOfTuples();
-        copy->Allocate(nTuples * nComponents);
         copy->SetNumberOfComponents(nComponents);
         copy->SetNumberOfTuples(nTuples);
 

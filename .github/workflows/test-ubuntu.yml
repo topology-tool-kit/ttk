@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 env:
-  PV_TAG: v6.1.1-headless
+  PV_TAG: v6.2.0-headless
   PV_REPO: topology-tool-kit/ttk-paraview
   CMAKE_GENERATOR: Ninja
   CMAKE_BUILD_TYPE: Release
@@ -194,8 +194,18 @@ jobs:
         if [[ "$VERS" == *"22.04"* ]] || [[ "$VERS" == *"24.04"* ]]; then
           rm ttk-data/states/mergeTreeClustering.pvsm
           rm ttk-data/states/mergeTreePGA.pvsm
+          rm ttk-data/states/mergeTreeWAE.pvsm
+          rm ttk-data/states/mergeTreeWAEDecoding.pvsm
           rm ttk-data/states/mergeTreeTemporalReduction.pvsm
           rm ttk-data/states/persistentGenerators_darkSky.pvsm
+        fi
+        if [[ "$VERS" == *"26.04"* ]]; then
+          # pv issues with 26.04 (working in python though)
+          rm ttk-data/states/mergeTreeClustering.pvsm
+          rm ttk-data/states/mergeTreePGA.pvsm
+          rm ttk-data/states/mergeTreeTemporalReduction.pvsm
+          rm ttk-data/states/mergeTreeWAE.pvsm
+          rm ttk-data/states/mergeTreeWAEDecoding.pvsm
         fi
         # remove buggy example
         # related issue: https://github.com/topology-tool-kit/ttk/issues/1055

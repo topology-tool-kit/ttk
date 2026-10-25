@@ -5,16 +5,16 @@ on:
   workflow_dispatch:
 
 env:
-  PV_TAG: v6.1.1-headless
+  PV_TAG: v6.2.0-headless
   PV_REPO: topology-tool-kit/ttk-paraview
   PV_DIR: C:\Program Files\TTK-ParaView
   TTK_DIR: C:\Program Files (x86)\ttk
-  CONDA_ROOT: C:\Miniconda
+  CONDA_ROOT: C:\Miniconda\envs\ttk
   CC: clang-cl.exe
   CXX: clang-cl.exe
   CMAKE_GENERATOR: Ninja
   CMAKE_BUILD_TYPE: Release
-  CMAKE_CC_COMPILER_LAUNCHER: sccache
+  CMAKE_C_COMPILER_LAUNCHER: sccache
   CMAKE_CXX_COMPILER_LAUNCHER: sccache
   SCCACHE_GHA_ENABLED: "true"
   SCCACHE_IDLE_TIMEOUT: 0
@@ -35,14 +35,20 @@ jobs:
     - uses: actions/checkout@v4
       name: Checkout TTK source code
 
-    - uses: s-weigand/setup-conda@v1
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
+        auto-update-conda: true
+        python-version: '3.10'
+        channels: conda-forge
+        activate-environment: ttk
 
     - name: Install dependencies with conda
-      shell: bash
+      shell: bash -l {0}
       run: |
-        conda install -c conda-forge libboost-devel glew eigen spectralib zfp  \
+        conda install -y -c conda-forge \
+          libboost-devel glew eigen spectralib zfp  \
           sqlite scikit-learn graphviz ninja python=3.10 zlib qhull \
-          llvm-openmp ninja
+          llvm-openmp
         # add TTK & ParaView install folders to PATH
         echo "$PV_DIR/bin" >> $GITHUB_PATH
         echo "$TTK_DIR/bin" >> $GITHUB_PATH
@@ -73,7 +79,7 @@ jobs:
     - name: Create & configure TTK build directory
       shell: cmd
       run: |
-        set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library\lib\cmake;%CONDA_ROOT%\Library\share\eigen3\cmake;%CONDA_ROOT%\Library\share\Qull\cmake;%CONDA_ROOT%\Library\cmake;%ProgramFiles%\TTK-ParaView\lib\cmake;
+        set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library\lib\cmake;%CONDA_ROOT%\Library\share\eigen3\cmake;%CONDA_ROOT%\Library\share\Qhull\cmake;%CONDA_ROOT%\Library\cmake;%ProgramFiles%\TTK-ParaView\lib\cmake;
         mkdir build
         cd build
         cmake ^
@@ -94,6 +100,7 @@ jobs:
           -DTTK_BUILD_STANDALONE_APPS=TRUE ^
           -DTTK_ENABLE_KAMIKAZE=TRUE ^
           -DTTK_ENABLE_OPENMP=TRUE ^
+          -DOpenMP_libomp_LIBRARY="%VCToolsInstallDir%lib\x64\libomp.lib" ^
           -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE ^
           -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE ^
           -DTTK_IMPLICIT_PRECONDITIONS_THRESHOLD=64*64*64 ^
@@ -109,29 +116,32 @@ jobs:
     - name: Test C++ example
       shell: cmd
       run: |
-        set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
+        set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library;%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
+        set PATH=%CONDA_ROOT%\Library\bin;%PATH%
         cd %GITHUB_WORKSPACE%\examples\c++
         mkdir build
         cd build
-        cmake ..
-        cmake --build . --config Release --parallel
+        cmake -DOpenMP_libomp_LIBRARY="%VCToolsInstallDir%lib\x64\libomp.lib" .. || exit /b 1
+        cmake --build . --config Release --parallel || exit /b 1
         ttkExample-c++.exe -i ..\..\data\inputData.off
 
     - name: Test VTK-C++ example
       shell: cmd
       run: |
-        set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
+        set CMAKE_PREFIX_PATH=%CONDA_ROOT%\Library;%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
+        set PATH=%CONDA_ROOT%;%CONDA_ROOT%\Library\bin;%PATH%
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         mkdir build
         cd build
-        cmake ..
-        cmake --build . --config Release --parallel
+        cmake -DPython3_ROOT_DIR="%CONDA_ROOT%" -DOpenMP_libomp_LIBRARY="%VCToolsInstallDir%lib\x64\libomp.lib" .. || exit /b 1
+        cmake --build . --config Release --parallel || exit /b 1
         ttkExample-vtk-c++.exe -i ..\..\data\inputData.vtu
 
     - name: Test Python example [TEMPORARILY NOT ENFORCED] 
       continue-on-error: true
       shell: cmd
       run: |
+        set PATH=%CONDA_ROOT%;%CONDA_ROOT%\Library\bin;%PATH%
         set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
         cd %GITHUB_WORKSPACE%\examples\python
         python example.py ..\data\inputData.vtu
@@ -139,6 +149,7 @@ jobs:
     - name: Test pvpython example
       shell: cmd
       run: |
+        set PATH=%CONDA_ROOT%;%CONDA_ROOT%\Library\bin;%PATH%
         set PYTHONPATH=%CONDA_ROOT%\Lib
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd %GITHUB_WORKSPACE%\examples\pvpython
@@ -160,6 +171,7 @@ jobs:
     - name: Resample large datasets
       shell: cmd
       run: |
+        set PATH=%CONDA_ROOT%;%CONDA_ROOT%\Library\bin;%PATH%
         set PYTHONPATH=%CONDA_ROOT%\Lib
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
@@ -168,15 +180,16 @@ jobs:
     - name: Run ttk-data Python scripts
       shell: cmd
       run: |
+        set PATH=%CONDA_ROOT%;%CONDA_ROOT%\Library\bin;%PATH%
         set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib;%CONDA_ROOT%\DLLs
         set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
         cd ttk-data
         rm python/nestedTrackingFromOverlap.py
-        # tmp removal of mpi example
+        rem tmp removal of mpi example
         rm python/mpiExample.py
-        # remove examples which fill up the memory
+        rem remove examples which fill up the memory
         rm python/topologicalOptimization_darkSky.py
-        # remove examples using raster features
+        rem remove examples using raster features
         rm python/geometryApproximation.py
         pvpython.exe -u python\run.py
 
