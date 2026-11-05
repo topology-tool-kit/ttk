@@ -21,7 +21,7 @@ Proc. Natl. Acad. Sci., 93, 4, pp.1591--1595, 1996
 
 - The fast marching band backend, a variant of the fast marching for which all the vertices being not yet updated and nearest the input surface are updated (instead of just one in the fast marching backend). It results in a faster method (due to parallelism) but is a rougher approximation.
 
-In 2D (when the sampling dimension along z is 1), the input is a closed curve made of line cells (possibly several curves, for instance with holes) lying in a plane of constant z.
+In 2D (when the sampling dimension along x, y or z is 1), the input is a closed curve made of line cells (possibly several curves, for instance with holes) lying in a plane orthogonal to this axis.
 
         Online examples:
 
@@ -51,7 +51,7 @@ In 2D (when the sampling dimension along z is 1), the input is a closed curve ma
                          panel_visibility="default">
                          <IntRangeDomain name="range" min="1 1 1"/>
         <Documentation>
-          Resolution of each axis. Set the third value to 1 to compute a 2D signed distance field from a closed curve.
+          Resolution of each axis. Set one of the values to 1 to compute a 2D signed distance field from a closed curve.
         </Documentation>
       </IntVectorProperty>
       

@@ -26,10 +26,10 @@
 /// updated (instead of just one in the fast marching backend). It results in a
 /// faster method (due to parallelism) but is a rougher approximation.
 ///
-/// In 2D (when the sampling dimension along z is 1), the input is a closed
-/// curve made of line cells (possibly several curves, for instance with
-/// holes) lying in a plane of constant z. The inside of the curve is then
-/// computed with a parity test along the rows of the grid.
+/// In 2D (when the sampling dimension along x, y or z is 1), the input is a
+/// closed curve made of line cells (possibly several curves, for instance with
+/// holes) lying in a plane orthogonal to this axis. The inside of the curve is
+/// then computed with a parity test along the rows of the grid.
 ///
 /// \b Online \b examples: \n
 ///   - <a
@@ -160,9 +160,14 @@ namespace ttk {
     std::array<double, 3> spacing_{1.0, 1.0, 1.0};
     std::array<double, 3> invSpacingSquared_{1.0, 1.0, 1.0};
     bool expandBox_ = true;
-    // 2D mode: the input is a closed curve (edges) lying in a plane of
-    // constant z and the output grid has a single slice (zResolution_ == 1)
+    // 2D mode: the output grid has a single slice along flatDim_ and the input
+    // is a closed curve (edges) lying in a plane orthogonal to this axis
     bool is2D_ = false;
+    int flatDim_ = 2;
+    // the two axes of the plane of the 2D mode
+    inline std::array<int, 2> getPlaneDims() const {
+      return {flatDim_ == 0 ? 1 : 0, flatDim_ == 2 ? 1 : 2};
+    }
     int backend_ = 0;
     int fastMarchingOrder_ = 1;
   };
@@ -548,10 +553,11 @@ void ttk::SignedDistanceField::getSegments2D(
     SimplexId vertexIdA, vertexIdB;
     triangulation->getCellVertex(segmentId, 0, vertexIdA);
     triangulation->getCellVertex(segmentId, 1, vertexIdB);
-    float z = 0;
-    auto &segment = segments[segmentId];
-    triangulation->getVertexPoint(vertexIdA, segment[0], segment[1], z);
-    triangulation->getVertexPoint(vertexIdB, segment[2], segment[3], z);
+    const auto dims = getPlaneDims();
+    float a[3], b[3];
+    triangulation->getVertexPoint(vertexIdA, a[0], a[1], a[2]);
+    triangulation->getVertexPoint(vertexIdB, b[0], b[1], b[2]);
+    segments[segmentId] = {a[dims[0]], a[dims[1]], b[dims[0]], b[dims[1]]};
   }
 }
 
@@ -575,7 +581,7 @@ int ttk::SignedDistanceField::execute(
   }
 
   std::vector<bool> vertexIntersection(noVertices, false);
-  // 2D mode: segments of the input curve, projected in the xy plane
+  // 2D mode: segments of the input curve, projected in the plane of the grid
   std::vector<std::array<float, 4>> segments;
 
   if(is2D_) {
@@ -789,16 +795,18 @@ int ttk::SignedDistanceField::execute(
     float x = 0, y = 0, z = 0;
     boundingTriangulation->getVertexPoint(vertexId, x, y, z);
 
-    if(is2D_) {
-      outputScalars[vertexId] = (isInterior[vertexId] ? -1.0 : 1.0)
-                                * distanceToSegments2D(x, y, segments);
-      continue;
-    }
-
     std::array<float, 3> point;
     point[0] = x;
     point[1] = y;
     point[2] = z;
+
+    if(is2D_) {
+      const auto dims = getPlaneDims();
+      outputScalars[vertexId]
+        = (isInterior[vertexId] ? -1.0 : 1.0)
+          * distanceToSegments2D(point[dims[0]], point[dims[1]], segments);
+      continue;
+    }
 
     std::vector<float> dists(triangulation->getNumberOfVertices());
     Geometry::ProjectionInput projectionInput{

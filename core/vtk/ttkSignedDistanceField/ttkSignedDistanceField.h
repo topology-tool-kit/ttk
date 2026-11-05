@@ -26,10 +26,10 @@
 /// updated (instead of just one in the fast marching backend). It results in a
 /// faster method (due to parallelism) but is a rougher approximation.
 ///
-/// In 2D (when the sampling dimension along z is 1), the input is a closed
-/// curve made of line cells (possibly several curves, for instance with
-/// holes) lying in a plane of constant z. The inside of the curve is then
-/// computed with a parity test along the rows of the grid.
+/// In 2D (when the sampling dimension along x, y or z is 1), the input is a
+/// closed curve made of line cells (possibly several curves, for instance with
+/// holes) lying in a plane orthogonal to this axis. The inside of the curve is
+/// then computed with a parity test along the rows of the grid.
 ///
 /// \b Online \b examples: \n
 ///   - <a
