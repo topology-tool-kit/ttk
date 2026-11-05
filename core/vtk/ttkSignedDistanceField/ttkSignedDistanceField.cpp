@@ -116,7 +116,9 @@ void ttkSignedDistanceField::computeOutputInformation(
   int shift = (ExpandBox ? 2 : 0);
   spacing_[0] = (bounds[1] - bounds[0]) / (DataExtent[1] - 1 - shift);
   spacing_[1] = (bounds[3] - bounds[2]) / (DataExtent[3] - 1 - shift);
-  spacing_[2] = (bounds[5] - bounds[4]) / (DataExtent[5] - 1 - shift);
+  // in 2D, the single slice has no spacing along z: use 1 to keep it finite
+  spacing_[2] = is2D_ ? 1.0
+                      : (bounds[5] - bounds[4]) / (DataExtent[5] - 1 - shift);
   for(unsigned int i = 0; i < spacing_.size(); ++i)
     invSpacingSquared_[i] = 1.0 / spacing_[i] / spacing_[i];
   std::stringstream ss;
@@ -137,7 +139,8 @@ void ttkSignedDistanceField::computeOutputInformation(
   if(ExpandBox) {
     Origin[0] -= spacing_[0];
     Origin[1] -= spacing_[1];
-    Origin[2] -= spacing_[2];
+    if(not is2D_)
+      Origin[2] -= spacing_[2];
   }
 }
 
@@ -165,6 +168,35 @@ int ttkSignedDistanceField::RequestData(vtkInformation *ttkNotUsed(request),
     return -2;
   }
 
+  // a single slice along z means a 2D field, computed from a closed curve
+  is2D_ = (SamplingDimensions[2] == 1);
+  if(is2D_ and triangulation->getDimensionality() != 1) {
+    this->printErr("2D mode (SamplingDimensions[2] = 1) expects a closed "
+                   "curve made of line cells in input.");
+    return -8;
+  }
+  if(not is2D_ and triangulation->getDimensionality() == 1) {
+    this->printErr("Curve in input: set SamplingDimensions[2] to 1 to "
+                   "compute a 2D signed distance field.");
+    return -8;
+  }
+  const int minDimension = (ExpandBox ? 4 : 2);
+  if(is2D_
+     and (SamplingDimensions[0] < minDimension
+          or SamplingDimensions[1] < minDimension)) {
+    this->printErr("SamplingDimensions[0] and [1] should be at least "
+                   + std::to_string(minDimension) + " in 2D.");
+    return -9;
+  }
+  if(is2D_) {
+    double bounds[6];
+    domain->GetBounds(bounds);
+    if(bounds[5] > bounds[4])
+      this->printWrn("Input curve is not planar: it is projected on the "
+                     "plane z = "
+                     + std::to_string(bounds[4]) + ".");
+  }
+
   if(!domain) {
     this->printErr("Input pointer is NULL.");
     return -3;
@@ -177,12 +209,16 @@ int ttkSignedDistanceField::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   std::stringstream ss;
-  ss << "Surface number of vertices : " << triangulation->getNumberOfVertices();
+  ss << (is2D_ ? "Curve" : "Surface")
+     << " number of vertices : " << triangulation->getNumberOfVertices();
   printMsg(ss.str());
 
   ss.str("");
-  ss << "Surface number of triangles : "
-     << triangulation->getNumberOfTriangles();
+  if(is2D_)
+    ss << "Curve number of edges : " << triangulation->getNumberOfCells();
+  else
+    ss << "Surface number of triangles : "
+       << triangulation->getNumberOfTriangles();
   printMsg(ss.str());
 
   // Create bounding triangulation

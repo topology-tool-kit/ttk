@@ -26,6 +26,11 @@
 /// updated (instead of just one in the fast marching backend). It results in a
 /// faster method (due to parallelism) but is a rougher approximation.
 ///
+/// In 2D (when the sampling dimension along z is 1), the input is a closed
+/// curve made of line cells (possibly several curves, for instance with
+/// holes) lying in a plane of constant z. The inside of the curve is then
+/// computed with a parity test along the rows of the grid.
+///
 /// \b Online \b examples: \n
 ///   - <a
 ///   href="https://topology-tool-kit.github.io/examples/topologicalOptimization_pegasus/">Topological
@@ -75,6 +80,20 @@ namespace ttk {
                              triangulationType *const boundingTriangulation,
                              const std::vector<bool> &vertexIntersection,
                              int *const isInterior) const;
+
+    template <typename triangulationType>
+    void getSegments2D(triangulationType *const triangulation,
+                       std::vector<std::array<float, 4>> &segments) const;
+
+    void findIntersections2D(const std::vector<std::array<float, 4>> &segments,
+                             const std::array<double, 3> &origin,
+                             std::vector<bool> &vertexIntersection,
+                             int *const isInterior) const;
+
+    float distanceToSegments2D(
+      const float x,
+      const float y,
+      const std::vector<std::array<float, 4>> &segments) const;
 
     inline int
       getNeighbor(unsigned int vertexId, unsigned int dim, int dir) const {
@@ -141,6 +160,9 @@ namespace ttk {
     std::array<double, 3> spacing_{1.0, 1.0, 1.0};
     std::array<double, 3> invSpacingSquared_{1.0, 1.0, 1.0};
     bool expandBox_ = true;
+    // 2D mode: the input is a closed curve (edges) lying in a plane of
+    // constant z and the output grid has a single slice (zResolution_ == 1)
+    bool is2D_ = false;
     int backend_ = 0;
     int fastMarchingOrder_ = 1;
   };
@@ -223,8 +245,12 @@ void ttk::SignedDistanceField::fastMarchingIterativeNode(
     auto vertexId = std::get<0>(pair);
     auto value = std::get<1>(pair);
     heap.pop();
-    if(not(value <= abs(distances[vertexId]) + 1e-6
-           and value >= abs(distances[vertexId]) - 1e-6))
+    // a vertex can be pushed several times: skip outdated entries and
+    // vertices already frozen, otherwise duplicates are processed again and
+    // their number grows exponentially
+    if(vertexType[vertexId] == VertexMarchingType::FROZEN
+       or not(value <= abs(distances[vertexId]) + 1e-6
+              and value >= abs(distances[vertexId]) - 1e-6))
       continue;
 
     vertexType[vertexId] = VertexMarchingType::FROZEN;
@@ -238,6 +264,10 @@ void ttk::SignedDistanceField::fastMarchingIterativeNode(
         auto l_value = std::get<1>(l_pair);
         if(value <= l_value + 1e-6 and value >= l_value - 1e-6) {
           heap.pop();
+          if(vertexType[l_vertexId] == VertexMarchingType::FROZEN
+             or not(l_value <= abs(distances[l_vertexId]) + 1e-6
+                    and l_value >= abs(distances[l_vertexId]) - 1e-6))
+            continue;
           vertexType[l_vertexId] = VertexMarchingType::FROZEN;
           toFreeze.emplace_back(l_vertexId);
         } else
@@ -504,6 +534,27 @@ void ttk::SignedDistanceField::findOutsideVertices(
   printMsg(ss.str());
 }
 
+template <typename triangulationType>
+void ttk::SignedDistanceField::getSegments2D(
+  triangulationType *const triangulation,
+  std::vector<std::array<float, 4>> &segments) const {
+  // in a 1D triangulation, the cells are the edges of the curve
+  SimplexId segmentNumber = triangulation->getNumberOfCells();
+  segments.resize(segmentNumber);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+  for(int segmentId = 0; segmentId < segmentNumber; segmentId++) {
+    SimplexId vertexIdA, vertexIdB;
+    triangulation->getCellVertex(segmentId, 0, vertexIdA);
+    triangulation->getCellVertex(segmentId, 1, vertexIdB);
+    float z = 0;
+    auto &segment = segments[segmentId];
+    triangulation->getVertexPoint(vertexIdA, segment[0], segment[1], z);
+    triangulation->getVertexPoint(vertexIdB, segment[2], segment[3], z);
+  }
+}
+
 template <typename triangulationType, typename triangulationType2>
 int ttk::SignedDistanceField::execute(
   float *const outputScalars,
@@ -523,169 +574,193 @@ int ttk::SignedDistanceField::execute(
     edgeCrossing[i] = 0;
   }
 
-  // ======================================================
-  // === BVH
-  // ======================================================
-  Timer t_bvh;
-  SimplexId vertexNumber = triangulation->getNumberOfVertices();
-  std::vector<float> bvhCoordinates(3 * vertexNumber);
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-  for(int vertexId = 0; vertexId < vertexNumber; vertexId++) {
-    float x = 0, y = 0, z = 0;
-    triangulation->getVertexPoint(vertexId, x, y, z);
-    bvhCoordinates[vertexId * 3 + 0] = x;
-    bvhCoordinates[vertexId * 3 + 1] = y;
-    bvhCoordinates[vertexId * 3 + 2] = z;
-  }
-
-  SimplexId triangleNumber = triangulation->getNumberOfTriangles();
-  std::vector<SimplexId> bvhConnectivityList(triangleNumber * 3);
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-  for(int triangleId = 0; triangleId < triangleNumber; triangleId++) {
-    SimplexId vertexTriangleIdA;
-    triangulation->getTriangleVertex(triangleId, 0, vertexTriangleIdA);
-    SimplexId vertexTriangleIdB;
-    triangulation->getTriangleVertex(triangleId, 1, vertexTriangleIdB);
-    SimplexId vertexTriangleIdC;
-    triangulation->getTriangleVertex(triangleId, 2, vertexTriangleIdC);
-    bvhConnectivityList[triangleId * 3 + 0] = vertexTriangleIdA;
-    bvhConnectivityList[triangleId * 3 + 1] = vertexTriangleIdB;
-    bvhConnectivityList[triangleId * 3 + 2] = vertexTriangleIdC;
-  }
-  BoundingVolumeHierarchy<SimplexId> bvh(bvhCoordinates.data(),
-                                         bvhConnectivityList.data(),
-                                         static_cast<size_t>(triangleNumber));
-  this->printMsg("Build BVH", 1.0, t_bvh.getElapsedTime(), this->threadNumber_);
-
-  // ===================================
-  // === Find Segments Intersecting Triangles
-  // ===================================
-  Timer t_intersect;
-
   std::vector<bool> vertexIntersection(noVertices, false);
-  std::vector<std::vector<unsigned int>> verticesIntersected;
+  // 2D mode: segments of the input curve, projected in the xy plane
+  std::vector<std::array<float, 4>> segments;
 
-  unsigned int noOrigins = yResolution_ * zResolution_
-                           + xResolution_ * zResolution_
-                           + xResolution_ * yResolution_;
-  verticesIntersected.resize(noOrigins);
+  if(is2D_) {
+    // ===================================
+    // === Find Grid Edges Crossing the Curve
+    // ===================================
+    Timer t_intersect;
+    getSegments2D(triangulation, segments);
+    float ox = 0, oy = 0, oz = 0;
+    boundingTriangulation->getVertexPoint(0, ox, oy, oz);
+    const std::array<double, 3> origin{ox, oy, oz};
+    findIntersections2D(segments, origin, vertexIntersection, isInterior);
+    for(unsigned int i = 0; i < vertexIntersection.size(); ++i)
+      edgeCrossing[i] = vertexIntersection[i];
+    this->printMsg("Find intersection edges", 1.0,
+                   t_intersect.getElapsedTime(), this->threadNumber_);
+  } else {
+    // ======================================================
+    // === BVH
+    // ======================================================
+    Timer t_bvh;
+    SimplexId vertexNumber = triangulation->getNumberOfVertices();
+    std::vector<float> bvhCoordinates(3 * vertexNumber);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+    for(int vertexId = 0; vertexId < vertexNumber; vertexId++) {
+      float x = 0, y = 0, z = 0;
+      triangulation->getVertexPoint(vertexId, x, y, z);
+      bvhCoordinates[vertexId * 3 + 0] = x;
+      bvhCoordinates[vertexId * 3 + 1] = y;
+      bvhCoordinates[vertexId * 3 + 2] = z;
+    }
+
+    SimplexId triangleNumber = triangulation->getNumberOfTriangles();
+    std::vector<SimplexId> bvhConnectivityList(triangleNumber * 3);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+    for(int triangleId = 0; triangleId < triangleNumber; triangleId++) {
+      SimplexId vertexTriangleIdA;
+      triangulation->getTriangleVertex(triangleId, 0, vertexTriangleIdA);
+      SimplexId vertexTriangleIdB;
+      triangulation->getTriangleVertex(triangleId, 1, vertexTriangleIdB);
+      SimplexId vertexTriangleIdC;
+      triangulation->getTriangleVertex(triangleId, 2, vertexTriangleIdC);
+      bvhConnectivityList[triangleId * 3 + 0] = vertexTriangleIdA;
+      bvhConnectivityList[triangleId * 3 + 1] = vertexTriangleIdB;
+      bvhConnectivityList[triangleId * 3 + 2] = vertexTriangleIdC;
+    }
+    BoundingVolumeHierarchy<SimplexId> bvh(
+      bvhCoordinates.data(), bvhConnectivityList.data(),
+      static_cast<size_t>(triangleNumber));
+    this->printMsg(
+      "Build BVH", 1.0, t_bvh.getElapsedTime(), this->threadNumber_);
+
+    // ===================================
+    // === Find Segments Intersecting Triangles
+    // ===================================
+    Timer t_intersect;
+
+    std::vector<std::vector<unsigned int>> verticesIntersected;
+
+    unsigned int noOrigins = yResolution_ * zResolution_
+                             + xResolution_ * zResolution_
+                             + xResolution_ * yResolution_;
+    verticesIntersected.resize(noOrigins);
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
 #endif
-  for(unsigned int i = 0; i < noOrigins; ++i) {
-    // Get origin vertex id
-    int vertexId, dirDimension;
-    if(i < yResolution_ * zResolution_) {
-      // O_x = {a * r_x | a in N / r_y r_z N}
-      vertexId = i * xResolution_;
-      dirDimension = 0;
-    } else if(i < yResolution_ * zResolution_ + xResolution_ * zResolution_) {
-      // O_y = {a * r_x * r_y + b | a in N / r_z N, b in N / r_x N}
-      unsigned int ind = i - yResolution_ * zResolution_;
-      vertexId = (int)(ind / xResolution_) * xResolution_ * yResolution_
-                 + ind % xResolution_;
-      dirDimension = 1;
-    } else {
-      // O_z = {a | a in N / r_x r_y N}
-      vertexId
-        = i - (yResolution_ * zResolution_ + xResolution_ * zResolution_);
-      dirDimension = 2;
-    }
+    for(unsigned int i = 0; i < noOrigins; ++i) {
+      // Get origin vertex id
+      int vertexId, dirDimension;
+      if(i < yResolution_ * zResolution_) {
+        // O_x = {a * r_x | a in N / r_y r_z N}
+        vertexId = i * xResolution_;
+        dirDimension = 0;
+      } else if(i < yResolution_ * zResolution_
+                      + xResolution_ * zResolution_) {
+        // O_y = {a * r_x * r_y + b | a in N / r_z N, b in N / r_x N}
+        unsigned int ind = i - yResolution_ * zResolution_;
+        vertexId = (int)(ind / xResolution_) * xResolution_ * yResolution_
+                   + ind % xResolution_;
+        dirDimension = 1;
+      } else {
+        // O_z = {a | a in N / r_x r_y N}
+        vertexId
+          = i - (yResolution_ * zResolution_ + xResolution_ * zResolution_);
+        dirDimension = 2;
+      }
 
-    // Use BVH to find triangles on this ray direction
-    float ray_origin[3];
-    boundingTriangulation->getVertexPoint(
-      vertexId, ray_origin[0], ray_origin[1], ray_origin[2]);
+      // Use BVH to find triangles on this ray direction
+      float ray_origin[3];
+      boundingTriangulation->getVertexPoint(
+        vertexId, ray_origin[0], ray_origin[1], ray_origin[2]);
 
-    if(not expandBox_) {
-      int dirToShift[3] = {0, 0, 0};
-      int shiftCounter = 0;
-      for(int dim = 0; dim < 3; ++dim) {
-        for(int j = -1; j < 2; j += 2) {
-          int neighborId = getNeighbor(vertexId, dim, j);
-          if(neighborId == -1) {
-            dirToShift[dim] = j * -1;
-            ++shiftCounter;
+      if(not expandBox_) {
+        int dirToShift[3] = {0, 0, 0};
+        int shiftCounter = 0;
+        for(int dim = 0; dim < 3; ++dim) {
+          for(int j = -1; j < 2; j += 2) {
+            int neighborId = getNeighbor(vertexId, dim, j);
+            if(neighborId == -1) {
+              dirToShift[dim] = j * -1;
+              ++shiftCounter;
+            }
+          }
+        }
+        if(shiftCounter >= 2) {
+          for(int dim = 0; dim < 3; ++dim) {
+            if(dim == dirDimension)
+              continue;
+            ray_origin[dim] += dirToShift[dim] * 1e-3 * spacing_[dim];
           }
         }
       }
-      if(shiftCounter >= 2) {
-        for(int dim = 0; dim < 3; ++dim) {
-          if(dim == dirDimension)
-            continue;
-          ray_origin[dim] += dirToShift[dim] * 1e-3 * spacing_[dim];
+
+      float ray_dir[3] = {0, 0, 0};
+      ray_dir[dirDimension] = spacing_[dirDimension];
+      Ray ray(ray_dir, ray_origin);
+      std::vector<int> triangles;
+      std::vector<float> distances;
+      bool wasHit = bvh.intersect(ray, bvhConnectivityList.data(),
+                                  bvhCoordinates.data(), triangles, distances);
+
+      // For each edge of this ray check if it is intersecting a triangle
+      if(wasHit) {
+        unsigned int rayNoVertices
+          = (dirDimension == 0
+               ? xResolution_
+               : (dirDimension == 1 ? yResolution_ : zResolution_));
+        std::vector<unsigned int> verticesList(rayNoVertices);
+        for(unsigned int j = 0; j < verticesList.size(); ++j) {
+          if(dirDimension == 0) {
+            verticesList[j] = vertexId + j;
+          } else if(dirDimension == 1) {
+            verticesList[j] = vertexId + j * xResolution_;
+          } else {
+            verticesList[j] = vertexId + j * xResolution_ * yResolution_;
+          }
+        }
+        for(auto &distance : distances) {
+          unsigned int ind = distance;
+          if(ind + 1 >= verticesList.size())
+            --ind;
+          auto vertexIdA = verticesList[ind];
+          auto vertexIdB = verticesList[ind + 1];
+          verticesIntersected[i].emplace_back(vertexIdA);
+          verticesIntersected[i].emplace_back(vertexIdB);
         }
       }
     }
-
-    float ray_dir[3] = {0, 0, 0};
-    ray_dir[dirDimension] = spacing_[dirDimension];
-    Ray ray(ray_dir, ray_origin);
-    std::vector<int> triangles;
-    std::vector<float> distances;
-    bool wasHit = bvh.intersect(ray, bvhConnectivityList.data(),
-                                bvhCoordinates.data(), triangles, distances);
-
-    // For each edge of this ray check if it is intersecting a triangle
-    if(wasHit) {
-      unsigned int rayNoVertices
-        = (dirDimension == 0
-             ? xResolution_
-             : (dirDimension == 1 ? yResolution_ : zResolution_));
-      std::vector<unsigned int> verticesList(rayNoVertices);
-      for(unsigned int j = 0; j < verticesList.size(); ++j) {
-        if(dirDimension == 0) {
-          verticesList[j] = vertexId + j;
-        } else if(dirDimension == 1) {
-          verticesList[j] = vertexId + j * xResolution_;
-        } else {
-          verticesList[j] = vertexId + j * xResolution_ * yResolution_;
-        }
-      }
-      for(auto &distance : distances) {
-        unsigned int ind = distance;
-        if(ind + 1 >= verticesList.size())
-          --ind;
-        auto vertexIdA = verticesList[ind];
-        auto vertexIdB = verticesList[ind + 1];
-        verticesIntersected[i].emplace_back(vertexIdA);
-        verticesIntersected[i].emplace_back(vertexIdB);
+    // Can not be parallelized because some vertices can appear more than once
+    for(unsigned int i = 0; i < verticesIntersected.size(); ++i) {
+      for(auto &vertexId : verticesIntersected[i]) {
+        vertexIntersection[vertexId] = true;
+        edgeCrossing[vertexId] = 1;
       }
     }
+    this->printMsg("Find intersection edges", 1.0,
+                   t_intersect.getElapsedTime(), this->threadNumber_);
   }
-  // Can not be parallelized because some vertices can appear more than once
-  for(unsigned int i = 0; i < verticesIntersected.size(); ++i) {
-    for(auto &vertexId : verticesIntersected[i]) {
-      vertexIntersection[vertexId] = true;
-      edgeCrossing[vertexId] = 1;
-    }
-  }
-  this->printMsg("Find intersection edges", 1.0, t_intersect.getElapsedTime(),
-                 this->threadNumber_);
 
   // ===================================
   // === Find Outside vertices
   // ===================================
-  Timer t_outside;
-  // We search for an outside vertex
-  SimplexId outsideVertex = std::numeric_limits<SimplexId>::max();
-  for(unsigned int i = 0; i < vertexIntersection.size(); i++) {
-    if(not vertexIntersection[i]) {
-      outsideVertex = i;
-      std::stringstream ss;
-      ss << "First outside vertex found : " << outsideVertex;
-      printMsg(ss.str());
-      break;
+  // (in 2D, already done by the parity test of findIntersections2D)
+  if(not is2D_) {
+    Timer t_outside;
+    // We search for an outside vertex
+    SimplexId outsideVertex = std::numeric_limits<SimplexId>::max();
+    for(unsigned int i = 0; i < vertexIntersection.size(); i++) {
+      if(not vertexIntersection[i]) {
+        outsideVertex = i;
+        std::stringstream ss;
+        ss << "First outside vertex found : " << outsideVertex;
+        printMsg(ss.str());
+        break;
+      }
     }
+    findOutsideVertices(
+      outsideVertex, boundingTriangulation, vertexIntersection, isInterior);
+    this->printMsg("Find outside vertices", 1.0, t_outside.getElapsedTime(),
+                   this->threadNumber_);
   }
-  findOutsideVertices(
-    outsideVertex, boundingTriangulation, vertexIntersection, isInterior);
-  this->printMsg("Find outside vertices", 1.0, t_outside.getElapsedTime(),
-                 this->threadNumber_);
 
   // ======================================================
   // === Signed Distance Field
@@ -713,6 +788,12 @@ int ttk::SignedDistanceField::execute(
 
     float x = 0, y = 0, z = 0;
     boundingTriangulation->getVertexPoint(vertexId, x, y, z);
+
+    if(is2D_) {
+      outputScalars[vertexId] = (isInterior[vertexId] ? -1.0 : 1.0)
+                                * distanceToSegments2D(x, y, segments);
+      continue;
+    }
 
     std::array<float, 3> point;
     point[0] = x;
