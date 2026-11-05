@@ -116,7 +116,6 @@ void ttkSignedDistanceField::computeOutputInformation(
   int shift = (ExpandBox ? 2 : 0);
   for(int i = 0; i < 3; ++i) {
     // in 2D, the single slice has no spacing along its axis: use 1 to keep it
-    // finite
     spacing_[i] = (is2D_ and i == flatDim_)
                     ? 1.0
                     : (bounds[2 * i + 1] - bounds[2 * i])
@@ -170,8 +169,7 @@ int ttkSignedDistanceField::RequestData(vtkInformation *ttkNotUsed(request),
     return -2;
   }
 
-  // a single slice along one axis means a 2D field, computed from a closed
-  // curve
+  // a single slice along one axis means a 2D field
   is2D_ = false;
   for(int i = 0; i < 3; ++i) {
     if(SamplingDimensions[i] == 1 and not is2D_) {

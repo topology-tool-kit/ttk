@@ -160,11 +160,8 @@ namespace ttk {
     std::array<double, 3> spacing_{1.0, 1.0, 1.0};
     std::array<double, 3> invSpacingSquared_{1.0, 1.0, 1.0};
     bool expandBox_ = true;
-    // 2D mode: the output grid has a single slice along flatDim_ and the input
-    // is a closed curve (edges) lying in a plane orthogonal to this axis
     bool is2D_ = false;
     int flatDim_ = 2;
-    // the two axes of the plane of the 2D mode
     inline std::array<int, 2> getPlaneDims() const {
       return {flatDim_ == 0 ? 1 : 0, flatDim_ == 2 ? 1 : 2};
     }
@@ -543,7 +540,6 @@ template <typename triangulationType>
 void ttk::SignedDistanceField::getSegments2D(
   triangulationType *const triangulation,
   std::vector<std::array<float, 4>> &segments) const {
-  // in a 1D triangulation, the cells are the edges of the curve
   SimplexId segmentNumber = triangulation->getNumberOfCells();
   segments.resize(segmentNumber);
 #ifdef TTK_ENABLE_OPENMP
@@ -581,13 +577,9 @@ int ttk::SignedDistanceField::execute(
   }
 
   std::vector<bool> vertexIntersection(noVertices, false);
-  // 2D mode: segments of the input curve, projected in the plane of the grid
   std::vector<std::array<float, 4>> segments;
 
   if(is2D_) {
-    // ===================================
-    // === Find Grid Edges Crossing the Curve
-    // ===================================
     Timer t_intersect;
     getSegments2D(triangulation, segments);
     float ox = 0, oy = 0, oz = 0;
@@ -596,12 +588,9 @@ int ttk::SignedDistanceField::execute(
     findIntersections2D(segments, origin, vertexIntersection, isInterior);
     for(unsigned int i = 0; i < vertexIntersection.size(); ++i)
       edgeCrossing[i] = vertexIntersection[i];
-    this->printMsg("Find intersection edges", 1.0,
-                   t_intersect.getElapsedTime(), this->threadNumber_);
+    this->printMsg("Find intersection edges", 1.0, t_intersect.getElapsedTime(),
+                   this->threadNumber_);
   } else {
-    // ======================================================
-    // === BVH
-    // ======================================================
     Timer t_bvh;
     SimplexId vertexNumber = triangulation->getNumberOfVertices();
     std::vector<float> bvhCoordinates(3 * vertexNumber);
@@ -632,15 +621,12 @@ int ttk::SignedDistanceField::execute(
       bvhConnectivityList[triangleId * 3 + 1] = vertexTriangleIdB;
       bvhConnectivityList[triangleId * 3 + 2] = vertexTriangleIdC;
     }
-    BoundingVolumeHierarchy<SimplexId> bvh(
-      bvhCoordinates.data(), bvhConnectivityList.data(),
-      static_cast<size_t>(triangleNumber));
+    BoundingVolumeHierarchy<SimplexId> bvh(bvhCoordinates.data(),
+                                           bvhConnectivityList.data(),
+                                           static_cast<size_t>(triangleNumber));
     this->printMsg(
       "Build BVH", 1.0, t_bvh.getElapsedTime(), this->threadNumber_);
 
-    // ===================================
-    // === Find Segments Intersecting Triangles
-    // ===================================
     Timer t_intersect;
 
     std::vector<std::vector<unsigned int>> verticesIntersected;
@@ -659,8 +645,7 @@ int ttk::SignedDistanceField::execute(
         // O_x = {a * r_x | a in N / r_y r_z N}
         vertexId = i * xResolution_;
         dirDimension = 0;
-      } else if(i < yResolution_ * zResolution_
-                      + xResolution_ * zResolution_) {
+      } else if(i < yResolution_ * zResolution_ + xResolution_ * zResolution_) {
         // O_y = {a * r_x * r_y + b | a in N / r_z N, b in N / r_x N}
         unsigned int ind = i - yResolution_ * zResolution_;
         vertexId = (int)(ind / xResolution_) * xResolution_ * yResolution_
@@ -741,8 +726,8 @@ int ttk::SignedDistanceField::execute(
         edgeCrossing[vertexId] = 1;
       }
     }
-    this->printMsg("Find intersection edges", 1.0,
-                   t_intersect.getElapsedTime(), this->threadNumber_);
+    this->printMsg("Find intersection edges", 1.0, t_intersect.getElapsedTime(),
+                   this->threadNumber_);
   }
 
   // ===================================

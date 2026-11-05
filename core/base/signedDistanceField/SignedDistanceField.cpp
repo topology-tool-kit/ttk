@@ -12,7 +12,6 @@ void ttk::SignedDistanceField::findIntersections2D(
   const std::array<double, 3> &origin,
   std::vector<bool> &vertexIntersection,
   int *const isInterior) const {
-  // the segments and the arrays below are expressed in the plane of the grid
   const auto dims = getPlaneDims();
   const long fullRes[3] = {xResolution_, yResolution_, zResolution_};
   const long fullStride[3] = {1, xResolution_, xResolution_ * yResolution_};
@@ -20,8 +19,6 @@ void ttk::SignedDistanceField::findIntersections2D(
   const long stride[2] = {fullStride[dims[0]], fullStride[dims[1]]};
   const double planeOrigin[2] = {origin[dims[0]], origin[dims[1]]};
   const double spacing[2] = {spacing_[dims[0]], spacing_[dims[1]]};
-  // first coordinates of the crossings of each row with the curve, for the
-  // parity test
   std::vector<std::vector<double>> rowCrossings(res[1]);
 
   for(const auto &s : segments) {
@@ -31,8 +28,6 @@ void ttk::SignedDistanceField::findIntersections2D(
       const int other = 1 - dim;
       const double a0 = s[dim], a1 = s[2 + dim];
       const double b0 = s[other], b1 = s[2 + other];
-      // segment parallel to these grid lines: its crossings are found by the
-      // grid lines of the other direction
       if(b0 == b1)
         continue;
 
@@ -47,7 +42,6 @@ void ttk::SignedDistanceField::findIntersections2D(
       for(long k = kMin; k <= kMax; ++k) {
         const double b = planeOrigin[other] + k * spacing[other];
         const double a = a0 + (b - b0) / (b1 - b0) * (a1 - a0);
-        // half-open rule: a curve vertex lying on a row is counted once
         if(dim == 0 and ((b0 <= b and b < b1) or (b1 <= b and b < b0)))
           rowCrossings[k].emplace_back(a);
         const double u = (a - planeOrigin[dim]) / spacing[dim];
@@ -63,8 +57,8 @@ void ttk::SignedDistanceField::findIntersections2D(
     }
   }
 
-  // a vertex is interior if the curve crosses its row an odd number of times
-  // on its left
+  // a vertex is interior if the curve crosses its row an odd number of times on
+  // its left
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
