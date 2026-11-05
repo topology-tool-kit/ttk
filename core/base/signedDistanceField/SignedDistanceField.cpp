@@ -13,8 +13,11 @@ void ttk::SignedDistanceField::findIntersections2D(
   std::vector<bool> &vertexIntersection,
   int *const isInterior) const {
   const auto dims = getPlaneDims();
-  const long fullRes[3] = {xResolution_, yResolution_, zResolution_};
-  const long fullStride[3] = {1, xResolution_, xResolution_ * yResolution_};
+  const long fullRes[3]
+    = {static_cast<long>(xResolution_), static_cast<long>(yResolution_),
+       static_cast<long>(zResolution_)};
+  const long fullStride[3] = {1, static_cast<long>(xResolution_),
+                              static_cast<long>(xResolution_ * yResolution_)};
   const long res[2] = {fullRes[dims[0]], fullRes[dims[1]]};
   const long stride[2] = {fullStride[dims[0]], fullStride[dims[1]]};
   const double planeOrigin[2] = {origin[dims[0]], origin[dims[1]]};
