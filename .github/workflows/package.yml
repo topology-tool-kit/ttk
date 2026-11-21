@@ -381,6 +381,8 @@ jobs:
       CONDA_ROOT: C:\Miniconda
       CC: clang-cl.exe
       CXX: clang-cl.exe
+      # MSVC STL >= 14.52 requires Clang 22, runner ships LLVM 20
+      CXXFLAGS: /D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
     steps:
     - uses: actions/checkout@v4
       name: Checkout TTK source code
@@ -485,6 +487,8 @@ jobs:
       CONDA_ROOT: C:\Miniconda
       CC: clang-cl.exe
       CXX: clang-cl.exe
+      # MSVC STL >= 14.52 requires Clang 22, runner ships LLVM 20
+      CXXFLAGS: /D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
     steps:
     - uses: actions/checkout@v4
       name: Checkout TTK source code

@@ -12,6 +12,8 @@ env:
   CONDA_ROOT: C:\Miniconda\envs\ttk
   CC: clang-cl.exe
   CXX: clang-cl.exe
+  # MSVC STL >= 14.52 requires Clang 22, runner ships LLVM 20
+  CXXFLAGS: /D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
   CMAKE_GENERATOR: Ninja
   CMAKE_BUILD_TYPE: Release
   CMAKE_C_COMPILER_LAUNCHER: sccache
